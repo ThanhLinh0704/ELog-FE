@@ -1,68 +1,92 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+// Import các component cần thiết từ thư viện Ant Design
+import { Form, Input, Button, Checkbox, Alert, message } from 'antd';
+import axiosInstance from '../../api/axiosInstance';
 
 const LoginForm: React.FC = () => {
   const navigate = useNavigate();
-
-  // Form states (empty by default)
-  const [username, setUsername] = useState<string>('');
-  const [password, setPassword] = useState<string>('');
-  const [obscurePassword, setObscurePassword] = useState<boolean>(true);
-  const [rememberMe, setRememberMe] = useState<boolean>(false);
   const [isLoading, setIsLoading] = useState<boolean>(false);
+  const [apiError, setApiError] = useState<string | null>(null);
 
-  // Validation errors state
-  const [errors, setErrors] = useState<{ username?: string; password?: string }>({});
-
-  // Form submission handler
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-
-    // Reset errors
-    const newErrors: { username?: string; password?: string } = {};
-
-    if (!username.trim()) {
-      newErrors.username = 'Please enter email or username';
-    }
-    if (!password) {
-      newErrors.password = 'Please enter password';
-    }
-
-    if (Object.keys(newErrors).length > 0) {
-      setErrors(newErrors);
-      return;
-    }
-
-    setErrors({});
+  // Xử lý đăng nhập thông thường (Khi người dùng submit Form)
+  const onFinish = async (values: any) => {
     setIsLoading(true);
+    setApiError(null); // Reset lại lỗi cũ trước đó
 
-    // Simulate 800ms network delay (matching Flutter's Future.delayed)
-    await new Promise((resolve) => setTimeout(resolve, 800));
+    try {
+      // Gửi yêu cầu đăng nhập lên API Backend
+      const response = await axiosInstance.post('/api/auth/login', {
+        username: values.username.trim(),
+        password: values.password,
+      });
 
-    setIsLoading(false);
-    // Redirect to dashboard page
-    navigate('/dashboard', { state: { userName: username.trim() } });
+      const tokenData = response.data.data;
+
+      // Lưu trữ Access Token, Refresh Token và thông tin user vào localStorage
+      localStorage.setItem('token', tokenData.accessToken);
+      localStorage.setItem('refreshToken', tokenData.refreshToken);
+      localStorage.setItem('username', tokenData.username);
+      localStorage.setItem('roles', JSON.stringify(tokenData.roles));
+      localStorage.setItem('userId', String(tokenData.userId));
+
+      message.success('Đăng nhập thành công!');
+      
+      // Điều hướng người dùng sang trang Dashboard hoạt động
+      navigate('/dashboard', { state: { userName: tokenData.username } });
+    } catch (err: any) {
+      // Lấy thông báo lỗi trả về từ API Backend, nếu không có thì dùng thông báo mặc định
+      const errorMsg = err.response?.data?.error?.message 
+        || err.response?.data?.message 
+        || 'Kết nối thất bại. Vui lòng kiểm tra lại server Backend.';
+      setApiError(errorMsg);
+    } finally {
+      setIsLoading(false);
+    }
   };
 
-  // Demo shortcut login handler
+  // Xử lý đăng nhập nhanh bằng tài khoản Demo (Tài khoản admin hệ thống mặc định)
   const handleDemoSignIn = async () => {
-    setUsername('demo_user');
     setIsLoading(true);
-    setErrors({});
+    setApiError(null);
 
-    // Simulate 800ms network delay
-    await new Promise((resolve) => setTimeout(resolve, 800));
+    try {
+      // Gửi yêu cầu đăng nhập trực tiếp bằng tài khoản admin mặc định đã được seed
+      const response = await axiosInstance.post('/api/auth/login', {
+        username: 'admin',
+        password: 'Admin@2025',
+      });
 
-    setIsLoading(false);
-    navigate('/dashboard', { state: { userName: 'demo_user' } });
+      const tokenData = response.data.data;
+
+      // Lưu trữ thông tin tài khoản demo vào localStorage
+      localStorage.setItem('token', tokenData.accessToken);
+      localStorage.setItem('refreshToken', tokenData.refreshToken);
+      localStorage.setItem('username', tokenData.username);
+      localStorage.setItem('roles', JSON.stringify(tokenData.roles));
+      localStorage.setItem('userId', String(tokenData.userId));
+
+      message.success('Đăng nhập với tài khoản Demo thành công!');
+      
+      // Chuyển hướng tới trang Dashboard
+      navigate('/dashboard', { state: { userName: tokenData.username } });
+    } catch (err: any) {
+      const errorMsg = err.response?.data?.error?.message 
+        || err.response?.data?.message 
+        || 'Đăng nhập Demo thất bại. Vui lòng kiểm tra server Backend.';
+      setApiError(errorMsg);
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   return (
     <div className="elog-login-card-wrapper">
       <div className="elog-login-card">
-        {/* Brand Header */}
+        {/* Phần Logo thương hiệu ELog */}
         <div className="elog-form-header">
           <div className="elog-form-logo-box">
+            {/* SVG Logo hình chiếc xe tải */}
             <svg
               width="24"
               height="24"
@@ -88,79 +112,44 @@ const LoginForm: React.FC = () => {
         <h3 className="elog-welcome-title">Welcome Back</h3>
         <p className="elog-welcome-subtitle">Sign in to access your management dashboard</p>
 
-        <form onSubmit={handleSubmit} noValidate>
-          {/* Email / Username field */}
-          <div className="elog-form-group">
-            <label className="elog-form-label">Email / Username</label>
-            <div className="elog-input-wrapper">
-              <span className="elog-input-icon-prefix">
-                <svg
-                  width="18"
-                  height="18"
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  stroke="currentColor"
-                  strokeWidth="2"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                >
-                  <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z" />
-                  <polyline points="22,6 12,13 2,6" />
-                </svg>
-              </span>
-              <input
-                type="text"
-                className={`elog-input ${errors.username ? 'elog-input-error' : ''}`}
-                placeholder="Enter your email or username"
-                value={username}
-                onChange={(e) => {
-                  setUsername(e.target.value);
-                  if (errors.username) setErrors((prev) => ({ ...prev, username: undefined }));
-                }}
-                disabled={isLoading}
-              />
-            </div>
-            {errors.username && <span className="elog-error-message">{errors.username}</span>}
-          </div>
+        {/* Khung hiển thị thông báo lỗi khi đăng nhập không thành công */}
+        {apiError && (
+          <Alert
+            message={apiError}
+            type="error"
+            showIcon
+            style={{ marginBottom: '18px', borderRadius: '8px' }}
+          />
+        )}
 
-          {/* Password field */}
-          <div className="elog-form-group">
-            <label className="elog-form-label">Password</label>
-            <div className="elog-input-wrapper">
-              <span className="elog-input-icon-prefix">
-                <svg
-                  width="18"
-                  height="18"
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  stroke="currentColor"
-                  strokeWidth="2"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                >
-                  <rect x="3" y="11" width="18" height="11" rx="2" ry="2" />
-                  <path d="M7 11V7a5 5 0 0 1 10 0v4" />
-                </svg>
-              </span>
-              <input
-                type={obscurePassword ? 'password' : 'text'}
-                className={`elog-input elog-input-with-suffix ${errors.password ? 'elog-input-error' : ''}`}
-                placeholder="Enter your password"
-                value={password}
-                onChange={(e) => {
-                  setPassword(e.target.value);
-                  if (errors.password) setErrors((prev) => ({ ...prev, password: undefined }));
-                }}
-                disabled={isLoading}
-              />
-              <button
-                type="button"
-                className="elog-input-icon-suffix"
-                onClick={() => setObscurePassword(!obscurePassword)}
-                tabIndex={-1}
-              >
-                {obscurePassword ? (
-                  /* Custom eye icon matching visibility_outlined */
+        {/* Sử dụng Form của Ant Design thay thế thẻ form HTML truyền thống */}
+        <Form
+          name="login_form"
+          layout="vertical"
+          onFinish={onFinish}
+          requiredMark={false} // Ẩn các ký tự hoa thị đỏ (*) cạnh label
+        >
+          {/* Ô nhập Email / Username */}
+          <Form.Item
+            label={<span className="elog-form-label">Email / Username</span>}
+            name="username"
+            // Định nghĩa quy tắc validate: bắt buộc nhập
+            rules={[{ required: true, message: 'Please enter email or username' }]}
+            style={{ marginBottom: '18px' }}
+          >
+            <Input
+              placeholder="Enter your email or username"
+              disabled={isLoading}
+              style={{
+                height: '46px',
+                borderRadius: '11px',
+                backgroundColor: '#f8fafc',
+                border: '1px solid #e2e8f0',
+                fontSize: '13.5px'
+              }}
+              // Icon đại diện đặt ở phía trước ô nhập
+              prefix={
+                <span style={{ color: '#94a3b8', marginRight: '8px', display: 'flex', alignItems: 'center' }}>
                   <svg
                     width="18"
                     height="18"
@@ -171,11 +160,34 @@ const LoginForm: React.FC = () => {
                     strokeLinecap="round"
                     strokeLinejoin="round"
                   >
-                    <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z" />
-                    <circle cx="12" cy="12" r="3" />
+                    <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z" />
+                    <polyline points="22,6 12,13 2,6" />
                   </svg>
-                ) : (
-                  /* Custom eye-off icon matching visibility_off_outlined */
+                </span>
+              }
+            />
+          </Form.Item>
+
+          {/* Ô nhập Mật khẩu */}
+          <Form.Item
+            label={<span className="elog-form-label">Password</span>}
+            name="password"
+            rules={[{ required: true, message: 'Please enter password' }]}
+            style={{ marginBottom: '18px' }}
+          >
+            {/* Sử dụng Input.Password của Antd giúp tích hợp sẵn chức năng ẩn/hiện mật khẩu */}
+            <Input.Password
+              placeholder="Enter your password"
+              disabled={isLoading}
+              style={{
+                height: '46px',
+                borderRadius: '11px',
+                backgroundColor: '#f8fafc',
+                border: '1px solid #e2e8f0',
+                fontSize: '13.5px'
+              }}
+              prefix={
+                <span style={{ color: '#94a3b8', marginRight: '8px', display: 'flex', alignItems: 'center' }}>
                   <svg
                     width="18"
                     height="18"
@@ -186,41 +198,35 @@ const LoginForm: React.FC = () => {
                     strokeLinecap="round"
                     strokeLinejoin="round"
                   >
-                    <path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24" />
-                    <line x1="1" y1="1" x2="23" y2="23" />
+                    <rect x="3" y="11" width="18" height="11" rx="2" ry="2" />
+                    <path d="M7 11V7a5 5 0 0 1 10 0v4" />
                   </svg>
-                )}
-              </button>
-            </div>
-            {errors.password && <span className="elog-error-message">{errors.password}</span>}
-          </div>
+                </span>
+              }
+            />
+          </Form.Item>
 
-          {/* Remember me + Forgot password */}
+          {/* Tùy chọn nhớ mật khẩu và quên mật khẩu */}
           <div className="elog-form-options">
-            <label className="elog-checkbox-wrapper">
-              <input
-                type="checkbox"
-                className="elog-checkbox"
-                checked={rememberMe}
-                onChange={(e) => setRememberMe(e.target.checked)}
-                disabled={isLoading}
-              />
-              <span className="elog-checkbox-label">Remember me</span>
-            </label>
+            <Form.Item name="remember" valuePropName="checked" noStyle>
+              <Checkbox disabled={isLoading} className="elog-checkbox-label">
+                Remember me
+              </Checkbox>
+            </Form.Item>
             <a href="#forgot" className="elog-forgot-link" onClick={(e) => e.preventDefault()}>
               Forgot password?
             </a>
           </div>
 
-          {/* Sign In Button */}
-          <button
-            type="submit"
+          {/* Nút gửi thông tin Đăng nhập */}
+          <Button
+            type="primary"
+            htmlType="submit"
+            loading={isLoading} // Tự động hiển thị spinner khi isLoading = true
             className="elog-btn-submit"
-            disabled={isLoading}
+            style={{ width: '100%', height: '48px', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px', border: 'none' }}
           >
-            {isLoading ? (
-              <span className="elog-spinner" />
-            ) : (
+            {!isLoading && (
               <>
                 Sign In
                 <svg
@@ -238,22 +244,23 @@ const LoginForm: React.FC = () => {
                 </svg>
               </>
             )}
-          </button>
-        </form>
+          </Button>
+        </Form>
 
-        {/* OR Divider */}
+        {/* Khối chia cột HOẶC (OR) */}
         <div className="elog-divider">
           <span className="elog-divider-line" />
           <span className="elog-divider-text">OR</span>
           <span className="elog-divider-line" />
         </div>
 
-        {/* Demo Button */}
-        <button
-          type="button"
-          className="elog-btn-demo"
+        {/* Nút Đăng nhập nhanh tài khoản Demo (Admin hệ thống) */}
+        <Button
+          type="default"
           onClick={handleDemoSignIn}
           disabled={isLoading}
+          className="elog-btn-demo"
+          style={{ width: '100%', height: '46px', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px' }}
         >
           <svg
             width="16"
@@ -270,7 +277,7 @@ const LoginForm: React.FC = () => {
             <line x1="12" y1="17" x2="12" y2="21" />
           </svg>
           Continue as Demo
-        </button>
+        </Button>
       </div>
     </div>
   );
