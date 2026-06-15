@@ -45,40 +45,6 @@ const LoginForm: React.FC = () => {
     }
   };
 
-  // Xử lý đăng nhập nhanh bằng tài khoản Demo (Tài khoản admin hệ thống mặc định)
-  const handleDemoSignIn = async () => {
-    setIsLoading(true);
-    setApiError(null);
-
-    try {
-      // Gửi yêu cầu đăng nhập trực tiếp bằng tài khoản admin mặc định đã được seed
-      const response = await axiosInstance.post('/api/auth/login', {
-        username: 'admin',
-        password: 'Admin@2025',
-      });
-
-      const tokenData = response.data.data;
-
-      // Lưu trữ thông tin tài khoản demo vào localStorage
-      localStorage.setItem('token', tokenData.accessToken);
-      localStorage.setItem('refreshToken', tokenData.refreshToken);
-      localStorage.setItem('username', tokenData.username);
-      localStorage.setItem('roles', JSON.stringify(tokenData.roles));
-      localStorage.setItem('userId', String(tokenData.userId));
-
-      message.success('Đăng nhập với tài khoản Demo thành công!');
-      
-      // Chuyển hướng tới trang Dashboard
-      navigate('/dashboard', { state: { userName: tokenData.username } });
-    } catch (err: any) {
-      const errorMsg = err.response?.data?.error?.message 
-        || err.response?.data?.message 
-        || 'Đăng nhập Demo thất bại. Vui lòng kiểm tra server Backend.';
-      setApiError(errorMsg);
-    } finally {
-      setIsLoading(false);
-    }
-  };
 
   return (
     <div className="elog-login-card-wrapper">
@@ -247,37 +213,6 @@ const LoginForm: React.FC = () => {
           </Button>
         </Form>
 
-        {/* Khối chia cột HOẶC (OR) */}
-        <div className="elog-divider">
-          <span className="elog-divider-line" />
-          <span className="elog-divider-text">OR</span>
-          <span className="elog-divider-line" />
-        </div>
-
-        {/* Nút Đăng nhập nhanh tài khoản Demo (Admin hệ thống) */}
-        <Button
-          type="default"
-          onClick={handleDemoSignIn}
-          disabled={isLoading}
-          className="elog-btn-demo"
-          style={{ width: '100%', height: '46px', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px' }}
-        >
-          <svg
-            width="16"
-            height="16"
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            strokeWidth="2"
-            strokeLinecap="round"
-            strokeLinejoin="round"
-          >
-            <rect x="2" y="3" width="20" height="14" rx="2" ry="2" />
-            <line x1="8" y1="21" x2="16" y2="21" />
-            <line x1="12" y1="17" x2="12" y2="21" />
-          </svg>
-          Continue as Demo
-        </Button>
       </div>
     </div>
   );
