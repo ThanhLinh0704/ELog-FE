@@ -275,6 +275,16 @@ const UsersPage: React.FC = () => {
 
           <div className="table-wrap">
             <table className="data-table">
+               <colgroup>
+                <col className="col-name" />
+                <col className="col-username" />
+                <col className="col-email" />
+                <col className="col-role" />
+                <col className="col-status" />
+                <col className="col-created" />
+                <col className="col-actions" />
+              </colgroup>
+
               <thead>
                 <tr>
                   <th>Họ tên</th>
