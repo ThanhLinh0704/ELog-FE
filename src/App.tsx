@@ -4,6 +4,7 @@ import LoginPage from './pages/login/LoginPage';
 import NotFoundPage from './pages/NotFoundPage';
 import ProtectedRoute from './components/ProtectedRoute';
 import PublicRoute from './components/PublicRoute';
+import UsersPage from './pages/UsersPage';
 
 function App() {
   return (
@@ -26,10 +27,19 @@ function App() {
             </ProtectedRoute>
           }
         />
+        <Route
+          path="/users"
+          element={
+            <ProtectedRoute>
+              <UsersPage />
+            </ProtectedRoute>
+          }
+        />
         <Route path="*" element={<NotFoundPage />} />
       </Routes>
     </BrowserRouter>
   );
 }
+
 
 export default App;
