@@ -1,7 +1,7 @@
 import React from 'react';
 // import Navbar from './Navbar';
 import FeatureCard from './FeatureCard';
-import BrowserDashboardMockup from './BrowserDashboardMockup';
+import MapMockup from './MapMockup';
 import LoginForm from './LoginForm';
 import '../../styles/login/LoginPage.css';
 
@@ -118,8 +118,8 @@ const LoginPage: React.FC = () => {
                 />
               </div>
 
-              {/* Browser Mockup */}
-              <BrowserDashboardMockup />
+              {/* Map Mockup */}
+              <MapMockup />
             </section>
 
             {/* Right Column (LoginForm Card) */}

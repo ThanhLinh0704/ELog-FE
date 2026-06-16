@@ -295,198 +295,147 @@
   text-overflow: ellipsis;
 }
 
-/* --- Mockup Dashboard Styles --- */
-.elog-mockup-wrapper {
-  height: 200px;
-  position: relative;
-  margin-top: 10px;
-}
+/* --- Mockup Route Map Styles --- */
+.elog-map-wrapper { position: relative; }
 
-.elog-mockup-browser {
-  position: absolute;
-  top: 0;
-  left: 30px;
-  right: 30px;
-  height: 172px;
-  background-color: #ffffff;
-  border: 1px solid var(--color-border-light);
+/* Browser chrome */
+.elog-map-browser {
+  background: #ffffff;
   border-radius: 14px;
-  box-shadow: 0 6px 22px rgba(15, 23, 42, 0.07);
-  display: flex;
-  flex-direction: column;
+  border: 1px solid #F1F5F9;
   overflow: hidden;
-  z-index: 2;
+  box-shadow: 0 4px 20px rgba(15,23,42,0.07);
 }
-
-.elog-mockup-bar {
-  background-color: var(--color-bg-light);
-  padding: 8px 12px;
+.elog-map-bar {
+  background: #F8FAFC;
+  border-bottom: 1px solid #F1F5F9;
+  padding: 9px 14px;
   display: flex;
   align-items: center;
-  border-bottom: 1px solid var(--color-border-light);
+  gap: 12px;
 }
-
-.elog-mockup-dots {
-  display: flex;
-  gap: 5px;
-  margin-right: 14px;
-}
-
-.elog-mockup-dot {
-  width: 7px;
-  height: 7px;
+.elog-map-dots { display: flex; gap: 5px; }
+.elog-map-dot {
+  width: 8px; height: 8px;
   border-radius: 50%;
 }
-
-.elog-mockup-dot-red {
-  background-color: #ef4444;
-}
-
-.elog-mockup-dot-orange {
-  background-color: #f59e0b;
-}
-
-.elog-mockup-dot-green {
-  background-color: #10b981;
-}
-
-.elog-mockup-address {
-  height: 20px;
-  background-color: rgba(226, 232, 240, 0.55);
+.elog-map-url {
+  flex: 1;
+  background: rgba(226,232,240,0.55);
   border-radius: 5px;
-  flex-grow: 1;
-  display: flex;
-  align-items: center;
-  padding: 0 8px;
-  color: var(--color-slate-gray);
+  padding: 3px 10px;
   font-size: 9px;
+  color: #64748B;
   font-weight: 500;
 }
 
-.elog-mockup-stats {
-  padding: 14px 18px 0 18px;
-  display: flex;
-  gap: 20px;
+/* Canvas & SVG */
+.elog-map-canvas { position: relative; }
+.elog-map-svg    { display: block; width: 100%; height: auto; }
+
+/* Animated dashed route */
+.elog-route-path {
+  stroke-dasharray: 6 5;
+  animation: elog-dash-flow 1.8s linear infinite;
+}
+@keyframes elog-dash-flow {
+  from { stroke-dashoffset: 44; }
+  to   { stroke-dashoffset: 0; }
 }
 
-.elog-mockup-stat-item {
+/* Stop pulse rings */
+.elog-node-pulse {
+  animation: elog-pulse-ring 2.2s ease-out infinite;
+}
+@keyframes elog-pulse-ring {
+  0%   { r: 7;  opacity: 0.7; }
+  70%  { r: 14; opacity: 0;   }
+  100% { r: 14; opacity: 0;   }
+}
+
+/* Hub rings */
+.elog-hub-outer { animation: elog-pulse-ring 2.4s ease-out infinite; }
+.elog-hub-mid   { animation: elog-pulse-ring 2.4s ease-out infinite 0.6s; }
+
+/* Overlay cards */
+.elog-map-hub-card,
+.elog-map-telemetry {
+  position: absolute;
+  background: #ffffff;
+  border: 1px solid rgba(226,232,240,0.85);
+  border-radius: 10px;
+  backdrop-filter: blur(4px);
+}
+.elog-map-hub-card {
+  top: 12px; left: 12px;
+  padding: 7px 11px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.elog-map-hub-dot {
+  width: 9px; height: 9px;
+  border-radius: 50%;
+  background: #0F172A;
+  flex-shrink: 0;
+}
+.elog-map-hub-title {
+  font-size: 12px;
+  font-weight: 700;
+  color: #0F172A;
+  line-height: 1.2;
+}
+.elog-map-hub-sub {
+  font-size: 10px;
+  color: #64748B;
+}
+
+.elog-map-telemetry {
+  top: 12px; right: 12px;
+  padding: 8px 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+.elog-map-telem-row {
   display: flex;
   align-items: center;
   gap: 6px;
+  font-size: 11px;
+  color: #475569;
+  white-space: nowrap;
 }
-
-.elog-mockup-stat-dot {
-  width: 7px;
-  height: 7px;
+.elog-map-telem-row strong { color: #0F172A; font-weight: 700; }
+.elog-map-telem-bullet {
+  width: 6px; height: 6px;
   border-radius: 50%;
+  flex-shrink: 0;
 }
 
-.elog-mockup-stat-info {
-  display: flex;
-  flex-direction: column;
-}
-
-.elog-mockup-stat-value {
-  font-weight: 800;
-  font-size: 13px;
-  color: var(--color-dark);
-  line-height: 1.1;
-}
-
-.elog-mockup-stat-label {
-  font-size: 9px;
-  color: var(--color-slate-gray);
-}
-
-.elog-mockup-chart {
-  padding: 10px 18px 0 18px;
-  height: 46px;
-  display: flex;
-  align-items: flex-end;
-  gap: 4px;
-}
-
-.elog-mockup-chart-bar {
-  flex: 1;
-  border-radius: 3px 3px 0 0;
-  opacity: 0.8;
-  transition: height 0.3s ease;
-}
-
-.elog-mockup-footer {
-  padding: 4px 18px 10px 18px;
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-top: auto;
-}
-
-.elog-mockup-footer-title {
-  font-size: 9.5px;
-  font-weight: 700;
-  color: var(--color-slate-dark);
-}
-
-.elog-mockup-footer-subtitle {
-  font-size: 9px;
-  color: var(--color-slate-light);
-}
-
-/* Floating Elements */
-.elog-mockup-float-truck {
+/* Floating badges */
+.elog-map-float-truck {
   position: absolute;
-  left: 0;
-  bottom: 8px;
-  width: 50px;
-  height: 50px;
-  background-color: var(--color-dark);
-  color: #ffffff;
-  border-radius: 14px;
+  left: -6px; bottom: 10px;
+  width: 46px; height: 46px;
+  background: #0F172A;
+  border-radius: 13px;
   display: flex;
   align-items: center;
   justify-content: center;
-  box-shadow: 0 4px 14px rgba(15, 23, 42, 0.22);
-  z-index: 3;
-  animation: floatTruck 4s ease-in-out infinite;
-}
-
-.elog-mockup-float-box {
-  position: absolute;
-  right: 8px;
-  bottom: 14px;
-  width: 42px;
-  height: 42px;
-  background-color: var(--color-primary);
   color: #ffffff;
+  box-shadow: 0 4px 14px rgba(15,23,42,0.22);
+}
+.elog-map-float-gps {
+  position: absolute;
+  right: 8px; bottom: 14px;
+  width: 40px; height: 40px;
+  background: #2563EB;
   border-radius: 50%;
   display: flex;
   align-items: center;
   justify-content: center;
-  box-shadow: 0 4px 12px rgba(37, 99, 235, 0.35);
-  z-index: 3;
-  animation: floatBox 3.5s ease-in-out infinite;
-}
-
-@keyframes floatTruck {
-  0%,
-  100% {
-    transform: translateY(0);
-  }
-
-  50% {
-    transform: translateY(-6px);
-  }
-}
-
-@keyframes floatBox {
-  0%,
-  100% {
-    transform: translateY(0);
-  }
-
-  50% {
-    transform: translateY(-5px);
-  }
+  color: #ffffff;
+  box-shadow: 0 4px 12px rgba(37,99,235,0.38);
 }
 
 /* --- Right Column - Login Card --- */
