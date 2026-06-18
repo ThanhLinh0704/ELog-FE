@@ -2,6 +2,7 @@ import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Bell, ChevronDown, LogOut, Search, ShieldCheck, Users, Home } from 'lucide-react';
 import axiosInstance from '../api/axiosInstance';
+import '../styles/layout/AdminShell.css';
 
 interface AdminShellProps {
   currentUser: {
