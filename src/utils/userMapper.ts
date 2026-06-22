@@ -29,6 +29,20 @@ export function normalizeUser(apiUser: any): User {
 }
 
 export function normalizeUserPage(responseBody: any, page: number, size: number): UserPage {
+  // 1. Handle real backend ApiResponse format: { success, data: [...], pagination: { page, size, totalElements, totalPages } }
+  if (responseBody && responseBody.pagination) {
+    const content = Array.isArray(responseBody.data) ? responseBody.data : [];
+    const pag = responseBody.pagination;
+    return {
+      content: content.map(normalizeUser),
+      page: pag.page ?? page,
+      size: pag.size ?? size,
+      totalElements: pag.totalElements ?? content.length,
+      totalPages: pag.totalPages ?? Math.max(1, Math.ceil((pag.totalElements ?? content.length) / size)),
+    };
+  }
+
+  // 2. Handle fallback formats
   const raw = responseBody?.data ?? responseBody;
 
   if (Array.isArray(raw)) {
