@@ -105,3 +105,96 @@ code {
   padding: 4px 8px;
   background: var(--code-bg);
 }
+
+/* ─── AdminShell Layout & Styling ─── */
+.elog-admin-sider {
+  border-right: 1px solid rgba(255, 255, 255, 0.05);
+  position: fixed;
+  height: 100vh;
+  left: 0;
+  top: 0;
+  bottom: 0;
+  z-index: 100;
+  background: #0d1727;
+}
+
+.elog-sidebar-logo {
+  height: 64px;
+  display: flex;
+  align-items: center;
+  padding: 0 24px;
+  cursor: pointer;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+  background: #0d1727;
+}
+
+.elog-logo-badge {
+  width: 34px;
+  height: 34px;
+  border-radius: 10px;
+  background: linear-gradient(135deg, #06b6d4 0%, #10b981 100%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-right: 12px;
+  font-weight: 800;
+  font-size: 18px;
+  color: #fff;
+  box-shadow: 0 4px 12px rgba(6, 182, 212, 0.2);
+}
+
+.elog-sidebar-menu-wrapper {
+  display: flex;
+  flex-direction: column;
+  height: calc(100vh - 64px);
+  justify-content: space-between;
+}
+
+.elog-sidebar-profile {
+  padding: 16px 24px;
+  border-top: 1px solid rgba(255, 255, 255, 0.05);
+  background-color: #09101c;
+}
+
+.elog-profile-info {
+  display: flex;
+  align-items: center;
+  margin-bottom: 12px;
+}
+
+.elog-profile-name {
+  font-weight: 600;
+  font-size: 13px;
+  color: #ffffff;
+  max-width: 140px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.elog-logout-btn {
+  width: 100%;
+  border-radius: 8px;
+  border-color: rgba(255, 255, 255, 0.1) !important;
+  color: rgba(255, 255, 255, 0.85) !important;
+  background-color: rgba(255, 255, 255, 0.03) !important;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  font-size: 13px;
+  font-weight: 500;
+}
+
+.elog-admin-header {
+  background: #fff !important;
+  padding: 0 24px !important;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  height: 64px;
+  border-bottom: 1px solid #f0f0f0;
+  position: sticky;
+  top: 0;
+  z-index: 99;
+}

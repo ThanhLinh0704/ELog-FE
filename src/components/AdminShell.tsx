@@ -1,10 +1,15 @@
 import React from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { Layout, Menu, Avatar, Dropdown, Button, Space, Input, Badge, ConfigProvider } from 'antd';
-import { Bell, ChevronDown, LogOut, Search, Users, LayoutGrid, Store, Map, Settings } from 'lucide-react';
+import { Bell, ChevronDown, LogOut, Search, Users, LayoutGrid, Store, Map, Settings, Package } from 'lucide-react';
 import axiosInstance from '../api/axiosInstance';
 
 const { Header, Sider, Content } = Layout;
+
+// JavaScript Constants for centralized Icon Sizes
+const ICON_SIZE = 18;
+const UTILITY_ICON_SIZE = 15;
+const CHEVRON_ICON_SIZE = 14;
 
 interface AdminShellProps {
   currentUser: {
@@ -38,14 +43,16 @@ const AdminShell: React.FC<AdminShellProps> = ({ currentUser, children }) => {
       {
         key: 'logout',
         label: 'Đăng xuất',
-        icon: <LogOut size={16} />,
+        icon: <LogOut size={ICON_SIZE - 2} />,
         danger: true,
         onClick: handleLogout,
       },
     ],
   };
 
-  const selectedKey = location.pathname;
+  const selectedKey = location.pathname.startsWith('/admin/products')
+    ? '/admin/products'
+    : location.pathname;
 
   const sidebarMenuItems = [
     {
@@ -55,19 +62,25 @@ const AdminShell: React.FC<AdminShellProps> = ({ currentUser, children }) => {
       children: [
         {
           key: '/dashboard',
-          icon: <LayoutGrid size={18} />,
+          icon: <LayoutGrid size={ICON_SIZE} />,
           label: 'Tổng quan',
           onClick: () => navigate('/dashboard'),
         },
         {
           key: '/users',
-          icon: <Users size={18} />,
+          icon: <Users size={ICON_SIZE} />,
           label: 'Quản lý người dùng',
           onClick: () => navigate('/users'),
         },
         {
+          key: '/admin/products',
+          icon: <Package size={ICON_SIZE} />,
+          label: 'Quản lý sản phẩm',
+          onClick: () => navigate('/admin/products'),
+        },
+        {
           key: '/stores',
-          icon: <Store size={18} />,
+          icon: <Store size={ICON_SIZE} />,
           label: 'Quản lý cửa hàng',
           disabled: true,
         },
@@ -80,7 +93,7 @@ const AdminShell: React.FC<AdminShellProps> = ({ currentUser, children }) => {
       children: [
         {
           key: '/routes',
-          icon: <Map size={18} />,
+          icon: <Map size={ICON_SIZE} />,
           label: (
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', width: '100%' }}>
               <span>Quản lý tuyến</span>
@@ -91,7 +104,7 @@ const AdminShell: React.FC<AdminShellProps> = ({ currentUser, children }) => {
         },
         {
           key: '/settings',
-          icon: <Settings size={18} />,
+          icon: <Settings size={ICON_SIZE} />,
           label: (
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', width: '100%' }}>
               <span>Cài đặt hệ thống</span>
@@ -127,45 +140,13 @@ const AdminShell: React.FC<AdminShellProps> = ({ currentUser, children }) => {
         <Sider
           theme="dark"
           width={260}
-          style={{
-            borderRight: '1px solid rgba(255, 255, 255, 0.05)',
-            position: 'fixed',
-            height: '100vh',
-            left: 0,
-            top: 0,
-            bottom: 0,
-            zIndex: 100,
-            background: '#0d1727',
-          }}
+          className="elog-admin-sider"
         >
           <div 
             onClick={() => navigate('/dashboard')} 
-            style={{ 
-              height: 64, 
-              display: 'flex', 
-              alignItems: 'center', 
-              padding: '0 24px', 
-              cursor: 'pointer',
-              borderBottom: '1px solid rgba(255, 255, 255, 0.05)',
-              background: '#0d1727'
-            }}
+            className="elog-sidebar-logo"
           >
-            <div 
-              style={{ 
-                width: 34, 
-                height: 34, 
-                borderRadius: 10, 
-                background: 'linear-gradient(135deg, #06b6d4 0%, #10b981 100%)', 
-                display: 'flex', 
-                alignItems: 'center', 
-                justifyContent: 'center',
-                marginRight: 12, 
-                fontWeight: 800, 
-                fontSize: 18,
-                color: '#fff',
-                boxShadow: '0 4px 12px rgba(6, 182, 212, 0.2)'
-              }}
-            >
+            <div className="elog-logo-badge">
               E
             </div>
             <div style={{ lineHeight: 1.2 }}>
@@ -174,7 +155,7 @@ const AdminShell: React.FC<AdminShellProps> = ({ currentUser, children }) => {
             </div>
           </div>
 
-          <div style={{ display: 'flex', flexDirection: 'column', height: 'calc(100vh - 64px)', justifyContent: 'space-between' }}>
+          <div className="elog-sidebar-menu-wrapper">
             <Menu
               mode="inline"
               theme="dark"
@@ -183,14 +164,8 @@ const AdminShell: React.FC<AdminShellProps> = ({ currentUser, children }) => {
               style={{ borderRight: 0, padding: '16px 0', background: '#0d1727' }}
             />
 
-            <div 
-              style={{ 
-                padding: '16px 24px', 
-                borderTop: '1px solid rgba(255, 255, 255, 0.05)',
-                backgroundColor: '#09101c'
-              }}
-            >
-              <div style={{ display: 'flex', alignItems: 'center', marginBottom: 12 }}>
+            <div className="elog-sidebar-profile">
+              <div className="elog-profile-info">
                 <Avatar 
                   style={{ 
                     backgroundColor: '#e6f7ff', 
@@ -202,7 +177,7 @@ const AdminShell: React.FC<AdminShellProps> = ({ currentUser, children }) => {
                   {(currentUser.fullName || currentUser.username).slice(0, 1).toUpperCase()}
                 </Avatar>
                 <div style={{ lineHeight: 1.2 }}>
-                  <div style={{ fontWeight: 600, fontSize: 13, color: '#ffffff', maxWidth: 140, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                  <div className="elog-profile-name">
                     {currentUser.fullName || currentUser.username}
                   </div>
                   <div style={{ fontSize: 11, color: '#64748b' }}>System Admin</div>
@@ -211,21 +186,9 @@ const AdminShell: React.FC<AdminShellProps> = ({ currentUser, children }) => {
               <Button 
                 type="default" 
                 danger 
-                icon={<LogOut size={15} />} 
+                icon={<LogOut size={UTILITY_ICON_SIZE} />} 
                 onClick={handleLogout}
-                style={{ 
-                  width: '100%', 
-                  borderRadius: 8, 
-                  borderColor: 'rgba(255, 255, 255, 0.1)',
-                  color: 'rgba(255, 255, 255, 0.85)',
-                  backgroundColor: 'rgba(255, 255, 255, 0.03)',
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  gap: 8,
-                  fontSize: 13,
-                  fontWeight: 500,
-                }}
+                className="elog-logout-btn"
               >
                 Đăng xuất
               </Button>
@@ -234,22 +197,9 @@ const AdminShell: React.FC<AdminShellProps> = ({ currentUser, children }) => {
         </Sider>
 
         <Layout style={{ marginLeft: 260 }}>
-          <Header 
-            style={{ 
-              background: '#fff', 
-              padding: '0 24px', 
-              display: 'flex', 
-              alignItems: 'center', 
-              justifyContent: 'space-between',
-              height: 64,
-              borderBottom: '1px solid #f0f0f0',
-              position: 'sticky',
-              top: 0,
-              zIndex: 99,
-            }}
-          >
+          <Header className="elog-admin-header">
             <Input 
-              prefix={<Search size={16} style={{ color: '#bfbfbf' }} />} 
+              prefix={<Search size={ICON_SIZE - 2} style={{ color: '#bfbfbf' }} />} 
               placeholder="Tìm kiếm nhanh..." 
               style={{ width: 250, borderRadius: 6 }}
             />
@@ -258,7 +208,7 @@ const AdminShell: React.FC<AdminShellProps> = ({ currentUser, children }) => {
                 <Button 
                   type="text" 
                   shape="circle" 
-                  icon={<Bell size={18} style={{ color: '#595959' }} />} 
+                  icon={<Bell size={ICON_SIZE} style={{ color: '#595959' }} />} 
                 />
               </Badge>
               <Dropdown menu={userMenuItems} placement="bottomRight" trigger={['click']}>
@@ -270,7 +220,7 @@ const AdminShell: React.FC<AdminShellProps> = ({ currentUser, children }) => {
                     <span style={{ color: '#595959', fontWeight: 500 }}>
                       {currentUser.fullName || currentUser.username}
                     </span>
-                    <ChevronDown size={14} style={{ color: '#8c8c8c' }} />
+                    <ChevronDown size={CHEVRON_ICON_SIZE} style={{ color: '#8c8c8c' }} />
                   </Space>
                 </Button>
               </Dropdown>
