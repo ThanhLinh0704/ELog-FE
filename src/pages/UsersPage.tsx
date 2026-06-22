@@ -1,47 +1,42 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { ChevronLeft, ChevronRight, Edit3, Lock, Plus, RefreshCw, Search, Unlock, Users } from 'lucide-react';
+import {
+  Alert,
+  Avatar,
+  Button,
+  Card,
+  Empty,
+  Input,
+  Modal,
+  Select,
+  Space,
+  Table,
+  Tag,
+  Tooltip,
+  Typography,
+  message,
+} from 'antd';
+import type { ColumnsType, TablePaginationConfig } from 'antd/es/table';
+import {
+  Edit3,
+  Lock,
+  Plus,
+  RefreshCw,
+  Search,
+  Unlock,
+} from 'lucide-react';
 import { USER_ROLES } from '../config';
 import { useDebounce } from '../hooks/useDebounce';
 import { userApi } from '../api/userApi';
 import { type User } from '../utils/userMapper';
 import UserFormModal from '../components/UserFormModal';
-import ConfirmDialog from '../components/ConfirmDialog';
-import Toast from '../components/Toast';
 import AdminShell from '../components/AdminShell';
 import '../styles/users/UsersPage.css';
 
-function RoleBadge({ role }: { role: string }) {
-  const label = USER_ROLES.find((item) => item.value === role)?.label || role;
-  return <span className={`badge role-${role.toLowerCase()}`}>{label}</span>;
-}
-
-function StatusChip({ isActive }: { isActive: boolean }) {
-  return <span className={isActive ? 'chip active' : 'chip locked'}>{isActive ? 'Hoạt động' : 'Đã khoá'}</span>;
-}
-
-function SkeletonRows() {
-  return (
-    <>
-      {Array.from({ length: 5 }).map((_, row) => (
-        <tr key={row}>
-          {Array.from({ length: 7 }).map((__, col) => (
-            <td key={col}>
-              <span className="skeleton" />
-            </td>
-          ))}
-        </tr>
-      ))}
-    </>
-  );
-}
-
-const UsersPage: React.FC = () => {
-  const navigate = useNavigate();
-
-  // Retrieve current user details from localStorage
+function getCurrentUser() {
   const username = localStorage.getItem('username') || '';
   const userId = localStorage.getItem('userId') || '';
+
   let roles: string[] = [];
   try {
     const rolesStr = localStorage.getItem('roles');
@@ -52,12 +47,91 @@ const UsersPage: React.FC = () => {
     console.error('Failed to parse roles', e);
   }
 
-  const currentUser = {
+  return {
     id: Number(userId),
     username,
     fullName: username,
     roles,
   };
+}
+
+function getStatus(err: any) {
+  return err?.response?.status ?? err?.status;
+}
+
+function getApiMessage(err: any, fallback: string) {
+  return (
+    err?.response?.data?.error?.message ||
+    err?.response?.data?.message ||
+    err?.response?.data?.errors?.[0]?.message ||
+    err?.response?.data?.errors?.[0]?.defaultMessage ||
+    err?.body?.error?.message ||
+    err?.body?.message ||
+    err?.body?.errors?.[0]?.message ||
+    err?.body?.errors?.[0]?.defaultMessage ||
+    err?.message ||
+    fallback
+  );
+}
+
+function getApiFieldErrors(err: any): Record<string, string> {
+  const data = err?.response?.data ?? err?.body;
+  const result: Record<string, string> = {};
+
+  const directField = data?.error?.field || data?.field;
+  const directMessage = data?.error?.message || data?.message;
+
+  if (directField && directMessage) {
+    result[directField] = directMessage;
+  }
+
+  if (Array.isArray(data?.errors)) {
+    data.errors.forEach((item: any) => {
+      const field = item.field || item.name;
+      const errorMessage = item.message || item.defaultMessage;
+
+      if (field && errorMessage) {
+        result[field] = errorMessage;
+      }
+    });
+  }
+
+  return result;
+}
+
+function RoleTag({ role }: { role: string }) {
+  const label = USER_ROLES.find((item) => item.value === role)?.label || role;
+
+  const colorMap: Record<string, string> = {
+    SYSTEM_ADMIN: 'purple',
+    DISPATCHER: 'blue',
+    WAREHOUSE_STAFF: 'orange',
+    DRIVER: 'green',
+    LOGISTICS_MANAGER: 'cyan',
+  };
+
+  return (
+    <Tag color={colorMap[role] || 'default'} className="user-role-tag">
+      {label}
+    </Tag>
+  );
+}
+
+function StatusTag({ isActive }: { isActive: boolean }) {
+  return isActive ? (
+    <Tag color="success" className="user-status-tag">
+      Hoạt động
+    </Tag>
+  ) : (
+    <Tag color="default" className="user-status-tag">
+      Đã khoá
+    </Tag>
+  );
+}
+
+const UsersPage: React.FC = () => {
+  const navigate = useNavigate();
+  const currentUser = getCurrentUser();
 
   const [users, setUsers] = useState<User[]>([]);
   const [keyword, setKeyword] = useState('');
@@ -65,45 +139,51 @@ const UsersPage: React.FC = () => {
   const [isActive, setIsActive] = useState('');
   const [page, setPage] = useState(0);
   const [size] = useState(5);
-  const [pageMeta, setPageMeta] = useState({ totalElements: 0, totalPages: 1 });
+  const [pageMeta, setPageMeta] = useState({
+    totalElements: 0,
+    totalPages: 1,
+  });
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [formMode, setFormMode] = useState<'create' | 'edit' | null>(null);
   const [editingUser, setEditingUser] = useState<User | null>(null);
   const [apiFieldErrors, setApiFieldErrors] = useState<Record<string, string>>({});
-  const [confirmPayload, setConfirmPayload] = useState<{ user: User; nextActive: boolean } | null>(null);
+  const [confirmPayload, setConfirmPayload] = useState<{
+    user: User;
+    nextActive: boolean;
+  } | null>(null);
   const [statusSubmitting, setStatusSubmitting] = useState(false);
-  const [toast, setToast] = useState<{ title: string; message: string; type?: 'success' | 'error' } | null>(null);
 
   const debouncedKeyword = useDebounce(keyword, 350);
 
-  function showToast(title: string, message: string, type: 'success' | 'error' = 'success') {
-    setToast({ title, message, type });
-    setTimeout(() => setToast(null), 3200);
-  }
-
-  const queryParams = useMemo(() => ({
-    keyword: debouncedKeyword,
-    role,
-    isActive,
-    page,
-    size,
-    sort: 'id,desc',
-  }), [debouncedKeyword, role, isActive, page, size]);
+  const queryParams = useMemo(
+    () => ({
+      keyword: debouncedKeyword,
+      role,
+      isActive,
+      page,
+      size,
+      sort: 'id,desc',
+    }),
+    [debouncedKeyword, role, isActive, page, size]
+  );
 
   async function fetchUsers(params = queryParams) {
     setLoading(true);
     setError('');
+
     try {
       const result = await userApi.getUsers(params);
       setUsers(result.content);
-      setPageMeta({ totalElements: result.totalElements, totalPages: result.totalPages });
+      setPageMeta({
+        totalElements: result.totalElements,
+        totalPages: result.totalPages,
+      });
     } catch (err: any) {
-      if (err.status === 403 || err.response?.status === 403) {
-        // CYPRESS TC-06: DRIVER visits /users -> API returns 403 -> redirect to /dashboard
+      if (getStatus(err) === 403) {
         navigate('/dashboard');
       } else {
-        setError(err.message || 'Không tải được danh sách người dùng.');
+        setError(getApiMessage(err, 'Không tải được danh sách người dùng.'));
       }
     } finally {
       setLoading(false);
@@ -120,14 +200,25 @@ const UsersPage: React.FC = () => {
   }
 
   function mapApiErrorToField(err: any): Record<string, string> | null {
-    const message = err.body?.message || err.message || '';
-    const field = err.body?.field;
+    const fieldErrors = getApiFieldErrors(err);
 
-    if (err.status === 409) {
-      if (field) return { [field]: message };
-      if (message.toLowerCase().includes('username')) return { username: message };
-      if (message.toLowerCase().includes('email')) return { email: message };
-      return { username: message };
+    if (Object.keys(fieldErrors).length > 0) {
+      return fieldErrors;
+    }
+
+    const status = getStatus(err);
+    const messageText = getApiMessage(err, '');
+
+    if (status === 409) {
+      if (messageText.toLowerCase().includes('username')) {
+        return { username: messageText };
+      }
+
+      if (messageText.toLowerCase().includes('email')) {
+        return { email: messageText };
+      }
+
+      return { username: messageText || 'Dữ liệu đã tồn tại.' };
     }
 
     return null;
@@ -135,34 +226,40 @@ const UsersPage: React.FC = () => {
 
   async function createUser(payload: any) {
     setApiFieldErrors({});
+
     try {
       await userApi.createUser(payload);
       setFormMode(null);
-      showToast('Tạo người dùng thành công', 'Người dùng mới đã được tạo và danh sách đã được tải lại.');
-      await fetchUsers({ ...queryParams, page: 0 });
+      message.success('Người dùng mới đã được tạo thành công.');
       setPage(0);
+      await fetchUsers({ ...queryParams, page: 0 });
     } catch (err: any) {
       const fieldErrors = mapApiErrorToField(err);
+
       if (fieldErrors) {
         setApiFieldErrors(fieldErrors);
       } else {
-        showToast('Không tạo được người dùng', err.message || 'API lỗi, vui lòng thử lại.', 'error');
+        message.error(getApiMessage(err, 'Không tạo được người dùng.'));
       }
+
       throw err;
     }
   }
 
   async function updateProfile(id: number, payload: any) {
     setApiFieldErrors({});
+
     try {
       await userApi.updateUser(id, payload);
     } catch (err: any) {
       const fieldErrors = mapApiErrorToField(err);
+
       if (fieldErrors) {
         setApiFieldErrors(fieldErrors);
       } else {
-        showToast('Không cập nhật được thông tin', err.message || 'API lỗi, vui lòng thử lại.', 'error');
+        message.error(getApiMessage(err, 'Không cập nhật được thông tin.'));
       }
+
       throw err;
     }
   }
@@ -172,227 +269,271 @@ const UsersPage: React.FC = () => {
       await userApi.updateRoles(id, rolesPayload);
       setFormMode(null);
       setEditingUser(null);
-      showToast('Cập nhật người dùng thành công', 'Thông tin và vai trò đã được lưu.');
+      message.success('Thông tin và vai trò người dùng đã được lưu.');
       await fetchUsers();
     } catch (err: any) {
-      showToast('Không cập nhật được vai trò', err.message || 'API lỗi, vui lòng thử lại.', 'error');
+      message.error(getApiMessage(err, 'Không cập nhật được vai trò.'));
       throw err;
     }
   }
 
   async function confirmStatusChange() {
     if (!confirmPayload) return;
+
     setStatusSubmitting(true);
+
     try {
       await userApi.updateStatus(confirmPayload.user.id, confirmPayload.nextActive);
+
       setUsers((prev) =>
         prev.map((user) =>
-          user.id === confirmPayload.user.id ? { ...user, isActive: confirmPayload.nextActive } : user
+          user.id === confirmPayload.user.id
+            ? { ...user, isActive: confirmPayload.nextActive }
+            : user
         )
       );
-      showToast(
-        confirmPayload.nextActive ? 'Đã mở khoá tài khoản' : 'Đã khoá tài khoản',
-        `${confirmPayload.user.fullName} đã được cập nhật trạng thái.`
+
+      message.success(
+        confirmPayload.nextActive
+          ? 'Đã mở khoá tài khoản.'
+          : 'Đã khoá tài khoản.'
       );
+
       setConfirmPayload(null);
     } catch (err: any) {
-      showToast('Không cập nhật được trạng thái', err.message || 'API lỗi, vui lòng thử lại.', 'error');
+      message.error(getApiMessage(err, 'Không cập nhật được trạng thái.'));
     } finally {
       setStatusSubmitting(false);
     }
   }
 
+  function handleTableChange(pagination: TablePaginationConfig) {
+    setPage((pagination.current || 1) - 1);
+  }
+
+  const columns: ColumnsType<User> = [
+    {
+      title: 'Họ tên',
+      dataIndex: 'fullName',
+      width: 230,
+      render: (_, record) => {
+        const isCurrentUser = record.id === currentUser.id;
+        const firstLetter =
+          record.fullName?.slice(0, 1)?.toUpperCase() ||
+          record.username?.slice(0, 1)?.toUpperCase() ||
+          'U';
+
+        return (
+          <div className="user-ant-cell">
+            <Avatar className="user-ant-avatar">{firstLetter}</Avatar>
+            <div>
+              <Typography.Text strong>{record.fullName || record.username}</Typography.Text>
+              {isCurrentUser ? <small>Bạn đang đăng nhập</small> : null}
+            </div>
+          </div>
+        );
+      },
+    },
+    {
+      title: 'Username',
+      dataIndex: 'username',
+      width: 150,
+      render: (value) => <Typography.Text>{value}</Typography.Text>,
+    },
+    {
+      title: 'Email',
+      dataIndex: 'email',
+      width: 230,
+      ellipsis: true,
+      render: (value) => (
+        <Tooltip title={value}>
+          <Typography.Text ellipsis>{value}</Typography.Text>
+        </Tooltip>
+      ),
+    },
+    {
+      title: 'Vai trò',
+      dataIndex: 'roles',
+      width: 230,
+      render: (roles: string[]) => (
+        <Space size={[4, 4]} wrap>
+          {(roles || []).map((item) => (
+            <RoleTag key={item} role={item} />
+          ))}
+        </Space>
+      ),
+    },
+    {
+      title: 'Trạng thái',
+      dataIndex: 'isActive',
+      width: 130,
+      render: (value: boolean) => <StatusTag isActive={value} />,
+    },
+    {
+      title: 'Ngày tạo',
+      dataIndex: 'createdAt',
+      width: 170,
+      render: (value) => value || '—',
+    },
+    {
+      title: 'Thao tác',
+      width: 190,
+      fixed: 'right',
+      render: (_, record) => {
+        const isCurrentUser = record.id === currentUser.id;
+
+        return (
+          <Space>
+            <Button
+              size="small"
+              icon={<Edit3 size={15} />}
+              onClick={() => {
+                setApiFieldErrors({});
+                setEditingUser(record);
+                setFormMode('edit');
+              }}
+            >
+              Sửa
+            </Button>
+
+            {!isCurrentUser ? (
+              <Button
+                size="small"
+                danger={record.isActive}
+                icon={record.isActive ? <Lock size={15} /> : <Unlock size={15} />}
+                onClick={() =>
+                  setConfirmPayload({
+                    user: record,
+                    nextActive: !record.isActive,
+                  })
+                }
+              >
+                {record.isActive ? 'Khoá' : 'Mở khoá'}
+              </Button>
+            ) : null}
+          </Space>
+        );
+      },
+    },
+  ];
+
   return (
     <AdminShell currentUser={currentUser}>
       <div className="user-page">
-        <div className="page-title">
-          <p className="eyebrow">/admin/users</p>
+        <div className="page-title user-page-title">
+          <p className="eyebrow">/users</p>
           <h2>Quản lý người dùng</h2>
-          <p>Giao diện tuân thủ API Contract: GET/POST/PUT/PATCH cho User Management.</p>
+          <p>Quản lý tài khoản, vai trò và trạng thái truy cập hệ thống ELog.</p>
         </div>
 
-        <section className="summary-grid">
-          <div className="summary-card">
-            <span>Tổng kết quả</span>
-            <strong>{pageMeta.totalElements}</strong>
-            <p>Theo filter hiện tại.</p>
-          </div>
-          <div className="summary-card">
-            <span>Trang hiện tại</span>
-            <strong>{page + 1}</strong>
-            <p>Tổng {pageMeta.totalPages} trang.</p>
-          </div>
-          <div className="summary-card">
-            <span>Quyền truy cập</span>
-            <strong>Admin</strong>
-            <p>Chỉ SYSTEM_ADMIN.</p>
-          </div>
-        </section>
+        <div className="user-summary-grid">
+          <Card>
+            <Typography.Text type="secondary">Tổng kết quả</Typography.Text>
+            <h3>{pageMeta.totalElements}</h3>
+            <span>Theo bộ lọc hiện tại</span>
+          </Card>
 
-        <section className="panel">
-          <div className="toolbar">
-            <div className="search-box">
-              <Search size={17} />
-              <input
-                value={keyword}
-                onChange={(e) => resetToFirstPage(setKeyword, e.target.value)}
-                placeholder="Tìm theo họ tên hoặc username..."
-              />
-            </div>
+          <Card>
+            <Typography.Text type="secondary">Trang hiện tại</Typography.Text>
+            <h3>{page + 1}</h3>
+            <span>Tổng {pageMeta.totalPages} trang</span>
+          </Card>
 
-            <select value={role} onChange={(e) => resetToFirstPage(setRole, e.target.value)}>
-              <option value="">Tất cả vai trò</option>
+          <Card>
+            <Typography.Text type="secondary">Quyền truy cập</Typography.Text>
+            <h3>Admin</h3>
+            <span>Chỉ SYSTEM_ADMIN</span>
+          </Card>
+        </div>
+
+        <Card className="user-toolbar-card">
+          <div className="user-toolbar">
+            <Input
+              allowClear
+              prefix={<Search size={16} />}
+              value={keyword}
+              onChange={(event) => {
+                setKeyword(event.target.value);
+                setPage(0);
+              }}
+              placeholder="Tìm theo họ tên hoặc username..."
+            />
+
+            <Select
+              value={role}
+              onChange={(value) => resetToFirstPage(setRole, value)}
+            >
+              <Select.Option value="">Tất cả vai trò</Select.Option>
               {USER_ROLES.map((item) => (
-                <option key={item.value} value={item.value}>
+                <Select.Option key={item.value} value={item.value}>
                   {item.label}
-                </option>
+                </Select.Option>
               ))}
-            </select>
+            </Select>
 
-            <select value={isActive} onChange={(e) => resetToFirstPage(setIsActive, e.target.value)}>
-              <option value="">Tất cả trạng thái</option>
-              <option value="true">Hoạt động</option>
-              <option value="false">Đã khoá</option>
-            </select>
+            <Select
+              value={isActive}
+              onChange={(value) => resetToFirstPage(setIsActive, value)}
+            >
+              <Select.Option value="">Tất cả trạng thái</Select.Option>
+              <Select.Option value="true">Hoạt động</Select.Option>
+              <Select.Option value="false">Đã khoá</Select.Option>
+            </Select>
 
-            <button className="btn ghost" onClick={() => fetchUsers()} type="button">
-              <RefreshCw size={16} /> Tải lại
-            </button>
-            <button
-              className="btn primary"
+            <Button
+              icon={<RefreshCw size={16} />}
+              onClick={() => fetchUsers()}
+            >
+              Tải lại
+            </Button>
+
+            <Button
+              type="primary"
+              icon={<Plus size={16} />}
               onClick={() => {
                 setApiFieldErrors({});
                 setEditingUser(null);
                 setFormMode('create');
               }}
-              type="button"
             >
-              <Plus size={16} /> Tạo người dùng
-            </button>
+              Tạo người dùng
+            </Button>
           </div>
+        </Card>
 
-          {error ? <div className="error-banner">{error}</div> : null}
+        {error ? (
+          <Alert
+            type="error"
+            showIcon
+            title={error}
+          />
+        ) : null}
 
-          <div className="table-wrap">
-            <table className="data-table">
-               <colgroup>
-                <col className="col-name" />
-                <col className="col-username" />
-                <col className="col-email" />
-                <col className="col-role" />
-                <col className="col-status" />
-                <col className="col-created" />
-                <col className="col-actions" />
-              </colgroup>
-
-              <thead>
-                <tr>
-                  <th>Họ tên</th>
-                  <th>Username</th>
-                  <th>Email</th>
-                  <th>Vai trò</th>
-                  <th>Trạng thái</th>
-                  <th>Ngày tạo</th>
-                  <th>Thao tác</th>
-                </tr>
-              </thead>
-              <tbody>
-                {loading ? (
-                  <SkeletonRows />
-                ) : users.length ? (
-                  users.map((user) => {
-                    const isCurrentUser = user.id === currentUser.id;
-                    return (
-                      <tr key={user.id}>
-                        <td>
-                          <div className="user-cell">
-                            <div className="avatar">{user.fullName.slice(0, 1)}</div>
-                            <div>
-                              <b>{user.fullName}</b>
-                              {isCurrentUser ? <small>Bạn đang đăng nhập</small> : null}
-                            </div>
-                          </div>
-                        </td>
-                        <td>{user.username}</td>
-                        <td>{user.email}</td>
-                        <td>
-                          <div className="role-list">
-                            {user.roles.map((item) => (
-                              <RoleBadge key={item} role={item} />
-                            ))}
-                          </div>
-                        </td>
-                        <td>
-                          <StatusChip isActive={user.isActive} />
-                        </td>
-                        <td>{user.createdAt || '—'}</td>
-                        <td>
-                          <div className="row-actions">
-                            <button
-                              className="icon-btn edit"
-                              onClick={() => {
-                                setApiFieldErrors({});
-                                setEditingUser(user);
-                                setFormMode('edit');
-                              }}
-                              title="Chỉnh sửa"
-                              type="button"
-                            >
-                              <Edit3 size={16} />
-                            </button>
-                            {!isCurrentUser ? (
-                              <button
-                                className={user.isActive ? 'icon-btn danger' : 'icon-btn success'}
-                                onClick={() => setConfirmPayload({ user, nextActive: !user.isActive })}
-                                title={user.isActive ? 'Khoá' : 'Mở khoá'}
-                                type="button"
-                              >
-                                {user.isActive ? <Lock size={16} /> : <Unlock size={16} />}
-                              </button>
-                            ) : null}
-                          </div>
-                        </td>
-                      </tr>
-                    );
-                  })
-                ) : (
-                  <tr>
-                    <td colSpan={7}>
-                      <div className="empty-state">
-                        <Users size={38} />
-                        <h3>Không có kết quả</h3>
-                        <p>Thử đổi từ khoá, role hoặc trạng thái.</p>
-                      </div>
-                    </td>
-                  </tr>
-                )}
-              </tbody>
-            </table>
-          </div>
-
-          <footer className="pagination">
-            <span>Hiển thị {users.length} / {pageMeta.totalElements} kết quả</span>
-            <div>
-              <button
-                className="btn ghost sm"
-                disabled={page <= 0}
-                onClick={() => setPage((prev) => Math.max(0, prev - 1))}
-                type="button"
-              >
-                <ChevronLeft size={15} /> Trước
-              </button>
-              <b>Trang {page + 1} / {pageMeta.totalPages}</b>
-              <button
-                className="btn ghost sm"
-                disabled={page + 1 >= pageMeta.totalPages}
-                onClick={() => setPage((prev) => prev + 1)}
-                type="button"
-              >
-                Sau <ChevronRight size={15} />
-              </button>
-            </div>
-          </footer>
-        </section>
+        <Card className="user-table-card">
+          <Table
+            rowKey="id"
+            columns={columns}
+            dataSource={users}
+            loading={loading}
+            scroll={{ x: 1250 }}
+            locale={{
+              emptyText: (
+                <Empty
+                  image={Empty.PRESENTED_IMAGE_SIMPLE}
+                  description="Không tìm thấy người dùng phù hợp"
+                />
+              ),
+            }}
+            pagination={{
+              current: page + 1,
+              pageSize: size,
+              total: pageMeta.totalElements,
+              showSizeChanger: false,
+              showTotal: (total) => `Tổng ${total} người dùng`,
+            }}
+            onChange={handleTableChange}
+          />
+        </Card>
 
         {formMode ? (
           <UserFormModal
@@ -410,13 +551,26 @@ const UsersPage: React.FC = () => {
           />
         ) : null}
 
-        <ConfirmDialog
-          payload={confirmPayload}
+        <Modal
+          title={
+            confirmPayload?.nextActive
+              ? `Mở khoá tài khoản "${confirmPayload?.user.fullName}"?`
+              : `Khoá tài khoản "${confirmPayload?.user.fullName}"?`
+          }
+          open={!!confirmPayload}
           onCancel={() => setConfirmPayload(null)}
-          onConfirm={confirmStatusChange}
-          submitting={statusSubmitting}
-        />
-        <Toast toast={toast} onClose={() => setToast(null)} />
+          onOk={confirmStatusChange}
+          okText={confirmPayload?.nextActive ? 'Xác nhận mở khoá' : 'Xác nhận khoá'}
+          cancelText="Huỷ"
+          confirmLoading={statusSubmitting}
+          okButtonProps={{ danger: !confirmPayload?.nextActive }}
+        >
+          {confirmPayload?.nextActive ? (
+            <p>Người dùng này sẽ có thể đăng nhập và sử dụng hệ thống trở lại.</p>
+          ) : (
+            <p>Người dùng này sẽ không thể đăng nhập cho đến khi được mở khoá.</p>
+          )}
+        </Modal>
       </div>
     </AdminShell>
   );
