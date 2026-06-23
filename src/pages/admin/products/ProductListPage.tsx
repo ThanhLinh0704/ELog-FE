@@ -40,13 +40,26 @@ const ProductListPage: React.FC = () => {
 
   // State definitions
   const [products, setProducts] = useState<Product[]>([]);
+  const [searchKeyword, setSearchKeyword] = useState('');
   const [keyword, setKeyword] = useState('');
   const [status, setStatus] = useState<'ALL' | 'ACTIVE' | 'INACTIVE'>('ALL');
   const [page, setPage] = useState(0);
-  const [size, setSize] = useState(10);
+  const [size, setSize] = useState(5);
   const [pageMeta, setPageMeta] = useState({ totalElements: 0, totalPages: 1 });
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
+
+  // Debounce searchKeyword to keyword state
+  useEffect(() => {
+    const handler = setTimeout(() => {
+      setKeyword(searchKeyword);
+      setPage(0);
+    }, 400);
+
+    return () => {
+      clearTimeout(handler);
+    };
+  }, [searchKeyword]);
 
   // Modals state
   const [actionProduct, setActionProduct] = useState<Product | null>(null);
@@ -84,6 +97,7 @@ const ProductListPage: React.FC = () => {
   }, [queryParams]);
 
   const handleResetFilters = () => {
+    setSearchKeyword('');
     setKeyword('');
     setStatus('ALL');
     setPage(0);
@@ -268,10 +282,9 @@ const ProductListPage: React.FC = () => {
             <Space size="middle" wrap style={{ flex: 1 }}>
               <Input
                 placeholder="Tìm theo SKU hoặc tên sản phẩm..."
-                value={keyword}
+                value={searchKeyword}
                 onChange={(e) => {
-                  setKeyword(e.target.value);
-                  setPage(0);
+                  setSearchKeyword(e.target.value);
                 }}
                 prefix={<Search size={16} style={{ color: '#bfbfbf' }} />}
                 style={{ width: 280, borderRadius: 6 }}
@@ -349,7 +362,7 @@ const ProductListPage: React.FC = () => {
                 pageSize: size,
                 total: pageMeta.totalElements,
                 showSizeChanger: true,
-                pageSizeOptions: ['10', '20', '50'],
+                pageSizeOptions: ['5', '10', '20', '50'],
                 onChange: (p, s) => {
                   setPage(p - 1);
                   if (s) setSize(s);
