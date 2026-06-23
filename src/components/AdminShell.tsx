@@ -52,6 +52,8 @@ const AdminShell: React.FC<AdminShellProps> = ({ currentUser, children }) => {
 
   const selectedKey = location.pathname.startsWith('/admin/products')
     ? '/admin/products'
+    : location.pathname.startsWith('/admin/routes')
+    ? '/admin/routes'
     : location.pathname;
 
   const sidebarMenuItems = [
@@ -79,6 +81,12 @@ const AdminShell: React.FC<AdminShellProps> = ({ currentUser, children }) => {
           onClick: () => navigate('/admin/products'),
         },
         {
+          key: '/admin/routes',
+          icon: <Map size={ICON_SIZE} />,
+          label: 'Quản lý tuyến',
+          onClick: () => navigate('/admin/routes'),
+        },
+        {
           key: '/stores',
           icon: <Store size={ICON_SIZE} />,
           label: 'Quản lý cửa hàng',
@@ -91,17 +99,6 @@ const AdminShell: React.FC<AdminShellProps> = ({ currentUser, children }) => {
       label: <span style={{ fontSize: 10, fontWeight: 700, letterSpacing: 0.8, color: '#64748b' }}>MỞ RỘNG SAU</span>,
       type: 'group' as const,
       children: [
-        {
-          key: '/routes',
-          icon: <Map size={ICON_SIZE} />,
-          label: (
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', width: '100%' }}>
-              <span>Quản lý tuyến</span>
-              <span style={{ fontSize: 10, color: '#64748b', fontWeight: 500 }}>Sau</span>
-            </div>
-          ),
-          disabled: true,
-        },
         {
           key: '/settings',
           icon: <Settings size={ICON_SIZE} />,
