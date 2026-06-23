@@ -8,8 +8,17 @@ import UsersPage from './pages/UsersPage';
 import ProductListPage from './pages/admin/products/ProductListPage';
 import ProductFormPage from './pages/admin/products/ProductFormPage';
 import ProductDetailPage from './pages/admin/products/ProductDetailPage';
+
+import RouteListPage from './pages/admin/routes/RouteListPage';
+import RouteCreatePage from './pages/admin/routes/RouteCreatePage';
+import RouteDetailPage from './pages/admin/routes/RouteDetailPage';
+import RouteEditPage from './pages/admin/routes/RouteEditPage';
+import ForbiddenPage from './pages/ForbiddenPage';
+import RouteManagementGuard from './guards/RouteManagementGuard';
+
 import StoresPage from './pages/StoresPage';
 import VehiclesPage from './pages/VehiclesPage';
+
 
 function App() {
   return (
@@ -44,7 +53,7 @@ function App() {
           }
         />
 
-         <Route
+        <Route
           path="/stores"
           element={
             <ProtectedRoute>
@@ -53,16 +62,16 @@ function App() {
           }
         />
 
-          <Route
-            path="/vehicles"
-            element={
-              <ProtectedRoute>
-                <VehiclesPage />
-              </ProtectedRoute>
+        <Route
+          path="/vehicles"
+          element={
+            <ProtectedRoute>
+              <VehiclesPage />
+            </ProtectedRoute>
           }
         />
 
-          <Route
+        <Route
           path="/admin/products"
           element={
             <ProtectedRoute>
@@ -94,7 +103,42 @@ function App() {
             </ProtectedRoute>
           }
         />
-   
+
+        {/* Route Management Module */}
+        <Route
+          path="/admin/routes"
+          element={
+            <RouteManagementGuard>
+              <RouteListPage />
+            </RouteManagementGuard>
+          }
+        />
+        <Route
+          path="/admin/routes/new"
+          element={
+            <RouteManagementGuard>
+              <RouteCreatePage />
+            </RouteManagementGuard>
+          }
+        />
+        <Route
+          path="/admin/routes/:routeId"
+          element={
+            <RouteManagementGuard>
+              <RouteDetailPage />
+            </RouteManagementGuard>
+          }
+        />
+        <Route
+          path="/admin/routes/:routeId/edit"
+          element={
+            <RouteManagementGuard>
+              <RouteEditPage />
+            </RouteManagementGuard>
+          }
+        />
+        <Route path="/403" element={<ForbiddenPage />} />
+
 
         <Route path="*" element={<NotFoundPage />} />
       </Routes>
@@ -102,4 +146,9 @@ function App() {
   );
 }
 
+
+
+
 export default App;
+
+

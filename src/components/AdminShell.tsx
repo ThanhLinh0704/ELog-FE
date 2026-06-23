@@ -53,8 +53,8 @@ const AdminShell: React.FC<AdminShellProps> = ({ currentUser, children }) => {
   const selectedKey = location.pathname.startsWith('/admin/products')
     ? '/admin/products'
     : location.pathname.startsWith('/admin/routes')
-    ? '/admin/routes'
-    : location.pathname;
+      ? '/admin/routes'
+      : location.pathname;
 
   const sidebarMenuItems = [
     {
@@ -74,13 +74,13 @@ const AdminShell: React.FC<AdminShellProps> = ({ currentUser, children }) => {
           label: 'Quản lý người dùng',
           onClick: () => navigate('/users'),
         },
-         {
+        {
           key: '/stores',
           icon: <Home size={ICON_SIZE} />,
-          label: 'Quản lý kho hàng',
+          label: 'Quản lý cửa hàng',
           onClick: () => navigate('/stores'),
         },
-         {
+        {
           key: '/vehicles',
           icon: <Truck size={ICON_SIZE} />,
           label: 'Quản lý xe cộ',
@@ -99,12 +99,7 @@ const AdminShell: React.FC<AdminShellProps> = ({ currentUser, children }) => {
           label: 'Quản lý tuyến',
           onClick: () => navigate('/admin/routes'),
         },
-        {
-          key: '/stores',
-          icon: <Store size={ICON_SIZE} />,
-          label: 'Quản lý cửa hàng',
-          disabled: true,
-        },
+
       ],
     },
     {
@@ -152,8 +147,8 @@ const AdminShell: React.FC<AdminShellProps> = ({ currentUser, children }) => {
           width={260}
           className="elog-admin-sider"
         >
-          <div 
-            onClick={() => navigate('/dashboard')} 
+          <div
+            onClick={() => navigate('/dashboard')}
             className="elog-sidebar-logo"
           >
             <div className="elog-logo-badge">
@@ -176,12 +171,12 @@ const AdminShell: React.FC<AdminShellProps> = ({ currentUser, children }) => {
 
             <div className="elog-sidebar-profile">
               <div className="elog-profile-info">
-                <Avatar 
-                  style={{ 
-                    backgroundColor: '#e6f7ff', 
-                    color: '#1677ff', 
+                <Avatar
+                  style={{
+                    backgroundColor: '#e6f7ff',
+                    color: '#1677ff',
                     fontWeight: 600,
-                    marginRight: 12 
+                    marginRight: 12
                   }}
                 >
                   {(currentUser.fullName || currentUser.username).slice(0, 1).toUpperCase()}
@@ -193,10 +188,10 @@ const AdminShell: React.FC<AdminShellProps> = ({ currentUser, children }) => {
                   <div style={{ fontSize: 11, color: '#64748b' }}>System Admin</div>
                 </div>
               </div>
-              <Button 
-                type="default" 
-                danger 
-                icon={<LogOut size={UTILITY_ICON_SIZE} />} 
+              <Button
+                type="default"
+                danger
+                icon={<LogOut size={UTILITY_ICON_SIZE} />}
                 onClick={handleLogout}
                 className="elog-logout-btn"
               >
@@ -208,17 +203,17 @@ const AdminShell: React.FC<AdminShellProps> = ({ currentUser, children }) => {
 
         <Layout style={{ marginLeft: 260 }}>
           <Header className="elog-admin-header">
-            <Input 
-              prefix={<Search size={ICON_SIZE - 2} style={{ color: '#bfbfbf' }} />} 
-              placeholder="Tìm kiếm nhanh..." 
+            <Input
+              prefix={<Search size={ICON_SIZE - 2} style={{ color: '#bfbfbf' }} />}
+              placeholder="Tìm kiếm nhanh..."
               style={{ width: 250, borderRadius: 6 }}
             />
             <Space size={16}>
               <Badge dot color="#ff4d4f">
-                <Button 
-                  type="text" 
-                  shape="circle" 
-                  icon={<Bell size={ICON_SIZE} style={{ color: '#595959' }} />} 
+                <Button
+                  type="text"
+                  shape="circle"
+                  icon={<Bell size={ICON_SIZE} style={{ color: '#595959' }} />}
                 />
               </Badge>
               <Dropdown menu={userMenuItems} placement="bottomRight" trigger={['click']}>
