@@ -5,12 +5,15 @@ import NotFoundPage from './pages/NotFoundPage';
 import ProtectedRoute from './components/ProtectedRoute';
 import PublicRoute from './components/PublicRoute';
 import UsersPage from './pages/UsersPage';
+import StoresPage from './pages/StoresPage';
+import VehiclesPage from './pages/VehiclesPage';
 
 function App() {
   return (
     <BrowserRouter>
       <Routes>
         <Route path="/" element={<Navigate to="/login" replace />} />
+
         <Route
           path="/login"
           element={
@@ -19,6 +22,7 @@ function App() {
             </PublicRoute>
           }
         />
+
         <Route
           path="/dashboard"
           element={
@@ -27,6 +31,7 @@ function App() {
             </ProtectedRoute>
           }
         />
+
         <Route
           path="/users"
           element={
@@ -35,11 +40,29 @@ function App() {
             </ProtectedRoute>
           }
         />
+
+        <Route
+          path="/stores"
+          element={
+            <ProtectedRoute>
+              <StoresPage />
+            </ProtectedRoute>
+          }
+        />
+
+          <Route
+            path="/vehicles"
+            element={
+              <ProtectedRoute>
+                <VehiclesPage />
+              </ProtectedRoute>
+          }
+        />
+
         <Route path="*" element={<NotFoundPage />} />
       </Routes>
     </BrowserRouter>
   );
 }
-
 
 export default App;
