@@ -1,7 +1,10 @@
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
+import { Card, Button, Space, Avatar, Descriptions, Tag, Typography } from 'antd';
+import { LogOut, Users, LayoutDashboard } from 'lucide-react';
 import axiosInstance from '../api/axiosInstance';
-import '../styles/dashboard/DashboardPage.css';
+
+const { Title, Paragraph, Text } = Typography;
 
 const DashboardPage: React.FC = () => {
   const navigate = useNavigate();
@@ -32,103 +35,78 @@ const DashboardPage: React.FC = () => {
   };
 
   return (
-    <div className="elog-dashboard-page">
-      {/* Background Vectors & Ambience to match Login aesthetics */}
-      <div className="elog-dashboard-bg-grid" />
-      <div className="elog-dashboard-blob elog-dashboard-blob-1" />
-      <div className="elog-dashboard-blob elog-dashboard-blob-2" />
-
-      <div className="elog-dashboard-container">
-        {/* Header section with ELog branding */}
-        <div className="elog-dashboard-header">
-          <div className="elog-dashboard-logo-box">
-            <svg
-              width="20"
-              height="20"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth="2.5"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-            >
-              <rect x="1" y="3" width="15" height="13" rx="2" ry="2" fill="currentColor" />
-              <polygon points="16 8 20 8 23 11 23 16 16 16 16 8" fill="currentColor" />
-              <circle cx="5.5" cy="18.5" r="2.5" fill="currentColor" />
-              <circle cx="18.5" cy="18.5" r="2.5" fill="currentColor" />
-            </svg>
-          </div>
-          <h2 className="elog-dashboard-logo-title">ELog</h2>
+    <div style={{ 
+      minHeight: '100vh', 
+      display: 'flex', 
+      justifyContent: 'center', 
+      alignItems: 'center', 
+      backgroundColor: '#f8fafc',
+      padding: '24px'
+    }}>
+      <Card 
+        style={{ 
+          width: '100%', 
+          maxWidth: 500, 
+          borderRadius: 16, 
+          boxShadow: '0 4px 20px rgba(15, 23, 42, 0.05)',
+          border: '1px solid #f0f0f0'
+        }}
+      >
+        <div style={{ textAlign: 'center', marginBottom: 24 }}>
+          <Avatar 
+            size={48} 
+            icon={<LayoutDashboard size={24} />} 
+            style={{ backgroundColor: '#1677ff', marginBottom: 16 }} 
+          />
+          <Title level={3} style={{ margin: 0 }}>ELog System Dashboard</Title>
+          <Paragraph type="secondary" style={{ marginTop: 8 }}>
+            Chào mừng bạn quay trở lại, <Text strong>{username}</Text>!
+          </Paragraph>
         </div>
 
-        <h1 className="elog-dashboard-title">Dashboard</h1>
-        <p className="elog-dashboard-welcome">
-          Welcome back, <span className="elog-dashboard-username">{username}</span>!
-        </p>
-
-        {/* User telemetry info block */}
-        <div className="elog-dashboard-info">
-          <div className="elog-dashboard-info-row">
-            <span className="elog-dashboard-info-lbl">User ID:</span>
-            <span className="elog-dashboard-info-val">{userId}</span>
-          </div>
-          <div className="elog-dashboard-info-row">
-            <span className="elog-dashboard-info-lbl">Roles:</span>
-            <span className="elog-dashboard-info-val">
+        <Descriptions bordered column={1} size="small" style={{ marginBottom: 24 }}>
+          <Descriptions.Item label="Mã người dùng (User ID)">
+            {userId}
+          </Descriptions.Item>
+          <Descriptions.Item label="Vai trò (Roles)">
+            <Space size={[0, 4]} wrap>
               {roles.length > 0 ? (
                 roles.map((role, idx) => (
-                  <span key={idx} className="elog-dashboard-role-badge">
+                  <Tag color="blue" key={idx}>
                     {role}
-                  </span>
+                  </Tag>
                 ))
               ) : (
-                <span className="elog-dashboard-role-empty">None</span>
+                <Text type="secondary">Không có</Text>
               )}
-            </span>
-          </div>
-        </div>
+            </Space>
+          </Descriptions.Item>
+        </Descriptions>
 
-        {/* User Management Access for Admin */}
-        {roles.includes('SYSTEM_ADMIN') && (
-          <button className="elog-dashboard-btn-users" onClick={() => navigate('/users')}>
-            <svg
-              width="16"
-              height="16"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth="2.5"
-              strokeLinecap="round"
-              strokeLinejoin="round"
+        <Space direction="vertical" style={{ width: '100%' }} size="middle">
+          {roles.includes('SYSTEM_ADMIN') && (
+            <Button 
+              type="primary" 
+              icon={<Users size={16} />} 
+              onClick={() => navigate('/users')}
+              size="large"
+              style={{ width: '100%', borderRadius: 8 }}
             >
-              <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" />
-              <circle cx="9" cy="7" r="4" />
-              <path d="M23 21v-2a4 4 0 0 0-3-3.87" />
-              <path d="M16 3.13a4 4 0 0 1 0 7.75" />
-            </svg>
-            Quản lý người dùng
-          </button>
-        )}
+              Quản lý người dùng
+            </Button>
+          )}
 
-        {/* Action Button */}
-        <button className="elog-dashboard-btn-logout" onClick={handleLogout}>
-          <svg
-            width="16"
-            height="16"
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            strokeWidth="2.5"
-            strokeLinecap="round"
-            strokeLinejoin="round"
+          <Button 
+            danger 
+            icon={<LogOut size={16} />} 
+            onClick={handleLogout}
+            size="large"
+            style={{ width: '100%', borderRadius: 8 }}
           >
-            <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4" />
-            <polyline points="16 17 21 12 16 7" />
-            <line x1="21" y1="12" x2="9" y2="12" />
-          </svg>
-          Sign Out
-        </button>
-      </div>
+            Đăng xuất
+          </Button>
+        </Space>
+      </Card>
     </div>
   );
 };
