@@ -1,7 +1,7 @@
 import React from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { Layout, Menu, Avatar, Dropdown, Button, Space, Input, Badge, ConfigProvider } from 'antd';
-import { Bell, ChevronDown, LogOut, Search, Users, LayoutGrid, Store, Map, Settings, Package } from 'lucide-react';
+import { Bell, ChevronDown, LogOut, Search, Users, LayoutGrid, Store, Map, Settings, Package, Home, Truck } from 'lucide-react';
 import axiosInstance from '../api/axiosInstance';
 
 const { Header, Sider, Content } = Layout;
@@ -52,6 +52,8 @@ const AdminShell: React.FC<AdminShellProps> = ({ currentUser, children }) => {
 
   const selectedKey = location.pathname.startsWith('/admin/products')
     ? '/admin/products'
+    : location.pathname.startsWith('/admin/routes')
+    ? '/admin/routes'
     : location.pathname;
 
   const sidebarMenuItems = [
@@ -72,11 +74,30 @@ const AdminShell: React.FC<AdminShellProps> = ({ currentUser, children }) => {
           label: 'Quản lý người dùng',
           onClick: () => navigate('/users'),
         },
+         {
+          key: '/stores',
+          icon: <Home size={ICON_SIZE} />,
+          label: 'Quản lý kho hàng',
+          onClick: () => navigate('/stores'),
+        },
+         {
+          key: '/vehicles',
+          icon: <Truck size={ICON_SIZE} />,
+          label: 'Quản lý xe cộ',
+          onClick: () => navigate('/vehicles'),
+        },
+
         {
           key: '/admin/products',
           icon: <Package size={ICON_SIZE} />,
           label: 'Quản lý sản phẩm',
           onClick: () => navigate('/admin/products'),
+        },
+        {
+          key: '/admin/routes',
+          icon: <Map size={ICON_SIZE} />,
+          label: 'Quản lý tuyến',
+          onClick: () => navigate('/admin/routes'),
         },
         {
           key: '/stores',
@@ -91,17 +112,6 @@ const AdminShell: React.FC<AdminShellProps> = ({ currentUser, children }) => {
       label: <span style={{ fontSize: 10, fontWeight: 700, letterSpacing: 0.8, color: '#64748b' }}>MỞ RỘNG SAU</span>,
       type: 'group' as const,
       children: [
-        {
-          key: '/routes',
-          icon: <Map size={ICON_SIZE} />,
-          label: (
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', width: '100%' }}>
-              <span>Quản lý tuyến</span>
-              <span style={{ fontSize: 10, color: '#64748b', fontWeight: 500 }}>Sau</span>
-            </div>
-          ),
-          disabled: true,
-        },
         {
           key: '/settings',
           icon: <Settings size={ICON_SIZE} />,

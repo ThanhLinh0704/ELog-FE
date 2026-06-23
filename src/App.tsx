@@ -8,12 +8,15 @@ import UsersPage from './pages/UsersPage';
 import ProductListPage from './pages/admin/products/ProductListPage';
 import ProductFormPage from './pages/admin/products/ProductFormPage';
 import ProductDetailPage from './pages/admin/products/ProductDetailPage';
+import StoresPage from './pages/StoresPage';
+import VehiclesPage from './pages/VehiclesPage';
 
 function App() {
   return (
     <BrowserRouter>
       <Routes>
         <Route path="/" element={<Navigate to="/login" replace />} />
+
         <Route
           path="/login"
           element={
@@ -22,6 +25,7 @@ function App() {
             </PublicRoute>
           }
         />
+
         <Route
           path="/dashboard"
           element={
@@ -30,6 +34,7 @@ function App() {
             </ProtectedRoute>
           }
         />
+
         <Route
           path="/users"
           element={
@@ -38,7 +43,26 @@ function App() {
             </ProtectedRoute>
           }
         />
-        <Route
+
+         <Route
+          path="/stores"
+          element={
+            <ProtectedRoute>
+              <StoresPage />
+            </ProtectedRoute>
+          }
+        />
+
+          <Route
+            path="/vehicles"
+            element={
+              <ProtectedRoute>
+                <VehiclesPage />
+              </ProtectedRoute>
+          }
+        />
+
+          <Route
           path="/admin/products"
           element={
             <ProtectedRoute>
@@ -70,11 +94,12 @@ function App() {
             </ProtectedRoute>
           }
         />
+   
+
         <Route path="*" element={<NotFoundPage />} />
       </Routes>
     </BrowserRouter>
   );
 }
-
 
 export default App;
