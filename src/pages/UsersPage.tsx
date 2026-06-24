@@ -83,8 +83,22 @@ const UsersPage: React.FC = () => {
   }
 
   function mapApiErrorToField(err: any): Record<string, string> | null {
-    const msg = err.body?.message || err.message || '';
+    const msg = err.body?.error?.message || err.body?.message || err.message || '';
     const field = err.body?.field;
+    const details = err.body?.error?.details;
+
+    if (err.status === 400 && Array.isArray(details)) {
+      const fieldErrors: Record<string, string> = {};
+      details.forEach((detail: string) => {
+        const colonIndex = detail.indexOf(':');
+        if (colonIndex > -1) {
+          const fieldName = detail.substring(0, colonIndex).trim();
+          const errorMsg = detail.substring(colonIndex + 1).trim();
+          fieldErrors[fieldName] = errorMsg;
+        }
+      });
+      return fieldErrors;
+    }
 
     if (err.status === 409) {
       if (field) return { [field]: msg };
