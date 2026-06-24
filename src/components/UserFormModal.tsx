@@ -111,7 +111,15 @@ const UserFormModal: React.FC<UserFormModalProps> = ({
           <Form.Item
             name="username"
             label="Username"
-            rules={[{ required: true, message: 'Username là bắt buộc.' }]}
+            rules={[
+              { required: true, message: 'Username là bắt buộc.' },
+              { min: 3, message: 'Username phải từ 3 đến 50 ký tự.' },
+              { max: 50, message: 'Username phải từ 3 đến 50 ký tự.' },
+              {
+                pattern: /^[A-Za-z0-9_]+$/,
+                message: 'Username chỉ được phép chứa chữ cái, chữ số và dấu gạch dưới (_).'
+              }
+            ]}
             extra={isEdit ? 'Username không được sửa theo API Contract.' : null}
           >
             <Input placeholder="dispatcher01" disabled={isEdit} size="large" />
@@ -136,7 +144,19 @@ const UserFormModal: React.FC<UserFormModalProps> = ({
                   label="Mật khẩu"
                   rules={[
                     { required: true, message: 'Mật khẩu là bắt buộc.' },
-                    { min: 8, message: 'Mật khẩu cần ít nhất 8 ký tự.' }
+                    { min: 8, message: 'Mật khẩu phải dài ít nhất 8 ký tự.' },
+                    {
+                      pattern: /[A-Z]/,
+                      message: 'Mật khẩu phải chứa ít nhất 1 chữ cái in hoa.'
+                    },
+                    {
+                      pattern: /[0-9]/,
+                      message: 'Mật khẩu phải chứa ít nhất 1 chữ số.'
+                    },
+                    {
+                      pattern: /[@$!%*?&]/,
+                      message: 'Mật khẩu phải chứa ít nhất 1 ký tự đặc biệt (@$!%*?&).'
+                    }
                   ]}
                 >
                   <Input.Password placeholder="Tối thiểu 8 ký tự" size="large" />
