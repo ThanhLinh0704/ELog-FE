@@ -1,4 +1,6 @@
+import { USE_MOCK_API } from '../config';
 import axiosInstance from './axiosInstance';
+import { mockVehicleApi } from '../mocks/mockVehicles';
 
 export interface VehicleItem {
   id: number;
@@ -40,73 +42,63 @@ export interface FleetCapacity {
   totalMaxVolumeM3: number;
 }
 
-interface ApiResponse<T> {
-  success?: boolean;
-  data?: T;
-  pagination?: {
-    page?: number;
-    size?: number;
-    totalElements?: number;
-    totalPages?: number;
-  };
-  message?: string;
-  error?: {
-    code?: string;
-    message?: string;
-    field?: string;
-    details?: string[];
-  };
+export class ApiError extends Error {
+  status?: number;
+  body?: any;
+
+  constructor(message: string, status?: number, body?: any) {
+    super(message);
+    this.name = 'ApiError';
+    this.status = status;
+    this.body = body;
+  }
 }
 
-function cleanParams(params: Record<string, any>) {
-  return Object.fromEntries(
-    Object.entries(params).filter(
-      ([, value]) => value !== '' && value !== undefined && value !== null
-    )
-  );
+async function handleAxiosCall<T>(call: () => Promise<any>): Promise<T> {
+  try {
+    const response = await call();
+    return response.data;
+  } catch (error: any) {
+    if (error.response) {
+      const status = error.response.status;
+      const body = error.response.data;
+      const message = body?.error?.message || body?.message || `API error ${status}`;
+      throw new ApiError(message, status, body);
+    }
+    throw new ApiError(error.message || 'Network Error');
+  }
+}
+
+function normalizeQueryValue(value: any): string {
+  if (value === undefined || value === null || value === '') return '';
+
+  if (typeof value === 'object') {
+    if ('value' in value) return value.value;
+    if ('id' in value) return value.id;
+    return '';
+  }
+
+  return String(value);
+}
+
+function encodeQuery(params: Record<string, any>): string {
+  const search = new URLSearchParams();
+
+  Object.entries(params).forEach(([key, value]) => {
+    const normalizedValue = normalizeQueryValue(value);
+
+    if (normalizedValue !== '') {
+      search.set(key, normalizedValue);
+    }
+  });
+
+  return search.toString();
 }
 
 function cleanPayload(payload: Record<string, any>) {
   return Object.fromEntries(
     Object.entries(payload).filter(([, value]) => value !== undefined)
   );
-}
-
-function createApiError(body: ApiResponse<any>) {
-  const error = new Error(
-    body.error?.message ||
-      body.error?.details?.[0] ||
-      body.message ||
-      'API request failed.'
-  ) as Error & {
-    body?: ApiResponse<any>;
-    code?: string;
-    field?: string;
-  };
-
-  error.body = body;
-  error.code = body.error?.code;
-  error.field = body.error?.field;
-
-  return error;
-}
-
-function unwrapApiData<T>(response: any): T {
-  const body = response?.data;
-
-  if (body && typeof body === 'object' && 'success' in body) {
-    if (body.success === false) {
-      throw createApiError(body);
-    }
-
-    return body.data as T;
-  }
-
-  return body as T;
-}
-
-function getApiPagination(response: any) {
-  return response?.data?.pagination;
 }
 
 function normalizeVehicle(raw: any): VehicleItem {
@@ -124,45 +116,54 @@ function normalizeVehicle(raw: any): VehicleItem {
 }
 
 function normalizeVehiclePage(
-  response: any,
+  responseBody: any,
   page = 0,
   size = 10
 ): VehiclePageResponse {
-  const body = response?.data;
-  const apiPagination = getApiPagination(response);
-  const payload = body?.data ?? body;
+  if (responseBody && responseBody.pagination) {
+    const content = Array.isArray(responseBody.data) ? responseBody.data : [];
+    const pag = responseBody.pagination;
+    return {
+      content: content.map(normalizeVehicle),
+      page: Number(pag.page ?? page),
+      size: Number(pag.size ?? size),
+      totalElements: Number(pag.totalElements ?? content.length),
+      totalPages: Number(
+        pag.totalPages ??
+          Math.max(1, Math.ceil(content.length / Number(pag.size ?? size)))
+      ),
+    };
+  }
+
+  const payload = responseBody?.data ?? responseBody;
 
   if (Array.isArray(payload)) {
     const content = payload.map(normalizeVehicle);
 
     return {
       content,
-      page: Number(apiPagination?.page ?? page),
-      size: Number(apiPagination?.size ?? size),
-      totalElements: Number(apiPagination?.totalElements ?? content.length),
-      totalPages: Number(
-        apiPagination?.totalPages ??
-          Math.max(1, Math.ceil(content.length / Number(apiPagination?.size ?? size)))
-      ),
+      page,
+      size,
+      totalElements: content.length,
+      totalPages: Math.max(1, Math.ceil(content.length / size)),
     };
   }
 
   const rawContent = payload?.content ?? payload?.items ?? payload?.vehicles ?? [];
   const content = Array.isArray(rawContent) ? rawContent.map(normalizeVehicle) : [];
 
-  const responseSize = Number(payload?.size ?? apiPagination?.size ?? size);
+  const responseSize = Number(payload?.size ?? size);
   const totalElements = Number(
-    payload?.totalElements ?? apiPagination?.totalElements ?? content.length
+    payload?.totalElements ?? content.length
   );
 
   return {
     content,
-    page: Number(payload?.page ?? payload?.number ?? apiPagination?.page ?? page),
+    page: Number(payload?.page ?? payload?.number ?? page),
     size: responseSize,
     totalElements,
     totalPages: Number(
       payload?.totalPages ??
-        apiPagination?.totalPages ??
         Math.max(1, Math.ceil(totalElements / responseSize))
     ),
   };
@@ -221,64 +222,101 @@ export function getVehicleApiErrorMessage(
 
 export const vehicleApi = {
   async getVehicles(params: VehicleQueryParams = {}): Promise<VehiclePageResponse> {
+    if (USE_MOCK_API) {
+      return mockVehicleApi.getVehicles(params);
+    }
+
     const page = params.page ?? 0;
     const size = params.size ?? 10;
-
-    const response = await axiosInstance.get('/api/vehicles', {
-      params: cleanParams({
-        keyword: params.keyword,
-        isActive: params.isActive,
-        page,
-        size,
-        sort: params.sort ?? 'id,desc',
-      }),
+    const query = encodeQuery({
+      keyword: params.keyword,
+      isActive: params.isActive,
+      page,
+      size,
+      sort: params.sort ?? 'id,desc',
     });
 
-    return normalizeVehiclePage(response, page, size);
+    const data = await handleAxiosCall<any>(() =>
+      axiosInstance.get(`/api/vehicles?${query}`)
+    );
+
+    return normalizeVehiclePage(data, page, size);
   },
 
   async getVehicle(id: number): Promise<VehicleItem> {
-    const response = await axiosInstance.get(`/api/vehicles/${id}`);
-    return normalizeVehicle(unwrapApiData<any>(response));
+    if (USE_MOCK_API) {
+      return mockVehicleApi.getVehicle(id);
+    }
+
+    const data = await handleAxiosCall<any>(() =>
+      axiosInstance.get(`/api/vehicles/${id}`)
+    );
+
+    return normalizeVehicle(data?.data ?? data);
   },
 
   async getFleetCapacity(): Promise<FleetCapacity> {
-    const response = await axiosInstance.get('/api/vehicles/fleet-capacity');
-    return normalizeFleetCapacity(unwrapApiData<any>(response));
+    if (USE_MOCK_API) {
+      return mockVehicleApi.getFleetCapacity();
+    }
+
+    const data = await handleAxiosCall<any>(() =>
+      axiosInstance.get('/api/vehicles/fleet-capacity')
+    );
+
+    return normalizeFleetCapacity(data);
   },
 
   async createVehicle(payload: VehiclePayload): Promise<VehicleItem> {
-    const response = await axiosInstance.post(
-      '/api/vehicles',
-      cleanPayload({
-        plateNumber: payload.plateNumber?.trim().toUpperCase(),
-        vehicleType: payload.vehicleType?.trim(),
-        maxWeightKg: payload.maxWeightKg,
-        maxVolumeM3: payload.maxVolumeM3,
-      })
+    if (USE_MOCK_API) {
+      return mockVehicleApi.createVehicle(payload);
+    }
+
+    const data = await handleAxiosCall<any>(() =>
+      axiosInstance.post(
+        '/api/vehicles',
+        cleanPayload({
+          plateNumber: payload.plateNumber?.trim().toUpperCase(),
+          vehicleType: payload.vehicleType?.trim(),
+          maxWeightKg: payload.maxWeightKg,
+          maxVolumeM3: payload.maxVolumeM3,
+        })
+      )
     );
 
-    return normalizeVehicle(unwrapApiData<any>(response));
+    return normalizeVehicle(data?.data ?? data);
   },
 
   async updateVehicle(id: number, payload: VehiclePayload): Promise<VehicleItem> {
-    const response = await axiosInstance.put(
-      `/api/vehicles/${id}`,
-      cleanPayload({
-        vehicleType: payload.vehicleType?.trim(),
-        maxWeightKg: payload.maxWeightKg,
-        maxVolumeM3: payload.maxVolumeM3,
-      })
+    if (USE_MOCK_API) {
+      return mockVehicleApi.updateVehicle(id, payload);
+    }
+
+    const data = await handleAxiosCall<any>(() =>
+      axiosInstance.put(
+        `/api/vehicles/${id}`,
+        cleanPayload({
+          vehicleType: payload.vehicleType?.trim(),
+          maxWeightKg: payload.maxWeightKg,
+          maxVolumeM3: payload.maxVolumeM3,
+        })
+      )
     );
 
-    return normalizeVehicle(unwrapApiData<any>(response));
+    return normalizeVehicle(data?.data ?? data);
   },
 
   async updateStatus(id: number, isActive: boolean): Promise<VehicleItem> {
-    const response = await axiosInstance.patch(`/api/vehicles/${id}/status`, {
-      isActive,
-    });
+    if (USE_MOCK_API) {
+      return mockVehicleApi.updateStatus(id, isActive);
+    }
 
-    return normalizeVehicle(unwrapApiData<any>(response));
+    const data = await handleAxiosCall<any>(() =>
+      axiosInstance.patch(`/api/vehicles/${id}/status`, {
+        isActive,
+      })
+    );
+
+    return normalizeVehicle(data?.data ?? data);
   },
 };

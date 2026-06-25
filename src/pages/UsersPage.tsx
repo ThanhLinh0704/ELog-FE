@@ -40,7 +40,7 @@ const UsersPage: React.FC = () => {
   const [role, setRole] = useState('');
   const [isActive, setIsActive] = useState('');
   const [page, setPage] = useState(0);
-  const [size] = useState(5);
+  const [size, setSize] = useState(5);
   const [pageMeta, setPageMeta] = useState({ totalElements: 0, totalPages: 1 });
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
@@ -383,8 +383,13 @@ const UsersPage: React.FC = () => {
               current: page + 1,
               pageSize: size,
               total: pageMeta.totalElements,
-              onChange: (p) => setPage(p - 1),
-              showSizeChanger: false,
+              showSizeChanger: true,
+              pageSizeOptions: ['5', '10', '20', '50'],
+              onChange: (p, s) => {
+                setPage(p - 1);
+                if (s) setSize(s);
+              },
+              showTotal: (total) => `Tổng cộng ${total} người dùng`,
               position: ['bottomRight'],
             }}
           />

@@ -24,6 +24,7 @@ const LoginForm: React.FC = () => {
       const tokenData = response.data.data;
 
       // Lưu trữ Access Token, Refresh Token và thông tin user vào localStorage
+      localStorage.setItem('remember', values.remember ? 'true' : 'false');
       localStorage.setItem('token', tokenData.accessToken);
       localStorage.setItem('refreshToken', tokenData.refreshToken);
       localStorage.setItem('username', tokenData.username);

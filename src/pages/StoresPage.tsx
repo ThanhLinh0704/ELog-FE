@@ -399,7 +399,7 @@ const StoresPage: React.FC = () => {
   const [hasRoute, setHasRoute] = useState('');
   const [coordFilter, setCoordFilter] = useState<CoordinateFilter>('all');
   const [page, setPage] = useState(0);
-  const [size] = useState(10);
+  const [size, setSize] = useState(10);
   const [pageMeta, setPageMeta] = useState({ totalElements: 0, totalPages: 1 });
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
@@ -852,10 +852,14 @@ const StoresPage: React.FC = () => {
               current: page + 1,
               pageSize: size,
               total: tableTotal,
-              onChange: (p) => setPage(p - 1),
-              showSizeChanger: false,
+              showSizeChanger: true,
+              pageSizeOptions: ['5', '10', '20', '50'],
+              onChange: (p, s) => {
+                setPage(p - 1);
+                if (s) setSize(s);
+              },
+              showTotal: (total) => `Tổng cộng ${total} cửa hàng`,
               position: ['bottomRight'],
-              showTotal: (total) => `Tổng ${total} cửa hàng`,
             }}
           />
         </Card>

@@ -46,8 +46,6 @@ import {
   type VehicleItem,
   type VehiclePayload,
 } from '../api/vehicleApi';
-//Mock Test Data
-// import { mockVehicleApi as vehicleApi } from '../mocks/mockVehicles';
 
 type FormMode = 'create' | 'edit';
 
@@ -328,7 +326,7 @@ const VehiclesPage: React.FC = () => {
   const [keyword, setKeyword] = useState('');
   const [isActive, setIsActive] = useState('');
   const [page, setPage] = useState(0);
-  const [size] = useState(10);
+  const [size, setSize] = useState(10);
   const [pageMeta, setPageMeta] = useState({ totalElements: 0, totalPages: 1 });
   const [loading, setLoading] = useState(true);
   const [capacityLoading, setCapacityLoading] = useState(false);
@@ -753,10 +751,14 @@ const VehiclesPage: React.FC = () => {
               current: page + 1,
               pageSize: size,
               total: pageMeta.totalElements,
-              onChange: (p) => setPage(p - 1),
-              showSizeChanger: false,
+              showSizeChanger: true,
+              pageSizeOptions: ['5', '10', '20', '50'],
+              onChange: (p, s) => {
+                setPage(p - 1);
+                if (s) setSize(s);
+              },
+              showTotal: (total) => `Tổng cộng ${total} xe`,
               position: ['bottomRight'],
-              showTotal: (total) => `Tổng ${total} xe`,
             }}
           />
         </Card>
