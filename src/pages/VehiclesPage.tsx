@@ -91,6 +91,18 @@ function getApiFieldErrors(err: any): Record<string, string> {
     });
   }
 
+  if (Array.isArray(data?.error?.details)) {
+    data.error.details.forEach((detail: string) => {
+      const [field, ...messageParts] = detail.split(':');
+      const fieldName = field?.trim();
+      const errorMessage = messageParts.join(':').trim();
+
+      if (fieldName && errorMessage) {
+        result[fieldName] = errorMessage;
+      }
+    });
+  }
+
   return result;
 }
 
@@ -216,6 +228,10 @@ const VehicleFormModal: React.FC<VehicleFormModalProps> = ({
           rules={[
             { required: true, message: 'Vui lòng nhập biển số xe.' },
             { max: 30, message: 'Biển số không quá 30 ký tự.' },
+            {
+              pattern: /^\d{2}[A-Z]-\d{4,5}$/,
+              message: 'Biển số không đúng định dạng. Ví dụ: 51B-67890',
+            },
           ]}
         >
           <Input placeholder="VD: 51B-67890" readOnly={isEdit} />
