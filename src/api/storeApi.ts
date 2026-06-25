@@ -1,4 +1,6 @@
+import { USE_MOCK_API } from '../config';
 import axiosInstance from './axiosInstance';
+import { mockStoreApi } from './mockStoreApi';
 
 export interface AssignedRoute {
   id: number;
@@ -48,59 +50,63 @@ export interface StorePayload {
   longitude?: number | null;
 }
 
-interface ApiResponse<T> {
-  success?: boolean;
-  data?: T;
-  message?: string;
-  error?: {
-    code?: string;
-    message?: string;
-    field?: string;
-  };
+export class ApiError extends Error {
+  status?: number;
+  body?: any;
+
+  constructor(message: string, status?: number, body?: any) {
+    super(message);
+    this.name = 'ApiError';
+    this.status = status;
+    this.body = body;
+  }
 }
 
-function cleanParams(params: Record<string, any>) {
-  return Object.fromEntries(
-    Object.entries(params).filter(
-      ([, value]) => value !== '' && value !== undefined && value !== null
-    )
-  );
+async function handleAxiosCall<T>(call: () => Promise<any>): Promise<T> {
+  try {
+    const response = await call();
+    return response.data;
+  } catch (error: any) {
+    if (error.response) {
+      const status = error.response.status;
+      const body = error.response.data;
+      const message = body?.error?.message || body?.message || `API error ${status}`;
+      throw new ApiError(message, status, body);
+    }
+    throw new ApiError(error.message || 'Network Error');
+  }
+}
+
+function normalizeQueryValue(value: any): string {
+  if (value === undefined || value === null || value === '') return '';
+
+  if (typeof value === 'object') {
+    if ('value' in value) return value.value;
+    if ('id' in value) return value.id;
+    return '';
+  }
+
+  return String(value);
+}
+
+function encodeQuery(params: Record<string, any>): string {
+  const search = new URLSearchParams();
+
+  Object.entries(params).forEach(([key, value]) => {
+    const normalizedValue = normalizeQueryValue(value);
+
+    if (normalizedValue !== '') {
+      search.set(key, normalizedValue);
+    }
+  });
+
+  return search.toString();
 }
 
 function cleanPayload(payload: Record<string, any>) {
   return Object.fromEntries(
     Object.entries(payload).filter(([, value]) => value !== undefined)
   );
-}
-
-function createApiError(body: ApiResponse<any>) {
-  const error = new Error(
-    body.error?.message || body.message || 'API request failed.'
-  ) as Error & {
-    body?: ApiResponse<any>;
-    code?: string;
-    field?: string;
-  };
-
-  error.body = body;
-  error.code = body.error?.code;
-  error.field = body.error?.field;
-
-  return error;
-}
-
-function unwrapApiData<T>(response: any): T {
-  const body = response?.data;
-
-  if (body && typeof body === 'object' && 'success' in body) {
-    if (body.success === false) {
-      throw createApiError(body);
-    }
-
-    return body.data as T;
-  }
-
-  return body as T;
 }
 
 function normalizeAssignedRoute(raw: any): AssignedRoute | null {
@@ -143,8 +149,20 @@ function normalizeStore(raw: any): StoreItem {
   };
 }
 
-function normalizeStorePage(raw: any, page = 0, size = 20): StorePageResponse {
-  const payload = raw?.data ?? raw;
+function normalizeStorePage(responseBody: any, page = 0, size = 20): StorePageResponse {
+  if (responseBody && responseBody.pagination) {
+    const content = Array.isArray(responseBody.data) ? responseBody.data : [];
+    const pag = responseBody.pagination;
+    return {
+      content: content.map(normalizeStore),
+      page: Number(pag.page ?? page),
+      size: Number(pag.size ?? size),
+      totalElements: Number(pag.totalElements ?? content.length),
+      totalPages: Number(pag.totalPages ?? Math.max(1, Math.ceil((pag.totalElements ?? content.length) / size))),
+    };
+  }
+
+  const payload = responseBody?.data ?? responseBody;
 
   if (Array.isArray(payload)) {
     const content = payload.map(normalizeStore);
@@ -213,72 +231,96 @@ export function getStoreApiErrorMessage(
 
 export const storeApi = {
   async getStores(params: StoreQueryParams = {}): Promise<StorePageResponse> {
+    if (USE_MOCK_API) {
+      return mockStoreApi.getStores(params);
+    }
+
     const page = params.page ?? 0;
     const size = params.size ?? 20;
-
-    const response = await axiosInstance.get('/api/stores', {
-      params: cleanParams({
-        keyword: params.keyword,
-        isActive: params.isActive,
-        hasRoute: params.hasRoute,
-        page,
-        size,
-        sort: params.sort ?? 'id,desc',
-      }),
+    const query = encodeQuery({
+      keyword: params.keyword,
+      isActive: params.isActive,
+      hasRoute: params.hasRoute,
+      page,
+      size,
+      sort: params.sort ?? 'id,desc',
     });
 
-    const data = unwrapApiData<any>(response);
+    const data = await handleAxiosCall<any>(() =>
+      axiosInstance.get(`/api/stores?${query}`)
+    );
+
     return normalizeStorePage(data, page, size);
   },
 
   async getStore(id: number): Promise<StoreItem> {
-    const response = await axiosInstance.get(`/api/stores/${id}`);
-    const data = unwrapApiData<any>(response);
+    if (USE_MOCK_API) {
+      return mockStoreApi.getStore(id);
+    }
 
-    return normalizeStore(data);
+    const data = await handleAxiosCall<any>(() =>
+      axiosInstance.get(`/api/stores/${id}`)
+    );
+
+    return normalizeStore(data?.data ?? data);
   },
 
   async createStore(payload: StorePayload): Promise<StoreItem> {
-    const response = await axiosInstance.post(
-      '/api/stores',
-      cleanPayload({
-        storeCode: payload.storeCode?.trim().toUpperCase(),
-        storeName: payload.storeName?.trim(),
-        address: payload.address?.trim(),
-        contactName: payload.contactName?.trim() || null,
-        contactPhone: payload.contactPhone?.trim() || null,
-        latitude: payload.latitude,
-        longitude: payload.longitude,
-      })
+    if (USE_MOCK_API) {
+      return mockStoreApi.createStore(payload);
+    }
+
+    const data = await handleAxiosCall<any>(() =>
+      axiosInstance.post(
+        '/api/stores',
+        cleanPayload({
+          storeCode: payload.storeCode?.trim().toUpperCase(),
+          storeName: payload.storeName?.trim(),
+          address: payload.address?.trim(),
+          contactName: payload.contactName?.trim() || null,
+          contactPhone: payload.contactPhone?.trim() || null,
+          latitude: payload.latitude,
+          longitude: payload.longitude,
+        })
+      )
     );
 
-    const data = unwrapApiData<any>(response);
-    return normalizeStore(data);
+    return normalizeStore(data?.data ?? data);
   },
 
   async updateStore(id: number, payload: StorePayload): Promise<StoreItem> {
-    const response = await axiosInstance.put(
-      `/api/stores/${id}`,
-      cleanPayload({
-        storeName: payload.storeName?.trim(),
-        address: payload.address?.trim(),
-        contactName: payload.contactName?.trim() || null,
-        contactPhone: payload.contactPhone?.trim() || null,
-        latitude: payload.latitude,
-        longitude: payload.longitude,
-      })
+    if (USE_MOCK_API) {
+      return mockStoreApi.updateStore(id, payload);
+    }
+
+    const data = await handleAxiosCall<any>(() =>
+      axiosInstance.put(
+        `/api/stores/${id}`,
+        cleanPayload({
+          storeName: payload.storeName?.trim(),
+          address: payload.address?.trim(),
+          contactName: payload.contactName?.trim() || null,
+          contactPhone: payload.contactPhone?.trim() || null,
+          latitude: payload.latitude,
+          longitude: payload.longitude,
+        })
+      )
     );
 
-    const data = unwrapApiData<any>(response);
-    return normalizeStore(data);
+    return normalizeStore(data?.data ?? data);
   },
 
   async updateStatus(id: number, isActive: boolean): Promise<StoreItem> {
-    const response = await axiosInstance.patch(`/api/stores/${id}/status`, {
-      isActive,
-    });
+    if (USE_MOCK_API) {
+      return mockStoreApi.updateStatus(id, isActive);
+    }
 
-    const data = unwrapApiData<any>(response);
-    return normalizeStore(data);
+    const data = await handleAxiosCall<any>(() =>
+      axiosInstance.patch(`/api/stores/${id}/status`, {
+        isActive,
+      })
+    );
+
+    return normalizeStore(data?.data ?? data);
   },
 };
