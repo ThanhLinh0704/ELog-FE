@@ -110,7 +110,7 @@ const OrderImportPage: React.FC = () => {
 
     } catch (error: any) {
       console.error('Upload failed', error);
-      if (error instanceof ApiError && error.status === 409) {
+      if (error instanceof ApiError && error.status === 409 && (error.body?.error === 'DUPLICATE_DELIVERY_DATE' || error.body?.code === 'DUPLICATE_DELIVERY_DATE')) {
         // Handle delivery date clash Conflict (HTTP 409)
         setPendingUpload({ deliveryDate, file });
         setReplaceModalOpen(true);

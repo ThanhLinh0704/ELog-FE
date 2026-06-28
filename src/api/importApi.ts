@@ -54,10 +54,14 @@ export const importApi = {
     formData.append('deliveryDate', deliveryDate);
     formData.append('confirmReplace', String(confirmReplace));
 
+    const queryParams = new URLSearchParams();
+    queryParams.set('deliveryDate', deliveryDate);
+    queryParams.set('confirmReplace', String(confirmReplace));
+
     const res = await handleAxiosCall<any>(() =>
-      axiosInstance.post('/api/imports', formData, {
+      axiosInstance.post(`/api/imports?${queryParams.toString()}`, formData, {
         headers: {
-          'Content-Type': 'multipart/form-data',
+          'Content-Type': undefined,
         },
       })
     );
