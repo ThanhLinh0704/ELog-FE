@@ -47,13 +47,13 @@ export async function uploadOrdersMock(
       totalRows: 5,
       acceptedRows: 0,
       rejectedRows: 5,
-      createdOrders: 0,
+      ordersCreated: 0,
       errors: [
-        { rowNumber: 1, originalContent: "DH160326-ERR01, ST-Q1-999, SKU-999, 1", errorReason: 'Mã cửa hàng "ST-Q1-999" không tồn tại' },
-        { rowNumber: 2, originalContent: "DH160326-ERR02, ST-Q1-001, SKU-999, 2", errorReason: 'SKU "SKU-999" không tồn tại trong hệ thống' },
-        { rowNumber: 3, originalContent: "DH160326-ERR03, ST-Q1-002, ACC-HDMI-2M, -1", errorReason: 'Số lượng phải lớn hơn 0' },
-        { rowNumber: 4, originalContent: "DH160326-ERR04, , ACC-HDMI-2M, 5", errorReason: 'Mã cửa hàng không được để trống' },
-        { rowNumber: 5, originalContent: "DH160326-ERR05, ST-Q1-001, , 10", errorReason: 'Mã SKU sản phẩm không được để trống' },
+        { rowNumber: 1, errorCode: "STORE_NOT_FOUND", fieldName: "store_code", rawData: "DH160326-ERR01, ST-Q1-999, SKU-999, 1", errorReason: 'Mã cửa hàng "ST-Q1-999" không tồn tại', originalContent: "DH160326-ERR01, ST-Q1-999, SKU-999, 1" },
+        { rowNumber: 2, errorCode: "SKU_NOT_FOUND", fieldName: "sku", rawData: "DH160326-ERR02, ST-Q1-001, SKU-999, 2", errorReason: 'SKU "SKU-999" không tồn tại trong hệ thống', originalContent: "DH160326-ERR02, ST-Q1-001, SKU-999, 2" },
+        { rowNumber: 3, errorCode: "INVALID_QUANTITY", fieldName: "quantity", rawData: "DH160326-ERR03, ST-Q1-002, ACC-HDMI-2M, -1", errorReason: 'Số lượng phải lớn hơn 0', originalContent: "DH160326-ERR03, ST-Q1-002, ACC-HDMI-2M, -1" },
+        { rowNumber: 4, errorCode: "REQUIRED_FIELD_MISSING", fieldName: "store_code", rawData: "DH160326-ERR04, , ACC-HDMI-2M, 5", errorReason: 'Mã cửa hàng không được để trống', originalContent: "DH160326-ERR04, , ACC-HDMI-2M, 5" },
+        { rowNumber: 5, errorCode: "REQUIRED_FIELD_MISSING", fieldName: "sku", rawData: "DH160326-ERR05, ST-Q1-001, , 10", errorReason: 'Mã SKU sản phẩm không được để trống', originalContent: "DH160326-ERR05, ST-Q1-001, , 10" },
       ],
     };
   } else {
@@ -88,7 +88,7 @@ export async function uploadOrdersMock(
     totalRows: result.totalRows,
     acceptedRows: result.acceptedRows,
     rejectedRows: result.rejectedRows,
-    createdOrders: result.createdOrders,
+    ordersCreated: result.ordersCreated,
     isActive: true,
     uploadedAt: new Date().toISOString(),
   };
@@ -131,13 +131,13 @@ export async function getImportBatchDetailMock(batchId: number): Promise<ImportR
       totalRows: batch.totalRows,
       acceptedRows: batch.acceptedRows,
       rejectedRows: batch.rejectedRows,
-      createdOrders: batch.createdOrders,
+      ordersCreated: batch.ordersCreated,
       errors: [
-        { rowNumber: 1, originalContent: "DH160326-ERR01, ST-Q1-999, SKU-999, 1", errorReason: 'Mã cửa hàng "ST-Q1-999" không tồn tại' },
-        { rowNumber: 2, originalContent: "DH160326-ERR02, ST-Q1-001, SKU-999, 2", errorReason: 'SKU "SKU-999" không tồn tại trong hệ thống' },
-        { rowNumber: 3, originalContent: "DH160326-ERR03, ST-Q1-002, ACC-HDMI-2M, -1", errorReason: 'Số lượng phải lớn hơn 0' },
-        { rowNumber: 4, originalContent: "DH160326-ERR04, , ACC-HDMI-2M, 5", errorReason: 'Mã cửa hàng không được để trống' },
-        { rowNumber: 5, originalContent: "DH160326-ERR05, ST-Q1-001, , 10", errorReason: 'Mã SKU sản phẩm không được để trống' },
+        { rowNumber: 1, errorCode: "STORE_NOT_FOUND", fieldName: "store_code", rawData: "DH160326-ERR01, ST-Q1-999, SKU-999, 1", errorReason: 'Mã cửa hàng "ST-Q1-999" không tồn tại', originalContent: "DH160326-ERR01, ST-Q1-999, SKU-999, 1" },
+        { rowNumber: 2, errorCode: "SKU_NOT_FOUND", fieldName: "sku", rawData: "DH160326-ERR02, ST-Q1-001, SKU-999, 2", errorReason: 'SKU "SKU-999" không tồn tại trong hệ thống', originalContent: "DH160326-ERR02, ST-Q1-001, SKU-999, 2" },
+        { rowNumber: 3, errorCode: "INVALID_QUANTITY", fieldName: "quantity", rawData: "DH160326-ERR03, ST-Q1-002, ACC-HDMI-2M, -1", errorReason: 'Số lượng phải lớn hơn 0', originalContent: "DH160326-ERR03, ST-Q1-002, ACC-HDMI-2M, -1" },
+        { rowNumber: 4, errorCode: "REQUIRED_FIELD_MISSING", fieldName: "store_code", rawData: "DH160326-ERR04, , ACC-HDMI-2M, 5", errorReason: 'Mã cửa hàng không được để trống', originalContent: "DH160326-ERR04, , ACC-HDMI-2M, 5" },
+        { rowNumber: 5, errorCode: "REQUIRED_FIELD_MISSING", fieldName: "sku", rawData: "DH160326-ERR05, ST-Q1-001, , 10", errorReason: 'Mã SKU sản phẩm không được để trống', originalContent: "DH160326-ERR05, ST-Q1-001, , 10" },
       ],
     };
   }
@@ -148,13 +148,19 @@ export async function getImportBatchDetailMock(batchId: number): Promise<ImportR
     errorsList = [
       {
         rowNumber: 5,
-        originalContent: "DH160325-04, ST-HD-099, REF-SAM-300, 1",
+        errorCode: "STORE_NOT_FOUND",
+        fieldName: "store_code",
+        rawData: "DH160325-04, ST-HD-099, REF-SAM-300, 1",
         errorReason: 'Mã cửa hàng "ST-HD-099" không tồn tại',
+        originalContent: "DH160325-04, ST-HD-099, REF-SAM-300, 1",
       },
       {
         rowNumber: 6,
-        originalContent: "DH160325-05, ST-Q1-001, ACC-HDMI-2M, 5",
+        errorCode: "SKU_NOT_FOUND",
+        fieldName: "sku",
+        rawData: "DH160325-05, ST-Q1-001, ACC-HDMI-2M, 5",
         errorReason: 'SKU "ACC-HDMI-2M" chưa có trong danh mục sản phẩm',
+        originalContent: "DH160325-05, ST-Q1-001, ACC-HDMI-2M, 5",
       },
     ];
     // Truncate errors list if mock size differs
@@ -168,7 +174,7 @@ export async function getImportBatchDetailMock(batchId: number): Promise<ImportR
     totalRows: batch.totalRows,
     acceptedRows: batch.acceptedRows,
     rejectedRows: batch.rejectedRows,
-    createdOrders: batch.createdOrders,
+    ordersCreated: batch.ordersCreated,
     errors: errorsList,
   };
 }

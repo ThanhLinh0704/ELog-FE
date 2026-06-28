@@ -10,6 +10,7 @@ import ImportErrorsTable from './components/ImportErrorsTable';
 import { importApi } from '../../../api/importApi';
 import type { ImportResult } from '../../../types/import';
 import { downloadErrorReport } from '../../../utils/errorReport';
+import { USE_MOCK_API } from '../../../config';
 
 const { Title, Text } = Typography;
 
@@ -43,6 +44,33 @@ const ImportBatchDetailPage: React.FC = () => {
   const [isActive, setIsActive] = useState<boolean>(false);
   const [uploader, setUploader] = useState<string>('');
   const [uploadedAt, setUploadedAt] = useState<string>('');
+  const [exportLoading, setExportLoading] = useState(false);
+
+  const handleExport = async () => {
+    if (!batchId || !batch) return;
+    if (USE_MOCK_API) {
+      downloadErrorReport(batch);
+      return;
+    }
+    setExportLoading(true);
+    try {
+      const blob = await importApi.exportImportErrors(Number(batchId));
+      const url = window.URL.createObjectURL(blob);
+      const link = document.createElement("a");
+      link.href = url;
+      link.download = `import-errors-batch${batchId}.xlsx`;
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
+      window.URL.revokeObjectURL(url);
+      message.success("Tải báo cáo lỗi thành công");
+    } catch (e: any) {
+      console.error(e);
+      message.error("Không thể tải báo cáo lỗi. Vui lòng thử lại.");
+    } finally {
+      setExportLoading(false);
+    }
+  };
 
   const loadBatchDetails = async () => {
     if (!batchId) return;
@@ -137,8 +165,8 @@ const ImportBatchDetailPage: React.FC = () => {
     );
   }
 
-  const { totalRows, acceptedRows, rejectedRows, createdOrders, errors } = batch;
-  const isAllErrors = acceptedRows === 0 && createdOrders === 0 && rejectedRows === totalRows;
+  const { totalRows, acceptedRows, rejectedRows, ordersCreated } = batch;
+  const isAllErrors = acceptedRows === 0 && ordersCreated === 0 && rejectedRows === totalRows;
 
   return (
     <AdminShell currentUser={currentUser}>
@@ -174,7 +202,9 @@ const ImportBatchDetailPage: React.FC = () => {
             type="primary"
             danger
             icon={<DownloadOutlined />}
-            onClick={() => downloadErrorReport(batch)}
+            loading={exportLoading}
+            disabled={exportLoading}
+            onClick={handleExport}
             style={{ borderRadius: 6, height: 40, fontWeight: 600 }}
           >
             Tải báo cáo lỗi (.xlsx)
@@ -265,7 +295,7 @@ const ImportBatchDetailPage: React.FC = () => {
             <Card style={{ background: '#e6f7ff', borderRadius: 8, textAlign: 'center', border: '1px solid #bae7ff' }} bodyStyle={{ padding: '12px 16px' }}>
               <Statistic
                 title="Đơn hàng tạo"
-                value={createdOrders}
+                value={ordersCreated}
                 valueStyle={{ color: '#096dd9', fontWeight: 700, fontSize: 20 }}
                 prefix={<Package size={16} style={{ marginRight: 4, verticalAlign: 'middle', color: '#1890ff' }} />}
               />
@@ -287,7 +317,7 @@ const ImportBatchDetailPage: React.FC = () => {
 
       {/* Error detail list */}
       {rejectedRows > 0 ? (
-        <ImportErrorsTable errors={errors} />
+        <ImportErrorsTable batchId={Number(batchId)} />
       ) : (
         <Card style={{ borderRadius: 12, textAlign: 'center', padding: '24px 0' }}>
           <Empty description={<span style={{ color: '#8c8c8c' }}>Batch này không có dòng lỗi. Tất cả dữ liệu đã được import thành công.</span>} />

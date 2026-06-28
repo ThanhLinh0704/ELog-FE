@@ -139,16 +139,67 @@ export const importApi = {
   },
 
   async getBatchErrors(batchId: number): Promise<ImportErrorRow[]> {
+    const result = await this.getImportErrors({ batchId, page: 0, size: 9999 });
+    return result.data;
+  },
+
+  async getImportErrors(params: {
+    batchId: number;
+    errorCode?: string;
+    page?: number;
+    size?: number;
+    sort?: string;
+  }): Promise<{ data: ImportErrorRow[]; pagination?: any }> {
     if (USE_MOCK_API) {
-      const detail = await getImportBatchDetailMock(batchId);
-      return detail?.errors || [];
+      const detail = await getImportBatchDetailMock(params.batchId);
+      const allErrors = detail?.errors || [];
+      const filtered = params.errorCode
+        ? allErrors.filter((e) => e.errorCode === params.errorCode)
+        : allErrors;
+      
+      const page = params.page ?? 0;
+      const size = params.size ?? 20;
+      const start = page * size;
+      const paginated = filtered.slice(start, start + size);
+
+      return {
+        data: paginated,
+        pagination: {
+          page,
+          size,
+          totalElements: filtered.length,
+          totalPages: Math.ceil(filtered.length / size),
+        },
+      };
+    }
+
+    const query = new URLSearchParams();
+    query.set('page', String(params.page ?? 0));
+    query.set('size', String(params.size ?? 20));
+    query.set('sort', params.sort ?? 'rowNumber,asc');
+    if (params.errorCode) {
+      query.set('errorCode', params.errorCode);
     }
 
     const res = await handleAxiosCall<any>(() =>
-      axiosInstance.get(`/api/imports/${batchId}/errors`)
+      axiosInstance.get(`/api/imports/${params.batchId}/errors?${query.toString()}`)
     );
 
     const rawErrors = res?.data || [];
-    return rawErrors.map(mapErrorResponseToRow);
+    return {
+      data: rawErrors.map(mapErrorResponseToRow),
+      pagination: res?.pagination,
+    };
+  },
+
+  async exportImportErrors(batchId: number): Promise<Blob> {
+    if (USE_MOCK_API) {
+      return new Blob(["Mock file content"], { type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" });
+    }
+
+    const response = await axiosInstance.get(`/api/imports/${batchId}/errors/export`, {
+      responseType: 'blob',
+    });
+    return response.data;
   }
 };

@@ -1,8 +1,10 @@
-import React from 'react';
-import { Card, Row, Col, Statistic, Button, Alert, Space } from 'antd';
+import React, { useState } from 'react';
+import { Card, Row, Col, Statistic, Button, Alert, Space, message } from 'antd';
 import { FileSpreadsheet, CheckCircle2, XCircle, Package, Download } from 'lucide-react';
 import type { ImportResult } from '../../../../types/import';
 import { downloadErrorReport } from '../../../../utils/errorReport';
+import { importApi } from '../../../../api/importApi';
+import { USE_MOCK_API } from '../../../../config';
 
 interface ImportResultCardProps {
   result: ImportResult;
@@ -11,10 +13,12 @@ interface ImportResultCardProps {
 }
 
 const ImportResultCard: React.FC<ImportResultCardProps> = ({ result, onViewErrors, errorTableOpen }) => {
-  const { batchId, deliveryDate, fileName, totalRows, acceptedRows, rejectedRows, createdOrders } = result;
+  const { batchId, deliveryDate, fileName, totalRows, acceptedRows, rejectedRows, ordersCreated } = result;
 
-  const isAllErrors = acceptedRows === 0 && createdOrders === 0 && rejectedRows === totalRows;
+  const isAllErrors = acceptedRows === 0 && ordersCreated === 0 && rejectedRows === totalRows;
   const hasErrors = rejectedRows > 0;
+
+  const [exportLoading, setExportLoading] = useState(false);
 
   const formatDateStr = (dateStr: string) => {
     try {
@@ -134,7 +138,7 @@ const ImportResultCard: React.FC<ImportResultCardProps> = ({ result, onViewError
           <Card style={{ background: '#e6f7ff', borderRadius: 8, textAlign: 'center', border: '1px solid #bae7ff' }} bodyStyle={{ padding: 16 }}>
             <Statistic
               title="Đơn hàng tạo"
-              value={createdOrders}
+              value={ordersCreated}
               valueStyle={{ color: '#096dd9', fontWeight: 700 }}
               prefix={<Package size={18} style={{ marginRight: 6, verticalAlign: 'middle', color: '#1890ff' }} />}
             />
@@ -156,7 +160,32 @@ const ImportResultCard: React.FC<ImportResultCardProps> = ({ result, onViewError
             type="primary"
             danger
             icon={<Download size={16} />}
-            onClick={() => downloadErrorReport(result)}
+            loading={exportLoading}
+            disabled={exportLoading}
+            onClick={async () => {
+              if (USE_MOCK_API) {
+                downloadErrorReport(result);
+                return;
+              }
+              setExportLoading(true);
+              try {
+                const blob = await importApi.exportImportErrors(batchId);
+                const url = window.URL.createObjectURL(blob);
+                const link = document.createElement("a");
+                link.href = url;
+                link.download = `import-errors-batch${batchId}.xlsx`;
+                document.body.appendChild(link);
+                link.click();
+                link.remove();
+                window.URL.revokeObjectURL(url);
+                message.success("Tải báo cáo lỗi thành công");
+              } catch (e: any) {
+                console.error(e);
+                message.error("Không thể tải báo cáo lỗi. Vui lòng thử lại.");
+              } finally {
+                setExportLoading(false);
+              }
+            }}
             style={{ borderRadius: 6, fontWeight: 500, display: 'flex', alignItems: 'center', gap: 6 }}
           >
             Tải báo cáo lỗi (.xlsx)

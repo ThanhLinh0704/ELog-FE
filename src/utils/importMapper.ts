@@ -9,7 +9,7 @@ export const mapBatchResponseToHistory = (raw: any): ImportBatchHistory => {
     totalRows: raw.totalRows ?? 0,
     acceptedRows: raw.acceptedRows ?? 0,
     rejectedRows: raw.rejectedRows ?? 0,
-    createdOrders: Number(raw.ordersCreated ?? 0),
+    ordersCreated: Number(raw.ordersCreated ?? 0),
     isActive: raw.isActive ?? false,
     uploadedAt: raw.createdAt,
   };
@@ -23,7 +23,7 @@ export const mapBatchResponseToResult = (raw: any, errors: ImportErrorRow[] = []
     totalRows: raw.totalRows ?? 0,
     acceptedRows: raw.acceptedRows ?? 0,
     rejectedRows: raw.rejectedRows ?? 0,
-    createdOrders: Number(raw.ordersCreated ?? 0),
+    ordersCreated: Number(raw.ordersCreated ?? 0),
     errors: errors,
   };
 };
@@ -31,7 +31,10 @@ export const mapBatchResponseToResult = (raw: any, errors: ImportErrorRow[] = []
 export const mapErrorResponseToRow = (raw: any): ImportErrorRow => {
   return {
     rowNumber: raw.rowNumber,
-    originalContent: raw.rawData,
+    errorCode: raw.errorCode,
+    fieldName: raw.fieldName,
+    rawData: raw.rawData,
     errorReason: raw.errorReason,
+    originalContent: raw.rawData,
   };
 };

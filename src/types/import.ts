@@ -2,8 +2,11 @@ import type { UserRole } from './route';
 
 export interface ImportErrorRow {
   rowNumber: number;
-  originalContent: string;
+  errorCode: string;
+  fieldName: string;
+  rawData: string;
   errorReason: string;
+  originalContent?: string;
 }
 
 export interface ImportResult {
@@ -13,7 +16,7 @@ export interface ImportResult {
   totalRows: number;
   acceptedRows: number;
   rejectedRows: number;
-  createdOrders: number;
+  ordersCreated: number;
   errors: ImportErrorRow[];
 }
 
@@ -25,7 +28,7 @@ export interface ImportBatchHistory {
   totalRows: number;
   acceptedRows: number;
   rejectedRows: number;
-  createdOrders: number;
+  ordersCreated: number;
   isActive: boolean;
   uploadedAt: string;
 }

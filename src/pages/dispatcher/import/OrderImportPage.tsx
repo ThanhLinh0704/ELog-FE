@@ -195,8 +195,8 @@ const OrderImportPage: React.FC = () => {
       )}
 
       {/* Error lines table details */}
-      {currentResult && errorTableOpen && currentResult.errors && currentResult.errors.length > 0 && (
-        <ImportErrorsTable errors={currentResult.errors} />
+      {currentResult && errorTableOpen && currentResult.rejectedRows > 0 && (
+        <ImportErrorsTable batchId={currentResult.batchId} />
       )}
 
       <Divider style={{ margin: '32px 0' }} />
