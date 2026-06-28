@@ -1,7 +1,7 @@
 import React from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { Layout, Menu, Avatar, Dropdown, Button, Space, Input, Badge, ConfigProvider } from 'antd';
-import { Bell, ChevronDown, LogOut, Search, Users, LayoutGrid, Store, Map, Settings, Package, Home, Truck } from 'lucide-react';
+import { Bell, ChevronDown, LogOut, Search, Users, LayoutGrid, Map, Settings, Package, Home, Truck, FileSpreadsheet } from 'lucide-react';
 import axiosInstance from '../api/axiosInstance';
 
 const { Header, Sider, Content } = Layout;
@@ -54,7 +54,12 @@ const AdminShell: React.FC<AdminShellProps> = ({ currentUser, children }) => {
     ? '/admin/products'
     : location.pathname.startsWith('/admin/routes')
       ? '/admin/routes'
-      : location.pathname;
+      : location.pathname.startsWith('/dispatcher/import')
+        ? '/dispatcher/import'
+        : location.pathname;
+
+  const roles = currentUser.roles || [];
+  const canViewImport = roles.some(role => ["SYSTEM_ADMIN", "DISPATCHER", "LOGISTICS_MANAGER"].includes(role));
 
   const sidebarMenuItems = [
     {
@@ -99,6 +104,14 @@ const AdminShell: React.FC<AdminShellProps> = ({ currentUser, children }) => {
           label: 'Quản lý tuyến',
           onClick: () => navigate('/admin/routes'),
         },
+        ...(canViewImport ? [
+          {
+            key: '/dispatcher/import',
+            icon: <FileSpreadsheet size={ICON_SIZE} />,
+            label: 'Nhập đơn hàng',
+            onClick: () => navigate('/dispatcher/import'),
+          }
+        ] : []),
 
       ],
     },
@@ -185,7 +198,15 @@ const AdminShell: React.FC<AdminShellProps> = ({ currentUser, children }) => {
                   <div className="elog-profile-name">
                     {currentUser.fullName || currentUser.username}
                   </div>
-                  <div style={{ fontSize: 11, color: '#64748b' }}>System Admin</div>
+                  <div style={{ fontSize: 11, color: '#64748b' }}>
+                    {roles.includes('SYSTEM_ADMIN') 
+                      ? 'System Admin' 
+                      : roles.includes('DISPATCHER') 
+                        ? 'Điều phối viên' 
+                        : roles.includes('LOGISTICS_MANAGER') 
+                          ? 'Quản lý Logistics' 
+                          : roles.join(', ') || 'User'}
+                  </div>
                 </div>
               </div>
               <Button

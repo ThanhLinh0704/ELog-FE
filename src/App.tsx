@@ -16,8 +16,12 @@ import RouteEditPage from './pages/admin/routes/RouteEditPage';
 import ForbiddenPage from './pages/ForbiddenPage';
 import RouteManagementGuard from './guards/RouteManagementGuard';
 
-import StoresPage from './pages/StoresPage';
+import StoresPage from './pages/StoresPage';  
 import VehiclesPage from './pages/VehiclesPage';
+   
+import OrderImportPage from './pages/dispatcher/import/OrderImportPage'; 
+import ImportBatchDetailPage from './pages/dispatcher/import/ImportBatchDetailPage';
+import ImportModuleGuard from './guards/ImportModuleGuard';
 
 
 function App() {
@@ -137,6 +141,25 @@ function App() {
             </RouteManagementGuard>
           }
         />
+
+        {/* Excel Order Import Module */}
+        <Route
+          path="/dispatcher/import"
+          element={
+            <ImportModuleGuard>
+              <OrderImportPage />
+            </ImportModuleGuard>
+          }
+        />
+        <Route
+          path="/dispatcher/import/history/:batchId"
+          element={
+            <ImportModuleGuard>
+              <ImportBatchDetailPage />
+            </ImportModuleGuard>
+          }
+        />
+
         <Route path="/403" element={<ForbiddenPage />} />
 
 
