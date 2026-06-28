@@ -8,7 +8,7 @@ import ImportErrorsTable from './components/ImportErrorsTable';
 import ImportHistoryTable from './components/ImportHistoryTable';
 import ReplaceBatchModal from './components/ReplaceBatchModal';
 import { canUploadOrders } from '../../../utils/importPermissions';
-import { findActiveBatchByDate, uploadOrdersMock, getImportHistoryMock } from '../../../mocks/importService';
+import { importApi, ApiError } from '../../../api/importApi';
 import type { ImportBatchHistory, ImportResult } from '../../../types/import';
 
 const { Title, Paragraph } = Typography;
@@ -59,7 +59,7 @@ const OrderImportPage: React.FC = () => {
   const loadHistory = async (page = currentPage, size = pageSize) => {
     setHistoryLoading(true);
     try {
-      const response = await getImportHistoryMock(page, size);
+      const response = await importApi.getImportHistory({ page, size });
       setHistoryData(response.content);
       setTotalElements(response.totalElements);
     } catch (error) {
@@ -89,7 +89,7 @@ const OrderImportPage: React.FC = () => {
     setErrorTableOpen(false);
 
     try {
-      const result = await uploadOrdersMock(deliveryDate, file, { confirmReplace });
+      const result = await importApi.uploadOrders(deliveryDate, file, confirmReplace);
       message.success(`Tải lên file thành công. Tạo Batch #${result.batchId}`);
       setCurrentResult(result);
       if (result.rejectedRows > 0) {
@@ -110,9 +110,10 @@ const OrderImportPage: React.FC = () => {
 
     } catch (error: any) {
       console.error('Upload failed', error);
-      if (error?.code === 'ACTIVE_BATCH_EXISTS') {
-        // This shouldn't happen because we check beforehand, but just in case
-        message.error(error.message);
+      if (error instanceof ApiError && error.status === 409) {
+        // Handle delivery date clash Conflict (HTTP 409)
+        setPendingUpload({ deliveryDate, file });
+        setReplaceModalOpen(true);
       } else {
         message.error(error?.message || 'Không thể xử lý file. Vui lòng thử lại.');
       }
@@ -123,14 +124,6 @@ const OrderImportPage: React.FC = () => {
 
   // Pre-upload checks
   const handleUploadInitiated = async (deliveryDate: string, file: File) => {
-    const activeBatch = findActiveBatchByDate(deliveryDate);
-
-    if (activeBatch) {
-      setPendingUpload({ deliveryDate, file });
-      setReplaceModalOpen(true);
-      return;
-    }
-
     await executeUpload(deliveryDate, file, false);
   };
 

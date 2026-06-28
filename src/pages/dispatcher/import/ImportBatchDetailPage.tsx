@@ -7,7 +7,7 @@ import dayjs from 'dayjs';
 import AdminShell from '../../../components/AdminShell';
 import ImportStatusTag from './components/ImportStatusTag';
 import ImportErrorsTable from './components/ImportErrorsTable';
-import { getImportBatchDetailMock } from '../../../mocks/importService';
+import { importApi } from '../../../api/importApi';
 import type { ImportResult } from '../../../types/import';
 import { downloadErrorReport } from '../../../utils/errorReport';
 
@@ -48,24 +48,21 @@ const ImportBatchDetailPage: React.FC = () => {
     if (!batchId) return;
     setLoading(true);
     try {
-      const data = await getImportBatchDetailMock(Number(batchId));
+      const data = await importApi.getBatchDetail(Number(batchId));
       if (data) {
         setBatch(data);
         
         // Load extra info from history list to get uploader, uploadedAt, isActive status
         try {
-          const cached = localStorage.getItem('elog_import_history_store');
-          if (cached) {
-            const list = JSON.parse(cached);
-            const found = list.find((b: any) => b.id === Number(batchId));
-            if (found) {
-              setIsActive(found.isActive);
-              setUploader(found.uploadedBy);
-              setUploadedAt(found.uploadedAt);
-            }
+          const historyResponse = await importApi.getImportHistory({ page: 0, size: 50 });
+          const found = historyResponse.content.find((b: any) => b.id === Number(batchId));
+          if (found) {
+            setIsActive(found.isActive);
+            setUploader(found.uploadedBy);
+            setUploadedAt(found.uploadedAt);
           }
         } catch (e) {
-          console.error("Error reading extra history item", e);
+          console.error("Error reading extra history item from API", e);
         }
       } else {
         setBatch(null);
