@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { Card, Row, Col, Statistic, Button, Breadcrumb, Typography, Spin, Alert, Empty, Divider, message } from 'antd';
+import { Card, Row, Col, Space, Statistic, Button, Breadcrumb, Typography, Spin, Alert, Empty, Divider, message } from 'antd';
 import { ArrowLeftOutlined, DownloadOutlined } from '@ant-design/icons';
 import { FileSpreadsheet, CheckCircle2, XCircle, Package } from 'lucide-react';
 import dayjs from 'dayjs';
@@ -197,19 +197,31 @@ const ImportBatchDetailPage: React.FC = () => {
           </div>
         </div>
         
-        {rejectedRows > 0 && (
-          <Button
-            type="primary"
-            danger
-            icon={<DownloadOutlined />}
-            loading={exportLoading}
-            disabled={exportLoading}
-            onClick={handleExport}
-            style={{ borderRadius: 6, height: 40, fontWeight: 600 }}
-          >
-            Tải báo cáo lỗi (.xlsx)
-          </Button>
-        )}
+        <Space size={12} wrap>
+          {ordersCreated > 0 && (
+            <Button
+              type="primary"
+              onClick={() => navigate(`/dispatcher/trip-drafts?deliveryDate=${batch.deliveryDate}`)}
+              style={{ borderRadius: 6, height: 40, fontWeight: 600, background: '#52c41a', borderColor: '#52c41a' }}
+            >
+              Đi đến Gom đơn
+            </Button>
+          )}
+
+          {rejectedRows > 0 && (
+            <Button
+              type="primary"
+              danger
+              icon={<DownloadOutlined />}
+              loading={exportLoading}
+              disabled={exportLoading}
+              onClick={handleExport}
+              style={{ borderRadius: 6, height: 40, fontWeight: 600 }}
+            >
+              Tải báo cáo lỗi (.xlsx)
+            </Button>
+          )}
+        </Space>
       </div>
 
       {/* Metadata Overview Card */}
