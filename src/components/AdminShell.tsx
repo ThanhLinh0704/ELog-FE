@@ -1,7 +1,7 @@
 import React from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { Layout, Menu, Avatar, Dropdown, Button, Space, Input, Badge, ConfigProvider } from 'antd';
-import { Bell, ChevronDown, LogOut, Search, Users, LayoutGrid, Map, Settings, Package, Home, Truck, FileSpreadsheet } from 'lucide-react';
+import { Bell, ChevronDown, LogOut, Search, Users, LayoutGrid, Map, Settings, Package, Home, Truck, FileSpreadsheet, Layers } from 'lucide-react';
 import axiosInstance from '../api/axiosInstance';
 
 const { Header, Sider, Content } = Layout;
@@ -56,10 +56,13 @@ const AdminShell: React.FC<AdminShellProps> = ({ currentUser, children }) => {
       ? '/admin/routes'
       : location.pathname.startsWith('/dispatcher/import')
         ? '/dispatcher/import'
-        : location.pathname;
+        : location.pathname.startsWith('/dispatcher/trip-drafts')
+          ? '/dispatcher/trip-drafts'
+          : location.pathname;
 
   const roles = currentUser.roles || [];
   const canViewImport = roles.some(role => ["SYSTEM_ADMIN", "DISPATCHER", "LOGISTICS_MANAGER"].includes(role));
+  const canViewTripDraftsMenu = roles.some(role => ["SYSTEM_ADMIN", "DISPATCHER", "LOGISTICS_MANAGER", "WAREHOUSE_STAFF"].includes(role));
 
   const sidebarMenuItems = [
     {
@@ -110,6 +113,14 @@ const AdminShell: React.FC<AdminShellProps> = ({ currentUser, children }) => {
             icon: <FileSpreadsheet size={ICON_SIZE} />,
             label: 'Nhập đơn hàng',
             onClick: () => navigate('/dispatcher/import'),
+          }
+        ] : []),
+        ...(canViewTripDraftsMenu ? [
+          {
+            key: '/dispatcher/trip-drafts',
+            icon: <Layers size={ICON_SIZE} />,
+            label: 'Quản lý gom đơn',
+            onClick: () => navigate('/dispatcher/trip-drafts'),
           }
         ] : []),
 

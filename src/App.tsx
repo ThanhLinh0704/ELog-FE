@@ -22,6 +22,8 @@ import VehiclesPage from './pages/VehiclesPage';
 import OrderImportPage from './pages/dispatcher/import/OrderImportPage'; 
 import ImportBatchDetailPage from './pages/dispatcher/import/ImportBatchDetailPage';
 import ImportModuleGuard from './guards/ImportModuleGuard';
+import TripDraftListPage from './pages/dispatcher/trip-drafts/TripDraftListPage';
+import TripDraftDetailPage from './pages/dispatcher/trip-drafts/TripDraftDetailPage';
 
 
 function App() {
@@ -157,6 +159,24 @@ function App() {
             <ImportModuleGuard>
               <ImportBatchDetailPage />
             </ImportModuleGuard>
+          }
+        />
+
+        {/* Route Consolidation (US-10) */}
+        <Route
+          path="/dispatcher/trip-drafts"
+          element={
+            <ProtectedRoute>
+              <TripDraftListPage />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/dispatcher/trip-drafts/:id"
+          element={
+            <ProtectedRoute>
+              <TripDraftDetailPage />
+            </ProtectedRoute>
           }
         />
 
