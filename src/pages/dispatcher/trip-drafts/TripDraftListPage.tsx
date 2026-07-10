@@ -14,7 +14,7 @@ import {
   Tooltip,
   Empty
 } from 'antd';
-import { CalendarOutlined, PlayCircleOutlined, InfoCircleOutlined, EyeOutlined } from '@ant-design/icons';
+import { CalendarOutlined, PlayCircleOutlined, EyeOutlined } from '@ant-design/icons';
 import { Layers, AlertTriangle } from 'lucide-react';
 import dayjs from 'dayjs';
 import AdminShell from '../../../components/AdminShell';
