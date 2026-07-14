@@ -111,6 +111,19 @@ const AdminShell: React.FC<AdminShellProps> = ({ currentUser, children }) => {
       ],
     },
     {
+      key: 'grp-dispatch',
+      label: <span style={{ fontSize: 10, fontWeight: 700, letterSpacing: 0.8, color: '#64748b' }}>ÄIá»€U PHá»I</span>,
+      type: 'group' as const,
+      children: [
+        {
+          key: '/trip-drafts',
+          icon: <Truck size={ICON_SIZE} />,
+          label: 'Trip Planning',
+          onClick: () => navigate('/dashboard'),
+        },
+      ],
+    },
+    {
       key: 'grp-extend',
       label: <span style={{ fontSize: 10, fontWeight: 700, letterSpacing: 0.8, color: '#64748b' }}>MỞ RỘNG SAU</span>,
       type: 'group' as const,
@@ -128,7 +141,7 @@ const AdminShell: React.FC<AdminShellProps> = ({ currentUser, children }) => {
         },
       ],
     },
-  ];
+  ].filter((item) => item.key !== 'grp-dispatch');
 
   return (
     <ConfigProvider
