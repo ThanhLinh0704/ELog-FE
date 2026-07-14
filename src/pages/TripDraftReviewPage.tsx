@@ -25,6 +25,7 @@ import {
   CheckCircle2,
   MapPinned,
   Navigation,
+  PackageCheck,
   RefreshCw,
 } from 'lucide-react';
 import AdminShell from '../components/AdminShell';
@@ -549,6 +550,12 @@ const TripDraftReviewPage: React.FC = () => {
                         onClick={() => runRecalculate()}
                       >
                         Tính lại ETA
+                      </Button>
+                      <Button
+                        icon={<PackageCheck size={16} />}
+                        onClick={() => navigate(`/trip-drafts/${draft.id}/loading-manifest`)}
+                      >
+                        LIFO Manifest
                       </Button>
                       <Button
                         type="primary"

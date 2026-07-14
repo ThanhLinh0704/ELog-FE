@@ -141,7 +141,7 @@ const AdminShell: React.FC<AdminShellProps> = ({ currentUser, children }) => {
         },
       ],
     },
-  ];
+  ].filter((item) => item.key !== 'grp-dispatch');
 
   return (
     <ConfigProvider
