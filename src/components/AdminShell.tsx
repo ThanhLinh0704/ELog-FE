@@ -1,7 +1,7 @@
 import React from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { Layout, Menu, Avatar, Dropdown, Button, Space, Input, Badge, ConfigProvider } from 'antd';
-import { Bell, ChevronDown, LogOut, Search, Users, LayoutGrid, Store, Map, Settings, Package, Home, Truck } from 'lucide-react';
+import { Bell, ChevronDown, LogOut, Search, Users, LayoutGrid, Map, Settings, Package, Home, Truck } from 'lucide-react';
 import axiosInstance from '../api/axiosInstance';
 
 const { Header, Sider, Content } = Layout;
@@ -100,6 +100,19 @@ const AdminShell: React.FC<AdminShellProps> = ({ currentUser, children }) => {
           onClick: () => navigate('/admin/routes'),
         },
 
+      ],
+    },
+    {
+      key: 'grp-dispatch',
+      label: <span style={{ fontSize: 10, fontWeight: 700, letterSpacing: 0.8, color: '#64748b' }}>ÄIá»€U PHá»I</span>,
+      type: 'group' as const,
+      children: [
+        {
+          key: '/trip-drafts',
+          icon: <Truck size={ICON_SIZE} />,
+          label: 'Trip Planning',
+          onClick: () => navigate('/dashboard'),
+        },
       ],
     },
     {
