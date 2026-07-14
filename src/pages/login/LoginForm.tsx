@@ -39,7 +39,7 @@ const LoginForm: React.FC = () => {
       // Lấy thông báo lỗi trả về từ API Backend, nếu không có thì dùng thông báo mặc định
       const errorMsg = err.response?.data?.error?.message 
         || err.response?.data?.message 
-        || 'Kết nối thất bại. Vui lòng kiểm tra lại server Backend.';
+        || 'Kết nối thất bại. Vui lòng kiểm tra lại máy chủ.';
       setApiError(errorMsg);
     } finally {
       setIsLoading(false);
@@ -72,12 +72,12 @@ const LoginForm: React.FC = () => {
           </div>
           <div className="elog-form-logo-text">
             <h2 className="elog-form-logo-title">ELog</h2>
-            <span className="elog-form-logo-subtitle">SYSTEM</span>
+            <span className="elog-form-logo-subtitle">HỆ THỐNG</span>
           </div>
         </div>
 
-        <h3 className="elog-welcome-title">Welcome Back</h3>
-        <p className="elog-welcome-subtitle">Sign in to access your management dashboard</p>
+        <h3 className="elog-welcome-title">Chào mừng trở lại</h3>
+        <p className="elog-welcome-subtitle">Đăng nhập để truy cập bảng quản trị</p>
 
         {/* Khung hiển thị thông báo lỗi khi đăng nhập không thành công */}
         {apiError && (
@@ -98,14 +98,14 @@ const LoginForm: React.FC = () => {
         >
           {/* Ô nhập Email / Username */}
           <Form.Item
-            label={<span className="elog-form-label">Email / Username</span>}
+            label={<span className="elog-form-label">Email / Tên đăng nhập</span>}
             name="username"
             // Định nghĩa quy tắc validate: bắt buộc nhập
-            rules={[{ required: true, message: 'Please enter email or username' }]}
+            rules={[{ required: true, message: 'Vui lòng nhập email hoặc tên đăng nhập' }]}
             style={{ marginBottom: '18px' }}
           >
             <Input
-              placeholder="Enter your email or username"
+              placeholder="Nhập email hoặc tên đăng nhập"
               disabled={isLoading}
               style={{
                 height: '46px',
@@ -137,14 +137,14 @@ const LoginForm: React.FC = () => {
 
           {/* Ô nhập Mật khẩu */}
           <Form.Item
-            label={<span className="elog-form-label">Password</span>}
+            label={<span className="elog-form-label">Mật khẩu</span>}
             name="password"
-            rules={[{ required: true, message: 'Please enter password' }]}
+            rules={[{ required: true, message: 'Vui lòng nhập mật khẩu' }]}
             style={{ marginBottom: '18px' }}
           >
             {/* Sử dụng Input.Password của Antd giúp tích hợp sẵn chức năng ẩn/hiện mật khẩu */}
             <Input.Password
-              placeholder="Enter your password"
+              placeholder="Nhập mật khẩu"
               disabled={isLoading}
               style={{
                 height: '46px',
@@ -177,11 +177,11 @@ const LoginForm: React.FC = () => {
           <div className="elog-form-options">
             <Form.Item name="remember" valuePropName="checked" noStyle>
               <Checkbox disabled={isLoading} className="elog-checkbox-label">
-                Remember me
+                Ghi nhớ đăng nhập
               </Checkbox>
             </Form.Item>
             <a href="#forgot" className="elog-forgot-link" onClick={(e) => e.preventDefault()}>
-              Forgot password?
+              Quên mật khẩu?
             </a>
           </div>
 
@@ -193,7 +193,7 @@ const LoginForm: React.FC = () => {
             className="elog-btn-submit"
             style={{ width: '100%', height: '48px', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px', border: 'none' }}
           >
-            {!isLoading && 'Sign In'}
+            {!isLoading && 'Đăng nhập'}
           </Button>
         </Form>
 

@@ -1,8 +1,9 @@
 import React from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { Layout, Menu, Avatar, Dropdown, Button, Space, Input, Badge, ConfigProvider } from 'antd';
-import { Bell, ChevronDown, LogOut, Search, Users, LayoutGrid, Map, Settings, Package, Home, Truck, FileSpreadsheet, Layers } from 'lucide-react';
+import { Bell, ChevronDown, ClipboardList, LogOut, Search, Users, LayoutGrid, Map, Settings, Package, Home, Truck, FileSpreadsheet, Layers } from 'lucide-react';
 import axiosInstance from '../api/axiosInstance';
+
 
 const { Header, Sider, Content } = Layout;
 
@@ -58,11 +59,14 @@ const AdminShell: React.FC<AdminShellProps> = ({ currentUser, children }) => {
         ? '/dispatcher/import'
         : location.pathname.startsWith('/dispatcher/trip-drafts')
           ? '/dispatcher/trip-drafts'
-          : location.pathname;
+          : location.pathname.startsWith('/trip-drafts')
+            ? '/trip-drafts'
+            : location.pathname;
 
   const roles = currentUser.roles || [];
   const canViewImport = roles.some(role => ["SYSTEM_ADMIN", "DISPATCHER", "LOGISTICS_MANAGER"].includes(role));
   const canViewTripDraftsMenu = roles.some(role => ["SYSTEM_ADMIN", "DISPATCHER", "LOGISTICS_MANAGER", "WAREHOUSE_STAFF"].includes(role));
+
 
   const sidebarMenuItems = [
     {
@@ -121,8 +125,15 @@ const AdminShell: React.FC<AdminShellProps> = ({ currentUser, children }) => {
             icon: <Layers size={ICON_SIZE} />,
             label: 'Quản lý gom đơn',
             onClick: () => navigate('/dispatcher/trip-drafts'),
+          },
+          {
+            key: '/trip-drafts',
+            icon: <ClipboardList size={ICON_SIZE} />,
+            label: 'Lập kế hoạch chuyến',
+            onClick: () => navigate('/trip-drafts'),
           }
         ] : []),
+
 
       ],
     },
@@ -179,8 +190,8 @@ const AdminShell: React.FC<AdminShellProps> = ({ currentUser, children }) => {
               E
             </div>
             <div style={{ lineHeight: 1.2 }}>
-              <h1 style={{ margin: 0, fontSize: 15, fontWeight: 700, color: '#ffffff' }}>ELog Admin</h1>
-              <p style={{ margin: 0, fontSize: 10, color: '#64748b', fontWeight: 500 }}>System Dashboard</p>
+              <h1 style={{ margin: 0, fontSize: 15, fontWeight: 700, color: '#ffffff' }}>ELog Quản trị</h1>
+              <p style={{ margin: 0, fontSize: 10, color: '#64748b', fontWeight: 500 }}>Bảng điều khiển hệ thống</p>
             </div>
           </div>
 
@@ -218,6 +229,7 @@ const AdminShell: React.FC<AdminShellProps> = ({ currentUser, children }) => {
                           ? 'Quản lý Logistics' 
                           : roles.join(', ') || 'User'}
                   </div>
+
                 </div>
               </div>
               <Button

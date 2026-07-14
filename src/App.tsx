@@ -18,6 +18,8 @@ import RouteManagementGuard from './guards/RouteManagementGuard';
 
 import StoresPage from './pages/StoresPage';
 import VehiclesPage from './pages/VehiclesPage';
+import TripDraftsPage from './pages/TripDraftsPage';
+import TripDraftReviewPage from './pages/TripDraftReviewPage';
 
 import OrderImportPage from './pages/dispatcher/import/OrderImportPage';
 import ImportBatchDetailPage from './pages/dispatcher/import/ImportBatchDetailPage';
@@ -74,6 +76,24 @@ function App() {
           element={
             <ProtectedRoute>
               <VehiclesPage />
+            </ProtectedRoute>
+          }
+        />
+
+        <Route
+          path="/trip-drafts"
+          element={
+            <ProtectedRoute>
+              <TripDraftsPage />
+            </ProtectedRoute>
+          }
+        />
+
+        <Route
+          path="/trip-drafts/:draftId/review"
+          element={
+            <ProtectedRoute>
+              <TripDraftReviewPage />
             </ProtectedRoute>
           }
         />
