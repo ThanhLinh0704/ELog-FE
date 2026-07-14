@@ -20,8 +20,6 @@ import {
   Space,
   Statistic,
   Table,
-  Tag,
-  Tooltip,
   Typography,
   message,
 } from 'antd';
