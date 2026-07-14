@@ -41,3 +41,46 @@ export interface ConsolidateResponse {
     reason: string;
   }[];
 }
+
+export type ConstraintResult = 'NOT_CHECKED' | 'PASS' | 'FAIL';
+
+export interface EligibleVehicle {
+  vehicleId: number;
+  plateNumber: string;
+  vehicleType: string;
+  maxVolumeM3: number;
+  maxWeightKg: number;
+  remainingVolumeM3: number;
+  remainingWeightKg: number;
+}
+
+export interface IneligibleVehicle {
+  vehicleId: number;
+  plateNumber: string;
+  vehicleType: string;
+  maxVolumeM3: number;
+  maxWeightKg: number;
+  volumeCheckResult: ConstraintResult;
+  weightCheckResult: ConstraintResult;
+  failureReason?: string;
+}
+
+export interface CapacityValidationResult {
+  tripDraftId: number;
+  fixedRouteCode: string;
+  deliveryDate: string;
+  newStatus: string;
+  totalVolumeM3: number;
+  totalWeightKg: number;
+  validationPassed: boolean;
+  volumeCheckResult: ConstraintResult;
+  weightCheckResult: ConstraintResult;
+  eligibleVehicles: EligibleVehicle[];
+  ineligibleVehicles: IneligibleVehicle[];
+  bindingConstraint?: 'VOLUME' | 'WEIGHT' | 'BOTH' | null;
+  suggestion?: string | null;
+  validatedAt?: string | null;
+  validatedBy?: ConfirmedByDto | null;
+  message?: string;
+}
+

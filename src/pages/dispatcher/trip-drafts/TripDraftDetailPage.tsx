@@ -207,21 +207,34 @@ const TripDraftDetailPage: React.FC = () => {
         />
       </div>
 
-      <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 24 }}>
-        <Button
-          icon={<ArrowLeftOutlined />}
-          onClick={() => navigate(`/dispatcher/trip-drafts?deliveryDate=${draft.deliveryDate}`)}
-          style={{ borderRadius: 6 }}
-        >
-          Quay lại
-        </Button>
-        <div style={{ display: 'flex', alignItems: 'center', gap: 12, flexWrap: 'wrap' }}>
-          <Title level={3} style={{ margin: 0, fontWeight: 700 }}>
-            Chi tiết đợt gom đơn: Tuyến {draft.routeCode}
-          </Title>
-          {renderStatusTag(draft.status)}
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 24, flexWrap: 'wrap', gap: 12 }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+          <Button
+            icon={<ArrowLeftOutlined />}
+            onClick={() => navigate(`/dispatcher/trip-drafts?deliveryDate=${draft.deliveryDate}`)}
+            style={{ borderRadius: 6 }}
+          >
+            Quay lại
+          </Button>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 12, flexWrap: 'wrap' }}>
+            <Title level={3} style={{ margin: 0, fontWeight: 700 }}>
+              Chi tiết đợt gom đơn: Tuyến {draft.routeCode}
+            </Title>
+            {renderStatusTag(draft.status)}
+          </div>
         </div>
+
+        {(draft.status === 'PLANNED' || draft.status === 'VALIDATED') && (
+          <Button
+            type="primary"
+            style={{ borderRadius: 6, fontWeight: 600 }}
+            onClick={() => navigate(`/dispatcher/trip-drafts/${draft.id}/capacity`)}
+          >
+            {draft.status === 'PLANNED' ? 'Kiểm tra tải trọng' : 'Xem kết quả tải trọng'}
+          </Button>
+        )}
       </div>
+
 
       {/* Overview Metrics Card */}
       <Card

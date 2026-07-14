@@ -1,5 +1,5 @@
 import axiosInstance from './axiosInstance';
-import type { TripDraft, ConsolidateResponse } from '../types/tripDraft';
+import type { TripDraft, ConsolidateResponse, CapacityValidationResult } from '../types/tripDraft';
 
 export class ApiError extends Error {
   status?: number;
@@ -63,5 +63,20 @@ export const tripDraftApi = {
       axiosInstance.get(`/api/trip-drafts/${id}`)
     );
     return res.data;
+  },
+
+  async getCapacityValidationResult(tripDraftId: number | string): Promise<CapacityValidationResult> {
+    const res = await handleAxiosCall<any>(() =>
+      axiosInstance.get(`/api/trip-drafts/${tripDraftId}/validation-result`)
+    );
+    return res.data;
+  },
+
+  async validateTripDraftCapacity(tripDraftId: number | string): Promise<CapacityValidationResult> {
+    const res = await handleAxiosCall<any>(() =>
+      axiosInstance.post(`/api/trip-drafts/${tripDraftId}/validate-capacity`)
+    );
+    return res.data;
   }
 };
+

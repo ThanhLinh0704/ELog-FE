@@ -24,6 +24,7 @@ import ImportBatchDetailPage from './pages/dispatcher/import/ImportBatchDetailPa
 import ImportModuleGuard from './guards/ImportModuleGuard';
 import TripDraftListPage from './pages/dispatcher/trip-drafts/TripDraftListPage';
 import TripDraftDetailPage from './pages/dispatcher/trip-drafts/TripDraftDetailPage';
+import CapacityValidationPage from './pages/dispatcher/trip-drafts/CapacityValidationPage';
 
 
 function App() {
@@ -179,6 +180,15 @@ function App() {
             </ProtectedRoute>
           }
         />
+        <Route
+          path="/dispatcher/trip-drafts/:id/capacity"
+          element={
+            <ProtectedRoute>
+              <CapacityValidationPage />
+            </ProtectedRoute>
+          }
+        />
+
 
         <Route path="/403" element={<ForbiddenPage />} />
 
