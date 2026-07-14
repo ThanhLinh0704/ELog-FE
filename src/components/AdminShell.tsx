@@ -1,7 +1,7 @@
 import React from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { Layout, Menu, Avatar, Dropdown, Button, Space, Input, Badge, ConfigProvider } from 'antd';
-import { Bell, ChevronDown, LogOut, Search, Users, LayoutGrid, Map, Settings, Package, Home, Truck } from 'lucide-react';
+import { Bell, ChevronDown, ClipboardList, LogOut, Search, Users, LayoutGrid, Map, Settings, Package, Home, Truck } from 'lucide-react';
 import axiosInstance from '../api/axiosInstance';
 
 const { Header, Sider, Content } = Layout;
@@ -54,6 +54,8 @@ const AdminShell: React.FC<AdminShellProps> = ({ currentUser, children }) => {
     ? '/admin/products'
     : location.pathname.startsWith('/admin/routes')
       ? '/admin/routes'
+      : location.pathname.startsWith('/trip-drafts')
+        ? '/trip-drafts'
       : location.pathname;
 
   const sidebarMenuItems = [
@@ -98,6 +100,12 @@ const AdminShell: React.FC<AdminShellProps> = ({ currentUser, children }) => {
           icon: <Map size={ICON_SIZE} />,
           label: 'Quản lý tuyến',
           onClick: () => navigate('/admin/routes'),
+        },
+        {
+          key: '/trip-drafts',
+          icon: <ClipboardList size={ICON_SIZE} />,
+          label: 'Lập kế hoạch chuyến',
+          onClick: () => navigate('/trip-drafts'),
         },
 
       ],
@@ -168,8 +176,8 @@ const AdminShell: React.FC<AdminShellProps> = ({ currentUser, children }) => {
               E
             </div>
             <div style={{ lineHeight: 1.2 }}>
-              <h1 style={{ margin: 0, fontSize: 15, fontWeight: 700, color: '#ffffff' }}>ELog Admin</h1>
-              <p style={{ margin: 0, fontSize: 10, color: '#64748b', fontWeight: 500 }}>System Dashboard</p>
+              <h1 style={{ margin: 0, fontSize: 15, fontWeight: 700, color: '#ffffff' }}>ELog Quản trị</h1>
+              <p style={{ margin: 0, fontSize: 10, color: '#64748b', fontWeight: 500 }}>Bảng điều khiển hệ thống</p>
             </div>
           </div>
 
@@ -198,7 +206,7 @@ const AdminShell: React.FC<AdminShellProps> = ({ currentUser, children }) => {
                   <div className="elog-profile-name">
                     {currentUser.fullName || currentUser.username}
                   </div>
-                  <div style={{ fontSize: 11, color: '#64748b' }}>System Admin</div>
+                  <div style={{ fontSize: 11, color: '#64748b' }}>Quản trị hệ thống</div>
                 </div>
               </div>
               <Button

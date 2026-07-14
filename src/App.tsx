@@ -19,6 +19,8 @@ import RouteManagementGuard from './guards/RouteManagementGuard';
 import StoresPage from './pages/StoresPage';
 import VehiclesPage from './pages/VehiclesPage';
 import LifoManifestPage from './pages/LifoManifestPage';
+import TripDraftsPage from './pages/TripDraftsPage';
+import TripDraftReviewPage from './pages/TripDraftReviewPage';
 
 
 function App() {
@@ -73,16 +75,25 @@ function App() {
         />
 
         <Route
-          path="/trip-drafts/:tripDraftId/loading-manifest"
+          path="/trip-drafts"
           element={
             <ProtectedRoute>
-              <LifoManifestPage />
+              <TripDraftsPage />
             </ProtectedRoute>
           }
         />
 
         <Route
-          path="/loading-manifest"
+          path="/trip-drafts/:draftId/review"
+          element={
+            <ProtectedRoute>
+              <TripDraftReviewPage />
+            </ProtectedRoute>
+          }
+        />
+
+        <Route
+          path="/trip-drafts/:tripDraftId/loading-manifest"
           element={
             <ProtectedRoute>
               <LifoManifestPage />
