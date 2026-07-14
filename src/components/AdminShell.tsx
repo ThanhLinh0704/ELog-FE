@@ -1,7 +1,7 @@
 import React from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { Layout, Menu, Avatar, Dropdown, Button, Space, Input, Badge, ConfigProvider } from 'antd';
-import { Bell, ChevronDown, LogOut, Search, Users, LayoutGrid, Store, Map, Settings, Package, Home, Truck } from 'lucide-react';
+import { Bell, ChevronDown, ClipboardList, LogOut, Search, Users, LayoutGrid, Map, Settings, Package, Home, Truck } from 'lucide-react';
 import axiosInstance from '../api/axiosInstance';
 
 const { Header, Sider, Content } = Layout;
@@ -54,6 +54,8 @@ const AdminShell: React.FC<AdminShellProps> = ({ currentUser, children }) => {
     ? '/admin/products'
     : location.pathname.startsWith('/admin/routes')
       ? '/admin/routes'
+      : location.pathname.startsWith('/trip-drafts')
+        ? '/trip-drafts'
       : location.pathname;
 
   const sidebarMenuItems = [
@@ -98,6 +100,12 @@ const AdminShell: React.FC<AdminShellProps> = ({ currentUser, children }) => {
           icon: <Map size={ICON_SIZE} />,
           label: 'Quản lý tuyến',
           onClick: () => navigate('/admin/routes'),
+        },
+        {
+          key: '/trip-drafts',
+          icon: <ClipboardList size={ICON_SIZE} />,
+          label: 'Trip Planning',
+          onClick: () => navigate('/trip-drafts'),
         },
 
       ],
