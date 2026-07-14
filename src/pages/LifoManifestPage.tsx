@@ -15,7 +15,7 @@ import {
   Tag,
   Typography,
 } from 'antd';
-import { ArrowLeft, RefreshCcw, RotateCw, Truck } from 'lucide-react';
+import { ArrowLeft, RefreshCcw, Truck } from 'lucide-react';
 import AdminShell from '../components/AdminShell';
 import {
   generateLoadingManifest,
@@ -30,7 +30,7 @@ import ManifestSummary from '../components/manifest/ManifestSummary';
 import FlatManifestView from '../components/manifest/FlatManifestView';
 import ByStopManifestView from '../components/manifest/ByStopManifestView';
 
-const { Title, Paragraph, Text } = Typography;
+const { Title, Paragraph } = Typography;
 
 const readRoles = (): string[] => {
   try {
@@ -78,7 +78,7 @@ const LifoManifestPage = () => {
 
   const loadManifest = useCallback(async () => {
     if (!tripDraftId) {
-      setError('Missing tripDraftId in route.');
+      setError('Thiếu mã bản nháp chuyến trên đường dẫn.');
       setLoading(false);
       return;
     }
@@ -102,7 +102,7 @@ const LifoManifestPage = () => {
         setStops([]);
         setNotGenerated(true);
       } else {
-        setError(getLoadingManifestApiErrorMessage(err, 'Khong the tai Loading Manifest.'));
+        setError(getLoadingManifestApiErrorMessage(err, 'Không thể tải bảng xếp hàng.'));
       }
     } finally {
       setLoading(false);
@@ -115,19 +115,19 @@ const LifoManifestPage = () => {
 
   const handleGenerate = () => {
     Modal.confirm({
-      title: 'Tao LIFO Manifest?',
-      content: 'He thong se tao thu tu xep hang theo nguyen tac LIFO cho Trip Draft nay.',
-      okText: 'Tao Manifest',
-      cancelText: 'Huy',
+      title: 'Tạo bảng hướng dẫn xếp hàng?',
+      content: 'Hệ thống sẽ sắp xếp hàng theo thứ tự giao ngược lại: điểm giao cuối xếp lên xe trước, điểm giao đầu xếp lên xe sau cùng.',
+      okText: 'Tạo bảng xếp hàng',
+      cancelText: 'Hủy',
       onOk: async () => {
         setActionLoading(true);
         try {
           const generated = await generateLoadingManifest(tripDraftId, { generationMode: 'LIFO' });
           setManifest(generated);
-          message.success('LIFO manifest generated successfully.');
+          message.success('Đã tạo bảng xếp hàng thành công.');
           await loadManifest();
         } catch (err) {
-          message.error(getLoadingManifestApiErrorMessage(err, 'Khong the tao Loading Manifest.'));
+          message.error(getLoadingManifestApiErrorMessage(err, 'Không thể tạo bảng xếp hàng.'));
         } finally {
           setActionLoading(false);
         }
@@ -135,7 +135,7 @@ const LifoManifestPage = () => {
     });
   };
 
-  const statusTag = manifest ? <Tag color="processing">{manifest.status ?? 'GENERATED'}</Tag> : <Tag>NOT_GENERATED</Tag>;
+  const statusTag = manifest ? <Tag color="processing">Đã tạo bảng xếp hàng</Tag> : <Tag>Chưa tạo</Tag>;
 
   const renderContent = () => {
     if (loading) {
@@ -150,8 +150,8 @@ const LifoManifestPage = () => {
       return (
         <Result
           status="403"
-          title="Khong co quyen xem Loading Manifest"
-          subTitle="Permission Matrix US-13 chi cho DISPATCHER, WAREHOUSE_STAFF va LOGISTICS_MANAGER xem manifest."
+          title="Bạn không có quyền xem bảng xếp hàng"
+          subTitle="Chỉ nhân viên điều phối, kho hoặc quản lý logistics được xem màn hình này."
         />
       );
     }
@@ -161,9 +161,9 @@ const LifoManifestPage = () => {
         <Alert
           type="error"
           showIcon
-          message="Khong the tai Loading Manifest"
+          message="Không thể tải bảng xếp hàng"
           description={error}
-          action={<Button onClick={loadManifest}>Tai lai</Button>}
+          action={<Button onClick={loadManifest}>Tải lại</Button>}
         />
       );
     }
@@ -172,8 +172,8 @@ const LifoManifestPage = () => {
       return (
         <Result
           status="info"
-          title="Chua co Loading Manifest"
-          subTitle="Trip Draft nay chua duoc tao LIFO Loading Manifest theo API Contract US-13."
+          title="Chưa có bảng hướng dẫn xếp hàng"
+          subTitle="Hãy tạo bảng xếp hàng để kho biết kiện nào cần đưa lên xe trước và kiện nào nằm gần cửa xe."
           extra={
             canGenerate ? (
               <Button
@@ -182,7 +182,7 @@ const LifoManifestPage = () => {
                 loading={actionLoading}
                 onClick={handleGenerate}
               >
-                Tao LIFO Manifest
+                Tạo bảng xếp hàng
               </Button>
             ) : null
           }
@@ -192,17 +192,23 @@ const LifoManifestPage = () => {
 
     return (
       <Space direction="vertical" size="large" style={{ width: '100%' }}>
+        <Alert
+          type="info"
+          showIcon
+          message="Cách đọc màn hình này"
+          description="Hàng giao ở điểm cuối tuyến sẽ được xếp lên xe trước và nằm sâu trong khoang xe. Hàng giao ở điểm đầu tuyến sẽ xếp sau cùng, nằm gần cửa xe để dỡ xuống trước."
+        />
         <ManifestSummary manifest={manifest} />
         <Tabs
           items={[
             {
               key: 'flat',
-              label: 'Flat LIFO List',
+              label: 'Danh sách xếp hàng',
               children: <FlatManifestView items={manifest.lines} loading={loading} />,
             },
             {
               key: 'by-stop',
-              label: 'By-Stop View',
+              label: 'Theo điểm giao',
               children: <ByStopManifestView stops={stops} loading={loading} />,
             },
           ]}
@@ -219,20 +225,19 @@ const LifoManifestPage = () => {
             <Breadcrumb
               items={[
                 { title: 'Dashboard' },
-                { title: 'Trip Management' },
-                { title: 'LIFO Loading Manifest' },
+                { title: 'Lập kế hoạch chuyến' },
+                { title: 'Hướng dẫn xếp hàng' },
               ]}
             />
             <Space align="center" wrap>
               <Title level={2} style={{ margin: 0 }}>
-                LIFO Loading Manifest
+                Hướng dẫn xếp hàng lên xe
               </Title>
               {statusTag}
             </Space>
             <Paragraph type="secondary" style={{ margin: 0 }}>
-              Review and execute the loading order based on reverse delivery-stop sequence.
+              Màn hình này cho biết kiện hàng nào cần xếp lên xe trước, kiện nào để gần cửa xe để giao đúng thứ tự.
             </Paragraph>
-            <Text type="secondary">API Contract: US-13 uses Trip Draft ID {tripDraftId || '-'}</Text>
           </Space>
 
           <Space wrap>
@@ -243,28 +248,17 @@ const LifoManifestPage = () => {
                 loading={actionLoading}
                 onClick={handleGenerate}
               >
-                Tao LIFO Manifest
+                Tạo bảng xếp hàng
               </Button>
             ) : null}
             <Button icon={<RefreshCcw size={16} />} onClick={loadManifest} loading={loading}>
-              Tai lai
+              Tải lại
             </Button>
-            <Button icon={<RotateCw size={16} />} disabled>
-              Tao lai Manifest
-            </Button>
-            <Button disabled>Xac nhan Manifest</Button>
-            <Button icon={<ArrowLeft size={16} />} onClick={() => navigate('/dashboard')}>
-              Quay lai Trip Detail
+            <Button icon={<ArrowLeft size={16} />} onClick={() => navigate(`/trip-drafts/${tripDraftId}/review`)}>
+              Quay lại lập kế hoạch
             </Button>
           </Space>
         </Flex>
-
-        <Alert
-          type="info"
-          showIcon
-          message="Endpoint contract dang dung"
-          description="US-13 khai bao POST /api/trip-drafts/{id}/generate-manifest, GET /api/trip-drafts/{id}/manifest va GET /api/trip-drafts/{id}/manifest/by-stop. Regenerate/Confirm chua co trong contract nen UI khong goi endpoint that."
-        />
 
         {renderContent()}
       </Space>

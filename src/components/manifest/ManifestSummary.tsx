@@ -25,8 +25,8 @@ const getUtilizationAlert = (manifest: LoadingManifest) => {
       <Alert
         type="error"
         showIcon
-        message="Manifest vuot capacity cua xe"
-        description="Tong tai trong hoac the tich cua manifest dang lon hon gioi han xe."
+        message="Vượt sức chứa của xe"
+        description="Tổng khối lượng hoặc thể tích hàng đang lớn hơn khả năng chứa của xe."
       />
     );
   }
@@ -36,8 +36,8 @@ const getUtilizationAlert = (manifest: LoadingManifest) => {
       <Alert
         type="warning"
         showIcon
-        message="Capacity gan day"
-        description="Manifest dang su dung tren 90% tai trong hoac the tich xe."
+        message="Xe gần đầy"
+        description="Lượng hàng đang sử dụng trên 90% khối lượng hoặc thể tích xe."
       />
     );
   }
@@ -50,47 +50,47 @@ const ManifestSummary = ({ manifest }: ManifestSummaryProps) => {
   const itemCount = manifest.summary?.itemCount ?? manifest.totalLines;
 
   return (
-    <Card title="Trip Summary" variant="borderless">
+    <Card title="Thông tin chuyến và sức chứa xe" variant="borderless">
       <Row gutter={[16, 16]}>
         <Col xs={24} md={12} xl={6}>
-          <Statistic title="Trip Draft" value={manifest.tripDraftId} prefix="#" />
+          <Statistic title="Mã bản nháp chuyến" value={manifest.tripDraftId} prefix="#" />
         </Col>
         <Col xs={24} md={12} xl={6}>
-          <Statistic title="Route" value={manifest.fixedRouteCode || '-'} />
+          <Statistic title="Tuyến giao" value={manifest.fixedRouteCode || '-'} />
         </Col>
         <Col xs={24} md={12} xl={6}>
-          <Statistic title="Total Weight" value={manifest.totalWeightKg} suffix="kg" precision={2} />
+          <Statistic title="Tổng khối lượng" value={manifest.totalWeightKg} suffix="kg" precision={2} />
         </Col>
         <Col xs={24} md={12} xl={6}>
-          <Statistic title="Total Volume" value={manifest.totalVolumeM3} suffix="m3" precision={3} />
+          <Statistic title="Tổng thể tích" value={manifest.totalVolumeM3} suffix="m3" precision={3} />
         </Col>
       </Row>
 
       <div style={{ marginTop: 16 }}>
         <Descriptions bordered column={{ xs: 1, md: 2, xl: 3 }} size="small">
-          <Descriptions.Item label="Manifest ID">
+          <Descriptions.Item label="Mã bảng xếp hàng">
             <Text copyable>{manifest.manifestId}</Text>
           </Descriptions.Item>
-          <Descriptions.Item label="Status">
-            <Tag color="processing">{manifest.status ?? 'GENERATED'}</Tag>
+          <Descriptions.Item label="Trạng thái">
+            <Tag color="processing">Đã tạo</Tag>
           </Descriptions.Item>
-          <Descriptions.Item label="Delivery Date">{manifest.deliveryDate || '-'}</Descriptions.Item>
-          <Descriptions.Item label="Vehicle Plate">{manifest.vehicle?.plateNumber || '-'}</Descriptions.Item>
-          <Descriptions.Item label="Vehicle Type">{manifest.vehicle?.vehicleType || '-'}</Descriptions.Item>
-          <Descriptions.Item label="Driver">{manifest.driver?.fullName || '-'}</Descriptions.Item>
-          <Descriptions.Item label="Active Stops">{formatNumber(stopCount, 0)}</Descriptions.Item>
-          <Descriptions.Item label="Total Orders">{formatNumber(manifest.summary?.orderCount, 0)}</Descriptions.Item>
-          <Descriptions.Item label="Items / Packages">
+          <Descriptions.Item label="Ngày giao">{manifest.deliveryDate || '-'}</Descriptions.Item>
+          <Descriptions.Item label="Biển số xe">{manifest.vehicle?.plateNumber || '-'}</Descriptions.Item>
+          <Descriptions.Item label="Loại xe">{manifest.vehicle?.vehicleType || '-'}</Descriptions.Item>
+          <Descriptions.Item label="Tài xế">{manifest.driver?.fullName || '-'}</Descriptions.Item>
+          <Descriptions.Item label="Điểm giao đang hoạt động">{formatNumber(stopCount, 0)}</Descriptions.Item>
+          <Descriptions.Item label="Tổng đơn hàng">{formatNumber(manifest.summary?.orderCount, 0)}</Descriptions.Item>
+          <Descriptions.Item label="Dòng hàng / kiện hàng">
             {formatNumber(itemCount, 0)} / {formatNumber(manifest.summary?.packageCount, 0)}
           </Descriptions.Item>
-          <Descriptions.Item label="Vehicle Max Weight">
+          <Descriptions.Item label="Tải trọng tối đa">
             {formatNumber(manifest.vehicle?.maxWeightKg)} kg
           </Descriptions.Item>
-          <Descriptions.Item label="Vehicle Max Volume">
+          <Descriptions.Item label="Thể tích tối đa">
             {formatNumber(manifest.vehicle?.maxVolumeM3, 3)} m3
           </Descriptions.Item>
-          <Descriptions.Item label="Utilization">
-            Weight {formatNumber(manifest.summary?.weightUtilizationPercent)}% / Volume{' '}
+          <Descriptions.Item label="Mức sử dụng xe">
+            Khối lượng {formatNumber(manifest.summary?.weightUtilizationPercent)}% / Thể tích{' '}
             {formatNumber(manifest.summary?.volumeUtilizationPercent)}%
           </Descriptions.Item>
         </Descriptions>

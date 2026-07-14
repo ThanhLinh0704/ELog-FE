@@ -1,4 +1,4 @@
-import { Card, Collapse, Descriptions, Empty, Space, Table, Tag, Typography } from 'antd';
+import { Alert, Card, Collapse, Descriptions, Empty, Space, Table, Tag, Typography } from 'antd';
 import type { ColumnsType } from 'antd/es/table';
 import type { LoadingManifestItem, LoadingManifestStop } from '../../api/loadingManifestApi';
 
@@ -16,23 +16,23 @@ const formatNumber = (value?: number, digits = 3): string =>
 
 const getStopPositionTag = (index: number, total: number) => {
   if (index === 0) {
-    return <Tag color="blue">Load First - Deep Inside</Tag>;
+    return <Tag color="blue">Xếp đầu tiên - sâu trong xe</Tag>;
   }
   if (index === total - 1) {
-    return <Tag color="green">Load Last - Near Door</Tag>;
+    return <Tag color="green">Xếp cuối - gần cửa</Tag>;
   }
-  return <Tag>Load Next</Tag>;
+  return <Tag>Xếp tiếp theo</Tag>;
 };
 
 const columns: ColumnsType<LoadingManifestItem> = [
   {
-    title: 'Load Seq',
+    title: 'Bước xếp',
     dataIndex: 'lifoSequence',
     width: 100,
     render: (value: number) => <Tag color="blue">#{value}</Tag>,
   },
   {
-    title: 'Product',
+    title: 'Hàng hóa',
     dataIndex: 'productName',
     render: (_, record) => (
       <Space direction="vertical" size={0}>
@@ -44,20 +44,20 @@ const columns: ColumnsType<LoadingManifestItem> = [
     ),
   },
   {
-    title: 'Qty',
+    title: 'SL',
     dataIndex: 'quantity',
     width: 80,
     align: 'right',
   },
   {
-    title: 'Weight',
+    title: 'Khối lượng',
     dataIndex: 'lineWeightKg',
     width: 120,
     align: 'right',
     render: (value: number) => `${formatNumber(value)} kg`,
   },
   {
-    title: 'Volume',
+    title: 'Thể tích',
     dataIndex: 'lineVolumeM3',
     width: 120,
     align: 'right',
@@ -68,14 +68,21 @@ const columns: ColumnsType<LoadingManifestItem> = [
 const ByStopManifestView = ({ stops, loading = false }: ByStopManifestViewProps) => {
   if (!loading && stops.length === 0) {
     return (
-      <Card title="By-Stop View" variant="borderless">
-        <Empty description="No stop groups in this manifest" />
+      <Card title="Hàng hóa theo từng điểm giao" variant="borderless">
+        <Empty description="Chưa có nhóm điểm giao trong bảng xếp hàng" />
       </Card>
     );
   }
 
   return (
-    <Card title="By-Stop View" loading={loading} variant="borderless">
+    <Card title="Hàng hóa theo từng điểm giao" loading={loading} variant="borderless">
+      <Alert
+        type="info"
+        showIcon
+        style={{ marginBottom: 16 }}
+        message="Mỗi nhóm là hàng của một điểm giao"
+        description="Nhóm ở trên cùng được xếp lên xe trước. Nhóm ở dưới cùng được xếp sau cùng và sẽ nằm gần cửa xe."
+      />
       <Collapse
         defaultActiveKey={stops.slice(0, 2).map((stop) => String(stop.stopSequenceNo))}
         items={stops.map((stop, index) => ({
@@ -83,27 +90,27 @@ const ByStopManifestView = ({ stops, loading = false }: ByStopManifestViewProps)
           label: (
             <Space wrap>
               <Text strong>
-                Load Group {index + 1} - Stop {stop.stopSequenceNo}
+                Nhóm {index + 1}: giao tại điểm {stop.stopSequenceNo}
               </Text>
               {getStopPositionTag(index, stops.length)}
-              {stop.hasCoordinates === false ? <Tag color="orange">Missing GPS</Tag> : null}
-              {stop.isActive === false ? <Tag color="warning">Skipped</Tag> : null}
+              {stop.hasCoordinates === false ? <Tag color="orange">Thiếu GPS</Tag> : null}
+              {stop.isActive === false ? <Tag color="warning">Đã bỏ qua</Tag> : null}
               <Text type="secondary">{stop.storeName}</Text>
             </Space>
           ),
           children: (
             <Space direction="vertical" size="middle" style={{ width: '100%' }}>
               <Descriptions bordered size="small" column={{ xs: 1, md: 2, xl: 3 }}>
-                <Descriptions.Item label="Delivery Sequence">{stop.stopSequenceNo}</Descriptions.Item>
-                <Descriptions.Item label="Store Code">{stop.storeCode || '-'}</Descriptions.Item>
-                <Descriptions.Item label="Store Name">{stop.storeName || '-'}</Descriptions.Item>
-                <Descriptions.Item label="Address">{stop.address || '-'}</Descriptions.Item>
-                <Descriptions.Item label="Orders">{formatNumber(stop.orderCount, 0)}</Descriptions.Item>
-                <Descriptions.Item label="Items">{formatNumber(stop.itemCount ?? stop.items.length, 0)}</Descriptions.Item>
-                <Descriptions.Item label="Total Weight">{formatNumber(stop.stopWeightKg)} kg</Descriptions.Item>
-                <Descriptions.Item label="Total Volume">{formatNumber(stop.stopVolumeM3)} m3</Descriptions.Item>
+                <Descriptions.Item label="Thứ tự giao">{stop.stopSequenceNo}</Descriptions.Item>
+                <Descriptions.Item label="Mã cửa hàng">{stop.storeCode || '-'}</Descriptions.Item>
+                <Descriptions.Item label="Tên cửa hàng">{stop.storeName || '-'}</Descriptions.Item>
+                <Descriptions.Item label="Địa chỉ">{stop.address || '-'}</Descriptions.Item>
+                <Descriptions.Item label="Số đơn">{formatNumber(stop.orderCount, 0)}</Descriptions.Item>
+                <Descriptions.Item label="Số dòng hàng">{formatNumber(stop.itemCount ?? stop.items.length, 0)}</Descriptions.Item>
+                <Descriptions.Item label="Tổng khối lượng">{formatNumber(stop.stopWeightKg)} kg</Descriptions.Item>
+                <Descriptions.Item label="Tổng thể tích">{formatNumber(stop.stopVolumeM3)} m3</Descriptions.Item>
                 <Descriptions.Item label="ETA">{stop.eta || '-'}</Descriptions.Item>
-                <Descriptions.Item label="Loading Instruction" span={3}>
+                <Descriptions.Item label="Hướng dẫn xếp" span={3}>
                   {stop.loadingNote || stop.loadingInstruction || '-'}
                 </Descriptions.Item>
               </Descriptions>
@@ -114,7 +121,7 @@ const ByStopManifestView = ({ stops, loading = false }: ByStopManifestViewProps)
                 dataSource={[...stop.items].sort((a, b) => a.lifoSequence - b.lifoSequence)}
                 pagination={false}
                 size="small"
-                locale={{ emptyText: <Empty description="No items in this stop group" /> }}
+                locale={{ emptyText: <Empty description="Nhóm này chưa có hàng" /> }}
               />
             </Space>
           ),

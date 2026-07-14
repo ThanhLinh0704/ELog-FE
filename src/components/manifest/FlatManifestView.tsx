@@ -1,4 +1,4 @@
-import { Card, Empty, Space, Table, Tag, Tooltip, Typography } from 'antd';
+import { Alert, Card, Empty, Space, Table, Tag, Tooltip, Typography } from 'antd';
 import type { ColumnsType } from 'antd/es/table';
 import type { LoadingManifestItem } from '../../api/loadingManifestApi';
 
@@ -15,6 +15,20 @@ const statusColor: Record<string, string> = {
   LOADED: 'success',
   SKIPPED: 'warning',
   EXCEPTION: 'error',
+};
+
+const statusLabel: Record<string, string> = {
+  PENDING: 'Chờ xếp',
+  LOADING: 'Đang xếp',
+  LOADED: 'Đã xếp',
+  SKIPPED: 'Đã bỏ qua',
+  EXCEPTION: 'Có sự cố',
+};
+
+const zoneLabel: Record<string, string> = {
+  DEEP_INSIDE: 'Sâu trong xe',
+  CENTER: 'Giữa khoang xe',
+  NEAR_DOOR: 'Gần cửa xe',
 };
 
 const formatNumber = (value?: number, digits = 3): string =>
@@ -42,7 +56,7 @@ const FlatManifestView = ({ items, loading = false }: FlatManifestViewProps) => 
 
   const columns: ColumnsType<LoadingManifestItem> = [
     {
-      title: 'Load Sequence',
+      title: 'Bước xếp',
       dataIndex: 'lifoSequence',
       width: 120,
       fixed: 'left',
@@ -50,7 +64,7 @@ const FlatManifestView = ({ items, loading = false }: FlatManifestViewProps) => 
       render: (value: number) => <Tag color="blue">#{value}</Tag>,
     },
     {
-      title: 'Delivery Stop',
+      title: 'Giao tại',
       dataIndex: 'storeName',
       width: 190,
       render: (_, record) => (
@@ -63,19 +77,19 @@ const FlatManifestView = ({ items, loading = false }: FlatManifestViewProps) => 
       ),
     },
     {
-      title: 'Delivery Sequence',
+      title: 'Thứ tự giao',
       dataIndex: 'stopSequenceNo',
       width: 140,
       render: (value: number) => <Tag>{value}</Tag>,
     },
     {
-      title: 'Order Code',
+      title: 'Mã đơn',
       dataIndex: 'orderCode',
       width: 140,
       render: clipText,
     },
     {
-      title: 'Item / Product',
+      title: 'Hàng hóa',
       dataIndex: 'productName',
       width: 220,
       render: (_, record) => (
@@ -88,51 +102,53 @@ const FlatManifestView = ({ items, loading = false }: FlatManifestViewProps) => 
       ),
     },
     {
-      title: 'Category',
+      title: 'Loại hàng',
       dataIndex: 'category',
       width: 130,
       render: (value?: string) => value || '-',
     },
     {
-      title: 'Qty',
+      title: 'SL',
       dataIndex: 'quantity',
       width: 80,
       align: 'right',
     },
     {
-      title: 'Package Code',
+      title: 'Mã kiện',
       dataIndex: 'packageCode',
       width: 140,
       render: clipText,
     },
     {
-      title: 'Weight',
+      title: 'Khối lượng',
       dataIndex: 'lineWeightKg',
       width: 110,
       align: 'right',
       render: (value: number) => `${formatNumber(value)} kg`,
     },
     {
-      title: 'Volume',
+      title: 'Thể tích',
       dataIndex: 'lineVolumeM3',
       width: 110,
       align: 'right',
       render: (value: number) => `${formatNumber(value)} m3`,
     },
     {
-      title: 'Loading Zone',
+      title: 'Vị trí trên xe',
       dataIndex: 'loadingZone',
       width: 140,
-      render: (value?: string) => value || '-',
+      render: (value?: string) => (value ? zoneLabel[value] || value : '-'),
     },
     {
-      title: 'Loading Status',
+      title: 'Trạng thái',
       dataIndex: 'loadingStatus',
       width: 140,
-      render: (value?: string) => <Tag color={statusColor[value || 'PENDING']}>{value || 'PENDING'}</Tag>,
+      render: (value?: string) => (
+        <Tag color={statusColor[value || 'PENDING']}>{statusLabel[value || 'PENDING'] || value || 'Chờ xếp'}</Tag>
+      ),
     },
     {
-      title: 'Note',
+      title: 'Ghi chú xếp hàng',
       dataIndex: 'loadingNote',
       width: 220,
       render: (_, record) => clipText(record.loadingNote || record.note || ''),
@@ -141,15 +157,22 @@ const FlatManifestView = ({ items, loading = false }: FlatManifestViewProps) => 
 
   return (
     <Card
-      title="Flat LIFO List"
+      title="Danh sách xếp hàng theo từng kiện"
       extra={
         <Space split={<span style={{ color: '#d9d9d9' }}>|</span>}>
-          <Text>Total weight: {formatNumber(totalWeight)} kg</Text>
-          <Text>Total volume: {formatNumber(totalVolume)} m3</Text>
+          <Text>Tổng khối lượng: {formatNumber(totalWeight)} kg</Text>
+          <Text>Tổng thể tích: {formatNumber(totalVolume)} m3</Text>
         </Space>
       }
       variant="borderless"
     >
+      <Alert
+        type="info"
+        showIcon
+        style={{ marginBottom: 16 }}
+        message="Làm theo cột Bước xếp từ trên xuống dưới"
+        description="Bước #1 là kiện cần đưa lên xe đầu tiên và nằm sâu trong khoang xe. Các bước cuối sẽ nằm gần cửa xe hơn để giao trước."
+      />
       <Table
         rowKey={(record) => `${record.lifoSequence}-${record.productCode}-${record.storeCode}`}
         columns={columns}
@@ -158,12 +181,12 @@ const FlatManifestView = ({ items, loading = false }: FlatManifestViewProps) => 
         size="middle"
         scroll={{ x: 1600 }}
         pagination={sortedItems.length > 10 ? { pageSize: 10, showSizeChanger: true } : false}
-        locale={{ emptyText: <Empty description="Manifest has no valid item lines" /> }}
+        locale={{ emptyText: <Empty description="Chưa có dòng hàng hợp lệ trong bảng xếp hàng" /> }}
         summary={() =>
           sortedItems.length > 0 ? (
             <Table.Summary.Row>
               <Table.Summary.Cell index={0} colSpan={8}>
-                <Text strong>Total</Text>
+                <Text strong>Tổng cộng</Text>
               </Table.Summary.Cell>
               <Table.Summary.Cell index={8} align="right">
                 <Text strong>{formatNumber(totalWeight)} kg</Text>
