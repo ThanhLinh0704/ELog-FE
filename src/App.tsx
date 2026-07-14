@@ -16,10 +16,10 @@ import RouteEditPage from './pages/admin/routes/RouteEditPage';
 import ForbiddenPage from './pages/ForbiddenPage';
 import RouteManagementGuard from './guards/RouteManagementGuard';
 
-import StoresPage from './pages/StoresPage';  
+import StoresPage from './pages/StoresPage';
 import VehiclesPage from './pages/VehiclesPage';
-   
-import OrderImportPage from './pages/dispatcher/import/OrderImportPage'; 
+
+import OrderImportPage from './pages/dispatcher/import/OrderImportPage';
 import ImportBatchDetailPage from './pages/dispatcher/import/ImportBatchDetailPage';
 import ImportModuleGuard from './guards/ImportModuleGuard';
 import TripDraftListPage from './pages/dispatcher/trip-drafts/TripDraftListPage';

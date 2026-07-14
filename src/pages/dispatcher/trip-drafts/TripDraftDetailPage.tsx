@@ -1,19 +1,19 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { 
-  Card, 
-  Table, 
-  Button, 
-  Breadcrumb, 
-  Typography, 
-  Row, 
-  Col, 
-  Statistic, 
-  Tag, 
-  Divider, 
-  Spin, 
-  message, 
-  Empty 
+import {
+  Card,
+  Table,
+  Button,
+  Breadcrumb,
+  Typography,
+  Row,
+  Col,
+  Statistic,
+  Tag,
+  Divider,
+  Spin,
+  message,
+  Empty
 } from 'antd';
 import { ArrowLeftOutlined } from '@ant-design/icons';
 import { MapPin, CheckCircle2, XCircle } from 'lucide-react';
@@ -144,7 +144,7 @@ const TripDraftDetailPage: React.FC = () => {
       dataIndex: 'isActive',
       key: 'isActive',
       render: (isActive: boolean) => (
-        isActive 
+        isActive
           ? <Tag color="success">🟢 Hoạt động (Active)</Tag>
           : <Tag color="default">⚪ Bỏ qua (Skipped)</Tag>
       ),
