@@ -11,7 +11,7 @@ import {
   Space,
   Typography,
 } from 'antd';
-import { ClipboardList, Search } from 'lucide-react';
+import { ClipboardList, PackageCheck, Search } from 'lucide-react';
 import AdminShell from '../components/AdminShell';
 
 function getCurrentUser() {
@@ -42,6 +42,11 @@ const TripDraftsPage: React.FC = () => {
   function openReview() {
     if (!draftId) return;
     navigate(`/trip-drafts/${draftId}/review`);
+  }
+
+  function openLifoManifest() {
+    if (!draftId) return;
+    navigate(`/trip-drafts/${draftId}/loading-manifest`);
   }
 
   return (
@@ -97,6 +102,14 @@ const TripDraftsPage: React.FC = () => {
                   disabled={!draftId}
                 >
                   Kiểm tra bản nháp
+                </Button>
+                <Button
+                  icon={<PackageCheck size={16} />}
+                  disabled={!draftId}
+                  onClick={openLifoManifest}
+                  style={{ marginLeft: 8 }}
+                >
+                  LIFO Manifest
                 </Button>
               </Form>
             </Card>
