@@ -104,7 +104,7 @@ const AdminShell: React.FC<AdminShellProps> = ({ currentUser, children }) => {
         {
           key: '/trip-drafts',
           icon: <ClipboardList size={ICON_SIZE} />,
-          label: 'Trip Planning',
+          label: 'Lập kế hoạch chuyến',
           onClick: () => navigate('/trip-drafts'),
         },
 
@@ -163,8 +163,8 @@ const AdminShell: React.FC<AdminShellProps> = ({ currentUser, children }) => {
               E
             </div>
             <div style={{ lineHeight: 1.2 }}>
-              <h1 style={{ margin: 0, fontSize: 15, fontWeight: 700, color: '#ffffff' }}>ELog Admin</h1>
-              <p style={{ margin: 0, fontSize: 10, color: '#64748b', fontWeight: 500 }}>System Dashboard</p>
+              <h1 style={{ margin: 0, fontSize: 15, fontWeight: 700, color: '#ffffff' }}>ELog Quản trị</h1>
+              <p style={{ margin: 0, fontSize: 10, color: '#64748b', fontWeight: 500 }}>Bảng điều khiển hệ thống</p>
             </div>
           </div>
 
@@ -193,7 +193,7 @@ const AdminShell: React.FC<AdminShellProps> = ({ currentUser, children }) => {
                   <div className="elog-profile-name">
                     {currentUser.fullName || currentUser.username}
                   </div>
-                  <div style={{ fontSize: 11, color: '#64748b' }}>System Admin</div>
+                  <div style={{ fontSize: 11, color: '#64748b' }}>Quản trị hệ thống</div>
                 </div>
               </div>
               <Button

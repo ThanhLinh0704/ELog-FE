@@ -217,7 +217,7 @@ export function getTripDraftApiStatus(err: unknown): number | undefined {
 
 export function getApiErrorMessage(
   err: unknown,
-  fallback = 'Co loi xay ra, vui long thu lai.'
+  fallback = 'Có lỗi xảy ra, vui lòng thử lại.'
 ): string {
   const apiError = err as ApiErrorLike;
 

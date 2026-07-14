@@ -1,7 +1,6 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import {
-  Alert,
   Breadcrumb,
   Button,
   Card,
@@ -51,15 +50,15 @@ const TripDraftsPage: React.FC = () => {
         <div>
           <Breadcrumb
             items={[
-              { title: 'Admin' },
-              { title: 'Trip Planning' },
+              { title: 'Quản trị' },
+              { title: 'Lập kế hoạch chuyến' },
             ]}
           />
           <Typography.Title level={2} style={{ margin: '8px 0 0 0' }}>
-            Trip Planning
+            Lập kế hoạch chuyến
           </Typography.Title>
           <Typography.Text type="secondary">
-            Open a trip draft review screen before confirming it as a planned trip.
+            Mở bản nháp chuyến giao hàng để kiểm tra trước khi xác nhận thành chuyến đã lập kế hoạch.
           </Typography.Text>
         </div>
 
@@ -70,23 +69,23 @@ const TripDraftsPage: React.FC = () => {
               title={
                 <Space>
                   <ClipboardList size={18} />
-                  <span>Open Trip Draft</span>
+                  <span>Mở bản nháp chuyến</span>
                 </Space>
               }
             >
               <Form layout="vertical" onFinish={openReview}>
                 <Form.Item
-                  label="Draft ID"
+                  label="ID bản nháp"
                   required
                   validateStatus={draftId ? undefined : 'warning'}
-                  help={draftId ? undefined : 'Enter a draft ID to open review.'}
+                  help={draftId ? undefined : 'Nhập ID bản nháp để mở màn kiểm tra.'}
                 >
                   <InputNumber
                     min={1}
                     precision={0}
                     value={draftId}
                     onChange={(value) => setDraftId(value)}
-                    placeholder="Example: 10"
+                    placeholder="Ví dụ: 10"
                     style={{ width: '100%' }}
                   />
                 </Form.Item>
@@ -97,20 +96,12 @@ const TripDraftsPage: React.FC = () => {
                   icon={<Search size={16} />}
                   disabled={!draftId}
                 >
-                  Review Draft
+                  Kiểm tra bản nháp
                 </Button>
               </Form>
             </Card>
           </Col>
 
-          <Col xs={24} lg={12}>
-            <Alert
-              type="info"
-              showIcon
-              message="Open a real trip draft by ID."
-              description="The backend contract for this task provides the detail endpoint /api/trip-drafts/{draftId}. This page no longer calls /api/trip-drafts automatically, so it will not trigger the list endpoint 500."
-            />
-          </Col>
         </Row>
       </Space>
     </AdminShell>

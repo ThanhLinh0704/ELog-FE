@@ -26,12 +26,12 @@ const ROUTES: RoutePath[] = [
 ];
 
 const STOPS: StopNode[] = [
-  { cx: 240, cy: 32, color: '#2563eb', strokeColor: 'rgba(37,99,235,0.45)', label: 'Stop 1', delay: '0s', labelDy: -10 },
-  { cx: 390, cy: 26, color: '#2563eb', strokeColor: 'rgba(37,99,235,0.45)', label: 'Stop 2', delay: '0.9s', labelDy: -10 },
-  { cx: 270, cy: 118, color: '#8b5cf6', strokeColor: 'rgba(139,92,246,0.45)', label: 'Stop 3', delay: '0.4s', labelDy: 16 },
-  { cx: 420, cy: 95, color: '#8b5cf6', strokeColor: 'rgba(139,92,246,0.45)', label: 'Stop 4', delay: '1.3s', labelDy: 16 },
-  { cx: 295, cy: 55, color: '#ec4899', strokeColor: 'rgba(236,72,153,0.45)', label: 'Stop 5', delay: '0.7s', labelDy: -10 },
-  { cx: 400, cy: 36, color: '#ec4899', strokeColor: 'rgba(236,72,153,0.45)', label: 'Stop 6', delay: '1.6s', labelDy: -10 },
+  { cx: 240, cy: 32, color: '#2563eb', strokeColor: 'rgba(37,99,235,0.45)', label: 'Điểm 1', delay: '0s', labelDy: -10 },
+  { cx: 390, cy: 26, color: '#2563eb', strokeColor: 'rgba(37,99,235,0.45)', label: 'Điểm 2', delay: '0.9s', labelDy: -10 },
+  { cx: 270, cy: 118, color: '#8b5cf6', strokeColor: 'rgba(139,92,246,0.45)', label: 'Điểm 3', delay: '0.4s', labelDy: 16 },
+  { cx: 420, cy: 95, color: '#8b5cf6', strokeColor: 'rgba(139,92,246,0.45)', label: 'Điểm 4', delay: '1.3s', labelDy: 16 },
+  { cx: 295, cy: 55, color: '#ec4899', strokeColor: 'rgba(236,72,153,0.45)', label: 'Điểm 5', delay: '0.7s', labelDy: -10 },
+  { cx: 400, cy: 36, color: '#ec4899', strokeColor: 'rgba(236,72,153,0.45)', label: 'Điểm 6', delay: '1.6s', labelDy: -10 },
 ];
 
 // ─── Sub-components ──────────────────────────────────────────────────────────
@@ -91,9 +91,9 @@ const StopNodeComponent: React.FC<{ stop: StopNode }> = ({ stop }) => {
 const RouteLegend: React.FC = () => (
   <g transform="translate(148,148)">
     {[
-      { color: '#2563eb', label: 'Route A' },
-      { color: '#8b5cf6', label: 'Route B' },
-      { color: '#ec4899', label: 'Route C' },
+      { color: '#2563eb', label: 'Tuyến A' },
+      { color: '#8b5cf6', label: 'Tuyến B' },
+      { color: '#ec4899', label: 'Tuyến C' },
     ].map(({ color, label }, i) => (
       <g key={label} transform={`translate(${i * 70}, 0)`}>
         <circle cx="4" cy="0" r="4" fill={color} opacity="0.22" />
@@ -164,7 +164,7 @@ const MapMockup: React.FC = () => {
             <div className="elog-map-hub-dot" />
             <div>
               <div className="elog-map-hub-title">ELog Hub A</div>
-              <div className="elog-map-hub-sub">Main Warehouse</div>
+              <div className="elog-map-hub-sub">Kho chính</div>
             </div>
           </div>
 
@@ -172,11 +172,11 @@ const MapMockup: React.FC = () => {
           <div className="elog-map-telemetry">
             <div className="elog-map-telem-row">
               <div className="elog-map-telem-bullet" style={{ background: '#2563EB' }} />
-              Active deliveries: <strong>14</strong>
+              Đơn đang giao: <strong>14</strong>
             </div>
             <div className="elog-map-telem-row">
               <div className="elog-map-telem-bullet" style={{ background: '#10B981' }} />
-              Route efficiency: <strong>98.4%</strong>
+              Hiệu suất tuyến: <strong>98.4%</strong>
             </div>
           </div>
         </div>

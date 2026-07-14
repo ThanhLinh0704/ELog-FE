@@ -81,6 +81,22 @@ function formatDateTime(value?: string | null) {
   }).format(date);
 }
 
+function getStopStatusLabel(status: TripDraftStopStatus) {
+  return status === 'ACTIVE' ? 'Đang hoạt động' : 'Đã bỏ qua';
+}
+
+function getDraftStatusLabel(status?: string | null) {
+  const normalizedStatus = String(status || '').toUpperCase();
+  const statusMap: Record<string, string> = {
+    DRAFT: 'Bản nháp',
+    PLANNED: 'Đã lập kế hoạch',
+    CONFIRMED: 'Đã xác nhận',
+    CANCELLED: 'Đã huỷ',
+  };
+
+  return statusMap[normalizedStatus] || normalizedStatus || '-';
+}
+
 function hasGps(stop: TripDraftStop) {
   return stop.latitude !== null && stop.longitude !== null;
 }
@@ -140,11 +156,11 @@ const TripDraftReviewPage: React.FC = () => {
         setForbiddenMessage(
           getApiErrorMessage(
             err,
-            'You do not have permission to review trip drafts with the current account.'
+            'Tài khoản hiện tại không có quyền kiểm tra bản nháp chuyến.'
           )
         );
       } else {
-        setError(getApiErrorMessage(err, 'Unable to load trip draft.'));
+        setError(getApiErrorMessage(err, 'Không tải được bản nháp chuyến.'));
       }
     } finally {
       setLoading(false);
@@ -165,9 +181,9 @@ const TripDraftReviewPage: React.FC = () => {
         startTime: new Date().toISOString(),
       });
       setDraft((previous) => (previous ? mergeRecalculatedDraft(previous, result) : previous));
-      message.success('ETA recalculated successfully.');
+      message.success('Đã tính lại ETA thành công.');
     } catch (err) {
-      const apiMessage = getApiErrorMessage(err, 'Unable to recalculate ETA.');
+      const apiMessage = getApiErrorMessage(err, 'Không tính lại được ETA.');
       if (getTripDraftApiStatus(err) === 409) {
         message.warning(apiMessage);
       } else {
@@ -195,7 +211,7 @@ const TripDraftReviewPage: React.FC = () => {
       setDraft(nextDraft);
       await runRecalculate(nextDraft);
     } catch (err) {
-      const apiMessage = getApiErrorMessage(err, 'Unable to update stop status.');
+      const apiMessage = getApiErrorMessage(err, 'Không cập nhật được trạng thái điểm dừng.');
       if (getTripDraftApiStatus(err) === 409) {
         message.warning(apiMessage);
       } else {
@@ -210,22 +226,22 @@ const TripDraftReviewPage: React.FC = () => {
     if (!draftId || !draft) return;
 
     modal.confirm({
-      title: 'Confirm Trip Draft?',
-      content: 'This will convert the reviewed draft into a planned trip.',
-      okText: 'Confirm',
-      cancelText: 'Cancel',
+      title: 'Xác nhận bản nháp chuyến?',
+      content: 'Thao tác này sẽ chuyển bản nháp đã kiểm tra thành chuyến đã lập kế hoạch.',
+      okText: 'Xác nhận',
+      cancelText: 'Huỷ',
       icon: <CheckCircle2 size={20} color="#1677ff" />,
       onOk: async () => {
         setConfirming(true);
 
         try {
           const result = await confirmTripDraft(draftId, {
-            confirmNote: 'Reviewed and confirmed by dispatcher',
+            confirmNote: 'Đã kiểm tra và xác nhận bởi điều phối viên',
           });
-          message.success('Trip draft confirmed successfully.');
+          message.success('Đã xác nhận bản nháp chuyến thành công.');
           navigate(`/trips/${result.tripId}`);
         } catch (err) {
-          const apiMessage = getApiErrorMessage(err, 'Unable to confirm trip draft.');
+          const apiMessage = getApiErrorMessage(err, 'Không xác nhận được bản nháp chuyến.');
           if (getTripDraftApiStatus(err) === 409) {
             message.warning(apiMessage);
           } else {
@@ -240,7 +256,7 @@ const TripDraftReviewPage: React.FC = () => {
 
   const columns: ColumnsType<TripDraftStop> = [
     {
-      title: 'Sequence',
+      title: 'Thứ tự',
       dataIndex: 'sequenceNo',
       key: 'sequenceNo',
       width: 100,
@@ -248,7 +264,7 @@ const TripDraftReviewPage: React.FC = () => {
       render: (value: number) => <Typography.Text strong>#{value}</Typography.Text>,
     },
     {
-      title: 'Store',
+      title: 'Cửa hàng',
       key: 'store',
       width: 240,
       render: (_value, record) => (
@@ -259,21 +275,21 @@ const TripDraftReviewPage: React.FC = () => {
       ),
     },
     {
-      title: 'Address',
+      title: 'Địa chỉ',
       dataIndex: 'address',
       key: 'address',
       width: 280,
       render: (value: string) => value || '-',
     },
     {
-      title: 'Orders',
+      title: 'Đơn hàng',
       dataIndex: 'orderCount',
       key: 'orderCount',
       width: 100,
       align: 'right',
     },
     {
-      title: 'Weight / Volume',
+      title: 'Khối lượng / Thể tích',
       key: 'capacity',
       width: 170,
       render: (_value, record) => (
@@ -292,10 +308,10 @@ const TripDraftReviewPage: React.FC = () => {
       render: (_value, record) =>
         hasGps(record) ? (
           <Tooltip title={`${record.latitude}, ${record.longitude}`}>
-            <Tag color="blue">Ready</Tag>
+            <Tag color="blue">Đã có GPS</Tag>
           </Tooltip>
         ) : (
-          <Tag color="orange">Missing GPS</Tag>
+          <Tag color="orange">Thiếu GPS</Tag>
         ),
     },
     {
@@ -304,42 +320,42 @@ const TripDraftReviewPage: React.FC = () => {
       width: 190,
       render: (_value, record) =>
         record.status === 'SKIPPED' ? (
-          <Typography.Text type="secondary">Not included</Typography.Text>
+          <Typography.Text type="secondary">Không tính ETA</Typography.Text>
         ) : (
           <Space direction="vertical" size={0}>
             <Typography.Text>{formatDateTime(record.eta)}</Typography.Text>
             <Typography.Text type="secondary">
-              {record.estimatedTravelMin ?? 0} min, {formatNumber(record.estimatedDistanceKm, 1)} km
+              {record.estimatedTravelMin ?? 0} phút, {formatNumber(record.estimatedDistanceKm, 1)} km
             </Typography.Text>
           </Space>
         ),
     },
     {
-      title: 'Status',
+      title: 'Trạng thái',
       key: 'status',
       width: 120,
       render: (_value, record) =>
         record.status === 'ACTIVE' ? (
-          <Tag color="green">Active</Tag>
+          <Tag color="green">{getStopStatusLabel(record.status)}</Tag>
         ) : (
-          <Tag color="default">Skipped</Tag>
+          <Tag color="default">{getStopStatusLabel(record.status)}</Tag>
         ),
     },
     {
-      title: 'Action',
+      title: 'Thao tác',
       key: 'action',
       width: 140,
       fixed: 'right',
       render: (_value, record) => {
         const isActive = record.status === 'ACTIVE';
-        const label = isActive ? 'Skip' : 'Activate';
+        const label = isActive ? 'Bỏ qua' : 'Kích hoạt';
 
         return (
           <Popconfirm
-            title={`${label} this stop?`}
-            description="The route and ETA will be recalculated after this change."
+            title={`${label} điểm dừng này?`}
+            description="Tuyến đường và ETA sẽ được tính lại sau thay đổi này."
             okText={label}
-            cancelText="Cancel"
+            cancelText="Huỷ"
             onConfirm={() => handleToggleStop(record)}
             disabled={actionDisabled}
           >
@@ -364,15 +380,15 @@ const TripDraftReviewPage: React.FC = () => {
         <div>
           <Breadcrumb
             items={[
-              { title: 'Admin' },
-              { title: 'Trip Draft Review' },
+              { title: 'Quản trị' },
+              { title: 'Kiểm tra bản nháp chuyến' },
             ]}
           />
           <Typography.Title level={2} style={{ margin: '8px 0 0 0' }}>
-            Review Trip Draft
+            Kiểm tra bản nháp chuyến
           </Typography.Title>
           <Typography.Text type="secondary">
-            Review active/skipped stops and ETA before confirming planned trip.
+            Kiểm tra điểm dừng đang hoạt động, điểm bị bỏ qua và ETA trước khi xác nhận chuyến.
           </Typography.Text>
         </div>
 
@@ -380,17 +396,17 @@ const TripDraftReviewPage: React.FC = () => {
           <Alert
             type="warning"
             showIcon
-            message="Access denied"
+            message="Không có quyền truy cập"
             description={
               <Space direction="vertical" size={4}>
                 <span>{forbiddenMessage}</span>
                 <span>
-                  Current roles:{' '}
-                  {currentUser.roles.length > 0 ? currentUser.roles.join(', ') : 'No role found'}
+                  Vai trò hiện tại:{' '}
+                  {currentUser.roles.length > 0 ? currentUser.roles.join(', ') : 'Không tìm thấy vai trò'}
                 </span>
                 <span>
-                  Please sign in with an account allowed by the backend for trip draft review,
-                  usually DISPATCHER or LOGISTICS_MANAGER.
+                  Vui lòng đăng nhập bằng tài khoản được backend cấp quyền kiểm tra bản nháp chuyến,
+                  thường là DISPATCHER hoặc LOGISTICS_MANAGER.
                 </span>
               </Space>
             }
@@ -403,7 +419,7 @@ const TripDraftReviewPage: React.FC = () => {
           <Alert
             type="warning"
             showIcon
-            message={`This draft is ${draft.status}. Toggle and confirm actions are disabled.`}
+            message={`Bản nháp hiện có trạng thái ${getDraftStatusLabel(draft.status)}. Không thể đổi trạng thái điểm dừng hoặc xác nhận.`}
           />
         ) : null}
 
@@ -413,13 +429,13 @@ const TripDraftReviewPage: React.FC = () => {
               <Row gutter={[16, 16]}>
                 <Col xs={24} sm={12} lg={6}>
                   <Card size="small" bordered={false}>
-                    <Statistic title="Draft Code" value={draft.draftCode || draft.id} />
+                    <Statistic title="Mã bản nháp" value={draft.draftCode || draft.id} />
                   </Card>
                 </Col>
                 <Col xs={24} sm={12} lg={6}>
                   <Card size="small" bordered={false}>
                     <Statistic
-                      title="Vehicle"
+                      title="Xe giao hàng"
                       value={draft.vehicle?.plateNumber || '-'}
                       suffix={draft.vehicle?.vehicleType ? ` / ${draft.vehicle.vehicleType}` : ''}
                     />
@@ -427,18 +443,18 @@ const TripDraftReviewPage: React.FC = () => {
                 </Col>
                 <Col xs={24} sm={12} lg={6}>
                   <Card size="small" bordered={false}>
-                    <Statistic title="Total Active Stops" value={activeStops.length} />
+                    <Statistic title="Điểm dừng hoạt động" value={activeStops.length} />
                   </Card>
                 </Col>
                 <Col xs={24} sm={12} lg={6}>
                   <Card size="small" bordered={false}>
-                    <Statistic title="Total Orders" value={draft.totalOrders} />
+                    <Statistic title="Tổng đơn hàng" value={draft.totalOrders} />
                   </Card>
                 </Col>
                 <Col xs={24} sm={12} lg={6}>
                   <Card size="small" bordered={false}>
                     <Statistic
-                      title="Total Weight"
+                      title="Tổng khối lượng"
                       value={draft.totalWeightKg}
                       suffix="kg"
                       formatter={(value) => formatNumber(Number(value))}
@@ -448,7 +464,7 @@ const TripDraftReviewPage: React.FC = () => {
                 <Col xs={24} sm={12} lg={6}>
                   <Card size="small" bordered={false}>
                     <Statistic
-                      title="Total Volume"
+                      title="Tổng thể tích"
                       value={draft.totalVolumeM3}
                       suffix="m3"
                       precision={2}
@@ -458,7 +474,7 @@ const TripDraftReviewPage: React.FC = () => {
                 <Col xs={24} sm={12} lg={6}>
                   <Card size="small" bordered={false}>
                     <Statistic
-                      title="Estimated Distance"
+                      title="Quãng đường dự kiến"
                       value={draft.estimatedDistanceKm}
                       suffix="km"
                       precision={1}
@@ -468,9 +484,9 @@ const TripDraftReviewPage: React.FC = () => {
                 <Col xs={24} sm={12} lg={6}>
                   <Card size="small" bordered={false}>
                     <Statistic
-                      title="Estimated Duration"
+                      title="Thời lượng dự kiến"
                       value={draft.estimatedDurationMin}
-                      suffix="min"
+                      suffix="phút"
                     />
                   </Card>
                 </Col>
@@ -481,14 +497,14 @@ const TripDraftReviewPage: React.FC = () => {
                 title={
                   <Space>
                     <MapPinned size={18} />
-                    <span>Stops</span>
+                    <span>Điểm dừng</span>
                   </Space>
                 }
                 extra={
                   <Space wrap>
-                    <Tag color="green">{activeStops.length} active</Tag>
+                    <Tag color="green">{activeStops.length} hoạt động</Tag>
                     <Tag color="default">
-                      {draft.stops.length - activeStops.length} skipped
+                      {draft.stops.length - activeStops.length} bỏ qua
                     </Tag>
                   </Space>
                 }
@@ -510,7 +526,7 @@ const TripDraftReviewPage: React.FC = () => {
                     emptyText: (
                       <Empty
                         image={Empty.PRESENTED_IMAGE_SIMPLE}
-                        description="No stops available"
+                        description="Chưa có điểm dừng"
                       />
                     ),
                   }}
@@ -521,7 +537,7 @@ const TripDraftReviewPage: React.FC = () => {
                 <Row justify="space-between" gutter={[12, 12]}>
                   <Col>
                     <Button icon={<ArrowLeft size={16} />} onClick={() => navigate(-1)}>
-                      Back
+                      Quay lại
                     </Button>
                   </Col>
                   <Col>
@@ -532,7 +548,7 @@ const TripDraftReviewPage: React.FC = () => {
                         disabled={!isDraftEditable || confirming}
                         onClick={() => runRecalculate()}
                       >
-                        Recalculate ETA
+                        Tính lại ETA
                       </Button>
                       <Button
                         type="primary"
@@ -546,7 +562,7 @@ const TripDraftReviewPage: React.FC = () => {
                         }
                         onClick={handleConfirm}
                       >
-                        Confirm Trip Draft
+                        Xác nhận bản nháp
                       </Button>
                     </Space>
                   </Col>
@@ -555,7 +571,7 @@ const TripDraftReviewPage: React.FC = () => {
             </Space>
           ) : !loading ? (
             <Card bordered={false}>
-              <Empty description="Trip draft not found" />
+              <Empty description="Không tìm thấy bản nháp chuyến" />
             </Card>
           ) : null}
         </Spin>

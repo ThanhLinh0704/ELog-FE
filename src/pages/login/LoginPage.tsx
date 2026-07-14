@@ -24,15 +24,15 @@ const LoginPage: React.FC = () => {
             {/* Left Column (Feature presentation - hidden on <= 1000px width via CSS) */}
             <section className="elog-left-column">
               <h1 className="elog-headline">
-                Smart Logistics &
+                Quản lý logistics
                 <br />
-                <span className="elog-headline-highlight">Warehouse</span>
+                <span className="elog-headline-highlight">và kho vận</span>
                 <br />
-                Operation Platform
+                thông minh
               </h1>
 
               <p className="elog-description">
-                Manage orders, routes, vehicles, warehouses, staff, and delivery operations in one centralized platform.
+                Quản lý đơn hàng, tuyến giao, xe, kho, nhân sự và vận hành giao hàng trên một nền tảng tập trung.
               </p>
 
               {/* 2x2 Feature Grid */}
@@ -54,7 +54,7 @@ const LoginPage: React.FC = () => {
                       <line x1="12" y1="22.08" x2="12" y2="12" />
                     </svg>
                   }
-                  text="Order & Delivery Management"
+                  text="Quản lý đơn hàng và giao hàng"
                 />
 
                 <FeatureCard
@@ -73,7 +73,7 @@ const LoginPage: React.FC = () => {
                       <path d="M9 22V12h6v10" />
                     </svg>
                   }
-                  text="Warehouse Inventory Tracking"
+                  text="Theo dõi tồn kho"
                 />
 
                 <FeatureCard
@@ -93,7 +93,7 @@ const LoginPage: React.FC = () => {
                       <path d="M9 19h4.5a3.5 3.5 0 0 0 3.5-3.5v-7A3.5 3.5 0 0 1 20.5 5H21" />
                     </svg>
                   }
-                  text="Route & Vehicle Dispatching"
+                  text="Điều phối tuyến và xe"
                 />
 
                 <FeatureCard
@@ -114,7 +114,7 @@ const LoginPage: React.FC = () => {
                       <rect x="3" y="16" width="7" height="5" rx="1" fill="currentColor" fillOpacity="0.15" />
                     </svg>
                   }
-                  text="Real-time Operation Dashboard"
+                  text="Bảng điều khiển thời gian thực"
                 />
               </div>
 
@@ -133,7 +133,7 @@ const LoginPage: React.FC = () => {
         {/* Footer */}
         <footer className="elog-footer">
           <p className="elog-footer-text">
-            &copy; 2026 ELog. Logistics & Warehouse Management Platform.
+            &copy; 2026 ELog. Nền tảng quản lý logistics và kho vận.
           </p>
         </footer>
       </div>
