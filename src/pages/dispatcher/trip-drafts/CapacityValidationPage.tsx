@@ -628,7 +628,7 @@ const CapacityValidationPage: React.FC = () => {
                 )}
 
                 {/* Actions */}
-                <div style={{ display: 'flex', gap: 12, marginTop: 16 }}>
+                <div style={{ display: 'flex', gap: 12, marginTop: 16, flexWrap: 'wrap' }}>
                   <Button size="large" onClick={() => navigate(`/dispatcher/trip-drafts/${id}`)} style={{ borderRadius: 6 }}>
                     Quay lại xem Trip Draft
                   </Button>
@@ -637,11 +637,16 @@ const CapacityValidationPage: React.FC = () => {
                       Kiểm tra lại
                     </Button>
                   )}
-                  <Tooltip title="Chức năng Phân xe (Vehicle Assignment) thuộc Sprint sau.">
-                    <Button type="primary" size="large" disabled style={{ borderRadius: 6, fontWeight: 600 }}>
+                  {isDispatcher && result?.validationPassed && (
+                    <Button
+                      type="primary"
+                      size="large"
+                      onClick={() => navigate(`/dispatcher/trip-drafts/${id}/assign`)}
+                      style={{ borderRadius: 6, fontWeight: 600, background: '#52c41a', borderColor: '#52c41a' }}
+                    >
                       Tiến hành phân xe
                     </Button>
-                  </Tooltip>
+                  )}
                 </div>
               </div>
             )}

@@ -18,7 +18,9 @@ import {
   Tooltip,
   Typography,
   message,
+  TimePicker,
 } from 'antd';
+import dayjs from 'dayjs';
 import type { ColumnsType } from 'antd/es/table';
 import {
   ArrowLeft,
@@ -134,6 +136,7 @@ const TripDraftReviewPage: React.FC = () => {
   const [recalculating, setRecalculating] = useState(false);
   const [confirming, setConfirming] = useState(false);
   const [modal, contextHolder] = Modal.useModal();
+  const [plannedTime, setPlannedTime] = useState<dayjs.Dayjs | null>(dayjs('07:30:00', 'HH:mm:ss'));
 
   const activeStops = useMemo(
     () => draft?.stops.filter((stop) => stop.status === 'ACTIVE') ?? [],
@@ -169,8 +172,16 @@ const TripDraftReviewPage: React.FC = () => {
   }
 
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     fetchDraft();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [draftId]);
+
+  useEffect(() => {
+    if (draft?.plannedDepartureTime) {
+      setPlannedTime(dayjs(draft.plannedDepartureTime, 'HH:mm:ss'));
+    }
+  }, [draft?.plannedDepartureTime]);
 
   async function runRecalculate(currentDraft = draft) {
     if (!draftId || !currentDraft) return;
@@ -178,8 +189,9 @@ const TripDraftReviewPage: React.FC = () => {
     setRecalculating(true);
 
     try {
+      const timeStr = plannedTime ? plannedTime.format('HH:mm:ss') : '07:30:00';
       const result = await recalculateEta(draftId, {
-        startTime: new Date().toISOString(),
+        plannedDepartureTime: timeStr,
       });
       setDraft((previous) => (previous ? mergeRecalculatedDraft(previous, result) : previous));
       message.success('Đã tính lại ETA thành công.');
@@ -543,6 +555,15 @@ const TripDraftReviewPage: React.FC = () => {
                   </Col>
                   <Col>
                     <Space wrap>
+                      <TimePicker
+                        format="HH:mm"
+                        value={plannedTime}
+                        onChange={(val) => setPlannedTime(val)}
+                        allowClear={false}
+                        disabled={!isDraftEditable || confirming}
+                        placeholder="Giờ đi"
+                        style={{ width: 100 }}
+                      />
                       <Button
                         icon={<RefreshCw size={16} />}
                         loading={recalculating}

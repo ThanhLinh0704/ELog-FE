@@ -13,13 +13,16 @@ import {
   Divider,
   Spin,
   message,
-  Empty
+  Empty,
+  Space,
 } from 'antd';
-import { ArrowLeftOutlined } from '@ant-design/icons';
+import { ArrowLeftOutlined, CarOutlined } from '@ant-design/icons';
 import { MapPin, CheckCircle2, XCircle } from 'lucide-react';
 import AdminShell from '../../../components/AdminShell';
 import { tripDraftApi } from '../../../api/tripDraftApi';
+import { getTripsByTripDraftId } from '../../../api/tripApi';
 import type { TripDraft } from '../../../types/tripDraft';
+import type { Trip } from '../../../types/trip';
 
 const { Title, Text } = Typography;
 
@@ -50,6 +53,7 @@ const TripDraftDetailPage: React.FC = () => {
 
   const [loading, setLoading] = useState(true);
   const [draft, setDraft] = useState<TripDraft | null>(null);
+  const [existingTrips, setExistingTrips] = useState<Trip[]>([]);
 
   const fetchDraftDetail = async () => {
     if (!id) return;
@@ -57,6 +61,16 @@ const TripDraftDetailPage: React.FC = () => {
     try {
       const data = await tripDraftApi.getTripDraftById(Number(id));
       setDraft(data);
+      // Check if any trips have been created from this draft
+      if (data.status === 'VALIDATED' || data.status === 'DISPATCHED') {
+        try {
+          const trips = await getTripsByTripDraftId(id);
+          setExistingTrips(trips);
+        } catch {
+          // Non-critical: if trips fail to load, show assign button anyway
+          setExistingTrips([]);
+        }
+      }
     } catch (e: any) {
       console.error(e);
       message.error("Không thể tải thông tin chi tiết đợt gom đơn.");
@@ -208,7 +222,7 @@ const TripDraftDetailPage: React.FC = () => {
       </div>
 
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 24, flexWrap: 'wrap', gap: 12 }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 12, flexWrap: 'wrap' }}>
           <Button
             icon={<ArrowLeftOutlined />}
             onClick={() => navigate(`/dispatcher/trip-drafts?deliveryDate=${draft.deliveryDate}`)}
@@ -224,15 +238,36 @@ const TripDraftDetailPage: React.FC = () => {
           </div>
         </div>
 
-        {(draft.status === 'PLANNED' || draft.status === 'VALIDATED') && (
-          <Button
-            type="primary"
-            style={{ borderRadius: 6, fontWeight: 600 }}
-            onClick={() => navigate(`/dispatcher/trip-drafts/${draft.id}/capacity`)}
-          >
-            {draft.status === 'PLANNED' ? 'Kiểm tra tải trọng' : 'Xem kết quả tải trọng'}
-          </Button>
-        )}
+        <Space wrap>
+          {(draft.status === 'PLANNED' || draft.status === 'VALIDATED') && (
+            <Button
+              style={{ borderRadius: 6, fontWeight: 600 }}
+              onClick={() => navigate(`/dispatcher/trip-drafts/${draft.id}/capacity`)}
+            >
+              {draft.status === 'PLANNED' ? 'Kiểm tra tải trọng' : 'Xem kết quả tải trọng'}
+            </Button>
+          )}
+          {draft.status === 'VALIDATED' && existingTrips.length === 0 && (
+            <Button
+              type="primary"
+              icon={<CarOutlined />}
+              style={{ borderRadius: 6, fontWeight: 600, background: '#52c41a', borderColor: '#52c41a' }}
+              onClick={() => navigate(`/dispatcher/trip-drafts/${draft.id}/assign`)}
+            >
+              Phân xe & tài xế
+            </Button>
+          )}
+          {draft.status === 'VALIDATED' && existingTrips.length > 0 && (
+            <Button
+              type="primary"
+              icon={<CarOutlined />}
+              style={{ borderRadius: 6, fontWeight: 600 }}
+              onClick={() => navigate(`/dispatcher/trip-drafts/${draft.id}/assign`)}
+            >
+              Xem chuyến đã tạo
+            </Button>
+          )}
+        </Space>
       </div>
 
 

@@ -41,6 +41,7 @@ export interface TripDraftDetail {
   estimatedDistanceKm: number;
   estimatedDurationMin: number;
   stops: TripDraftStop[];
+  plannedDepartureTime?: string | null;
 }
 
 export interface TripDraftListItem {
@@ -63,7 +64,7 @@ export interface ToggleStopStatusPayload {
 }
 
 export interface RecalculateEtaPayload {
-  startTime: string;
+  plannedDepartureTime: string;
 }
 
 export interface ConfirmTripDraftPayload {
@@ -116,9 +117,6 @@ function toNumber(value: unknown, fallback = 0): number {
   return Number.isFinite(parsed) ? parsed : fallback;
 }
 
-function normalizeStatus(value: unknown): TripDraftStopStatus {
-  return String(value || 'ACTIVE').toUpperCase() === 'SKIPPED' ? 'SKIPPED' : 'ACTIVE';
-}
 
 function normalizeVehicle(raw: unknown): TripDraftVehicle | null {
   if (!raw || typeof raw !== 'object') return null;
@@ -132,9 +130,21 @@ function normalizeVehicle(raw: unknown): TripDraftVehicle | null {
 
 function normalizeStop(raw: unknown): TripDraftStop {
   const stop = (raw && typeof raw === 'object' ? raw : {}) as Record<string, unknown>;
+  const idVal = stop.tripDraftStopId ?? stop.id ?? stop.stopId ?? stop.stop_id;
+  const seqVal = stop.sequenceNo ?? stop.sequence_no ?? stop.sequence;
+  const weightVal = stop.stopWeightKg ?? stop.weightKg ?? stop.weight_kg ?? 0;
+  const volumeVal = stop.stopVolumeM3 ?? stop.volumeM3 ?? stop.volume_m3 ?? 0;
+  const etaVal = stop.plannedEta ?? stop.eta ?? null;
+  const isActiveVal = stop.isActive;
+
+  let statusVal: TripDraftStopStatus = 'ACTIVE';
+  if (isActiveVal === false || String(stop.status).toUpperCase() === 'SKIPPED') {
+    statusVal = 'SKIPPED';
+  }
+
   return {
-    id: toNumber(stop.id ?? stop.stopId ?? stop.stop_id),
-    sequenceNo: toNumber(stop.sequenceNo ?? stop.sequence_no ?? stop.sequence),
+    id: toNumber(idVal),
+    sequenceNo: toNumber(seqVal),
     storeId: toNumber(stop.storeId ?? stop.store_id),
     storeCode: String(stop.storeCode ?? stop.store_code ?? ''),
     storeName: String(stop.storeName ?? stop.store_name ?? ''),
@@ -148,10 +158,10 @@ function normalizeStop(raw: unknown): TripDraftStop {
         ? null
         : toNumber(stop.longitude),
     orderCount: toNumber(stop.orderCount ?? stop.order_count),
-    weightKg: toNumber(stop.weightKg ?? stop.weight_kg),
-    volumeM3: toNumber(stop.volumeM3 ?? stop.volume_m3),
-    status: normalizeStatus(stop.status),
-    eta: stop.eta ? String(stop.eta) : null,
+    weightKg: toNumber(weightVal),
+    volumeM3: toNumber(volumeVal),
+    status: statusVal,
+    eta: etaVal ? String(etaVal) : null,
     estimatedTravelMin:
       stop.estimatedTravelMin === null && stop.estimated_travel_min === null
         ? null
@@ -170,13 +180,17 @@ function normalizeStop(raw: unknown): TripDraftStop {
 function normalizeTripDraft(raw: unknown): TripDraftDetail {
   const draft = (raw && typeof raw === 'object' ? raw : {}) as Record<string, unknown>;
   const rawStops = Array.isArray(draft.stops) ? draft.stops : [];
+  const normalizedStops = rawStops.map(normalizeStop).sort((a, b) => a.sequenceNo - b.sequenceNo);
+  
+  const totalOrdersVal = draft.totalOrders ?? draft.total_orders ?? normalizedStops.reduce((sum, s) => sum + s.orderCount, 0);
+
   return {
     id: toNumber(draft.id ?? draft.draftId ?? draft.draft_id),
-    draftCode: String(draft.draftCode ?? draft.draft_code ?? ''),
+    draftCode: String(draft.draftCode ?? draft.draft_code ?? draft.routeCode ?? ''),
     status: String(draft.status ?? 'DRAFT').toUpperCase(),
     warehouseName: String(draft.warehouseName ?? draft.warehouse_name ?? ''),
     vehicle: normalizeVehicle(draft.vehicle),
-    totalOrders: toNumber(draft.totalOrders ?? draft.total_orders),
+    totalOrders: toNumber(totalOrdersVal),
     totalWeightKg: toNumber(draft.totalWeightKg ?? draft.total_weight_kg),
     totalVolumeM3: toNumber(draft.totalVolumeM3 ?? draft.total_volume_m3),
     estimatedDistanceKm: toNumber(
@@ -185,7 +199,8 @@ function normalizeTripDraft(raw: unknown): TripDraftDetail {
     estimatedDurationMin: toNumber(
       draft.estimatedDurationMin ?? draft.estimated_duration_min
     ),
-    stops: rawStops.map(normalizeStop).sort((a, b) => a.sequenceNo - b.sequenceNo),
+    stops: normalizedStops,
+    plannedDepartureTime: draft.plannedDepartureTime ? String(draft.plannedDepartureTime) : null,
   };
 }
 
