@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Card, Row, Col, Statistic, Space, Typography, Tag, Badge, Spin, Descriptions } from 'antd';
+import { Card, Row, Col, Statistic, Space, Typography, Tag, Badge, Spin, Descriptions, Table, DatePicker, Button, Alert, Empty } from 'antd';
 import { 
   Users, 
   Store, 
@@ -19,6 +19,9 @@ import { vehicleApi } from '../api/vehicleApi';
 import { productApi } from '../api/productApi';
 import { routeApi } from '../api/routeApi';
 import { USE_MOCK_API } from '../config';
+import { getMyTrips } from '../api/tripApi';
+import type { Trip } from '../types/trip';
+import dayjs from 'dayjs';
 
 const { Title, Paragraph, Text } = Typography;
 
@@ -55,6 +58,9 @@ const DashboardPage: React.FC = () => {
     roles,
   };
 
+  // Driver state
+  const isDriver = roles.includes('DRIVER');
+
   const [stats, setStats] = useState<SystemStats>({
     usersCount: 0,
     storesCount: 0,
@@ -66,16 +72,23 @@ const DashboardPage: React.FC = () => {
     totalVolume: 0,
   });
 
-  const [loading, setLoading] = useState<boolean>(true);
+  const [loading, setLoading] = useState<boolean>(!isDriver);
   const [error, setError] = useState<string>('');
+  
+  const [driverTrips, setDriverTrips] = useState<Trip[]>([]);
+  const [selectedDate, setSelectedDate] = useState<dayjs.Dayjs>(dayjs());
+  const [driverLoading, setDriverLoading] = useState<boolean>(false);
 
   useEffect(() => {
+    if (isDriver) {
+      return;
+    }
     async function loadStats() {
       setLoading(true);
       setError('');
       try {
         const [usersRes, storesRes, capacityRes, productsRes, routesRes] = await Promise.all([
-          userApi.getUsers({ page: 0, size: 1 }),
+          roles.includes('SYSTEM_ADMIN') ? userApi.getUsers({ page: 0, size: 1 }) : Promise.resolve({ totalElements: 0 }),
           storeApi.getStores({ page: 0, size: 1 }),
           vehicleApi.getFleetCapacity(),
           productApi.getProducts({ page: 0, size: 1 }),
@@ -101,7 +114,7 @@ const DashboardPage: React.FC = () => {
           totalWeight: capacityRes.totalMaxWeightKg,
           totalVolume: capacityRes.totalMaxVolumeM3,
         });
-      } catch (err: any) {
+      } catch (err: unknown) {
         console.error('Failed to load system stats', err);
         setError('Không thể tải toàn bộ dữ liệu thống kê từ hệ thống.');
       } finally {
@@ -110,7 +123,26 @@ const DashboardPage: React.FC = () => {
     }
 
     loadStats();
-  }, []);
+  }, [isDriver]);
+
+  useEffect(() => {
+    if (!isDriver) return;
+    async function loadTrips() {
+      setDriverLoading(true);
+      setError('');
+      try {
+        const dateStr = selectedDate.format('YYYY-MM-DD');
+        const trips = await getMyTrips(dateStr);
+        setDriverTrips(trips);
+      } catch (err: unknown) {
+        console.error('Failed to load driver trips', err);
+        setError('Không thể tải danh sách chuyến xe được gán.');
+      } finally {
+        setDriverLoading(false);
+      }
+    }
+    void loadTrips();
+  }, [isDriver, selectedDate]);
 
   const quickActions = [
     {
@@ -130,8 +162,8 @@ const DashboardPage: React.FC = () => {
       borderColor: '#b7eb8f',
     },
     {
-      title: 'Quản lý xe cộ',
-      desc: 'Theo dõi đội xe vận chuyển, tải trọng (kg) và thể tích khoang hàng (m³).',
+      title: 'Quản lý xe',
+      desc: 'Quản lý đội xe vận chuyển, tải trọng (kg) và thể tích khoang hàng (m³).',
       icon: <Truck size={24} style={{ color: '#faad14' }} />,
       path: '/vehicles',
       bgColor: '#fffbe6',
@@ -155,7 +187,136 @@ const DashboardPage: React.FC = () => {
     },
   ];
 
+  if (isDriver) {
+    return (
+      <AdminShell currentUser={currentUser}>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 24 }}>
+          {/* Welcome Section */}
+          <div style={{ 
+            background: 'linear-gradient(135deg, #1e293b 0%, #0f172a 100%)', 
+            padding: '24px 32px', 
+            borderRadius: 12, 
+            boxShadow: '0 4px 12px rgba(15, 23, 42, 0.05)',
+            color: '#ffffff'
+          }}>
+            <h2 style={{ margin: 0, fontSize: 22, fontWeight: 700, color: '#ffffff' }}>
+              Xin chào Tài xế, {username}!
+            </h2>
+            <p style={{ margin: '8px 0 0 0', color: '#94a3b8', fontSize: 14 }}>
+              Chào mừng bạn đến với Cổng thông tin Tài xế ELog. Dưới đây là danh sách chuyến giao hàng đã được gán cho bạn.
+            </p>
+          </div>
+
+          {/* Date Picker Filter */}
+          <Card style={{ borderRadius: 10 }}>
+            <Space direction="horizontal" align="center" size={12}>
+              <Text strong>Chọn ngày giao hàng:</Text>
+              <DatePicker 
+                value={selectedDate} 
+                onChange={(date) => date && setSelectedDate(date)} 
+                format="DD/MM/YYYY"
+                allowClear={false}
+              />
+            </Space>
+          </Card>
+
+          {/* Driver trips section */}
+          <Card 
+            title={
+              <Space>
+                <Truck size={18} style={{ color: '#1677ff' }} />
+                <span>Chuyến đi được gán ngày {selectedDate.format('DD/MM/YYYY')}</span>
+              </Space>
+            }
+            style={{ borderRadius: 12 }}
+          >
+            {driverLoading ? (
+              <div style={{ textAlign: 'center', padding: '40px 0' }}>
+                <Spin size="large" tip="Đang tải chuyến xe..." />
+              </div>
+            ) : error ? (
+              <Alert type="error" showIcon message={error} />
+            ) : driverTrips.length === 0 ? (
+              <Empty description="Không có chuyến xe nào được gán cho bạn trong ngày này." />
+            ) : (
+              <Table
+                dataSource={driverTrips}
+                rowKey="tripId"
+                pagination={false}
+                expandable={{
+                  expandedRowRender: (record) => (
+                    <div style={{ padding: '8px 16px', background: '#fafafa', borderRadius: 8 }}>
+                      <Title level={5} style={{ margin: '0 0 12px 0', fontSize: 13 }}>Danh sách điểm dừng giao hàng</Title>
+                      <Table
+                        dataSource={record.tripStops ?? []}
+                        rowKey="tripStopId"
+                        pagination={false}
+                        size="small"
+                        columns={[
+                          { title: 'Thứ tự', dataIndex: 'sequenceOrder', key: 'sequenceOrder', width: 80, align: 'center', render: (v) => <strong style={{ color: '#1677ff' }}>#{v}</strong> },
+                          { title: 'Tên cửa hàng', dataIndex: 'storeName', key: 'storeName' },
+                          { title: 'Giờ ETA dự kiến', dataIndex: 'plannedEta', key: 'plannedEta', render: (v) => v ? new Date(v).toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit' }) : '—' },
+                          { title: 'Tải trọng', key: 'load', render: (_, stop) => `${stop.stopVolumeM3 != null ? stop.stopVolumeM3.toFixed(3) : '—'} m³ / ${stop.stopWeightKg != null ? stop.stopWeightKg.toFixed(3) : '—'} kg` },
+                          { title: 'Trạng thái', dataIndex: 'status', key: 'status', render: (v) => <Tag color={v === 'COMPLETED' ? 'success' : v === 'IN_PROGRESS' ? 'blue' : 'default'}>{v}</Tag> }
+                        ]}
+                      />
+                    </div>
+                  )
+                }}
+                columns={[
+                  { title: 'Trip ID', dataIndex: 'tripId', key: 'tripId', render: (v) => <Tag color="blue">#{v}</Tag> },
+                  { title: 'Tuyến đường', dataIndex: 'fixedRouteCode', key: 'fixedRouteCode' },
+                  {
+                    title: 'Phương tiện',
+                    key: 'vehicle',
+                    render: (_, r) => r.vehicle ? `${r.vehicle.plateNumber} (${r.vehicle.vehicleType})` : '—'
+                  },
+                  {
+                    title: 'Giờ đi dự kiến',
+                    dataIndex: 'plannedDepartureTime',
+                    key: 'plannedDepartureTime',
+                    render: (v) => v ? String(v) : '—'
+                  },
+                  { title: 'Số điểm giao', dataIndex: 'tripStopCount', key: 'tripStopCount' },
+                  { title: 'Tổng thể tích', key: 'vol', render: (_, r) => `${r.totalVolumeM3.toFixed(3)} m³` },
+                  { title: 'Tổng trọng lượng', key: 'wt', render: (_, r) => `${r.totalWeightKg.toFixed(3)} kg` },
+                  { 
+                    title: 'Trạng thái', 
+                    dataIndex: 'status', 
+                    key: 'status', 
+                    render: (v) => {
+                      const colors: Record<string, string> = {
+                        VALIDATED: 'success',
+                        DISPATCHED: 'purple',
+                        IN_PROGRESS: 'blue',
+                        COMPLETED: 'cyan'
+                      };
+                      return <Tag color={colors[v] || 'default'} style={{ fontWeight: 500 }}>{v}</Tag>;
+                    }
+                  },
+                  {
+                    title: 'Hành động',
+                    key: 'action',
+                    render: (_, r) => (
+                      <Button
+                        size="small"
+                        onClick={() => navigate(`/trips/${r.tripId}/loading-manifest`)}
+                      >
+                        Xem LIFO Manifest
+                      </Button>
+                    )
+                  }
+                ]}
+              />
+            )}
+          </Card>
+        </div>
+      </AdminShell>
+    );
+  }
+
   return (
+
     <AdminShell currentUser={currentUser}>
       <div style={{ display: 'flex', flexDirection: 'column', gap: 24 }}>
         

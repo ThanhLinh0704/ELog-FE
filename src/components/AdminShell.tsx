@@ -1,8 +1,9 @@
 import React from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { Layout, Menu, Avatar, Dropdown, Button, Space, Input, Badge, ConfigProvider } from 'antd';
-import { Bell, ChevronDown, ClipboardList, LogOut, Search, Users, LayoutGrid, Map, Settings, Package, Home, Truck } from 'lucide-react';
+import { Bell, ChevronDown, ClipboardList, LogOut, Search, Users, LayoutGrid, Map, Settings, Package, Home, Truck, FileSpreadsheet, Layers } from 'lucide-react';
 import axiosInstance from '../api/axiosInstance';
+
 
 const { Header, Sider, Content } = Layout;
 
@@ -54,9 +55,18 @@ const AdminShell: React.FC<AdminShellProps> = ({ currentUser, children }) => {
     ? '/admin/products'
     : location.pathname.startsWith('/admin/routes')
       ? '/admin/routes'
-      : location.pathname.startsWith('/trip-drafts')
-        ? '/trip-drafts'
-      : location.pathname;
+      : location.pathname.startsWith('/dispatcher/import')
+        ? '/dispatcher/import'
+        : location.pathname.startsWith('/dispatcher/trip-drafts')
+          ? '/dispatcher/trip-drafts'
+          : location.pathname.startsWith('/trip-drafts')
+            ? '/trip-drafts'
+            : location.pathname;
+
+  const roles = currentUser.roles || [];
+  const canViewImport = roles.some(role => ["SYSTEM_ADMIN", "DISPATCHER", "LOGISTICS_MANAGER"].includes(role));
+  const canViewTripDraftsMenu = roles.some(role => ["SYSTEM_ADMIN", "DISPATCHER", "LOGISTICS_MANAGER", "WAREHOUSE_STAFF"].includes(role));
+
 
   const sidebarMenuItems = [
     {
@@ -85,7 +95,7 @@ const AdminShell: React.FC<AdminShellProps> = ({ currentUser, children }) => {
         {
           key: '/vehicles',
           icon: <Truck size={ICON_SIZE} />,
-          label: 'Quản lý xe cộ',
+          label: 'Quản lý xe',
           onClick: () => navigate('/vehicles'),
         },
 
@@ -101,12 +111,29 @@ const AdminShell: React.FC<AdminShellProps> = ({ currentUser, children }) => {
           label: 'Quản lý tuyến',
           onClick: () => navigate('/admin/routes'),
         },
-        {
-          key: '/trip-drafts',
-          icon: <ClipboardList size={ICON_SIZE} />,
-          label: 'Lập kế hoạch chuyến',
-          onClick: () => navigate('/trip-drafts'),
-        },
+        ...(canViewImport ? [
+          {
+            key: '/dispatcher/import',
+            icon: <FileSpreadsheet size={ICON_SIZE} />,
+            label: 'Nhập đơn hàng',
+            onClick: () => navigate('/dispatcher/import'),
+          }
+        ] : []),
+        ...(canViewTripDraftsMenu ? [
+          {
+            key: '/dispatcher/trip-drafts',
+            icon: <Layers size={ICON_SIZE} />,
+            label: 'Quản lý gom đơn',
+            onClick: () => navigate('/dispatcher/trip-drafts'),
+          },
+          {
+            key: '/trip-drafts',
+            icon: <ClipboardList size={ICON_SIZE} />,
+            label: 'Lập kế hoạch chuyến',
+            onClick: () => navigate('/trip-drafts'),
+          }
+        ] : []),
+
 
       ],
     },
@@ -206,7 +233,16 @@ const AdminShell: React.FC<AdminShellProps> = ({ currentUser, children }) => {
                   <div className="elog-profile-name">
                     {currentUser.fullName || currentUser.username}
                   </div>
-                  <div style={{ fontSize: 11, color: '#64748b' }}>Quản trị hệ thống</div>
+                  <div style={{ fontSize: 11, color: '#64748b' }}>
+                    {roles.includes('SYSTEM_ADMIN') 
+                      ? 'System Admin' 
+                      : roles.includes('DISPATCHER') 
+                        ? 'Điều phối viên' 
+                        : roles.includes('LOGISTICS_MANAGER') 
+                          ? 'Quản lý Logistics' 
+                          : roles.join(', ') || 'User'}
+                  </div>
+
                 </div>
               </div>
               <Button
@@ -230,13 +266,15 @@ const AdminShell: React.FC<AdminShellProps> = ({ currentUser, children }) => {
               style={{ width: 250, borderRadius: 6 }}
             />
             <Space size={16}>
-              <Badge dot color="#ff4d4f">
-                <Button
-                  type="text"
-                  shape="circle"
-                  icon={<Bell size={ICON_SIZE} style={{ color: '#595959' }} />}
-                />
-              </Badge>
+              <Button
+                type="text"
+                shape="circle"
+                icon={
+                  <Badge dot color="#ff4d4f" offset={[-2, 2]}>
+                    <Bell size={ICON_SIZE} style={{ color: '#595959' }} />
+                  </Badge>
+                }
+              />
               <Dropdown menu={userMenuItems} placement="bottomRight" trigger={['click']}>
                 <Button type="text" style={{ height: 40, padding: '0 8px' }}>
                   <Space>

@@ -22,6 +22,15 @@ import LifoManifestPage from './pages/LifoManifestPage';
 import TripDraftsPage from './pages/TripDraftsPage';
 import TripDraftReviewPage from './pages/TripDraftReviewPage';
 
+import OrderImportPage from './pages/dispatcher/import/OrderImportPage';
+import ImportBatchDetailPage from './pages/dispatcher/import/ImportBatchDetailPage';
+import ImportModuleGuard from './guards/ImportModuleGuard';
+import TripDraftListPage from './pages/dispatcher/trip-drafts/TripDraftListPage';
+import TripDraftDetailPage from './pages/dispatcher/trip-drafts/TripDraftDetailPage';
+import CapacityValidationPage from './pages/dispatcher/trip-drafts/CapacityValidationPage';
+import VehicleAssignmentPage from './pages/dispatcher/trip-drafts/VehicleAssignmentPage';
+import DispatchPage from './pages/dispatcher/trips/DispatchPage';
+
 
 function App() {
   return (
@@ -176,6 +185,72 @@ function App() {
             </RouteManagementGuard>
           }
         />
+
+        {/* Excel Order Import Module */}
+        <Route
+          path="/dispatcher/import"
+          element={
+            <ImportModuleGuard>
+              <OrderImportPage />
+            </ImportModuleGuard>
+          }
+        />
+        <Route
+          path="/dispatcher/import/history/:batchId"
+          element={
+            <ImportModuleGuard>
+              <ImportBatchDetailPage />
+            </ImportModuleGuard>
+          }
+        />
+
+        {/* Route Consolidation (US-10) */}
+        <Route
+          path="/dispatcher/trip-drafts"
+          element={
+            <ProtectedRoute>
+              <TripDraftListPage />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/dispatcher/trip-drafts/:id"
+          element={
+            <ProtectedRoute>
+              <TripDraftDetailPage />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/dispatcher/trip-drafts/:id/capacity"
+          element={
+            <ProtectedRoute>
+              <CapacityValidationPage />
+            </ProtectedRoute>
+          }
+        />
+
+        {/* US-15 Vehicle Assignment */}
+        <Route
+          path="/dispatcher/trip-drafts/:id/assign"
+          element={
+            <ProtectedRoute>
+              <VehicleAssignmentPage />
+            </ProtectedRoute>
+          }
+        />
+
+        {/* US-16 Dispatch Execution */}
+        <Route
+          path="/dispatcher/trips/:tripId/dispatch"
+          element={
+            <ProtectedRoute>
+              <DispatchPage />
+            </ProtectedRoute>
+          }
+        />
+
+
         <Route path="/403" element={<ForbiddenPage />} />
 
 
