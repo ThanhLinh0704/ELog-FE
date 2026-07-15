@@ -7,6 +7,8 @@ import ImportResultCard from './components/ImportResultCard';
 import ImportErrorsTable from './components/ImportErrorsTable';
 import ImportHistoryTable from './components/ImportHistoryTable';
 import ReplaceBatchModal from './components/ReplaceBatchModal';
+import ImportSuccessTable from './components/ImportSuccessTable';
+import * as XLSX from 'xlsx';
 import { canUploadOrders } from '../../../utils/importPermissions';
 import { importApi, ApiError } from '../../../api/importApi';
 import type { ImportBatchHistory, ImportResult } from '../../../types/import';
@@ -88,9 +90,43 @@ const OrderImportPage: React.FC = () => {
     setCurrentResult(null);
     setErrorTableOpen(false);
 
+    // Parse excel file in frontend to extract all successfully imported items
+    let excelRows: any[] = [];
+    try {
+      const dataBuffer = await file.arrayBuffer();
+      const workbook = XLSX.read(dataBuffer, { type: 'array' });
+      const sheetName = workbook.SheetNames[0];
+      const sheet = workbook.Sheets[sheetName];
+      const rowsJson = XLSX.utils.sheet_to_json<any[]>(sheet, { header: 1 });
+      for (let i = 1; i < rowsJson.length; i++) {
+        const row = rowsJson[i];
+        if (row && row.length >= 3) {
+          excelRows.push({
+            rowNumber: i + 1,
+            orderRef: String(row[0] || '').trim(),
+            storeCode: String(row[1] || '').trim(),
+            sku: String(row[2] || '').trim(),
+            quantity: parseInt(String(row[3] || '0').trim()) || 0,
+          });
+        }
+      }
+    } catch (err) {
+      console.error("Error parsing Excel in frontend", err);
+    }
+
     try {
       const result = await importApi.uploadOrders(deliveryDate, file, confirmReplace);
       message.success(`Tải lên file thành công. Tạo Batch #${result.batchId}`);
+      
+      // Filter and save successful rows to localStorage
+      try {
+        const errorRowNumbers = new Set((result.errors || []).map((e: any) => e.rowNumber));
+        const successRows = excelRows.filter(r => !errorRowNumbers.has(r.rowNumber));
+        localStorage.setItem(`import_batch_success_rows_${result.batchId}`, JSON.stringify(successRows));
+      } catch (err) {
+        console.error("Error caching success rows in localStorage", err);
+      }
+
       setCurrentResult(result);
       if (result.rejectedRows > 0) {
         setErrorTableOpen(true);
@@ -192,6 +228,11 @@ const OrderImportPage: React.FC = () => {
           onViewErrors={() => setErrorTableOpen(!errorTableOpen)}
           errorTableOpen={errorTableOpen}
         />
+      )}
+
+      {/* Success lines table details */}
+      {currentResult && currentResult.acceptedRows > 0 && (
+        <ImportSuccessTable batch={currentResult} />
       )}
 
       {/* Error lines table details */}

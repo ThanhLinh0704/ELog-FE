@@ -42,6 +42,7 @@ export interface TripDraftDetail {
   estimatedDurationMin: number;
   stops: TripDraftStop[];
   plannedDepartureTime?: string | null;
+  deliveryDate: string;
 }
 
 export interface TripDraftListItem {
@@ -189,6 +190,7 @@ function normalizeTripDraft(raw: unknown): TripDraftDetail {
     draftCode: String(draft.draftCode ?? draft.draft_code ?? draft.routeCode ?? ''),
     status: String(draft.status ?? 'DRAFT').toUpperCase(),
     warehouseName: String(draft.warehouseName ?? draft.warehouse_name ?? ''),
+    deliveryDate: String(draft.deliveryDate ?? draft.delivery_date ?? ''),
     vehicle: normalizeVehicle(draft.vehicle),
     totalOrders: toNumber(totalOrdersVal),
     totalWeightKg: toNumber(draft.totalWeightKg ?? draft.total_weight_kg),

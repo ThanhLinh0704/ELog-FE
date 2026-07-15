@@ -42,6 +42,9 @@ import {
   type TripDraftStop,
   type TripDraftStopStatus,
 } from '../api/tripDraftApi';
+import { storeApi } from '../api/storeApi';
+import { importApi } from '../api/importApi';
+import { productApi } from '../api/productApi';
 
 function getCurrentUser() {
   const username = localStorage.getItem('username') || '';
@@ -138,6 +141,100 @@ const TripDraftReviewPage: React.FC = () => {
   const [modal, contextHolder] = Modal.useModal();
   const [plannedTime, setPlannedTime] = useState<dayjs.Dayjs | null>(dayjs('07:30:00', 'HH:mm:ss'));
 
+  // Order Details Modal States
+  const [activeBatchId, setActiveBatchId] = useState<number | null>(null);
+  const [detailModalVisible, setDetailModalVisible] = useState(false);
+  const [selectedStopForDetail, setSelectedStopForDetail] = useState<TripDraftStop | null>(null);
+  const [stopOrderItems, setStopOrderItems] = useState<any[]>([]);
+  const [detailModalLoading, setDetailModalLoading] = useState(false);
+
+  const showOrderDetails = async (stop: TripDraftStop) => {
+    setSelectedStopForDetail(stop);
+    setDetailModalVisible(true);
+    setDetailModalLoading(true);
+    setStopOrderItems([]);
+
+    try {
+      const cachedRowsStr = localStorage.getItem(`import_batch_success_rows_${activeBatchId}`);
+      if (!cachedRowsStr) {
+        setDetailModalLoading(false);
+        return;
+      }
+
+      const allCachedRows = JSON.parse(cachedRowsStr);
+      const stopRows = allCachedRows.filter((r: any) => r.storeCode === stop.storeCode);
+
+      if (stopRows.length === 0) {
+        setDetailModalLoading(false);
+        return;
+      }
+
+      const productsRes = await productApi.getProducts({ size: 1000 });
+      const productMap = new Map(productsRes.content.map(p => [p.sku, p]));
+
+      const itemsWithDetails = stopRows.map((row: any) => {
+        const product = productMap.get(row.sku);
+        const unitWeight = product ? product.weightKg : 0;
+        const unitVolume = product ? product.volumeM3 : 0;
+        return {
+          orderRef: row.orderRef,
+          sku: row.sku,
+          productName: product ? product.productName : row.sku,
+          quantity: row.quantity,
+          weightKg: unitWeight * row.quantity,
+          volumeM3: unitVolume * row.quantity,
+        };
+      });
+
+      setStopOrderItems(itemsWithDetails);
+    } catch (err) {
+      console.error("Failed to load stop order details", err);
+      message.error("Không tải được chi tiết đơn hàng của điểm dừng.");
+    } finally {
+      setDetailModalLoading(false);
+    }
+  };
+
+  const detailColumns = [
+    {
+      title: 'Mã đơn hàng',
+      dataIndex: 'orderRef',
+      key: 'orderRef',
+      render: (text: string) => <Typography.Text strong>{text}</Typography.Text>,
+    },
+    {
+      title: 'Mã sản phẩm (SKU)',
+      dataIndex: 'sku',
+      key: 'sku',
+    },
+    {
+      title: 'Tên sản phẩm',
+      dataIndex: 'productName',
+      key: 'productName',
+    },
+    {
+      title: 'Số lượng',
+      dataIndex: 'quantity',
+      key: 'quantity',
+      align: 'right' as const,
+      render: (value: number) => <Typography.Text strong>{formatNumber(value)}</Typography.Text>,
+    },
+    {
+      title: 'Khối lượng (kg)',
+      dataIndex: 'weightKg',
+      key: 'weightKg',
+      align: 'right' as const,
+      render: (value: number) => formatNumber(value, 1),
+    },
+    {
+      title: 'Thể tích (m³)',
+      dataIndex: 'volumeM3',
+      key: 'volumeM3',
+      align: 'right' as const,
+      render: (value: number) => formatNumber(value, 3),
+    },
+  ];
+
   const activeStops = useMemo(
     () => draft?.stops.filter((stop) => stop.status === 'ACTIVE') ?? [],
     [draft]
@@ -154,6 +251,42 @@ const TripDraftReviewPage: React.FC = () => {
 
     try {
       const result = await getTripDraft(draftId);
+      
+      // Enrich stops with store information from storeApi
+      try {
+        const storesRes = await storeApi.getStores({ size: 1000 });
+        const storeMap = new Map(storesRes.content.map(s => [s.storeCode, s]));
+        result.stops = result.stops.map(stop => {
+          const store = storeMap.get(stop.storeCode);
+          if (store) {
+            return {
+              ...stop,
+              storeName: stop.storeName && !stop.storeName.includes('?') ? stop.storeName : store.storeName,
+              address: stop.address || store.address,
+              latitude: stop.latitude || store.latitude || null,
+              longitude: stop.longitude || store.longitude || null,
+            };
+          }
+          return stop;
+        });
+      } catch (storeErr) {
+        console.error("Failed to enrich stops with store details", storeErr);
+      }
+      
+      // Get the active import batch for this delivery date to look up cached excel rows
+      try {
+        const dateStr = result.deliveryDate;
+        const batchesRes = await importApi.getImportHistory({ deliveryDate: dateStr, page: 0, size: 100 });
+        const activeBatch = batchesRes.content.find((b: any) => b.isActive && b.deliveryDate === dateStr);
+        if (activeBatch) {
+          setActiveBatchId(activeBatch.id);
+        } else if (batchesRes.content.length > 0) {
+          setActiveBatchId(batchesRes.content[0].id);
+        }
+      } catch (batchErr) {
+        console.error("Failed to find active batch for delivery date", batchErr);
+      }
+      
       setDraft(result);
     } catch (err) {
       if (getTripDraftApiStatus(err) === 403) {
@@ -248,11 +381,11 @@ const TripDraftReviewPage: React.FC = () => {
         setConfirming(true);
 
         try {
-          const result = await confirmTripDraft(draftId, {
+          await confirmTripDraft(draftId, {
             confirmNote: 'Đã kiểm tra và xác nhận bởi điều phối viên',
           });
           message.success('Đã xác nhận bản nháp chuyến thành công.');
-          navigate(`/trips/${result.tripId}`);
+          navigate(`/dispatcher/trip-drafts/${draftId}`);
         } catch (err) {
           const apiMessage = getApiErrorMessage(err, 'Không xác nhận được bản nháp chuyến.');
           if (getTripDraftApiStatus(err) === 409) {
@@ -299,7 +432,19 @@ const TripDraftReviewPage: React.FC = () => {
       dataIndex: 'orderCount',
       key: 'orderCount',
       width: 100,
-      align: 'right',
+      align: 'right' as const,
+      render: (count: number, record: TripDraftStop) => {
+        if (count === 0) return '0';
+        return (
+          <Button 
+            type="link" 
+            onClick={() => showOrderDetails(record)}
+            style={{ padding: 0, fontWeight: 'bold' }}
+          >
+            {count}
+          </Button>
+        );
+      }
     },
     {
       title: 'Khối lượng / Thể tích',
@@ -604,6 +749,67 @@ const TripDraftReviewPage: React.FC = () => {
           ) : null}
         </Spin>
       </Space>
+
+      {/* Order Items Detail Modal */}
+      <Modal
+        title={
+          <Space>
+            <PackageCheck size={20} style={{ color: '#1677ff' }} />
+            <span>Chi tiết đơn hàng điểm dừng: {selectedStopForDetail?.storeName || selectedStopForDetail?.storeCode}</span>
+          </Space>
+        }
+        open={detailModalVisible}
+        onCancel={() => setDetailModalVisible(false)}
+        footer={[
+          <Button key="close" type="primary" onClick={() => setDetailModalVisible(false)}>
+            Đóng
+          </Button>
+        ]}
+        width={800}
+        destroyOnClose
+      >
+        {detailModalLoading ? (
+          <div style={{ textAlign: 'center', padding: '40px 0' }}>
+            <Spin tip="Đang tải chi tiết đơn hàng..." />
+          </div>
+        ) : stopOrderItems.length > 0 ? (
+          <Table
+            dataSource={stopOrderItems}
+            columns={detailColumns}
+            rowKey={(record, idx) => `${record.orderRef}-${record.sku}-${idx}`}
+            pagination={false}
+            bordered
+            size="small"
+            summary={(pageData) => {
+              let totalQty = 0;
+              let totalWeight = 0;
+              let totalVolume = 0;
+              pageData.forEach(({ quantity, weightKg, volumeM3 }) => {
+                totalQty += quantity;
+                totalWeight += weightKg;
+                totalVolume += volumeM3;
+              });
+              return (
+                <Table.Summary fixed>
+                  <Table.Summary.Row style={{ backgroundColor: '#fafafa', fontWeight: 600 }}>
+                    <Table.Summary.Cell index={0} colSpan={3}>Tổng cộng</Table.Summary.Cell>
+                    <Table.Summary.Cell index={1} align="right">{formatNumber(totalQty)}</Table.Summary.Cell>
+                    <Table.Summary.Cell index={2} align="right">{formatNumber(totalWeight, 1)} kg</Table.Summary.Cell>
+                    <Table.Summary.Cell index={3} align="right">{formatNumber(totalVolume, 3)} m³</Table.Summary.Cell>
+                  </Table.Summary.Row>
+                </Table.Summary>
+              );
+            }}
+          />
+        ) : (
+          <Alert
+            type="info"
+            message="Không tìm thấy chi tiết sản phẩm"
+            description="Dữ liệu chi tiết sản phẩm từ file Excel nhập cho batch này không tồn tại trên trình duyệt này."
+            showIcon
+          />
+        )}
+      </Modal>
     </AdminShell>
   );
 };

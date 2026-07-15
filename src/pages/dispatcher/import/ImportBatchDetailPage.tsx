@@ -7,6 +7,7 @@ import dayjs from 'dayjs';
 import AdminShell from '../../../components/AdminShell';
 import ImportStatusTag from './components/ImportStatusTag';
 import ImportErrorsTable from './components/ImportErrorsTable';
+import ImportSuccessTable from './components/ImportSuccessTable';
 import { importApi } from '../../../api/importApi';
 import type { ImportResult } from '../../../types/import';
 import { downloadErrorReport } from '../../../utils/errorReport';
@@ -327,11 +328,14 @@ const ImportBatchDetailPage: React.FC = () => {
         />
       )}
 
+      {/* Success detail list */}
+      {acceptedRows > 0 && <ImportSuccessTable batch={batch} />}
+
       {/* Error detail list */}
       {rejectedRows > 0 ? (
         <ImportErrorsTable batchId={Number(batchId)} />
       ) : (
-        <Card style={{ borderRadius: 12, textAlign: 'center', padding: '24px 0' }}>
+        <Card style={{ borderRadius: 12, textAlign: 'center', padding: '24px 0', border: '1px solid #d9d9d9', boxShadow: '0 4px 12px rgba(0,0,0,0.05)', marginBottom: 24 }}>
           <Empty description={<span style={{ color: '#8c8c8c' }}>Batch này không có dòng lỗi. Tất cả dữ liệu đã được import thành công.</span>} />
         </Card>
       )}

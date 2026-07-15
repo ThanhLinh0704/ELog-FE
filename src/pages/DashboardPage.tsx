@@ -88,7 +88,7 @@ const DashboardPage: React.FC = () => {
       setError('');
       try {
         const [usersRes, storesRes, capacityRes, productsRes, routesRes] = await Promise.all([
-          userApi.getUsers({ page: 0, size: 1 }),
+          roles.includes('SYSTEM_ADMIN') ? userApi.getUsers({ page: 0, size: 1 }) : Promise.resolve({ totalElements: 0 }),
           storeApi.getStores({ page: 0, size: 1 }),
           vehicleApi.getFleetCapacity(),
           productApi.getProducts({ page: 0, size: 1 }),
@@ -162,8 +162,8 @@ const DashboardPage: React.FC = () => {
       borderColor: '#b7eb8f',
     },
     {
-      title: 'Quản lý xe cộ',
-      desc: 'Theo dõi đội xe vận chuyển, tải trọng (kg) và thể tích khoang hàng (m³).',
+      title: 'Quản lý xe',
+      desc: 'Quản lý đội xe vận chuyển, tải trọng (kg) và thể tích khoang hàng (m³).',
       icon: <Truck size={24} style={{ color: '#faad14' }} />,
       path: '/vehicles',
       bgColor: '#fffbe6',

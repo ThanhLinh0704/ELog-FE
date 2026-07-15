@@ -95,7 +95,7 @@ const AdminShell: React.FC<AdminShellProps> = ({ currentUser, children }) => {
         {
           key: '/vehicles',
           icon: <Truck size={ICON_SIZE} />,
-          label: 'Quản lý xe cộ',
+          label: 'Quản lý xe',
           onClick: () => navigate('/vehicles'),
         },
 
@@ -266,13 +266,15 @@ const AdminShell: React.FC<AdminShellProps> = ({ currentUser, children }) => {
               style={{ width: 250, borderRadius: 6 }}
             />
             <Space size={16}>
-              <Badge dot color="#ff4d4f">
-                <Button
-                  type="text"
-                  shape="circle"
-                  icon={<Bell size={ICON_SIZE} style={{ color: '#595959' }} />}
-                />
-              </Badge>
+              <Button
+                type="text"
+                shape="circle"
+                icon={
+                  <Badge dot color="#ff4d4f" offset={[-2, 2]}>
+                    <Bell size={ICON_SIZE} style={{ color: '#595959' }} />
+                  </Badge>
+                }
+              />
               <Dropdown menu={userMenuItems} placement="bottomRight" trigger={['click']}>
                 <Button type="text" style={{ height: 40, padding: '0 8px' }}>
                   <Space>

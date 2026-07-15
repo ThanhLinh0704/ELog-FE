@@ -166,6 +166,13 @@ const TripDraftListPage: React.FC = () => {
 
   const columns = [
     {
+      title: 'ID',
+      dataIndex: 'id',
+      key: 'id',
+      render: (id: number) => <Text strong style={{ color: '#1677ff' }}>#{id}</Text>,
+      width: 80,
+    },
+    {
       title: 'Tuyến đường',
       dataIndex: 'routeCode',
       key: 'routeCode',
