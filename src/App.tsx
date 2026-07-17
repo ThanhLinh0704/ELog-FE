@@ -36,6 +36,9 @@ import MonitoringGuard from './guards/MonitoringGuard';
 import DriverMyTripsPage from './pages/driver/DriverMyTripsPage';
 import DriverGuard from './guards/DriverGuard';
 
+import ExceptionManagementPage from './pages/dispatcher/exceptions/ExceptionManagementPage';
+import ExceptionGuard from './guards/ExceptionGuard';
+
 
 function App() {
   return (
@@ -271,6 +274,24 @@ function App() {
             <MonitoringGuard>
               <MonitoringDashboardPage />
             </MonitoringGuard>
+          }
+        />
+
+        {/* US-18 Exception Management */}
+        <Route
+          path="/dispatcher/exceptions"
+          element={
+            <ExceptionGuard>
+              <ExceptionManagementPage />
+            </ExceptionGuard>
+          }
+        />
+        <Route
+          path="/manager/exceptions"
+          element={
+            <ExceptionGuard>
+              <ExceptionManagementPage />
+            </ExceptionGuard>
           }
         />
 

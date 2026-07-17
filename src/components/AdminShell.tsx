@@ -1,7 +1,7 @@
 import React from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { Layout, Menu, Avatar, Dropdown, Button, Space, Input, Badge, ConfigProvider } from 'antd';
-import { Bell, ChevronDown, ClipboardList, LogOut, Search, Users, LayoutGrid, Map, Settings, Package, Home, Truck, FileSpreadsheet, Layers, Activity, Navigation } from 'lucide-react';
+import { Bell, ChevronDown, ClipboardList, LogOut, Search, Users, LayoutGrid, Map, Settings, Package, Home, Truck, FileSpreadsheet, Layers, Activity, Navigation, AlertTriangle } from 'lucide-react';
 import axiosInstance from '../api/axiosInstance';
 
 
@@ -63,11 +63,15 @@ const AdminShell: React.FC<AdminShellProps> = ({ currentUser, children }) => {
             ? '/dispatcher/monitoring'
             : location.pathname.startsWith('/manager/monitoring')
               ? '/dispatcher/monitoring'
-              : location.pathname.startsWith('/driver/my-trips')
-                ? '/driver/my-trips'
-                : location.pathname.startsWith('/trip-drafts')
-                  ? '/trip-drafts'
-                  : location.pathname;
+              : location.pathname.startsWith('/dispatcher/exceptions')
+                ? '/exceptions'
+                : location.pathname.startsWith('/manager/exceptions')
+                  ? '/exceptions'
+                  : location.pathname.startsWith('/driver/my-trips')
+                    ? '/driver/my-trips'
+                    : location.pathname.startsWith('/trip-drafts')
+                      ? '/trip-drafts'
+                      : location.pathname;
 
   const roles = currentUser.roles || [];
   const canViewImport = roles.some(role => ["SYSTEM_ADMIN", "DISPATCHER", "LOGISTICS_MANAGER"].includes(role));
@@ -147,6 +151,14 @@ const AdminShell: React.FC<AdminShellProps> = ({ currentUser, children }) => {
             icon: <Activity size={ICON_SIZE} />,
             label: 'Theo dõi chuyến hàng',
             onClick: () => navigate(roles.includes('LOGISTICS_MANAGER') && !roles.includes('DISPATCHER') ? '/manager/monitoring' : '/dispatcher/monitoring'),
+          }
+        ] : []),
+        ...(roles.some(role => ["SYSTEM_ADMIN", "DISPATCHER", "LOGISTICS_MANAGER"].includes(role)) ? [
+          {
+            key: '/exceptions',
+            icon: <AlertTriangle size={ICON_SIZE} />,
+            label: 'Quản lý ngoại lệ',
+            onClick: () => navigate(roles.includes('LOGISTICS_MANAGER') && !roles.includes('DISPATCHER') ? '/manager/exceptions' : '/dispatcher/exceptions'),
           }
         ] : []),
         ...(isDriverRole ? [

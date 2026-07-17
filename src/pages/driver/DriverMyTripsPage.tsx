@@ -29,10 +29,12 @@ import {
   ChevronUp,
   FileText,
   RefreshCw,
+  XCircle,
 } from 'lucide-react';
 import AdminShell from '../../components/AdminShell';
 import { getMyTrips } from '../../api/tripApi';
 import { startTrip, arriveAtStop, completeStop, getTripProgress } from '../../api/monitoringApi';
+import DeliveryRejectionModal from './DeliveryRejectionModal';
 import type { Trip } from '../../types/trip';
 import type {
   TripProgressResponse,
@@ -151,6 +153,15 @@ const DriverMyTripsPage: React.FC = () => {
 
   // Submitting states
   const [submitting, setSubmitting] = useState<Record<string, boolean>>({});
+
+  // Rejection modal state
+  const [rejectModal, setRejectModal] = useState<{
+    open: boolean;
+    tripStopId: number;
+    storeCode: string;
+    storeName: string | null;
+    tripId: number;
+  }>({ open: false, tripStopId: 0, storeCode: '', storeName: null, tripId: 0 });
 
   // ── Data fetching ─────────────────────────────────────────────────────────
 
@@ -648,36 +659,66 @@ const DriverMyTripsPage: React.FC = () => {
                                 )}
 
                                 {canComplete && (
-                                  <Popconfirm
-                                    title="Hoàn thành điểm giao"
-                                    description={`Xác nhận hoàn thành ${stop.storeCode}?`}
-                                    onConfirm={() => handleComplete(stop.tripStopId, trip.tripId)}
-                                    okText="Hoàn thành"
-                                    cancelText="Hủy"
-                                  >
-                                    <Button
-                                      type="primary"
-                                      block
-                                      size="large"
-                                      icon={<CircleCheck size={16} />}
-                                      loading={submitting[`complete-${stop.tripStopId}`]}
-                                      style={{
-                                        marginTop: 12,
-                                        height: 48,
-                                        fontSize: 15,
-                                        fontWeight: 600,
-                                        borderRadius: 10,
-                                        background: '#52c41a',
-                                        borderColor: '#52c41a',
-                                        display: 'flex',
-                                        alignItems: 'center',
-                                        justifyContent: 'center',
-                                        gap: 8,
-                                      }}
+                                  <Space direction="vertical" style={{ width: '100%', marginTop: 12 }} size={8}>
+                                    <Popconfirm
+                                      title="Hoàn thành điểm giao"
+                                      description={`Xác nhận hoàn thành ${stop.storeCode}?`}
+                                      onConfirm={() => handleComplete(stop.tripStopId, trip.tripId)}
+                                      okText="Hoàn thành"
+                                      cancelText="Hủy"
                                     >
-                                      Hoàn thành điểm giao
-                                    </Button>
-                                  </Popconfirm>
+                                      <Button
+                                        type="primary"
+                                        block
+                                        size="large"
+                                        icon={<CircleCheck size={16} />}
+                                        loading={submitting[`complete-${stop.tripStopId}`]}
+                                        style={{
+                                          height: 48,
+                                          fontSize: 15,
+                                          fontWeight: 600,
+                                          borderRadius: 10,
+                                          background: '#52c41a',
+                                          borderColor: '#52c41a',
+                                          display: 'flex',
+                                          alignItems: 'center',
+                                          justifyContent: 'center',
+                                          gap: 8,
+                                        }}
+                                      >
+                                        Hoàn thành điểm giao
+                                      </Button>
+                                    </Popconfirm>
+
+                                    {/* US-18: Reject delivery button — only for IN_PROGRESS stops */}
+                                    {stop.status === 'IN_PROGRESS' && trip.status !== 'COMPLETED' && (
+                                      <Button
+                                        block
+                                        size="large"
+                                        danger
+                                        icon={<XCircle size={16} />}
+                                        onClick={() => setRejectModal({
+                                          open: true,
+                                          tripStopId: stop.tripStopId,
+                                          storeCode: stop.storeCode,
+                                          storeName: stop.storeName || null,
+                                          tripId: trip.tripId,
+                                        })}
+                                        style={{
+                                          height: 48,
+                                          fontSize: 15,
+                                          fontWeight: 600,
+                                          borderRadius: 10,
+                                          display: 'flex',
+                                          alignItems: 'center',
+                                          justifyContent: 'center',
+                                          gap: 8,
+                                        }}
+                                      >
+                                        Báo lỗi giao hàng
+                                      </Button>
+                                    )}
+                                  </Space>
                                 )}
 
                                 {/* Non-actionable pending stops tooltip */}
@@ -710,6 +751,23 @@ const DriverMyTripsPage: React.FC = () => {
             );
           })
         )}
+
+        {/* US-18: Delivery Rejection Modal */}
+        <DeliveryRejectionModal
+          open={rejectModal.open}
+          tripStopId={rejectModal.tripStopId}
+          storeCode={rejectModal.storeCode}
+          storeName={rejectModal.storeName}
+          onClose={() => setRejectModal({ open: false, tripStopId: 0, storeCode: '', storeName: null, tripId: 0 })}
+          onSuccess={() => {
+            setRejectModal({ open: false, tripStopId: 0, storeCode: '', storeName: null, tripId: 0 });
+            // Reload trip data to reflect EXCEPTION status
+            void fetchTrips();
+            if (rejectModal.tripId) {
+              void loadProgress(rejectModal.tripId);
+            }
+          }}
+        />
       </div>
     </AdminShell>
   );
