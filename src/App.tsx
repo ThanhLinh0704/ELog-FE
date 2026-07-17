@@ -31,6 +31,11 @@ import CapacityValidationPage from './pages/dispatcher/trip-drafts/CapacityValid
 import VehicleAssignmentPage from './pages/dispatcher/trip-drafts/VehicleAssignmentPage';
 import DispatchPage from './pages/dispatcher/trips/DispatchPage';
 
+import MonitoringDashboardPage from './pages/dispatcher/monitoring/MonitoringDashboardPage';
+import MonitoringGuard from './guards/MonitoringGuard';
+import DriverMyTripsPage from './pages/driver/DriverMyTripsPage';
+import DriverGuard from './guards/DriverGuard';
+
 
 function App() {
   return (
@@ -250,6 +255,34 @@ function App() {
           }
         />
 
+
+        {/* US-17 Monitoring Dashboard */}
+        <Route
+          path="/dispatcher/monitoring"
+          element={
+            <MonitoringGuard>
+              <MonitoringDashboardPage />
+            </MonitoringGuard>
+          }
+        />
+        <Route
+          path="/manager/monitoring"
+          element={
+            <MonitoringGuard>
+              <MonitoringDashboardPage />
+            </MonitoringGuard>
+          }
+        />
+
+        {/* US-17 Driver Web View */}
+        <Route
+          path="/driver/my-trips"
+          element={
+            <DriverGuard>
+              <DriverMyTripsPage />
+            </DriverGuard>
+          }
+        />
 
         <Route path="/403" element={<ForbiddenPage />} />
 
