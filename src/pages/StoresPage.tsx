@@ -38,6 +38,7 @@ import {
 import AdminShell from '../components/AdminShell';
 import { useDebounce } from '../hooks/useDebounce';
 import { storeApi, type StoreItem, type StorePayload } from '../api/storeApi';
+import { MapSelector } from '../components/MapSelector';
 
 type FormMode = 'create' | 'edit';
 type CoordinateFilter = 'all' | 'missing';
@@ -177,6 +178,13 @@ const StoreFormModal: React.FC<StoreFormModalProps> = ({
 }) => {
   const [form] = Form.useForm();
   const isEdit = mode === 'edit';
+  const [mapSearchText, setMapSearchText] = useState('');
+
+  useEffect(() => {
+    if (!open) {
+      setMapSearchText('');
+    }
+  }, [open]);
 
   useEffect(() => {
     if (!open) return;
@@ -292,15 +300,33 @@ const StoreFormModal: React.FC<StoreFormModalProps> = ({
           <Input placeholder="VD: Điện Máy Phúc Anh" />
         </Form.Item>
 
-        <Form.Item
-          label="Địa chỉ"
-          name="address"
-          rules={[
-            { required: true, message: 'Vui lòng nhập địa chỉ.' },
-            { max: 255, message: 'Địa chỉ không quá 255 ký tự.' },
-          ]}
-        >
-          <Input.TextArea rows={3} placeholder="VD: 120 Nguyễn Oanh, P.17, Q.Gò Vấp" />
+        <Form.Item label="Địa chỉ" required style={{ marginBottom: 12 }}>
+          <Space.Compact style={{ width: '100%' }}>
+            <Form.Item
+              name="address"
+              noStyle
+              rules={[
+                { required: true, message: 'Vui lòng nhập địa chỉ.' },
+                { max: 255, message: 'Địa chỉ không quá 255 ký tự.' },
+              ]}
+            >
+              <Input.TextArea rows={2} placeholder="VD: 120 Nguyễn Oanh, P.17, Q.Gò Vấp" />
+            </Form.Item>
+            <Button
+              type="default"
+              style={{ height: 'auto', display: 'flex', alignItems: 'center' }}
+              onClick={() => {
+                const addr = form.getFieldValue('address');
+                if (addr && addr.trim()) {
+                  setMapSearchText(addr.trim());
+                } else {
+                  message.warning('Vui lòng nhập địa chỉ trước khi tìm trên bản đồ.');
+                }
+              }}
+            >
+              Tìm Tọa Độ
+            </Button>
+          </Space.Compact>
         </Form.Item>
 
         <Row gutter={16}>
@@ -325,6 +351,27 @@ const StoreFormModal: React.FC<StoreFormModalProps> = ({
             </Form.Item>
           </Col>
         </Row>
+
+        <Form.Item noStyle shouldUpdate>
+          {({ getFieldValue, setFieldsValue }) => {
+            const lat = getFieldValue('latitude');
+            const lng = getFieldValue('longitude');
+            return (
+              <MapSelector
+                latitude={lat}
+                longitude={lng}
+                addressSearchText={mapSearchText}
+                onCoordinateChange={(newLat, newLng) => {
+                  setFieldsValue({
+                    latitude: Number(newLat.toFixed(6)),
+                    longitude: Number(newLng.toFixed(6)),
+                  });
+                  setMapSearchText('');
+                }}
+              />
+            );
+          }}
+        </Form.Item>
 
         <Row gutter={16}>
           <Col xs={24} md={12}>
