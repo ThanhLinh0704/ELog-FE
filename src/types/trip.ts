@@ -13,7 +13,7 @@ export interface EligibleVehicle {
   plateNumber: string;
   vehicleType: string;
   maxVolumeM3: number;
-  maxWeightKg: number;
+  payloadKg: number;
   remainingVolumeM3: number;
   remainingWeightKg: number;
 }
@@ -24,7 +24,7 @@ export interface IneligibleVehicle {
   plateNumber: string;
   vehicleType: string;
   maxVolumeM3: number;
-  maxWeightKg: number;
+  payloadKg: number;
   volumeCheckResult: ConstraintResult;
   weightCheckResult: ConstraintResult;
   failureReason?: string;

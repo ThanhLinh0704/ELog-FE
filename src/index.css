@@ -147,7 +147,12 @@ code {
   display: flex;
   flex-direction: column;
   height: calc(100vh - 64px);
-  justify-content: space-between;
+}
+
+.elog-sidebar-menu-scrollable {
+  flex: 1 1 auto;
+  overflow-y: auto;
+  overflow-x: hidden;
 }
 
 .elog-sidebar-profile {

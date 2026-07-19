@@ -138,7 +138,7 @@ export const mockStoreApi = {
     if (params.hasRoute !== undefined && params.hasRoute !== '') {
       const hasRouteValue = String(params.hasRoute) === 'true';
       filtered = filtered.filter((item) => {
-        const hasRoute = !!item.assignedRoute;
+        const hasRoute = !!item.assignedRoutes && item.assignedRoutes.length > 0;
         return hasRoute === hasRouteValue;
       });
     }
@@ -197,7 +197,14 @@ export const mockStoreApi = {
       id: Math.max(...mockStores.map((item) => item.id), 0) + 1,
       storeCode,
       storeName: payload.storeName.trim(),
-      address: payload.address.trim(),
+      address: `${payload.addressDetail}, ${payload.wardCode}, ${payload.districtCode}, ${payload.provinceCode}`,
+      provinceCode: payload.provinceCode,
+      districtCode: payload.districtCode,
+      wardCode: payload.wardCode,
+      addressDetail: payload.addressDetail,
+      allowedDeliveryHours: payload.allowedDeliveryHours || null,
+      maxAllowedVehicleWeight: payload.maxAllowedVehicleWeight || null,
+      imageUrl: payload.imageUrl || null,
       contactName: payload.contactName?.trim() || null,
       contactPhone: payload.contactPhone?.trim() || null,
       latitude: lat,
@@ -225,7 +232,14 @@ export const mockStoreApi = {
     const updated: StoreItem = {
       ...mockStores[index],
       storeName: payload.storeName.trim(),
-      address: payload.address.trim(),
+      address: `${payload.addressDetail}, ${payload.wardCode}, ${payload.districtCode}, ${payload.provinceCode}`,
+      provinceCode: payload.provinceCode,
+      districtCode: payload.districtCode,
+      wardCode: payload.wardCode,
+      addressDetail: payload.addressDetail,
+      allowedDeliveryHours: payload.allowedDeliveryHours || null,
+      maxAllowedVehicleWeight: payload.maxAllowedVehicleWeight || null,
+      imageUrl: payload.imageUrl || null,
       contactName: payload.contactName?.trim() || null,
       contactPhone: payload.contactPhone?.trim() || null,
       latitude: lat,

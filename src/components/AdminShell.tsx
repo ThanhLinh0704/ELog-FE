@@ -245,13 +245,15 @@ const AdminShell: React.FC<AdminShellProps> = ({ currentUser, children }) => {
           </div>
 
           <div className="elog-sidebar-menu-wrapper">
-            <Menu
-              mode="inline"
-              theme="dark"
-              selectedKeys={[selectedKey]}
-              items={sidebarMenuItems}
-              style={{ borderRight: 0, padding: '16px 0', background: '#0d1727' }}
-            />
+            <div className="elog-sidebar-menu-scrollable">
+              <Menu
+                mode="inline"
+                theme="dark"
+                selectedKeys={[selectedKey]}
+                items={sidebarMenuItems}
+                style={{ borderRight: 0, padding: '16px 0', background: '#0d1727' }}
+              />
+            </div>
 
             <div className="elog-sidebar-profile">
               <div className="elog-profile-info">

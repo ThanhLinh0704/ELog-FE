@@ -15,6 +15,8 @@ import {
   message,
   Empty,
   Space,
+  Modal,
+  Alert,
 } from 'antd';
 import { ArrowLeftOutlined, CarOutlined } from '@ant-design/icons';
 import { MapPin, CheckCircle2, XCircle } from 'lucide-react';
@@ -54,6 +56,35 @@ const TripDraftDetailPage: React.FC = () => {
   const [loading, setLoading] = useState(true);
   const [draft, setDraft] = useState<TripDraft | null>(null);
   const [existingTrips, setExistingTrips] = useState<Trip[]>([]);
+  const [revertLoading, setRevertLoading] = useState(false);
+  const [revertModalOpen, setRevertModalOpen] = useState(false);
+
+  const handleRevert = async () => {
+    if (!id) return;
+    setRevertLoading(true);
+    try {
+      const res = await tripDraftApi.revertTripDraft(id);
+      if (res.success) {
+        message.success(res.message || 'Thu hồi đợt gom đơn thành công.');
+        navigate(`/dispatcher/trip-drafts?deliveryDate=${draft?.deliveryDate}`);
+      } else {
+        message.error(res.message || 'Thu hồi đợt gom đơn thất bại.');
+      }
+    } catch (err: any) {
+      console.error(err);
+      const code = err?.response?.data?.error?.code || err?.body?.error?.code || '';
+      const msg = err?.response?.data?.error?.message || err?.body?.error?.message || err?.message || 'Có lỗi xảy ra khi thu hồi.';
+      
+      if (code === 'TRIP_DRAFT_ALREADY_ASSIGNED') {
+        message.error('Không thể thu hồi: Đợt gom đơn này đã được phân xe hoặc tách chuyến.');
+      } else {
+        message.error(msg);
+      }
+    } finally {
+      setRevertLoading(false);
+      setRevertModalOpen(false);
+    }
+  };
 
   const fetchDraftDetail = async () => {
     if (!id) return;
@@ -240,12 +271,22 @@ const TripDraftDetailPage: React.FC = () => {
 
         <Space wrap>
           {(draft.status === 'PLANNED' || draft.status === 'VALIDATED') && (
-            <Button
-              style={{ borderRadius: 6, fontWeight: 600 }}
-              onClick={() => navigate(`/dispatcher/trip-drafts/${draft.id}/capacity`)}
-            >
-              {draft.status === 'PLANNED' ? 'Kiểm tra tải trọng' : 'Xem kết quả tải trọng'}
-            </Button>
+            <>
+              <Button
+                danger
+                style={{ borderRadius: 6, fontWeight: 600 }}
+                loading={revertLoading}
+                onClick={() => setRevertModalOpen(true)}
+              >
+                Thu hồi gom đơn
+              </Button>
+              <Button
+                style={{ borderRadius: 6, fontWeight: 600 }}
+                onClick={() => navigate(`/dispatcher/trip-drafts/${draft.id}/capacity`)}
+              >
+                {draft.status === 'PLANNED' ? 'Kiểm tra tải trọng' : 'Xem kết quả tải trọng'}
+              </Button>
+            </>
           )}
           {draft.status === 'VALIDATED' && existingTrips.length === 0 && (
             <Button
@@ -382,6 +423,36 @@ const TripDraftDetailPage: React.FC = () => {
           }}
         />
       </Card>
+
+      <Modal
+        open={revertModalOpen}
+        title="Xác nhận thu hồi đợt gom đơn"
+        onCancel={() => !revertLoading && setRevertModalOpen(false)}
+        footer={[
+          <Button key="cancel" onClick={() => setRevertModalOpen(false)} disabled={revertLoading}>
+            Quay lại
+          </Button>,
+          <Button
+            key="confirm"
+            type="primary"
+            danger
+            loading={revertLoading}
+            onClick={handleRevert}
+          >
+            Xác nhận thu hồi
+          </Button>,
+        ]}
+      >
+        <div style={{ marginBottom: 12 }}>
+          <p>Hành động này sẽ <strong>xóa đợt gom đơn hiện tại</strong> và chuyển các đơn hàng trở lại trạng thái chờ gom đơn để lập kế hoạch mới.</p>
+          <Alert
+            type="warning"
+            showIcon
+            message="Chú ý"
+            description="Nếu đợt gom đơn này đã được phân xe (assign) hoặc tách chuyến (assign-split), hệ thống sẽ từ chối thu hồi."
+          />
+        </div>
+      </Modal>
     </AdminShell>
   );
 };

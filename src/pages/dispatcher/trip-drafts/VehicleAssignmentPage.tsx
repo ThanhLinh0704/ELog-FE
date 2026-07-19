@@ -288,6 +288,8 @@ const VehicleAssignmentPage: React.FC = () => {
           setEligibleVehicles(v.eligibleVehicles ?? []);
           setIneligibleVehicles(v.ineligibleVehicles ?? []);
         }).catch(() => null);
+      } else if (code === 'DRIVER_LICENSE_INCOMPATIBLE') {
+        message.error('Hạng bằng lái của tài xế không tương thích với yêu cầu của xe.');
       } else if (code === 'VEHICLE_CONFLICT') {
         message.error('Xe này đã được gán cho chuyến khác trong ngày. Vui lòng chọn xe khác.');
         setSelectedVehicleId(null);
@@ -363,7 +365,12 @@ const VehicleAssignmentPage: React.FC = () => {
       await loadAll();
     } catch (err) {
       console.error(err);
-      message.error(getErrorMessage(err, 'Tách chuyến thất bại. Vui lòng thử lại.'));
+      const code = getErrorCode(err);
+      if (code === 'DRIVER_LICENSE_INCOMPATIBLE') {
+        message.error('Hạng bằng lái của tài xế không tương thích với yêu cầu của xe.');
+      } else {
+        message.error(getErrorMessage(err, 'Tách chuyến thất bại. Vui lòng thử lại.'));
+      }
       setSplitConfirmOpen(false);
     } finally {
       setSubmitting(false);
@@ -633,6 +640,8 @@ const VehicleAssignmentPage: React.FC = () => {
                 const code = getErrorCode(err);
                 if (code === 'TRIP_LOCKED') {
                   message.error('Chuyến đã bị khóa/dispatch, không thể chỉnh sửa.');
+                } else if (code === 'DRIVER_LICENSE_INCOMPATIBLE') {
+                  message.error('Hạng bằng lái của tài xế không tương thích với yêu cầu của xe.');
                 } else if (code === 'VEHICLE_NOT_ELIGIBLE') {
                   message.error('Xe được chọn không đủ tải trọng cho chuyến này.');
                 } else if (code === 'VEHICLE_CONFLICT') {
@@ -815,8 +824,8 @@ const VehicleAssignmentPage: React.FC = () => {
                                 <Tag color="green" style={{ fontSize: 11 }}>Xe nhỏ nhất đủ tải</Tag>
                               )}
                             </div>
-                            <div style={{ fontSize: 12, color: '#8c8c8c', marginTop: 4 }}>
-                              Tối đa: {fmtVolume(v.maxVolumeM3)} · {fmtWeight(v.maxWeightKg)}
+                             <div style={{ fontSize: 12, color: '#8c8c8c', marginTop: 4 }}>
+                              Tối đa: {fmtVolume(v.maxVolumeM3)} · {fmtWeight(v.payloadKg)}
                             </div>
                             <div style={{ fontSize: 12, color: '#52c41a', marginTop: 2 }}>
                               Còn dư: {fmtVolume(v.remainingVolumeM3)} · {fmtWeight(v.remainingWeightKg)}
