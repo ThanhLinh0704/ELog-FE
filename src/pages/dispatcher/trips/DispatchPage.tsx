@@ -36,6 +36,8 @@ import {
   openHandoverSlip,
 } from '../../../api/tripApi';
 import type { Trip, FleetCapacityCheck } from '../../../types/trip';
+import { usePermissions } from '../../../hooks/usePermissions';
+import { PERMISSIONS } from '../../../constants/permissions';
 
 const { Title, Text } = Typography;
 
@@ -119,7 +121,8 @@ const DispatchPage: React.FC = () => {
   const { tripId } = useParams<{ tripId: string }>();
   const navigate = useNavigate();
   const currentUser = getCurrentUser();
-  const isDispatcher = currentUser.roles.includes('DISPATCHER');
+  const { can } = usePermissions();
+  const canCoordinateTrip = can(PERMISSIONS.TRIP_COORDINATE);
 
   // ── State ──────────────────────────────────────────────────────────────────
   const [loading, setLoading] = useState(true);
@@ -221,7 +224,7 @@ const DispatchPage: React.FC = () => {
   // ── Derived ───────────────────────────────────────────────────────────────
   const isDispatched = trip?.status === 'DISPATCHED' || trip?.status === 'IN_PROGRESS' || trip?.status === 'COMPLETED';
   const canDispatch =
-    isDispatcher &&
+    canCoordinateTrip &&
     trip?.status === 'VALIDATED' &&
     !trip?.lockedAt &&
     !dispatching &&
@@ -239,7 +242,7 @@ const DispatchPage: React.FC = () => {
   }
 
   // ── Render: 403 ──────────────────────────────────────────────────────────
-  if (!isDispatcher) {
+  if (!canCoordinateTrip) {
     return (
       <AdminShell currentUser={currentUser}>
         <Result

@@ -11,11 +11,14 @@ import { productApi } from '../../../api/productApi';
 import { formatVolume, formatWeight } from '../../../utils/numberFormat';
 import DeactivateProductModal from './components/DeactivateProductModal';
 import ActivateProductModal from './components/ActivateProductModal';
+import { PERMISSIONS } from '../../../constants/permissions';
+import { usePermissions } from '../../../hooks/usePermissions';
 
 const { Paragraph } = Typography;
 
 const ProductListPage: React.FC = () => {
   const navigate = useNavigate();
+  const { can } = usePermissions();
 
   // Retrieve current user roles from localStorage
   const username = localStorage.getItem('username') || '';
@@ -30,7 +33,7 @@ const ProductListPage: React.FC = () => {
     console.error('Failed to parse roles', e);
   }
 
-  const isSystemAdmin = roles.includes('SYSTEM_ADMIN');
+  const canWriteProduct = can(PERMISSIONS.PRODUCT_WRITE);
   const currentUser = {
     id: Number(userId),
     username,
@@ -198,7 +201,7 @@ const ProductListPage: React.FC = () => {
             />
           </Tooltip>
 
-          {isSystemAdmin && (
+          {canWriteProduct && (
             <>
               <Tooltip title="Chỉnh sửa">
                 <Button
@@ -270,7 +273,7 @@ const ProductListPage: React.FC = () => {
           </Col>
           <Col xs={24} sm={8}>
             <Card size="small" bordered={false} style={{ boxShadow: '0 1px 2px 0 rgba(0, 0, 0, 0.03)' }}>
-              <Statistic title="Quyền truy cập" value={isSystemAdmin ? 'Quản trị viên' : 'Chỉ xem'} suffix={isSystemAdmin ? 'SYSTEM_ADMIN' : 'READ_ONLY'} />
+              <Statistic title="Quyền truy cập" value={canWriteProduct ? 'Có quyền chỉnh sửa' : 'Chỉ xem'} suffix={canWriteProduct ? PERMISSIONS.PRODUCT_WRITE : PERMISSIONS.PRODUCT_READ} />
             </Card>
           </Col>
         </Row>
@@ -313,7 +316,7 @@ const ProductListPage: React.FC = () => {
               >
                 Tải lại
               </Button>
-              {isSystemAdmin && (
+              {canWriteProduct && (
                 <Button
                   type="primary"
                   icon={<Plus size={14} />}
@@ -333,7 +336,7 @@ const ProductListPage: React.FC = () => {
               <Empty
                 image={Empty.PRESENTED_IMAGE_SIMPLE}
                 description={
-                  isSystemAdmin ? (
+                  canWriteProduct ? (
                     <div>
                       <Paragraph strong style={{ fontSize: 16, margin: 0 }}>Danh mục chưa có sản phẩm.</Paragraph>
                       <Paragraph style={{ color: '#8c8c8c' }}>Hãy thêm sản phẩm đầu tiên để bắt đầu quản lý.</Paragraph>
@@ -343,7 +346,7 @@ const ProductListPage: React.FC = () => {
                   )
                 }
               >
-                {isSystemAdmin && (
+                {canWriteProduct && (
                   <Button type="primary" icon={<Plus size={14} />} onClick={() => navigate('/admin/products/new')}>
                     Thêm sản phẩm
                   </Button>

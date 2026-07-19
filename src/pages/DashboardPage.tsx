@@ -22,6 +22,8 @@ import { USE_MOCK_API } from '../config';
 import { getMyTrips } from '../api/tripApi';
 import type { Trip } from '../types/trip';
 import dayjs from 'dayjs';
+import { usePermissions } from '../hooks/usePermissions';
+import { PERMISSIONS } from '../constants/permissions';
 
 const { Title, Paragraph, Text } = Typography;
 
@@ -58,8 +60,15 @@ const DashboardPage: React.FC = () => {
     roles,
   };
 
-  // Driver state
-  const isDriver = roles.includes('DRIVER');
+  const { can } = usePermissions();
+  const canViewDriverTrips = can(PERMISSIONS.TRIP_EXECUTE);
+  const canReadUsers = can(PERMISSIONS.USER_READ);
+  const canReadStores = can(PERMISSIONS.STORE_READ);
+  const canReadVehicles = can(PERMISSIONS.VEHICLE_READ);
+  const canReadRoutes = can(PERMISSIONS.ROUTE_READ);
+  const canViewManagementDashboard =
+    canReadUsers || canReadStores || canReadVehicles || canReadRoutes;
+  const showDriverTripsDashboard = canViewDriverTrips && !canViewManagementDashboard;
 
   const [stats, setStats] = useState<SystemStats>({
     usersCount: 0,
@@ -72,7 +81,7 @@ const DashboardPage: React.FC = () => {
     totalVolume: 0,
   });
 
-  const [loading, setLoading] = useState<boolean>(!isDriver);
+  const [loading, setLoading] = useState<boolean>(!showDriverTripsDashboard);
   const [error, setError] = useState<string>('');
   
   const [driverTrips, setDriverTrips] = useState<Trip[]>([]);
@@ -80,7 +89,7 @@ const DashboardPage: React.FC = () => {
   const [driverLoading, setDriverLoading] = useState<boolean>(false);
 
   useEffect(() => {
-    if (isDriver) {
+    if (showDriverTripsDashboard) {
       return;
     }
     async function loadStats() {
@@ -88,18 +97,20 @@ const DashboardPage: React.FC = () => {
       setError('');
       try {
         const [usersRes, storesRes, capacityRes, productsRes, routesRes] = await Promise.all([
-          roles.includes('SYSTEM_ADMIN') ? userApi.getUsers({ page: 0, size: 1 }) : Promise.resolve({ totalElements: 0 }),
-          storeApi.getStores({ page: 0, size: 1 }),
-          vehicleApi.getFleetCapacity(),
+          canReadUsers ? userApi.getUsers({ page: 0, size: 1 }) : Promise.resolve({ totalElements: 0 }),
+          canReadStores ? storeApi.getStores({ page: 0, size: 1 }) : Promise.resolve({ totalElements: 0 }),
+          canReadVehicles ? vehicleApi.getFleetCapacity() : Promise.resolve({ activeVehicleCount: 0, totalMaxWeightKg: 0, totalMaxVolumeM3: 0 }),
           productApi.getProducts({ page: 0, size: 1 }),
-          routeApi.getRoutes({ page: 0, size: 1 }),
+          canReadRoutes ? routeApi.getRoutes({ page: 0, size: 1 }) : Promise.resolve({ totalElements: 0 }),
         ]);
 
         // Fallback or count vehicles
         let totalVehicles = capacityRes.activeVehicleCount;
         try {
-          const listVehicles = await vehicleApi.getVehicles({ page: 0, size: 1 });
-          totalVehicles = listVehicles.totalElements;
+          if (canReadVehicles) {
+            const listVehicles = await vehicleApi.getVehicles({ page: 0, size: 1 });
+            totalVehicles = listVehicles.totalElements;
+          }
         } catch (vehErr) {
           console.warn('Could not fetch total vehicles count, fallback to active capacity', vehErr);
         }
@@ -123,10 +134,10 @@ const DashboardPage: React.FC = () => {
     }
 
     loadStats();
-  }, [isDriver]);
+  }, [canReadRoutes, canReadStores, canReadUsers, canReadVehicles, showDriverTripsDashboard]);
 
   useEffect(() => {
-    if (!isDriver) return;
+    if (!showDriverTripsDashboard) return;
     async function loadTrips() {
       setDriverLoading(true);
       setError('');
@@ -142,7 +153,7 @@ const DashboardPage: React.FC = () => {
       }
     }
     void loadTrips();
-  }, [isDriver, selectedDate]);
+  }, [showDriverTripsDashboard, selectedDate]);
 
   const quickActions = [
     {
@@ -152,6 +163,7 @@ const DashboardPage: React.FC = () => {
       path: '/users',
       bgColor: '#e6f7ff',
       borderColor: '#91d5ff',
+      visible: canReadUsers,
     },
     {
       title: 'Quản lý cửa hàng',
@@ -160,6 +172,7 @@ const DashboardPage: React.FC = () => {
       path: '/stores',
       bgColor: '#f6ffed',
       borderColor: '#b7eb8f',
+      visible: canReadStores,
     },
     {
       title: 'Quản lý xe',
@@ -168,6 +181,7 @@ const DashboardPage: React.FC = () => {
       path: '/vehicles',
       bgColor: '#fffbe6',
       borderColor: '#ffe58f',
+      visible: canReadVehicles,
     },
     {
       title: 'Quản lý sản phẩm',
@@ -176,6 +190,7 @@ const DashboardPage: React.FC = () => {
       path: '/admin/products',
       bgColor: '#e6fffb',
       borderColor: '#87e8de',
+      visible: true,
     },
     {
       title: 'Quản lý tuyến đường',
@@ -184,10 +199,11 @@ const DashboardPage: React.FC = () => {
       path: '/admin/routes',
       bgColor: '#f9f0ff',
       borderColor: '#d3adf7',
+      visible: canReadRoutes,
     },
-  ];
+  ].filter((action) => action.visible);
 
-  if (isDriver) {
+  if (showDriverTripsDashboard) {
     return (
       <AdminShell currentUser={currentUser}>
         <div style={{ display: 'flex', flexDirection: 'column', gap: 24 }}>

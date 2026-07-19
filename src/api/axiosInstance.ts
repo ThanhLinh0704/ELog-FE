@@ -1,4 +1,4 @@
-import axios from 'axios';
+import axios, { type AxiosError, type InternalAxiosRequestConfig } from 'axios';
 
 const axiosInstance = axios.create({
   baseURL: import.meta.env.VITE_API_BASE_URL ?? 'http://localhost:8080',
@@ -6,7 +6,7 @@ const axiosInstance = axios.create({
 });
 
 axiosInstance.interceptors.request.use((config) => {
-  const token = localStorage.getItem('token');
+  const token = localStorage.getItem('accessToken') || localStorage.getItem('token');
   if (token) {
     config.headers.Authorization = `Bearer ${token}`;
   }
@@ -15,9 +15,12 @@ axiosInstance.interceptors.request.use((config) => {
 
 // Flag và hàng đợi phục vụ tự động Refresh Token khi gặp lỗi 401
 let isRefreshing = false;
-let failedQueue: any[] = [];
+let failedQueue: Array<{
+  resolve: (token: string | null) => void;
+  reject: (error: unknown) => void;
+}> = [];
 
-const processQueue = (error: any, token: string | null = null) => {
+const processQueue = (error: unknown, token: string | null = null) => {
   failedQueue.forEach((prom) => {
     if (error) {
       prom.reject(error);
@@ -30,8 +33,12 @@ const processQueue = (error: any, token: string | null = null) => {
 
 axiosInstance.interceptors.response.use(
   (response) => response,
-  async (error) => {
-    const originalRequest = error.config;
+  async (error: AxiosError) => {
+    const originalRequest = error.config as (InternalAxiosRequestConfig & { _retry?: boolean }) | undefined;
+
+    if (!originalRequest) {
+      return Promise.reject(error);
+    }
 
     // Chỉ thực hiện refresh khi nhận mã lỗi 401 và request chưa được thử lại
     if (error.response?.status === 401 && !originalRequest._retry) {
@@ -72,8 +79,32 @@ axiosInstance.interceptors.response.use(
           { refreshToken }
         );
 
-        const newAccessToken = response.data.data.accessToken;
+        const tokenData = response.data.data;
+        const userData = tokenData.user ?? tokenData;
+        const newAccessToken = tokenData.accessToken ?? userData.accessToken;
+        const newRefreshToken = tokenData.refreshToken;
         localStorage.setItem('token', newAccessToken);
+        localStorage.setItem('accessToken', newAccessToken);
+
+        if (newRefreshToken) {
+          localStorage.setItem('refreshToken', newRefreshToken);
+        }
+
+        if (Array.isArray(userData.permissions)) {
+          localStorage.setItem('permissions', JSON.stringify(userData.permissions));
+        }
+
+        if (Array.isArray(userData.roles)) {
+          localStorage.setItem('roles', JSON.stringify(userData.roles));
+        }
+
+        if (userData.username) {
+          localStorage.setItem('username', userData.username);
+        }
+
+        if (userData.userId || userData.id) {
+          localStorage.setItem('userId', String(userData.userId ?? userData.id));
+        }
 
         // Cập nhật token mới cho request hiện tại
         originalRequest.headers.Authorization = `Bearer ${newAccessToken}`;

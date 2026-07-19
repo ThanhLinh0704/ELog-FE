@@ -11,6 +11,8 @@ import { formatVolume, formatWeight } from '../../../utils/numberFormat';
 import { calculateAccumulation } from '../../../utils/productCalculations';
 import DeactivateProductModal from './components/DeactivateProductModal';
 import ActivateProductModal from './components/ActivateProductModal';
+import { PERMISSIONS } from '../../../constants/permissions';
+import { usePermissions } from '../../../hooks/usePermissions';
 
 const { Paragraph, Text } = Typography;
 
@@ -34,6 +36,7 @@ const formatDate = (isoString?: string): string => {
 const ProductDetailPage: React.FC = () => {
   const navigate = useNavigate();
   const { productId } = useParams<{ productId: string }>();
+  const { can } = usePermissions();
 
   // Retrieve current user roles from localStorage
   const username = localStorage.getItem('username') || '';
@@ -48,7 +51,7 @@ const ProductDetailPage: React.FC = () => {
     console.error('Failed to parse roles', e);
   }
 
-  const isSystemAdmin = roles.includes('SYSTEM_ADMIN');
+  const canWriteProduct = can(PERMISSIONS.PRODUCT_WRITE);
   const currentUser = {
     id: Number(userId),
     username,
@@ -160,8 +163,8 @@ const ProductDetailPage: React.FC = () => {
               )}
             </div>
 
-            {/* Quick Actions (only for SYSTEM_ADMIN) */}
-            {isSystemAdmin && product && (
+            {/* Quick Actions */}
+            {canWriteProduct && product && (
               <Space>
                 <Button
                   icon={<Edit3 size={16} />}

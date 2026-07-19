@@ -29,6 +29,8 @@ import {
 import ManifestSummary from '../components/manifest/ManifestSummary';
 import FlatManifestView from '../components/manifest/FlatManifestView';
 import ByStopManifestView from '../components/manifest/ByStopManifestView';
+import { usePermissions } from '../hooks/usePermissions';
+import { PERMISSIONS } from '../constants/permissions';
 
 const { Title, Paragraph } = Typography;
 
@@ -64,10 +66,9 @@ const LifoManifestPage = () => {
   const params = useParams();
   const tripDraftId = params.tripDraftId ?? params.tripId ?? '';
   const currentUser = useMemo(getCurrentUser, []);
-  const canGenerate = currentUser.roles.includes('DISPATCHER');
-  const canView = currentUser.roles.some((role) =>
-    ['DISPATCHER', 'WAREHOUSE_STAFF', 'LOGISTICS_MANAGER'].includes(role)
-  );
+  const { can } = usePermissions();
+  const canView = can(PERMISSIONS.TRIP_READ);
+  const canGenerate = can(PERMISSIONS.TRIP_COORDINATE);
 
   const [manifest, setManifest] = useState<LoadingManifest | null>(null);
   const [stops, setStops] = useState<LoadingManifestStop[]>([]);
@@ -114,6 +115,11 @@ const LifoManifestPage = () => {
   }, [loadManifest]);
 
   const handleGenerate = () => {
+    if (!canGenerate) {
+      message.warning('Bạn không có quyền tạo bảng xếp hàng.');
+      return;
+    }
+
     Modal.confirm({
       title: 'Tạo bảng hướng dẫn xếp hàng?',
       content: 'Hệ thống sẽ sắp xếp hàng theo thứ tự giao ngược lại: điểm giao cuối xếp lên xe trước, điểm giao đầu xếp lên xe sau cùng.',

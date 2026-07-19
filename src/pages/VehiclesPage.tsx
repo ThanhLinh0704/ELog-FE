@@ -36,6 +36,8 @@ import {
 } from 'lucide-react';
 import AdminShell from '../components/AdminShell';
 import { useDebounce } from '../hooks/useDebounce';
+import { usePermissions } from '../hooks/usePermissions';
+import { PERMISSIONS } from '../constants/permissions';
 import {
   getVehicleApiErrorMessage,
   getVehicleApiStatus,
@@ -309,11 +311,10 @@ const VehicleFormModal: React.FC<VehicleFormModalProps> = ({
 const VehiclesPage: React.FC = () => {
   const navigate = useNavigate();
   const currentUser = getCurrentUser();
+  const { can } = usePermissions();
 
-  const isAdmin = currentUser.roles.includes('SYSTEM_ADMIN');
-  const canRead = currentUser.roles.some((role) =>
-    ['SYSTEM_ADMIN', 'DISPATCHER', 'LOGISTICS_MANAGER'].includes(role)
-  );
+  const canReadVehicle = can(PERMISSIONS.VEHICLE_READ);
+  const canWriteVehicle = can(PERMISSIONS.VEHICLE_WRITE);
 
   const [vehicles, setVehicles] = useState<VehicleItem[]>([]);
   const [fleetCapacity, setFleetCapacity] = useState<FleetCapacity>({
@@ -386,18 +387,18 @@ const VehiclesPage: React.FC = () => {
   }
 
   useEffect(() => {
-    if (!canRead) {
+    if (!canReadVehicle) {
       navigate('/dashboard');
       return;
     }
 
     fetchVehicles(queryParams);
-  }, [canRead, navigate, queryParams]);
+  }, [canReadVehicle, navigate, queryParams]);
 
   useEffect(() => {
-    if (!canRead) return;
+    if (!canReadVehicle) return;
     fetchFleetCapacity();
-  }, [canRead]);
+  }, [canReadVehicle]);
 
   function resetToFirstPage(setter: (value: string) => void, value: string) {
     setter(value);
@@ -405,12 +406,22 @@ const VehiclesPage: React.FC = () => {
   }
 
   function openCreateModal() {
+    if (!canWriteVehicle) {
+      message.warning('Bạn không có quyền đăng ký xe.');
+      return;
+    }
+
     setFormMode('create');
     setEditingVehicle(null);
     setFormOpen(true);
   }
 
   async function openEditModal(vehicle: VehicleItem) {
+    if (!canWriteVehicle) {
+      message.warning('Bạn không có quyền chỉnh sửa xe.');
+      return;
+    }
+
     setFormMode('edit');
 
     try {
@@ -435,6 +446,11 @@ const VehiclesPage: React.FC = () => {
   }
 
   async function handleSubmit(payload: VehiclePayload) {
+    if (!canWriteVehicle) {
+      message.warning('Bạn không có quyền lưu thông tin xe.');
+      return;
+    }
+
     setSubmitting(true);
 
     try {
@@ -461,6 +477,11 @@ const VehiclesPage: React.FC = () => {
   }
 
   async function toggleVehicleStatus(vehicle: VehicleItem) {
+    if (!canWriteVehicle) {
+      message.warning('Bạn không có quyền cập nhật trạng thái xe.');
+      return;
+    }
+
     const nextActive = !vehicle.isActive;
     setBlockedVehicleMessage('');
     setStatusSubmittingId(vehicle.id);
@@ -542,7 +563,7 @@ const VehiclesPage: React.FC = () => {
       key: 'actions',
       width: 150,
       render: (_: any, record) => {
-        if (!isAdmin) {
+        if (!canWriteVehicle) {
           return (
             <Button
               type="text"
@@ -719,7 +740,7 @@ const VehiclesPage: React.FC = () => {
                 Tải lại
               </Button>
 
-              {isAdmin ? (
+              {canWriteVehicle ? (
                 <Button type="primary" icon={<Plus size={14} />} onClick={openCreateModal}>
                   Đăng ký xe
                 </Button>
@@ -781,7 +802,7 @@ const VehiclesPage: React.FC = () => {
             <Button key="close" onClick={() => setDetailVehicle(null)}>
               Đóng
             </Button>,
-            isAdmin ? (
+            canWriteVehicle ? (
               <Button
                 key="edit"
                 type="primary"

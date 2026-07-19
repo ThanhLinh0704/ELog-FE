@@ -1,18 +1,13 @@
 import React, { useState } from 'react';
-import { useNavigate, Link } from 'react-router-dom';
-import {
-  Form, Input, Button, Card, Row, Col, Breadcrumb, Typography, message
-} from 'antd';
+import { Link, useNavigate } from 'react-router-dom';
+import { Breadcrumb, Button, Card, Col, Form, Input, Row, message } from 'antd';
 import { ArrowLeft } from 'lucide-react';
 import AdminShell from '../../../components/AdminShell';
 import { routeApi } from '../../../api/routeApi';
 
-const { Paragraph } = Typography;
-
 const RouteCreatePage: React.FC = () => {
   const navigate = useNavigate();
 
-  // Retrieve current user roles from localStorage
   const username = localStorage.getItem('username') || '';
   const userId = localStorage.getItem('userId') || '';
   let roles: string[] = [];
@@ -21,11 +16,10 @@ const RouteCreatePage: React.FC = () => {
     if (rolesStr) {
       roles = JSON.parse(rolesStr);
     }
-  } catch (e) {
-    console.error('Failed to parse roles', e);
+  } catch (error) {
+    console.error('Failed to parse roles', error);
   }
 
-  const isAdmin = roles.includes('SYSTEM_ADMIN');
   const currentUser = {
     id: Number(userId),
     username,
@@ -35,11 +29,9 @@ const RouteCreatePage: React.FC = () => {
 
   const [form] = Form.useForm();
   const [submitting, setSubmitting] = useState(false);
-
-  // Watch description for character counter
   const description = Form.useWatch('description', form) || '';
 
-  const handleSubmit = async (values: any) => {
+  const handleSubmit = async (values: { code: string; name: string; description?: string }) => {
     setSubmitting(true);
     try {
       const codeFormatted = values.code.toUpperCase().trim();
@@ -50,7 +42,6 @@ const RouteCreatePage: React.FC = () => {
       };
 
       const newRoute = await routeApi.createRoute(payload);
-      
       message.success(`Tuyến ${newRoute.code} đã được tạo. Hãy thêm ít nhất 2 điểm dừng để kích hoạt.`);
       navigate(`/admin/routes/${newRoute.id}`);
     } catch (err: any) {
@@ -70,32 +61,15 @@ const RouteCreatePage: React.FC = () => {
     }
   };
 
-  // Render 403 page if not admin (this is a precaution; the guard should also handle it)
-  if (!isAdmin) {
-    return (
-      <AdminShell currentUser={currentUser}>
-        <Card bordered={false} style={{ textAlign: 'center', padding: '40px 0' }}>
-          <Paragraph type="danger" style={{ fontSize: 16 }}>
-            Bạn không có quyền thực hiện thao tác này.
-          </Paragraph>
-          <Button type="primary" onClick={() => navigate('/admin/routes')}>
-            Quay lại danh sách tuyến
-          </Button>
-        </Card>
-      </AdminShell>
-    );
-  }
-
   return (
     <AdminShell currentUser={currentUser}>
       <div style={{ display: 'flex', flexDirection: 'column', gap: 24 }}>
-        {/* Breadcrumbs & Title */}
         <div>
           <Breadcrumb
             items={[
               { title: 'Admin' },
               { title: <Link to="/admin/routes">Quản lý tuyến</Link> },
-              { title: 'Tạo tuyến mới' }
+              { title: 'Tạo tuyến mới' },
             ]}
           />
           <h2 style={{ margin: '8px 0 0 0', fontSize: 24, fontWeight: 700, color: '#1f1f1f' }}>
@@ -106,7 +80,6 @@ const RouteCreatePage: React.FC = () => {
           </p>
         </div>
 
-        {/* Back Link */}
         <div>
           <Button
             type="text"
@@ -132,13 +105,8 @@ const RouteCreatePage: React.FC = () => {
                 bordered={false}
                 style={{ boxShadow: '0 1px 2px 0 rgba(0, 0, 0, 0.03)' }}
               >
-                {/* Code Field */}
                 <Form.Item
-                  label={
-                    <span style={{ fontWeight: 600, color: '#475569' }}>
-                      Mã tuyến <span style={{ color: '#ff4d4f' }}>*</span>
-                    </span>
-                  }
+                  label={<span style={{ fontWeight: 600, color: '#475569' }}>Mã tuyến <span style={{ color: '#ff4d4f' }}>*</span></span>}
                   name="code"
                   rules={[
                     { required: true, message: 'Vui lòng nhập mã tuyến' },
@@ -148,35 +116,29 @@ const RouteCreatePage: React.FC = () => {
                           if (value.trim().length === 0) {
                             return Promise.reject(new Error('Vui lòng nhập mã tuyến'));
                           }
-                          const regex = /^[a-zA-Z0-9-_]+$/;
-                          if (!regex.test(value.trim())) {
+                          if (!/^[a-zA-Z0-9-_]+$/.test(value.trim())) {
                             return Promise.reject(
                               new Error('Mã tuyến chỉ được chứa chữ in hoa, số, dấu gạch ngang hoặc gạch dưới')
                             );
                           }
                         }
                         return Promise.resolve();
-                      }
-                    }
+                      },
+                    },
                   ]}
                 >
                   <Input
                     placeholder="Ví dụ: RT-BT-01"
                     disabled={submitting}
-                    onChange={(e) => {
-                      form.setFieldValue('code', e.target.value.toUpperCase());
+                    onChange={(event) => {
+                      form.setFieldValue('code', event.target.value.toUpperCase());
                     }}
                     maxLength={100}
                   />
                 </Form.Item>
 
-                {/* Name Field */}
                 <Form.Item
-                  label={
-                    <span style={{ fontWeight: 600, color: '#475569' }}>
-                      Tên tuyến <span style={{ color: '#ff4d4f' }}>*</span>
-                    </span>
-                  }
+                  label={<span style={{ fontWeight: 600, color: '#475569' }}>Tên tuyến <span style={{ color: '#ff4d4f' }}>*</span></span>}
                   name="name"
                   rules={[
                     { required: true, message: 'Vui lòng nhập tên tuyến' },
@@ -186,22 +148,15 @@ const RouteCreatePage: React.FC = () => {
                           return Promise.reject(new Error('Vui lòng nhập tên tuyến'));
                         }
                         return Promise.resolve();
-                      }
-                    }
+                      },
+                    },
                   ]}
                 >
-                  <Input
-                    placeholder="Nhập tên tuyến"
-                    disabled={submitting}
-                    maxLength={200}
-                  />
+                  <Input placeholder="Nhập tên tuyến" disabled={submitting} maxLength={200} />
                 </Form.Item>
 
-                {/* Description Field */}
                 <Form.Item
-                  label={
-                    <span style={{ fontWeight: 600, color: '#475569' }}>Mô tả</span>
-                  }
+                  label={<span style={{ fontWeight: 600, color: '#475569' }}>Mô tả</span>}
                   name="description"
                 >
                   <Input.TextArea
@@ -212,7 +167,6 @@ const RouteCreatePage: React.FC = () => {
                   />
                 </Form.Item>
 
-                {/* Character Counter */}
                 <div style={{ textAlign: 'right', marginTop: -12, marginBottom: 12, color: '#94a3b8', fontSize: 12 }}>
                   {description.length} / 500 ký tự
                 </div>
@@ -220,30 +174,23 @@ const RouteCreatePage: React.FC = () => {
             </Col>
           </Row>
 
-          {/* Footer Buttons */}
-          <div style={{
-            display: 'flex',
-            justifyContent: 'flex-end',
-            gap: 12,
-            marginTop: 24,
-            maxWidth: 'calc(100% * 16 / 24)', // align with card size
-            padding: '16px 24px',
-            backgroundColor: '#fff',
-            borderRadius: 12,
-            boxShadow: '0 1px 2px 0 rgba(0, 0, 0, 0.03)'
-          }}>
-            <Button
-              disabled={submitting}
-              onClick={() => navigate('/admin/routes')}
-            >
-              Huỷ
+          <div
+            style={{
+              display: 'flex',
+              justifyContent: 'flex-end',
+              gap: 12,
+              marginTop: 24,
+              maxWidth: 'calc(100% * 16 / 24)',
+              padding: '16px 24px',
+              backgroundColor: '#fff',
+              borderRadius: 12,
+              boxShadow: '0 1px 2px 0 rgba(0, 0, 0, 0.03)',
+            }}
+          >
+            <Button disabled={submitting} onClick={() => navigate('/admin/routes')}>
+              Hủy
             </Button>
-            <Button
-              type="primary"
-              htmlType="submit"
-              loading={submitting}
-              disabled={submitting}
-            >
+            <Button type="primary" htmlType="submit" loading={submitting} disabled={submitting}>
               Tạo tuyến
             </Button>
           </div>

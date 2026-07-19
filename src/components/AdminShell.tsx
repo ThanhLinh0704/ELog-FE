@@ -1,13 +1,28 @@
 import React from 'react';
-import { useNavigate, useLocation } from 'react-router-dom';
-import { Layout, Menu, Avatar, Dropdown, Button, Space, Input, Badge, ConfigProvider } from 'antd';
-import { Bell, ChevronDown, ClipboardList, LogOut, Search, Users, LayoutGrid, Map, Settings, Package, Home, Truck, FileSpreadsheet, Layers } from 'lucide-react';
+import { useLocation, useNavigate } from 'react-router-dom';
+import { Avatar, Badge, Button, ConfigProvider, Dropdown, Input, Layout, Menu, Space } from 'antd';
+import {
+  Bell,
+  ChevronDown,
+  ClipboardList,
+  FileSpreadsheet,
+  Home,
+  Layers,
+  LayoutGrid,
+  LogOut,
+  Map,
+  Package,
+  Search,
+  Settings,
+  Truck,
+  Users,
+} from 'lucide-react';
 import axiosInstance from '../api/axiosInstance';
-
+import { PERMISSIONS } from '../constants/permissions';
+import { usePermissions } from '../hooks/usePermissions';
 
 const { Header, Sider, Content } = Layout;
 
-// JavaScript Constants for centralized Icon Sizes
 const ICON_SIZE = 18;
 const UTILITY_ICON_SIZE = 15;
 const CHEVRON_ICON_SIZE = 14;
@@ -22,9 +37,18 @@ interface AdminShellProps {
   children: React.ReactNode;
 }
 
+const ROLE_LABELS: Record<string, string> = {
+  SYSTEM_ADMIN: 'System Admin',
+  DISPATCHER: 'Điều phối viên',
+  LOGISTICS_MANAGER: 'Quản lý Logistics',
+  WAREHOUSE_STAFF: 'Nhân viên kho',
+  DRIVER: 'Tài xế',
+};
+
 const AdminShell: React.FC<AdminShellProps> = ({ currentUser, children }) => {
   const navigate = useNavigate();
   const location = useLocation();
+  const { can } = usePermissions();
 
   const handleLogout = async () => {
     const refreshToken = localStorage.getItem('refreshToken');
@@ -35,7 +59,15 @@ const AdminShell: React.FC<AdminShellProps> = ({ currentUser, children }) => {
         console.error('Failed to logout in backend', err);
       }
     }
-    localStorage.clear();
+
+    localStorage.removeItem('accessToken');
+    localStorage.removeItem('token');
+    localStorage.removeItem('refreshToken');
+    localStorage.removeItem('userId');
+    localStorage.removeItem('username');
+    localStorage.removeItem('roles');
+    localStorage.removeItem('permissions');
+    localStorage.removeItem('remember');
     navigate('/login');
   };
 
@@ -64,9 +96,7 @@ const AdminShell: React.FC<AdminShellProps> = ({ currentUser, children }) => {
             : location.pathname;
 
   const roles = currentUser.roles || [];
-  const canViewImport = roles.some(role => ["SYSTEM_ADMIN", "DISPATCHER", "LOGISTICS_MANAGER"].includes(role));
-  const canViewTripDraftsMenu = roles.some(role => ["SYSTEM_ADMIN", "DISPATCHER", "LOGISTICS_MANAGER", "WAREHOUSE_STAFF"].includes(role));
-
+  const roleLabel = roles.map((role) => ROLE_LABELS[role] || role).join(', ') || 'User';
 
   const sidebarMenuItems = [
     {
@@ -80,95 +110,81 @@ const AdminShell: React.FC<AdminShellProps> = ({ currentUser, children }) => {
           label: 'Tổng quan',
           onClick: () => navigate('/dashboard'),
         },
-        {
-          key: '/users',
-          icon: <Users size={ICON_SIZE} />,
-          label: 'Quản lý người dùng',
-          onClick: () => navigate('/users'),
-        },
-        {
-          key: '/stores',
-          icon: <Home size={ICON_SIZE} />,
-          label: 'Quản lý cửa hàng',
-          onClick: () => navigate('/stores'),
-        },
-        {
-          key: '/vehicles',
-          icon: <Truck size={ICON_SIZE} />,
-          label: 'Quản lý xe',
-          onClick: () => navigate('/vehicles'),
-        },
-
-        {
-          key: '/admin/products',
-          icon: <Package size={ICON_SIZE} />,
-          label: 'Quản lý sản phẩm',
-          onClick: () => navigate('/admin/products'),
-        },
-        {
-          key: '/admin/routes',
-          icon: <Map size={ICON_SIZE} />,
-          label: 'Quản lý tuyến',
-          onClick: () => navigate('/admin/routes'),
-        },
-        ...(canViewImport ? [
-          {
-            key: '/dispatcher/import',
-            icon: <FileSpreadsheet size={ICON_SIZE} />,
-            label: 'Nhập đơn hàng',
-            onClick: () => navigate('/dispatcher/import'),
-          }
-        ] : []),
-        ...(canViewTripDraftsMenu ? [
-          {
-            key: '/dispatcher/trip-drafts',
-            icon: <Layers size={ICON_SIZE} />,
-            label: 'Quản lý gom đơn',
-            onClick: () => navigate('/dispatcher/trip-drafts'),
-          },
-          {
-            key: '/trip-drafts',
-            icon: <ClipboardList size={ICON_SIZE} />,
-            label: 'Lập kế hoạch chuyến',
-            onClick: () => navigate('/trip-drafts'),
-          }
-        ] : []),
-
-
-      ],
+        can(PERMISSIONS.USER_READ)
+          ? {
+              key: '/users',
+              icon: <Users size={ICON_SIZE} />,
+              label: 'Quản lý người dùng',
+              onClick: () => navigate('/users'),
+            }
+          : null,
+        can(PERMISSIONS.STORE_READ)
+          ? {
+              key: '/stores',
+              icon: <Home size={ICON_SIZE} />,
+              label: 'Quản lý cửa hàng',
+              onClick: () => navigate('/stores'),
+            }
+          : null,
+        can(PERMISSIONS.VEHICLE_READ)
+          ? {
+              key: '/vehicles',
+              icon: <Truck size={ICON_SIZE} />,
+              label: 'Quản lý xe',
+              onClick: () => navigate('/vehicles'),
+            }
+          : null,
+        can(PERMISSIONS.PRODUCT_READ)
+          ? {
+              key: '/admin/products',
+              icon: <Package size={ICON_SIZE} />,
+              label: 'Quản lý sản phẩm',
+              onClick: () => navigate('/admin/products'),
+            }
+          : null,
+        can(PERMISSIONS.ROUTE_READ)
+          ? {
+              key: '/admin/routes',
+              icon: <Map size={ICON_SIZE} />,
+              label: 'Quản lý tuyến',
+              onClick: () => navigate('/admin/routes'),
+            }
+          : null,
+        can(PERMISSIONS.ORDER_IMPORT) || can(PERMISSIONS.TRIP_READ)
+          ? {
+              key: '/dispatcher/import',
+              icon: <FileSpreadsheet size={ICON_SIZE} />,
+              label: 'Nhập đơn hàng',
+              onClick: () => navigate('/dispatcher/import'),
+            }
+          : null,
+        can(PERMISSIONS.TRIP_READ)
+          ? {
+              key: '/dispatcher/trip-drafts',
+              icon: <Layers size={ICON_SIZE} />,
+              label: 'Quản lý gom đơn',
+              onClick: () => navigate('/dispatcher/trip-drafts'),
+            }
+          : null,
+        can(PERMISSIONS.TRIP_READ)
+          ? {
+              key: '/trip-drafts',
+              icon: <ClipboardList size={ICON_SIZE} />,
+              label: 'Lập kế hoạch chuyến',
+              onClick: () => navigate('/trip-drafts'),
+            }
+          : null,
+        can(PERMISSIONS.ROLE_READ)
+          ? {
+              key: '/roles',
+              icon: <Settings size={ICON_SIZE} />,
+              label: 'Phân quyền',
+              onClick: () => navigate('/roles'),
+            }
+          : null,
+      ].filter((item): item is Exclude<typeof item, null> => item !== null),
     },
-    {
-      key: 'grp-dispatch',
-      label: <span style={{ fontSize: 10, fontWeight: 700, letterSpacing: 0.8, color: '#64748b' }}>ÄIá»€U PHá»I</span>,
-      type: 'group' as const,
-      children: [
-        {
-          key: '/trip-drafts',
-          icon: <Truck size={ICON_SIZE} />,
-          label: 'Trip Planning',
-          onClick: () => navigate('/dashboard'),
-        },
-      ],
-    },
-    {
-      key: 'grp-extend',
-      label: <span style={{ fontSize: 10, fontWeight: 700, letterSpacing: 0.8, color: '#64748b' }}>MỞ RỘNG SAU</span>,
-      type: 'group' as const,
-      children: [
-        {
-          key: '/settings',
-          icon: <Settings size={ICON_SIZE} />,
-          label: (
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', width: '100%' }}>
-              <span>Cài đặt hệ thống</span>
-              <span style={{ fontSize: 10, color: '#64748b', fontWeight: 500 }}>Sau</span>
-            </div>
-          ),
-          disabled: true,
-        },
-      ],
-    },
-  ].filter((item) => item.key !== 'grp-dispatch');
+  ];
 
   return (
     <ConfigProvider
@@ -190,18 +206,9 @@ const AdminShell: React.FC<AdminShellProps> = ({ currentUser, children }) => {
       }}
     >
       <Layout style={{ minHeight: '100vh' }}>
-        <Sider
-          theme="dark"
-          width={260}
-          className="elog-admin-sider"
-        >
-          <div
-            onClick={() => navigate('/dashboard')}
-            className="elog-sidebar-logo"
-          >
-            <div className="elog-logo-badge">
-              E
-            </div>
+        <Sider theme="dark" width={260} className="elog-admin-sider">
+          <div onClick={() => navigate('/dashboard')} className="elog-sidebar-logo">
+            <div className="elog-logo-badge">E</div>
             <div style={{ lineHeight: 1.2 }}>
               <h1 style={{ margin: 0, fontSize: 15, fontWeight: 700, color: '#ffffff' }}>ELog Quản trị</h1>
               <p style={{ margin: 0, fontSize: 10, color: '#64748b', fontWeight: 500 }}>Bảng điều khiển hệ thống</p>
@@ -224,7 +231,7 @@ const AdminShell: React.FC<AdminShellProps> = ({ currentUser, children }) => {
                     backgroundColor: '#e6f7ff',
                     color: '#1677ff',
                     fontWeight: 600,
-                    marginRight: 12
+                    marginRight: 12,
                   }}
                 >
                   {(currentUser.fullName || currentUser.username).slice(0, 1).toUpperCase()}
@@ -233,16 +240,7 @@ const AdminShell: React.FC<AdminShellProps> = ({ currentUser, children }) => {
                   <div className="elog-profile-name">
                     {currentUser.fullName || currentUser.username}
                   </div>
-                  <div style={{ fontSize: 11, color: '#64748b' }}>
-                    {roles.includes('SYSTEM_ADMIN') 
-                      ? 'System Admin' 
-                      : roles.includes('DISPATCHER') 
-                        ? 'Điều phối viên' 
-                        : roles.includes('LOGISTICS_MANAGER') 
-                          ? 'Quản lý Logistics' 
-                          : roles.join(', ') || 'User'}
-                  </div>
-
+                  <div style={{ fontSize: 11, color: '#64748b' }}>{roleLabel}</div>
                 </div>
               </div>
               <Button
@@ -290,9 +288,7 @@ const AdminShell: React.FC<AdminShellProps> = ({ currentUser, children }) => {
               </Dropdown>
             </Space>
           </Header>
-          <Content style={{ margin: '24px', minHeight: 280 }}>
-            {children}
-          </Content>
+          <Content style={{ margin: '24px', minHeight: 280 }}>{children}</Content>
         </Layout>
       </Layout>
     </ConfigProvider>

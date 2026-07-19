@@ -37,7 +37,7 @@ function getCurrentUser() {
 
 const OrderImportPage: React.FC = () => {
   const currentUser = getCurrentUser();
-  const isDispatcher = canUploadOrders(currentUser.roles);
+  const canImportOrders = canUploadOrders();
 
   // Loading states
   const [uploadLoading, setUploadLoading] = useState(false);
@@ -206,7 +206,7 @@ const OrderImportPage: React.FC = () => {
       </div>
 
       {/* Upload Card for Dispatcher, ReadOnly Banner for managers */}
-      {isDispatcher ? (
+      {canImportOrders ? (
         <ImportUploadCard loading={uploadLoading} onUpload={handleUploadInitiated} />
       ) : (
         <ImportReadOnlyBanner />

@@ -45,6 +45,8 @@ import {
 import { storeApi } from '../api/storeApi';
 import { importApi } from '../api/importApi';
 import { productApi } from '../api/productApi';
+import { usePermissions } from '../hooks/usePermissions';
+import { PERMISSIONS } from '../constants/permissions';
 
 function getCurrentUser() {
   const username = localStorage.getItem('username') || '';
@@ -130,6 +132,9 @@ const TripDraftReviewPage: React.FC = () => {
   const { draftId } = useParams<{ draftId: string }>();
   const navigate = useNavigate();
   const currentUser = getCurrentUser();
+  const { can } = usePermissions();
+  const canEditTrip = can(PERMISSIONS.TRIP_WRITE);
+  const canConfirmTrip = can(PERMISSIONS.TRIP_CONFIRM);
 
   const [draft, setDraft] = useState<TripDraftDetail | null>(null);
   const [loading, setLoading] = useState(true);
@@ -240,7 +245,7 @@ const TripDraftReviewPage: React.FC = () => {
     [draft]
   );
   const isDraftEditable = draft?.status === 'DRAFT';
-  const actionDisabled = !isDraftEditable || recalculating || confirming;
+  const actionDisabled = !canEditTrip || !isDraftEditable || recalculating || confirming;
 
   async function fetchDraft() {
     if (!draftId) return;
@@ -317,7 +322,7 @@ const TripDraftReviewPage: React.FC = () => {
   }, [draft?.plannedDepartureTime]);
 
   async function runRecalculate(currentDraft = draft) {
-    if (!draftId || !currentDraft) return;
+    if (!draftId || !currentDraft || !canEditTrip) return;
 
     setRecalculating(true);
 
@@ -341,7 +346,7 @@ const TripDraftReviewPage: React.FC = () => {
   }
 
   async function handleToggleStop(stop: TripDraftStop) {
-    if (!draftId || !draft) return;
+    if (!draftId || !draft || !canEditTrip) return;
 
     const nextStatus: TripDraftStopStatus = stop.status === 'ACTIVE' ? 'SKIPPED' : 'ACTIVE';
     setToggleStopId(stop.id);
@@ -369,7 +374,7 @@ const TripDraftReviewPage: React.FC = () => {
   }
 
   function handleConfirm() {
-    if (!draftId || !draft) return;
+    if (!draftId || !draft || !canConfirmTrip) return;
 
     modal.confirm({
       title: 'Xác nhận bản nháp chuyến?',
@@ -507,6 +512,10 @@ const TripDraftReviewPage: React.FC = () => {
       render: (_value, record) => {
         const isActive = record.status === 'ACTIVE';
         const label = isActive ? 'Bỏ qua' : 'Kích hoạt';
+
+        if (!canEditTrip) {
+          return <Typography.Text type="secondary">Chỉ xem</Typography.Text>;
+        }
 
         return (
           <Popconfirm
@@ -707,13 +716,14 @@ const TripDraftReviewPage: React.FC = () => {
                         allowClear={false}
                         disabled={!isDraftEditable || confirming}
                         placeholder="Giờ đi"
-                        style={{ width: 100 }}
+                        style={{ width: 100, display: canEditTrip ? undefined : 'none' }}
                       />
                       <Button
                         icon={<RefreshCw size={16} />}
                         loading={recalculating}
                         disabled={!isDraftEditable || confirming}
                         onClick={() => runRecalculate()}
+                        style={{ display: canEditTrip ? undefined : 'none' }}
                       >
                         Tính lại ETA
                       </Button>
@@ -734,6 +744,7 @@ const TripDraftReviewPage: React.FC = () => {
                           recalculating
                         }
                         onClick={handleConfirm}
+                        style={{ display: canConfirmTrip ? undefined : 'none' }}
                       >
                         Xác nhận bản nháp
                       </Button>
