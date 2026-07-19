@@ -2,6 +2,8 @@ import React from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { Avatar, Badge, Button, ConfigProvider, Dropdown, Input, Layout, Menu, Space } from 'antd';
 import {
+  Activity,
+  AlertTriangle,
   Bell,
   ChevronDown,
   ClipboardList,
@@ -11,6 +13,7 @@ import {
   LayoutGrid,
   LogOut,
   Map,
+  Navigation,
   Package,
   Search,
   Settings,
@@ -91,17 +94,36 @@ const AdminShell: React.FC<AdminShellProps> = ({ currentUser, children }) => {
         ? '/dispatcher/import'
         : location.pathname.startsWith('/dispatcher/trip-drafts')
           ? '/dispatcher/trip-drafts'
-          : location.pathname.startsWith('/trip-drafts')
-            ? '/trip-drafts'
-            : location.pathname;
+          : location.pathname.startsWith('/dispatcher/monitoring')
+            ? '/dispatcher/monitoring'
+            : location.pathname.startsWith('/manager/monitoring')
+              ? '/dispatcher/monitoring'
+              : location.pathname.startsWith('/dispatcher/exceptions')
+                ? '/exceptions'
+                : location.pathname.startsWith('/manager/exceptions')
+                  ? '/exceptions'
+                  : location.pathname.startsWith('/driver/my-trips')
+                    ? '/driver/my-trips'
+                    : location.pathname.startsWith('/trip-drafts')
+                      ? '/trip-drafts'
+                      : location.pathname;
 
   const roles = currentUser.roles || [];
   const roleLabel = roles.map((role) => ROLE_LABELS[role] || role).join(', ') || 'User';
+  const canViewImport = can(PERMISSIONS.ORDER_IMPORT) || can(PERMISSIONS.TRIP_READ);
+  const canViewTripDraftsMenu = can(PERMISSIONS.TRIP_READ);
+  const canViewMonitoring = can(PERMISSIONS.TRIP_READ);
+  const canViewExceptions = can(PERMISSIONS.TRIP_READ);
+  const canViewDriverTrips = can(PERMISSIONS.TRIP_EXECUTE);
 
   const sidebarMenuItems = [
     {
       key: 'grp-main',
-      label: <span style={{ fontSize: 10, fontWeight: 700, letterSpacing: 0.8, color: '#64748b' }}>QUẢN TRỊ CHÍNH</span>,
+      label: (
+        <span style={{ fontSize: 10, fontWeight: 700, letterSpacing: 0.8, color: '#64748b' }}>
+          QUẢN TRỊ CHÍNH
+        </span>
+      ),
       type: 'group' as const,
       children: [
         {
@@ -150,7 +172,7 @@ const AdminShell: React.FC<AdminShellProps> = ({ currentUser, children }) => {
               onClick: () => navigate('/admin/routes'),
             }
           : null,
-        can(PERMISSIONS.ORDER_IMPORT) || can(PERMISSIONS.TRIP_READ)
+        canViewImport
           ? {
               key: '/dispatcher/import',
               icon: <FileSpreadsheet size={ICON_SIZE} />,
@@ -158,7 +180,7 @@ const AdminShell: React.FC<AdminShellProps> = ({ currentUser, children }) => {
               onClick: () => navigate('/dispatcher/import'),
             }
           : null,
-        can(PERMISSIONS.TRIP_READ)
+        canViewTripDraftsMenu
           ? {
               key: '/dispatcher/trip-drafts',
               icon: <Layers size={ICON_SIZE} />,
@@ -166,7 +188,7 @@ const AdminShell: React.FC<AdminShellProps> = ({ currentUser, children }) => {
               onClick: () => navigate('/dispatcher/trip-drafts'),
             }
           : null,
-        can(PERMISSIONS.TRIP_READ)
+        canViewTripDraftsMenu
           ? {
               key: '/trip-drafts',
               icon: <ClipboardList size={ICON_SIZE} />,
@@ -180,6 +202,30 @@ const AdminShell: React.FC<AdminShellProps> = ({ currentUser, children }) => {
               icon: <Settings size={ICON_SIZE} />,
               label: 'Phân quyền',
               onClick: () => navigate('/roles'),
+            }
+          : null,
+        canViewMonitoring
+          ? {
+              key: '/dispatcher/monitoring',
+              icon: <Activity size={ICON_SIZE} />,
+              label: 'Theo dõi chuyến hàng',
+              onClick: () => navigate('/dispatcher/monitoring'),
+            }
+          : null,
+        canViewExceptions
+          ? {
+              key: '/exceptions',
+              icon: <AlertTriangle size={ICON_SIZE} />,
+              label: 'Quản lý ngoại lệ',
+              onClick: () => navigate('/dispatcher/exceptions'),
+            }
+          : null,
+        canViewDriverTrips
+          ? {
+              key: '/driver/my-trips',
+              icon: <Navigation size={ICON_SIZE} />,
+              label: 'Chuyến của tôi',
+              onClick: () => navigate('/driver/my-trips'),
             }
           : null,
       ].filter((item): item is Exclude<typeof item, null> => item !== null),
@@ -210,19 +256,25 @@ const AdminShell: React.FC<AdminShellProps> = ({ currentUser, children }) => {
           <div onClick={() => navigate('/dashboard')} className="elog-sidebar-logo">
             <div className="elog-logo-badge">E</div>
             <div style={{ lineHeight: 1.2 }}>
-              <h1 style={{ margin: 0, fontSize: 15, fontWeight: 700, color: '#ffffff' }}>ELog Quản trị</h1>
-              <p style={{ margin: 0, fontSize: 10, color: '#64748b', fontWeight: 500 }}>Bảng điều khiển hệ thống</p>
+              <h1 style={{ margin: 0, fontSize: 15, fontWeight: 700, color: '#ffffff' }}>
+                ELog Quản trị
+              </h1>
+              <p style={{ margin: 0, fontSize: 10, color: '#64748b', fontWeight: 500 }}>
+                Bảng điều khiển hệ thống
+              </p>
             </div>
           </div>
 
           <div className="elog-sidebar-menu-wrapper">
-            <Menu
-              mode="inline"
-              theme="dark"
-              selectedKeys={[selectedKey]}
-              items={sidebarMenuItems}
-              style={{ borderRight: 0, padding: '16px 0', background: '#0d1727' }}
-            />
+            <div className="elog-sidebar-menu-scrollable">
+              <Menu
+                mode="inline"
+                theme="dark"
+                selectedKeys={[selectedKey]}
+                items={sidebarMenuItems}
+                style={{ borderRight: 0, padding: '16px 0', background: '#0d1727' }}
+              />
+            </div>
 
             <div className="elog-sidebar-profile">
               <div className="elog-profile-info">

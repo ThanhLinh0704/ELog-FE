@@ -13,13 +13,23 @@ export interface StoreItem {
   storeCode: string;
   storeName: string;
   address: string;
+  provinceCode?: string | null;
+  provinceName?: string | null;
+  districtCode?: string | null;
+  districtName?: string | null;
+  wardCode?: string | null;
+  wardName?: string | null;
+  addressDetail?: string | null;
+  allowedDeliveryHours?: string | null;
+  maxAllowedVehicleWeight?: number | null;
+  imageUrl?: string | null;
   contactName?: string | null;
   contactPhone?: string | null;
   latitude?: number | null;
   longitude?: number | null;
   isActive: boolean;
   hasCoordinates?: boolean;
-  assignedRoute?: AssignedRoute | null;
+  assignedRoutes?: AssignedRoute[] | null;
   createdAt?: string;
 }
 
@@ -43,7 +53,13 @@ export interface StoreQueryParams {
 export interface StorePayload {
   storeCode?: string;
   storeName: string;
-  address: string;
+  provinceCode: string;
+  districtCode: string;
+  wardCode: string;
+  addressDetail: string;
+  allowedDeliveryHours?: string | null;
+  maxAllowedVehicleWeight?: number | null;
+  imageUrl?: string | null;
   contactName?: string | null;
   contactPhone?: string | null;
   latitude?: number | null;
@@ -109,15 +125,13 @@ function cleanPayload(payload: Record<string, any>) {
   );
 }
 
-function normalizeAssignedRoute(raw: any): AssignedRoute | null {
-  if (!raw) return null;
-
-  return {
-    ...raw,
-    id: Number(raw.id ?? raw.routeId ?? 0),
-    code: raw.code ?? raw.routeCode ?? '',
-    name: raw.name ?? raw.routeName ?? '',
-  };
+function normalizeAssignedRoutes(rawList: any): AssignedRoute[] {
+  if (!Array.isArray(rawList)) return [];
+  return rawList.map(raw => ({
+    id: Number(raw.id ?? raw.routeId ?? raw.route_id ?? 0),
+    code: raw.code ?? raw.routeCode ?? raw.route_code ?? '',
+    name: raw.name ?? raw.routeName ?? raw.route_name ?? '',
+  }));
 }
 
 function normalizeStore(raw: any): StoreItem {
@@ -138,13 +152,23 @@ function normalizeStore(raw: any): StoreItem {
     storeCode: raw.storeCode ?? raw.store_code ?? raw.code ?? '',
     storeName: raw.storeName ?? raw.store_name ?? raw.name ?? '',
     address: raw.address ?? '',
+    provinceCode: raw.provinceCode ?? raw.province_code ?? null,
+    provinceName: raw.provinceName ?? raw.province_name ?? null,
+    districtCode: raw.districtCode ?? raw.district_code ?? null,
+    districtName: raw.districtName ?? raw.district_name ?? null,
+    wardCode: raw.wardCode ?? raw.ward_code ?? null,
+    wardName: raw.wardName ?? raw.ward_name ?? null,
+    addressDetail: raw.addressDetail ?? raw.address_detail ?? null,
+    allowedDeliveryHours: raw.allowedDeliveryHours ?? raw.allowed_delivery_hours ?? null,
+    maxAllowedVehicleWeight: raw.maxAllowedVehicleWeight != null ? Number(raw.maxAllowedVehicleWeight) : null,
+    imageUrl: raw.imageUrl ?? raw.image_url ?? null,
     contactName: raw.contactName ?? raw.contact_name ?? null,
     contactPhone: raw.contactPhone ?? raw.contact_phone ?? null,
     latitude,
     longitude,
     isActive: raw.isActive ?? raw.is_active ?? true,
     hasCoordinates,
-    assignedRoute: normalizeAssignedRoute(raw.assignedRoute ?? raw.assigned_route),
+    assignedRoutes: normalizeAssignedRoutes(raw.assignedRoutes ?? raw.assigned_routes ?? raw.assignedRoute ?? raw.assigned_route),
     createdAt: raw.createdAt ?? raw.created_at,
   };
 }
@@ -276,7 +300,13 @@ export const storeApi = {
         cleanPayload({
           storeCode: payload.storeCode?.trim().toUpperCase(),
           storeName: payload.storeName?.trim(),
-          address: payload.address?.trim(),
+          provinceCode: payload.provinceCode,
+          districtCode: payload.districtCode,
+          wardCode: payload.wardCode,
+          addressDetail: payload.addressDetail?.trim(),
+          allowedDeliveryHours: payload.allowedDeliveryHours?.trim() || null,
+          maxAllowedVehicleWeight: payload.maxAllowedVehicleWeight,
+          imageUrl: payload.imageUrl?.trim() || null,
           contactName: payload.contactName?.trim() || null,
           contactPhone: payload.contactPhone?.trim() || null,
           latitude: payload.latitude,
@@ -298,7 +328,13 @@ export const storeApi = {
         `/api/stores/${id}`,
         cleanPayload({
           storeName: payload.storeName?.trim(),
-          address: payload.address?.trim(),
+          provinceCode: payload.provinceCode,
+          districtCode: payload.districtCode,
+          wardCode: payload.wardCode,
+          addressDetail: payload.addressDetail?.trim(),
+          allowedDeliveryHours: payload.allowedDeliveryHours?.trim() || null,
+          maxAllowedVehicleWeight: payload.maxAllowedVehicleWeight,
+          imageUrl: payload.imageUrl?.trim() || null,
           contactName: payload.contactName?.trim() || null,
           contactPhone: payload.contactPhone?.trim() || null,
           latitude: payload.latitude,

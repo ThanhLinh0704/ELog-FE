@@ -9,6 +9,10 @@ export interface Product {
   heightM: number;
   weightKg: number;
   volumeM3: number;
+  shape?: string | null;
+  isFragile?: boolean;
+  packageImageUrl?: string | null;
+  description?: string | null;
   status: ProductStatus;
   createdAt: string;
   updatedAt: string;

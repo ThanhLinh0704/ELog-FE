@@ -38,13 +38,12 @@ import {
   getTripDraftApiStatus,
   recalculateEta,
   updateStopStatus,
+  getStopOrderItems,
   type TripDraftDetail,
   type TripDraftStop,
   type TripDraftStopStatus,
 } from '../api/tripDraftApi';
 import { storeApi } from '../api/storeApi';
-import { importApi } from '../api/importApi';
-import { productApi } from '../api/productApi';
 import { usePermissions } from '../hooks/usePermissions';
 import { PERMISSIONS } from '../constants/permissions';
 
@@ -120,10 +119,16 @@ function mergeRecalculatedDraft(
     estimatedDistanceKm: recalculated.estimatedDistanceKm,
     estimatedDurationMin: recalculated.estimatedDurationMin,
     stops: draft.stops
-      .map((stop) => ({
-        ...stop,
-        ...recalculatedStops.get(stop.id),
-      }))
+      .map((stop) => {
+        const recalculatedStop = recalculatedStops.get(stop.id);
+        if (recalculatedStop) {
+          return {
+            ...stop,
+            eta: recalculatedStop.eta,
+          };
+        }
+        return stop;
+      })
       .sort((a, b) => a.sequenceNo - b.sequenceNo),
   };
 }
@@ -147,51 +152,22 @@ const TripDraftReviewPage: React.FC = () => {
   const [plannedTime, setPlannedTime] = useState<dayjs.Dayjs | null>(dayjs('07:30:00', 'HH:mm:ss'));
 
   // Order Details Modal States
-  const [activeBatchId, setActiveBatchId] = useState<number | null>(null);
   const [detailModalVisible, setDetailModalVisible] = useState(false);
   const [selectedStopForDetail, setSelectedStopForDetail] = useState<TripDraftStop | null>(null);
   const [stopOrderItems, setStopOrderItems] = useState<any[]>([]);
   const [detailModalLoading, setDetailModalLoading] = useState(false);
 
   const showOrderDetails = async (stop: TripDraftStop) => {
+    if (!draftId) return;
+
     setSelectedStopForDetail(stop);
     setDetailModalVisible(true);
     setDetailModalLoading(true);
     setStopOrderItems([]);
 
     try {
-      const cachedRowsStr = localStorage.getItem(`import_batch_success_rows_${activeBatchId}`);
-      if (!cachedRowsStr) {
-        setDetailModalLoading(false);
-        return;
-      }
-
-      const allCachedRows = JSON.parse(cachedRowsStr);
-      const stopRows = allCachedRows.filter((r: any) => r.storeCode === stop.storeCode);
-
-      if (stopRows.length === 0) {
-        setDetailModalLoading(false);
-        return;
-      }
-
-      const productsRes = await productApi.getProducts({ size: 1000 });
-      const productMap = new Map(productsRes.content.map(p => [p.sku, p]));
-
-      const itemsWithDetails = stopRows.map((row: any) => {
-        const product = productMap.get(row.sku);
-        const unitWeight = product ? product.weightKg : 0;
-        const unitVolume = product ? product.volumeM3 : 0;
-        return {
-          orderRef: row.orderRef,
-          sku: row.sku,
-          productName: product ? product.productName : row.sku,
-          quantity: row.quantity,
-          weightKg: unitWeight * row.quantity,
-          volumeM3: unitVolume * row.quantity,
-        };
-      });
-
-      setStopOrderItems(itemsWithDetails);
+      const items = await getStopOrderItems(draftId, stop.id);
+      setStopOrderItems(items);
     } catch (err) {
       console.error("Failed to load stop order details", err);
       message.error("Không tải được chi tiết đơn hàng của điểm dừng.");
@@ -278,20 +254,6 @@ const TripDraftReviewPage: React.FC = () => {
         console.error("Failed to enrich stops with store details", storeErr);
       }
       
-      // Get the active import batch for this delivery date to look up cached excel rows
-      try {
-        const dateStr = result.deliveryDate;
-        const batchesRes = await importApi.getImportHistory({ deliveryDate: dateStr, page: 0, size: 100 });
-        const activeBatch = batchesRes.content.find((b: any) => b.isActive && b.deliveryDate === dateStr);
-        if (activeBatch) {
-          setActiveBatchId(activeBatch.id);
-        } else if (batchesRes.content.length > 0) {
-          setActiveBatchId(batchesRes.content[0].id);
-        }
-      } catch (batchErr) {
-        console.error("Failed to find active batch for delivery date", batchErr);
-      }
-      
       setDraft(result);
     } catch (err) {
       if (getTripDraftApiStatus(err) === 403) {
@@ -352,11 +314,11 @@ const TripDraftReviewPage: React.FC = () => {
     setToggleStopId(stop.id);
 
     try {
-      const updatedStop = await updateStopStatus(draftId, stop.id, nextStatus);
+      const updatedStop = await updateStopStatus(draftId, stop.id, nextStatus === 'ACTIVE');
       const nextDraft = {
         ...draft,
         stops: draft.stops.map((item) =>
-          item.id === stop.id ? { ...item, status: updatedStop.status } : item
+          item.id === stop.id ? { ...item, status: updatedStop.status, eta: updatedStop.eta } : item
         ),
       };
       setDraft(nextDraft);

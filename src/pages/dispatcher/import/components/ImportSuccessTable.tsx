@@ -23,6 +23,10 @@ interface SuccessRow {
   quantity: number;
   weightKg: number;
   volumeM3: number;
+  deliveryTimeWindow?: string;
+  recipientName?: string;
+  recipientPhone?: string;
+  notes?: string;
 }
 
 const ImportSuccessTable: React.FC<ImportSuccessTableProps> = ({ batch }) => {
@@ -50,7 +54,7 @@ const ImportSuccessTable: React.FC<ImportSuccessTableProps> = ({ batch }) => {
         const storageKey = `import_batch_success_rows_${batch.batchId}`;
         const storedStr = localStorage.getItem(storageKey);
 
-        if (storedStr) {
+        if (storedStr && (JSON.parse(storedStr).length > 0 || batch.acceptedRows === 0)) {
           const parsedRows = JSON.parse(storedStr);
           const successRows: SuccessRow[] = parsedRows.map((row: any, index: number) => {
             const store = storeMap.get(row.storeCode);
@@ -72,6 +76,10 @@ const ImportSuccessTable: React.FC<ImportSuccessTableProps> = ({ batch }) => {
               quantity: row.quantity,
               weightKg: Number((uWeight * row.quantity).toFixed(2)),
               volumeM3: Number((uVolume * row.quantity).toFixed(4)),
+              deliveryTimeWindow: row.deliveryTimeWindow,
+              recipientName: row.recipientName,
+              recipientPhone: row.recipientPhone,
+              notes: row.notes,
             };
           });
           setData(successRows);
@@ -192,6 +200,34 @@ const ImportSuccessTable: React.FC<ImportSuccessTableProps> = ({ batch }) => {
       width: 130,
       align: 'right',
       render: (val) => `${val} m³`,
+    },
+    {
+      title: 'Khung giờ giao',
+      dataIndex: 'deliveryTimeWindow',
+      key: 'deliveryTimeWindow',
+      width: 150,
+      render: (val) => val || '—',
+    },
+    {
+      title: 'Người nhận',
+      key: 'recipient',
+      width: 200,
+      render: (_, record) => (
+        <div>
+          <div>{record.recipientName || '—'}</div>
+          {record.recipientPhone && (
+            <Text type="secondary" style={{ fontSize: 12 }}>{record.recipientPhone}</Text>
+          )}
+        </div>
+      ),
+    },
+    {
+      title: 'Ghi chú',
+      dataIndex: 'notes',
+      key: 'notes',
+      width: 200,
+      ellipsis: true,
+      render: (val) => val || '—',
     },
   ];
 

@@ -232,11 +232,23 @@ const ProductDetailPage: React.FC = () => {
                   <Descriptions.Item label={<span style={{ fontWeight: 600 }}>Tên sản phẩm</span>}>
                     {product.productName}
                   </Descriptions.Item>
+                  <Descriptions.Item label={<span style={{ fontWeight: 600 }}>Hình dáng</span>}>
+                    {product.shape || '—'}
+                  </Descriptions.Item>
+                  <Descriptions.Item label={<span style={{ fontWeight: 600 }}>Tính chất</span>}>
+                    {product.isFragile ? <Tag color="warning">Dễ vỡ (Fragile)</Tag> : <Tag color="default">Thông thường</Tag>}
+                  </Descriptions.Item>
                   <Descriptions.Item label={<span style={{ fontWeight: 600 }}>Trạng thái</span>}>
                     <Badge
                       status={product.status === 'ACTIVE' ? 'success' : 'error'}
                       text={product.status === 'ACTIVE' ? 'Đang kinh doanh' : 'Ngừng kinh doanh'}
                     />
+                  </Descriptions.Item>
+                  <Descriptions.Item label={<span style={{ fontWeight: 600 }}>Ảnh đóng gói (URL)</span>}>
+                    {product.packageImageUrl || '—'}
+                  </Descriptions.Item>
+                  <Descriptions.Item label={<span style={{ fontWeight: 600 }}>Mô tả</span>}>
+                    {product.description || '—'}
                   </Descriptions.Item>
                   <Descriptions.Item label={<span style={{ fontWeight: 600 }}><Calendar size={13} style={{ display: 'inline', marginRight: 4, verticalAlign: 'middle' }} /> Ngày tạo</span>}>
                     {formatDate(product.createdAt)}

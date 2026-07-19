@@ -1,17 +1,14 @@
 import React, { useState, useEffect } from 'react';
 import { Typography, Breadcrumb, message, Divider } from 'antd';
+import { useNavigate } from 'react-router-dom';
 import AdminShell from '../../../components/AdminShell';
 import ImportUploadCard from './components/ImportUploadCard';
 import ImportReadOnlyBanner from './components/ImportReadOnlyBanner';
-import ImportResultCard from './components/ImportResultCard';
-import ImportErrorsTable from './components/ImportErrorsTable';
 import ImportHistoryTable from './components/ImportHistoryTable';
-import ReplaceBatchModal from './components/ReplaceBatchModal';
-import ImportSuccessTable from './components/ImportSuccessTable';
 import * as XLSX from 'xlsx';
 import { canUploadOrders } from '../../../utils/importPermissions';
-import { importApi, ApiError } from '../../../api/importApi';
-import type { ImportBatchHistory, ImportResult } from '../../../types/import';
+import { importApi } from '../../../api/importApi';
+import type { ImportBatchHistory } from '../../../types/import';
 
 const { Title, Paragraph } = Typography;
 
@@ -38,24 +35,17 @@ function getCurrentUser() {
 const OrderImportPage: React.FC = () => {
   const currentUser = getCurrentUser();
   const canImportOrders = canUploadOrders();
+  const navigate = useNavigate();
 
   // Loading states
   const [uploadLoading, setUploadLoading] = useState(false);
   const [historyLoading, setHistoryLoading] = useState(false);
-
-  // Dialog and confirmation state
-  const [replaceModalOpen, setReplaceModalOpen] = useState(false);
-  const [pendingUpload, setPendingUpload] = useState<{ deliveryDate: string; file: File } | null>(null);
 
   // History table pagination and data state
   const [historyData, setHistoryData] = useState<ImportBatchHistory[]>([]);
   const [totalElements, setTotalElements] = useState(0);
   const [currentPage, setCurrentPage] = useState(0);
   const [pageSize, setPageSize] = useState(10);
-
-  // Upload result state
-  const [currentResult, setCurrentResult] = useState<ImportResult | null>(null);
-  const [errorTableOpen, setErrorTableOpen] = useState(false);
 
   // Load history data
   const loadHistory = async (page = currentPage, size = pageSize) => {
@@ -85,10 +75,8 @@ const OrderImportPage: React.FC = () => {
   };
 
   // Perform the actual upload
-  const executeUpload = async (deliveryDate: string, file: File, confirmReplace: boolean) => {
+  const executeUpload = async (deliveryDate: string, file: File) => {
     setUploadLoading(true);
-    setCurrentResult(null);
-    setErrorTableOpen(false);
 
     // Parse excel file in frontend to extract all successfully imported items
     let excelRows: any[] = [];
@@ -98,16 +86,41 @@ const OrderImportPage: React.FC = () => {
       const sheetName = workbook.SheetNames[0];
       const sheet = workbook.Sheets[sheetName];
       const rowsJson = XLSX.utils.sheet_to_json<any[]>(sheet, { header: 1 });
+
+      const orderRefIdx = 0;
+      const storeCodeIdx = 1;
+      const skuIdx = 2;
+      const quantityIdx = 3;
+      const timeWindowIdx = 4;
+      const recipientNameIdx = 5;
+      const recipientPhoneIdx = 6;
+      const notesIdx = 7;
+
       for (let i = 1; i < rowsJson.length; i++) {
-        const row = rowsJson[i];
-        if (row && row.length >= 3) {
-          excelRows.push({
-            rowNumber: i + 1,
-            orderRef: String(row[0] || '').trim(),
-            storeCode: String(row[1] || '').trim(),
-            sku: String(row[2] || '').trim(),
-            quantity: parseInt(String(row[3] || '0').trim()) || 0,
-          });
+        const row = rowsJson[i] as any[];
+        if (row && row.length > 0) {
+          const orderRef = orderRefIdx < row.length ? String(row[orderRefIdx] || '').trim() : '';
+          const storeCode = storeCodeIdx < row.length ? String(row[storeCodeIdx] || '').trim() : '';
+          const sku = skuIdx < row.length ? String(row[skuIdx] || '').trim() : '';
+          const quantity = quantityIdx < row.length ? (parseInt(String(row[quantityIdx] || '0').trim()) || 0) : 0;
+          const deliveryTimeWindow = timeWindowIdx < row.length ? String(row[timeWindowIdx] || '').trim() : '';
+          const recipientName = recipientNameIdx < row.length ? String(row[recipientNameIdx] || '').trim() : '';
+          const recipientPhone = recipientPhoneIdx < row.length ? String(row[recipientPhoneIdx] || '').trim() : '';
+          const notes = notesIdx < row.length ? String(row[notesIdx] || '').trim() : '';
+
+          if (storeCode || sku) {
+            excelRows.push({
+              rowNumber: i + 1,
+              orderRef,
+              storeCode,
+              sku,
+              quantity,
+              deliveryTimeWindow,
+              recipientName,
+              recipientPhone,
+              notes,
+            });
+          }
         }
       }
     } catch (err) {
@@ -115,8 +128,7 @@ const OrderImportPage: React.FC = () => {
     }
 
     try {
-      const result = await importApi.uploadOrders(deliveryDate, file, confirmReplace);
-      message.success(`Tải lên file thành công. Tạo Batch #${result.batchId}`);
+      const result = await importApi.uploadOrders(deliveryDate, file, false);
       
       // Filter and save successful rows to localStorage
       try {
@@ -127,32 +139,14 @@ const OrderImportPage: React.FC = () => {
         console.error("Error caching success rows in localStorage", err);
       }
 
-      setCurrentResult(result);
-      if (result.rejectedRows > 0) {
-        setErrorTableOpen(true);
-      }
+      message.success(`Tải lên file thành công. Tạo Batch #${result.batchId}`);
       
-      // Reload history to show the new record
-      await loadHistory(0, pageSize);
-      setCurrentPage(0);
-
-      // Smooth scroll to result
-      setTimeout(() => {
-        const resultCard = document.getElementById('import-result-card');
-        if (resultCard) {
-          resultCard.scrollIntoView({ behavior: 'smooth', block: 'start' });
-        }
-      }, 100);
+      // Redirect to detail page directly
+      navigate(`/dispatcher/import/history/${result.batchId}`);
 
     } catch (error: any) {
       console.error('Upload failed', error);
-      if (error instanceof ApiError && error.status === 409 && (error.body?.error === 'DUPLICATE_DELIVERY_DATE' || error.body?.code === 'DUPLICATE_DELIVERY_DATE')) {
-        // Handle delivery date clash Conflict (HTTP 409)
-        setPendingUpload({ deliveryDate, file });
-        setReplaceModalOpen(true);
-      } else {
-        message.error(error?.message || 'Không thể xử lý file. Vui lòng thử lại.');
-      }
+      message.error(error?.message || 'Không thể xử lý file. Vui lòng thử lại.');
     } finally {
       setUploadLoading(false);
     }
@@ -160,29 +154,7 @@ const OrderImportPage: React.FC = () => {
 
   // Pre-upload checks
   const handleUploadInitiated = async (deliveryDate: string, file: File) => {
-    await executeUpload(deliveryDate, file, false);
-  };
-
-  const handleConfirmReplace = async () => {
-    if (!pendingUpload) return;
-    setReplaceModalOpen(false);
-    const { deliveryDate, file } = pendingUpload;
-    setPendingUpload(null);
-    await executeUpload(deliveryDate, file, true);
-  };
-
-  const handleCancelReplace = () => {
-    setReplaceModalOpen(false);
-    setPendingUpload(null);
-  };
-
-  const formatDateStr = (dateStr: string) => {
-    try {
-      const [year, month, day] = dateStr.split('-');
-      return `${day}/${month}/${year}`;
-    } catch {
-      return dateStr;
-    }
+    await executeUpload(deliveryDate, file);
   };
 
   return (
@@ -210,34 +182,6 @@ const OrderImportPage: React.FC = () => {
         <ImportUploadCard loading={uploadLoading} onUpload={handleUploadInitiated} />
       ) : (
         <ImportReadOnlyBanner />
-      )}
-
-      {/* Confirm replace modal dialog */}
-      <ReplaceBatchModal
-        open={replaceModalOpen}
-        deliveryDateStr={pendingUpload ? formatDateStr(pendingUpload.deliveryDate) : ''}
-        confirmLoading={uploadLoading}
-        onCancel={handleCancelReplace}
-        onConfirm={handleConfirmReplace}
-      />
-
-      {/* Result presentation Card */}
-      {currentResult && (
-        <ImportResultCard
-          result={currentResult}
-          onViewErrors={() => setErrorTableOpen(!errorTableOpen)}
-          errorTableOpen={errorTableOpen}
-        />
-      )}
-
-      {/* Success lines table details */}
-      {currentResult && currentResult.acceptedRows > 0 && (
-        <ImportSuccessTable batch={currentResult} />
-      )}
-
-      {/* Error lines table details */}
-      {currentResult && errorTableOpen && currentResult.rejectedRows > 0 && (
-        <ImportErrorsTable batchId={currentResult.batchId} />
       )}
 
       <Divider style={{ margin: '32px 0' }} />

@@ -32,6 +32,14 @@ import CapacityValidationPage from './pages/dispatcher/trip-drafts/CapacityValid
 import VehicleAssignmentPage from './pages/dispatcher/trip-drafts/VehicleAssignmentPage';
 import DispatchPage from './pages/dispatcher/trips/DispatchPage';
 
+import MonitoringDashboardPage from './pages/dispatcher/monitoring/MonitoringDashboardPage';
+import MonitoringGuard from './guards/MonitoringGuard';
+import DriverMyTripsPage from './pages/driver/DriverMyTripsPage';
+import DriverGuard from './guards/DriverGuard';
+
+import ExceptionManagementPage from './pages/dispatcher/exceptions/ExceptionManagementPage';
+import ExceptionGuard from './guards/ExceptionGuard';
+
 
 function App() {
   return (
@@ -257,6 +265,52 @@ function App() {
             <ProtectedPermissionRoute permission={PERMISSIONS.ROLE_READ}>
               <RoleManagementPage />
             </ProtectedPermissionRoute>
+          }
+        />
+
+        {/* US-17 Monitoring Dashboard */}
+        <Route
+          path="/dispatcher/monitoring"
+          element={
+            <MonitoringGuard>
+              <MonitoringDashboardPage />
+            </MonitoringGuard>
+          }
+        />
+        <Route
+          path="/manager/monitoring"
+          element={
+            <MonitoringGuard>
+              <MonitoringDashboardPage />
+            </MonitoringGuard>
+          }
+        />
+
+        {/* US-18 Exception Management */}
+        <Route
+          path="/dispatcher/exceptions"
+          element={
+            <ExceptionGuard>
+              <ExceptionManagementPage />
+            </ExceptionGuard>
+          }
+        />
+        <Route
+          path="/manager/exceptions"
+          element={
+            <ExceptionGuard>
+              <ExceptionManagementPage />
+            </ExceptionGuard>
+          }
+        />
+
+        {/* US-17 Driver Web View */}
+        <Route
+          path="/driver/my-trips"
+          element={
+            <DriverGuard>
+              <DriverMyTripsPage />
+            </DriverGuard>
           }
         />
 
