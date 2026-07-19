@@ -1,7 +1,7 @@
 import React from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { Layout, Menu, Avatar, Dropdown, Button, Space, Input, Badge, ConfigProvider } from 'antd';
-import { Bell, ChevronDown, ClipboardList, LogOut, Search, Users, LayoutGrid, Map, Settings, Package, Home, Truck, FileSpreadsheet, Layers } from 'lucide-react';
+import { Bell, ChevronDown, ClipboardList, LogOut, Search, Users, LayoutGrid, Map, Settings, Package, Home, Truck, FileSpreadsheet, Layers, Activity, Navigation, AlertTriangle } from 'lucide-react';
 import axiosInstance from '../api/axiosInstance';
 
 
@@ -59,13 +59,25 @@ const AdminShell: React.FC<AdminShellProps> = ({ currentUser, children }) => {
         ? '/dispatcher/import'
         : location.pathname.startsWith('/dispatcher/trip-drafts')
           ? '/dispatcher/trip-drafts'
-          : location.pathname.startsWith('/trip-drafts')
-            ? '/trip-drafts'
-            : location.pathname;
+          : location.pathname.startsWith('/dispatcher/monitoring')
+            ? '/dispatcher/monitoring'
+            : location.pathname.startsWith('/manager/monitoring')
+              ? '/dispatcher/monitoring'
+              : location.pathname.startsWith('/dispatcher/exceptions')
+                ? '/exceptions'
+                : location.pathname.startsWith('/manager/exceptions')
+                  ? '/exceptions'
+                  : location.pathname.startsWith('/driver/my-trips')
+                    ? '/driver/my-trips'
+                    : location.pathname.startsWith('/trip-drafts')
+                      ? '/trip-drafts'
+                      : location.pathname;
 
   const roles = currentUser.roles || [];
   const canViewImport = roles.some(role => ["SYSTEM_ADMIN", "DISPATCHER", "LOGISTICS_MANAGER"].includes(role));
   const canViewTripDraftsMenu = roles.some(role => ["SYSTEM_ADMIN", "DISPATCHER", "LOGISTICS_MANAGER", "WAREHOUSE_STAFF"].includes(role));
+  const canViewMonitoring = roles.some(role => ["SYSTEM_ADMIN", "DISPATCHER", "LOGISTICS_MANAGER"].includes(role));
+  const isDriverRole = roles.includes('DRIVER');
 
 
   const sidebarMenuItems = [
@@ -131,6 +143,30 @@ const AdminShell: React.FC<AdminShellProps> = ({ currentUser, children }) => {
             icon: <ClipboardList size={ICON_SIZE} />,
             label: 'Lập kế hoạch chuyến',
             onClick: () => navigate('/trip-drafts'),
+          }
+        ] : []),
+        ...(canViewMonitoring ? [
+          {
+            key: '/dispatcher/monitoring',
+            icon: <Activity size={ICON_SIZE} />,
+            label: 'Theo dõi chuyến hàng',
+            onClick: () => navigate(roles.includes('LOGISTICS_MANAGER') && !roles.includes('DISPATCHER') ? '/manager/monitoring' : '/dispatcher/monitoring'),
+          }
+        ] : []),
+        ...(roles.some(role => ["SYSTEM_ADMIN", "DISPATCHER", "LOGISTICS_MANAGER"].includes(role)) ? [
+          {
+            key: '/exceptions',
+            icon: <AlertTriangle size={ICON_SIZE} />,
+            label: 'Quản lý ngoại lệ',
+            onClick: () => navigate(roles.includes('LOGISTICS_MANAGER') && !roles.includes('DISPATCHER') ? '/manager/exceptions' : '/dispatcher/exceptions'),
+          }
+        ] : []),
+        ...(isDriverRole ? [
+          {
+            key: '/driver/my-trips',
+            icon: <Navigation size={ICON_SIZE} />,
+            label: 'Chuyến của tôi',
+            onClick: () => navigate('/driver/my-trips'),
           }
         ] : []),
 
@@ -209,13 +245,15 @@ const AdminShell: React.FC<AdminShellProps> = ({ currentUser, children }) => {
           </div>
 
           <div className="elog-sidebar-menu-wrapper">
-            <Menu
-              mode="inline"
-              theme="dark"
-              selectedKeys={[selectedKey]}
-              items={sidebarMenuItems}
-              style={{ borderRight: 0, padding: '16px 0', background: '#0d1727' }}
-            />
+            <div className="elog-sidebar-menu-scrollable">
+              <Menu
+                mode="inline"
+                theme="dark"
+                selectedKeys={[selectedKey]}
+                items={sidebarMenuItems}
+                style={{ borderRight: 0, padding: '16px 0', background: '#0d1727' }}
+              />
+            </div>
 
             <div className="elog-sidebar-profile">
               <div className="elog-profile-info">

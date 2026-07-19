@@ -38,6 +38,7 @@ import {
   getTripDraftApiStatus,
   recalculateEta,
   updateStopStatus,
+  getStopOrderItems,
   type TripDraftDetail,
   type TripDraftStop,
   type TripDraftStopStatus,
@@ -149,44 +150,16 @@ const TripDraftReviewPage: React.FC = () => {
   const [detailModalLoading, setDetailModalLoading] = useState(false);
 
   const showOrderDetails = async (stop: TripDraftStop) => {
+    if (!draftId) return;
+
     setSelectedStopForDetail(stop);
     setDetailModalVisible(true);
     setDetailModalLoading(true);
     setStopOrderItems([]);
 
     try {
-      const cachedRowsStr = localStorage.getItem(`import_batch_success_rows_${activeBatchId}`);
-      if (!cachedRowsStr) {
-        setDetailModalLoading(false);
-        return;
-      }
-
-      const allCachedRows = JSON.parse(cachedRowsStr);
-      const stopRows = allCachedRows.filter((r: any) => r.storeCode === stop.storeCode);
-
-      if (stopRows.length === 0) {
-        setDetailModalLoading(false);
-        return;
-      }
-
-      const productsRes = await productApi.getProducts({ size: 1000 });
-      const productMap = new Map(productsRes.content.map(p => [p.sku, p]));
-
-      const itemsWithDetails = stopRows.map((row: any) => {
-        const product = productMap.get(row.sku);
-        const unitWeight = product ? product.weightKg : 0;
-        const unitVolume = product ? product.volumeM3 : 0;
-        return {
-          orderRef: row.orderRef,
-          sku: row.sku,
-          productName: product ? product.productName : row.sku,
-          quantity: row.quantity,
-          weightKg: unitWeight * row.quantity,
-          volumeM3: unitVolume * row.quantity,
-        };
-      });
-
-      setStopOrderItems(itemsWithDetails);
+      const items = await getStopOrderItems(draftId, stop.id);
+      setStopOrderItems(items);
     } catch (err) {
       console.error("Failed to load stop order details", err);
       message.error("Không tải được chi tiết đơn hàng của điểm dừng.");

@@ -34,7 +34,17 @@ export async function getEligibleVehicles(
   const res = await axiosInstance.get<ApiResponseWrapper<EligibleVehiclesResponse>>(
     `/api/trip-drafts/${tripDraftId}/eligible-vehicles`
   );
-  return unwrap(res);
+  const data = unwrap(res);
+  return {
+    eligibleVehicles: (data.eligibleVehicles || []).map((v: any) => ({
+      ...v,
+      payloadKg: Number(v.payloadKg ?? v.maxWeightKg ?? v.max_weight_kg ?? 0),
+    })),
+    ineligibleVehicles: (data.ineligibleVehicles || []).map((v: any) => ({
+      ...v,
+      payloadKg: Number(v.payloadKg ?? v.maxWeightKg ?? v.max_weight_kg ?? 0),
+    })),
+  };
 }
 
 /**

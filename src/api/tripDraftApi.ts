@@ -395,5 +395,32 @@ export const tripDraftApi = {
       axiosInstance.post(`/api/trip-drafts/${tripDraftId}/validate-capacity`)
     );
     return res.data;
+  },
+
+  async revertTripDraft(id: number | string): Promise<{ success: boolean; message: string }> {
+    const res = await axiosInstance.post<{ success: boolean; message: string }>(
+      `/api/trip-drafts/${id}/revert`
+    );
+    return res.data;
   }
 };
+
+export interface StopOrderItem {
+  orderRef: string;
+  sku: string;
+  productName: string;
+  quantity: number;
+  weightKg: number;
+  volumeM3: number;
+}
+
+export async function getStopOrderItems(
+  draftId: string | number,
+  stopId: string | number
+): Promise<StopOrderItem[]> {
+  const response = await axiosInstance.get<ApiResponse<StopOrderItem[]>>(
+    `/api/trip-drafts/${draftId}/stops/${stopId}/order-items`
+  );
+  return unwrapApiResponse(response.data);
+}
+

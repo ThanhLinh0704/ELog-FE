@@ -38,6 +38,7 @@ import {
 import AdminShell from '../components/AdminShell';
 import { useDebounce } from '../hooks/useDebounce';
 import { storeApi, type StoreItem, type StorePayload } from '../api/storeApi';
+import { addressApi, type Province, type District, type Ward } from '../api/addressApi';
 
 type FormMode = 'create' | 'edit';
 type CoordinateFilter = 'all' | 'missing';
@@ -127,14 +128,18 @@ function StatusBadge({ active }: { active: boolean }) {
 }
 
 function RouteTag({ store }: { store: StoreItem }) {
-  if (!store.assignedRoute) {
+  if (!store.assignedRoutes || store.assignedRoutes.length === 0) {
     return <Tag color="default">Chưa gắn tuyến</Tag>;
   }
 
   return (
-    <Tooltip title={store.assignedRoute.name}>
-      <Tag color="blue">{store.assignedRoute.code}</Tag>
-    </Tooltip>
+    <Space size={[0, 4]} wrap>
+      {store.assignedRoutes.map((r) => (
+        <Tooltip key={r.id} title={r.name}>
+          <Tag color="blue">{r.code}</Tag>
+        </Tooltip>
+      ))}
+    </Space>
   );
 }
 
@@ -178,6 +183,26 @@ const StoreFormModal: React.FC<StoreFormModalProps> = ({
   const [form] = Form.useForm();
   const isEdit = mode === 'edit';
 
+  const [provinces, setProvinces] = useState<Province[]>([]);
+  const [districts, setDistricts] = useState<District[]>([]);
+  const [wards, setWards] = useState<Ward[]>([]);
+
+  const [selectedProvince, setSelectedProvince] = useState<string>('');
+  const [selectedDistrict, setSelectedDistrict] = useState<string>('');
+
+  useEffect(() => {
+    if (!open) return;
+    async function loadProvinces() {
+      try {
+        const list = await addressApi.getProvinces();
+        setProvinces(list);
+      } catch (err) {
+        console.error("Failed to load provinces", err);
+      }
+    }
+    loadProvinces();
+  }, [open]);
+
   useEffect(() => {
     if (!open) return;
 
@@ -185,21 +210,79 @@ const StoreFormModal: React.FC<StoreFormModalProps> = ({
       form.setFieldsValue({
         storeCode: store.storeCode,
         storeName: store.storeName,
-        address: store.address,
+        provinceCode: store.provinceCode,
+        districtCode: store.districtCode,
+        wardCode: store.wardCode,
+        addressDetail: store.addressDetail,
+        allowedDeliveryHours: store.allowedDeliveryHours,
+        maxAllowedVehicleWeight: store.maxAllowedVehicleWeight,
+        imageUrl: store.imageUrl,
         contactName: store.contactName,
         contactPhone: store.contactPhone,
         latitude: store.latitude,
         longitude: store.longitude,
       });
+
+      setSelectedProvince(store.provinceCode || '');
+      setSelectedDistrict(store.districtCode || '');
+
+      if (store.provinceCode) {
+        addressApi.getDistricts(store.provinceCode).then(setDistricts).catch(console.error);
+      }
+      if (store.districtCode) {
+        addressApi.getWards(store.districtCode).then(setWards).catch(console.error);
+      }
     } else {
       form.resetFields();
+      setSelectedProvince('');
+      setSelectedDistrict('');
+      setDistricts([]);
+      setWards([]);
     }
   }, [open, isEdit, store, form]);
+
+  const handleProvinceChange = async (provCode: string) => {
+    setSelectedProvince(provCode);
+    setSelectedDistrict('');
+    setWards([]);
+    form.setFieldsValue({ districtCode: undefined, wardCode: undefined });
+    if (provCode) {
+      try {
+        const list = await addressApi.getDistricts(provCode);
+        setDistricts(list);
+      } catch (err) {
+        console.error(err);
+      }
+    } else {
+      setDistricts([]);
+    }
+  };
+
+  const handleDistrictChange = async (distCode: string) => {
+    setSelectedDistrict(distCode);
+    form.setFieldsValue({ wardCode: undefined });
+    if (distCode) {
+      try {
+        const list = await addressApi.getWards(distCode);
+        setWards(list);
+      } catch (err) {
+        console.error(err);
+      }
+    } else {
+      setWards([]);
+    }
+  };
 
   async function handleFinish(values: any) {
     const payload: StorePayload = {
       storeName: values.storeName?.trim(),
-      address: values.address?.trim(),
+      provinceCode: values.provinceCode,
+      districtCode: values.districtCode,
+      wardCode: values.wardCode,
+      addressDetail: values.addressDetail?.trim(),
+      allowedDeliveryHours: values.allowedDeliveryHours?.trim() || null,
+      maxAllowedVehicleWeight: values.maxAllowedVehicleWeight != null ? Number(values.maxAllowedVehicleWeight) : null,
+      imageUrl: values.imageUrl?.trim() || null,
       contactName: values.contactName?.trim() || null,
       contactPhone: values.contactPhone?.trim() || null,
       latitude: isCoordinateEmpty(values.latitude) ? null : Number(values.latitude),
@@ -269,39 +352,123 @@ const StoreFormModal: React.FC<StoreFormModalProps> = ({
       destroyOnHidden
     >
       <Form form={form} layout="vertical" onFinish={handleFinish}>
-        <Form.Item
-          label="Mã cửa hàng"
-          name="storeCode"
-          getValueFromEvent={(event) => event.target.value?.toUpperCase()}
-          rules={[
-            { required: true, message: 'Vui lòng nhập mã cửa hàng.' },
-            { max: 30, message: 'Mã cửa hàng không quá 30 ký tự.' },
-          ]}
-        >
-          <Input placeholder="VD: ST-GV-005" readOnly={isEdit} />
-        </Form.Item>
+        <Row gutter={16}>
+          <Col xs={24} md={12}>
+            <Form.Item
+              label="Mã cửa hàng"
+              name="storeCode"
+              getValueFromEvent={(event) => event.target.value?.toUpperCase()}
+              rules={[
+                { required: true, message: 'Vui lòng nhập mã cửa hàng.' },
+                { max: 30, message: 'Mã cửa hàng không quá 30 ký tự.' },
+              ]}
+            >
+              <Input placeholder="VD: ST-GV-005" disabled={isEdit} />
+            </Form.Item>
+          </Col>
+          <Col xs={24} md={12}>
+            <Form.Item
+              label="Tên cửa hàng"
+              name="storeName"
+              rules={[
+                { required: true, message: 'Vui lòng nhập tên cửa hàng.' },
+                { max: 150, message: 'Tên cửa hàng không quá 150 ký tự.' },
+              ]}
+            >
+              <Input placeholder="VD: Điện Máy Phúc Anh" />
+            </Form.Item>
+          </Col>
+        </Row>
+
+        <Row gutter={16}>
+          <Col xs={24} md={8}>
+            <Form.Item
+              label="Tỉnh/Thành phố"
+              name="provinceCode"
+              rules={[{ required: true, message: 'Vui lòng chọn Tỉnh/Thành phố.' }]}
+            >
+              <Select
+                placeholder="Chọn Tỉnh/Thành phố"
+                onChange={handleProvinceChange}
+                options={provinces.map(p => ({ value: p.code, label: p.fullName }))}
+                showSearch
+                optionFilterProp="label"
+              />
+            </Form.Item>
+          </Col>
+          <Col xs={24} md={8}>
+            <Form.Item
+              label="Quận/Huyện"
+              name="districtCode"
+              rules={[{ required: true, message: 'Vui lòng chọn Quận/Huyện.' }]}
+            >
+              <Select
+                placeholder="Chọn Quận/Huyện"
+                onChange={handleDistrictChange}
+                options={districts.map(d => ({ value: d.code, label: d.fullName }))}
+                disabled={!selectedProvince}
+                showSearch
+                optionFilterProp="label"
+              />
+            </Form.Item>
+          </Col>
+          <Col xs={24} md={8}>
+            <Form.Item
+              label="Phường/Xã"
+              name="wardCode"
+              rules={[{ required: true, message: 'Vui lòng chọn Phường/Xã.' }]}
+            >
+              <Select
+                placeholder="Chọn Phường/Xã"
+                options={wards.map(w => ({ value: w.code, label: w.fullName }))}
+                disabled={!selectedDistrict}
+                showSearch
+                optionFilterProp="label"
+              />
+            </Form.Item>
+          </Col>
+        </Row>
 
         <Form.Item
-          label="Tên cửa hàng"
-          name="storeName"
+          label="Địa chỉ chi tiết"
+          name="addressDetail"
           rules={[
-            { required: true, message: 'Vui lòng nhập tên cửa hàng.' },
-            { max: 150, message: 'Tên cửa hàng không quá 150 ký tự.' },
+            { required: true, message: 'Vui lòng nhập địa chỉ chi tiết.' },
+            { min: 5, message: 'Địa chỉ chi tiết ít nhất 5 ký tự.' },
+            { max: 255, message: 'Địa chỉ chi tiết không quá 255 ký tự.' },
           ]}
         >
-          <Input placeholder="VD: Điện Máy Phúc Anh" />
+          <Input placeholder="VD: Số 12, Ngõ 45, Đường Quang Trung" />
         </Form.Item>
 
-        <Form.Item
-          label="Địa chỉ"
-          name="address"
-          rules={[
-            { required: true, message: 'Vui lòng nhập địa chỉ.' },
-            { max: 255, message: 'Địa chỉ không quá 255 ký tự.' },
-          ]}
-        >
-          <Input.TextArea rows={3} placeholder="VD: 120 Nguyễn Oanh, P.17, Q.Gò Vấp" />
-        </Form.Item>
+        <Row gutter={16}>
+          <Col xs={24} md={8}>
+            <Form.Item
+              label="Khung giờ giao (Hàng ngày)"
+              name="allowedDeliveryHours"
+              rules={[{ max: 100, message: 'Khung giờ giao không quá 100 ký tự.' }]}
+            >
+              <Input placeholder="VD: 08:00 - 17:00" />
+            </Form.Item>
+          </Col>
+          <Col xs={24} md={8}>
+            <Form.Item
+              label="Tải trọng xe tối đa (kg)"
+              name="maxAllowedVehicleWeight"
+            >
+              <InputNumber style={{ width: '100%' }} min={0} placeholder="VD: 5000" />
+            </Form.Item>
+          </Col>
+          <Col xs={24} md={8}>
+            <Form.Item
+              label="Đường dẫn ảnh cửa hàng"
+              name="imageUrl"
+              rules={[{ max: 512, message: 'Đường dẫn ảnh không quá 512 ký tự.' }]}
+            >
+              <Input placeholder="VD: /images/stores/store.png" />
+            </Form.Item>
+          </Col>
+        </Row>
 
         <Row gutter={16}>
           <Col xs={24} md={12}>
@@ -897,13 +1064,14 @@ const StoresPage: React.FC = () => {
                 type="primary"
                 icon={<MapPin size={15} />}
                 onClick={() => {
-                  const routeId = blockedStore?.assignedRoute?.id;
+                  const firstRoute = blockedStore?.assignedRoutes?.[0];
+                  const routeId = firstRoute?.id;
                   setBlockedStore(null);
                   setBlockedStoreMessage('');
                   navigate(routeId ? `/admin/routes/${routeId}` : '/admin/routes');
                 }}
               >
-                Đến trang quản lý tuyến {blockedStore?.assignedRoute?.code || ''}
+                Đến trang quản lý tuyến {blockedStore?.assignedRoutes?.[0]?.code || ''}
               </Button>
             </Space>
           }
@@ -913,8 +1081,8 @@ const StoresPage: React.FC = () => {
             showIcon
             message={
               blockedStoreMessage ||
-              (blockedStore?.assignedRoute
-                ? `Cửa hàng này đang là điểm dừng của tuyến ${blockedStore.assignedRoute.code}.`
+              (blockedStore?.assignedRoutes && blockedStore.assignedRoutes.length > 0
+                ? `Cửa hàng này đang là điểm dừng của tuyến ${blockedStore.assignedRoutes.map(r => r.code).join(', ')}.`
                 : 'Cửa hàng này đang thuộc tuyến hoặc chuyến đang vận hành.')
             }
             description="Bạn cần xoá cửa hàng khỏi tuyến hoặc hoàn tất chuyến liên quan trước khi vô hiệu hoá."

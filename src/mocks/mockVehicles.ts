@@ -9,100 +9,130 @@ import type {
 let mockVehicles: VehicleItem[] = [
   {
     id: 1,
-    plateNumber: '51B-67890',
+    vehicleCode: 'XE001',
+    plateNumber: '29H-12001',
     vehicleType: 'Xe tải nhỏ',
-    maxWeightKg: 1200,
+    payloadKg: 1200,
     maxVolumeM3: 8.5,
+    requiredLicense: 'B',
+    status: 'AVAILABLE',
     isActive: true,
     createdAt: '2026-06-01 08:30',
     updatedAt: '2026-06-05 10:15',
   },
   {
     id: 2,
+    vehicleCode: 'XE002',
     plateNumber: '51C-23456',
     vehicleType: 'Xe tải trung',
-    maxWeightKg: 2500,
+    payloadKg: 2500,
     maxVolumeM3: 14,
+    requiredLicense: 'C1',
+    status: 'AVAILABLE',
     isActive: true,
     createdAt: '2026-06-01 09:00',
     updatedAt: '2026-06-08 14:20',
   },
   {
     id: 3,
+    vehicleCode: 'XE003',
     plateNumber: '50H-11223',
     vehicleType: 'Xe tải lớn',
-    maxWeightKg: 5000,
+    payloadKg: 5000,
     maxVolumeM3: 27,
+    requiredLicense: 'C',
+    status: 'AVAILABLE',
     isActive: true,
     createdAt: '2026-06-02 08:10',
     updatedAt: '2026-06-09 16:45',
   },
   {
     id: 4,
+    vehicleCode: 'XE004',
     plateNumber: '51D-99887',
     vehicleType: 'Xe van giao hàng',
-    maxWeightKg: 900,
+    payloadKg: 900,
     maxVolumeM3: 6.5,
+    requiredLicense: 'B',
+    status: 'AVAILABLE',
     isActive: true,
     createdAt: '2026-06-03 10:00',
     updatedAt: '2026-06-03 10:00',
   },
   {
     id: 5,
+    vehicleCode: 'XE005',
     plateNumber: '60C-77889',
     vehicleType: 'Xe đông lạnh',
-    maxWeightKg: 1800,
+    payloadKg: 1800,
     maxVolumeM3: 10.5,
+    requiredLicense: 'C1',
+    status: 'MAINTENANCE',
     isActive: false,
     createdAt: '2026-06-04 11:30',
     updatedAt: '2026-06-10 09:25',
   },
   {
     id: 6,
+    vehicleCode: 'XE006',
     plateNumber: '51A-12345',
     vehicleType: 'Xe tải trung',
-    maxWeightKg: 2200,
+    payloadKg: 2200,
     maxVolumeM3: 13.2,
+    requiredLicense: 'C1',
+    status: 'AVAILABLE',
     isActive: true,
     createdAt: '2026-06-05 13:20',
     updatedAt: '2026-06-06 15:00',
   },
   {
     id: 7,
+    vehicleCode: 'XE007',
     plateNumber: '29H-45678',
     vehicleType: 'Xe tải lớn',
-    maxWeightKg: 7000,
+    payloadKg: 7000,
     maxVolumeM3: 32,
+    requiredLicense: 'C',
+    status: 'OUT_OF_SERVICE',
     isActive: false,
     createdAt: '2026-06-06 08:15',
     updatedAt: '2026-06-11 17:40',
   },
   {
     id: 8,
+    vehicleCode: 'XE008',
     plateNumber: '51F-88990',
     vehicleType: 'Xe tải nhỏ',
-    maxWeightKg: 1000,
+    payloadKg: 1000,
     maxVolumeM3: 7,
+    requiredLicense: 'B',
+    status: 'AVAILABLE',
     isActive: true,
     createdAt: '2026-06-07 09:45',
     updatedAt: '2026-06-07 09:45',
   },
   {
     id: 9,
+    vehicleCode: 'XE009',
     plateNumber: '62C-13579',
     vehicleType: 'Xe bán tải',
-    maxWeightKg: 750,
+    payloadKg: 750,
     maxVolumeM3: 4.2,
+    requiredLicense: 'B',
+    status: 'AVAILABLE',
     isActive: true,
     createdAt: '2026-06-08 10:30',
     updatedAt: '2026-06-12 11:10',
   },
   {
     id: 10,
+    vehicleCode: 'XE010',
     plateNumber: '51G-24680',
     vehicleType: 'Xe tải nặng',
-    maxWeightKg: 8000,
+    payloadKg: 8000,
     maxVolumeM3: 40,
+    requiredLicense: 'C',
+    status: 'MAINTENANCE',
     isActive: false,
     createdAt: '2026-06-09 14:00',
     updatedAt: '2026-06-13 08:50',
@@ -179,7 +209,7 @@ export const mockVehicleApi = {
     return {
       activeVehicleCount: activeVehicles.length,
       totalMaxWeightKg: activeVehicles.reduce(
-        (sum, item) => sum + Number(item.maxWeightKg || 0),
+        (sum, item) => sum + Number(item.payloadKg || 0),
         0
       ),
       totalMaxVolumeM3: activeVehicles.reduce(
@@ -214,34 +244,33 @@ export const mockVehicleApi = {
       throw error;
     }
 
-    if (payload.maxWeightKg <= 0) {
-      const error = new Error('Tải trọng phải lớn hơn 0.') as any;
-      error.body = {
-        error: {
-          field: 'maxWeightKg',
-          message: 'Tải trọng phải lớn hơn 0.',
-        },
-      };
-      throw error;
+    if (payload.payloadKg <= 0) {
+      throw new Error('Tải trọng phải lớn hơn 0.');
     }
 
     if (payload.maxVolumeM3 <= 0) {
-      const error = new Error('Thể tích phải lớn hơn 0.') as any;
-      error.body = {
-        error: {
-          field: 'maxVolumeM3',
-          message: 'Thể tích phải lớn hơn 0.',
-        },
-      };
-      throw error;
+      throw new Error('Thể tích phải lớn hơn 0.');
     }
 
     const newVehicle: VehicleItem = {
       id: Math.max(...mockVehicles.map((item) => item.id)) + 1,
+      vehicleCode: payload.vehicleCode || `XE${Math.max(...mockVehicles.map((item) => item.id)) + 1}`,
       plateNumber,
       vehicleType: payload.vehicleType,
-      maxWeightKg: payload.maxWeightKg,
+      vehicleClass: payload.vehicleClass || null,
+      payloadKg: payload.payloadKg,
+      grossVehicleWeightKg: payload.grossVehicleWeightKg || null,
+      requiredLicense: payload.requiredLicense || 'B',
       maxVolumeM3: payload.maxVolumeM3,
+      cargoLengthMm: payload.cargoLengthMm || null,
+      cargoWidthMm: payload.cargoWidthMm || null,
+      cargoHeightMm: payload.cargoHeightMm || null,
+      averageSpeedKmh: payload.averageSpeedKmh || null,
+      costPerKm: payload.costPerKm || null,
+      status: payload.status || 'AVAILABLE',
+      imageUrl: payload.imageUrl || null,
+      permitInfo: payload.permitInfo || null,
+      description: payload.description || null,
       isActive: true,
       createdAt: new Date().toLocaleString('vi-VN'),
       updatedAt: new Date().toLocaleString('vi-VN'),
@@ -261,11 +290,11 @@ export const mockVehicleApi = {
       throw new Error('Không tìm thấy xe.');
     }
 
-    if (payload.maxWeightKg <= 0) {
+    if (payload.payloadKg <= 0) {
       const error = new Error('Tải trọng phải lớn hơn 0.') as any;
       error.body = {
         error: {
-          field: 'maxWeightKg',
+          field: 'payloadKg',
           message: 'Tải trọng phải lớn hơn 0.',
         },
       };
@@ -286,8 +315,20 @@ export const mockVehicleApi = {
     const updated: VehicleItem = {
       ...mockVehicles[index],
       vehicleType: payload.vehicleType,
-      maxWeightKg: payload.maxWeightKg,
+      vehicleClass: payload.vehicleClass || null,
+      payloadKg: payload.payloadKg,
+      grossVehicleWeightKg: payload.grossVehicleWeightKg || null,
+      requiredLicense: payload.requiredLicense || 'B',
       maxVolumeM3: payload.maxVolumeM3,
+      cargoLengthMm: payload.cargoLengthMm || null,
+      cargoWidthMm: payload.cargoWidthMm || null,
+      cargoHeightMm: payload.cargoHeightMm || null,
+      averageSpeedKmh: payload.averageSpeedKmh || null,
+      costPerKm: payload.costPerKm || null,
+      status: payload.status || 'AVAILABLE',
+      imageUrl: payload.imageUrl || null,
+      permitInfo: payload.permitInfo || null,
+      description: payload.description || null,
       updatedAt: new Date().toLocaleString('vi-VN'),
     };
 
