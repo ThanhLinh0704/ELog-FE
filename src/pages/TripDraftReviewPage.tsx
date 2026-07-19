@@ -119,10 +119,16 @@ function mergeRecalculatedDraft(
     estimatedDistanceKm: recalculated.estimatedDistanceKm,
     estimatedDurationMin: recalculated.estimatedDurationMin,
     stops: draft.stops
-      .map((stop) => ({
-        ...stop,
-        ...recalculatedStops.get(stop.id),
-      }))
+      .map((stop) => {
+        const recalculatedStop = recalculatedStops.get(stop.id);
+        if (recalculatedStop) {
+          return {
+            ...stop,
+            eta: recalculatedStop.eta,
+          };
+        }
+        return stop;
+      })
       .sort((a, b) => a.sequenceNo - b.sequenceNo),
   };
 }
@@ -320,11 +326,11 @@ const TripDraftReviewPage: React.FC = () => {
     setToggleStopId(stop.id);
 
     try {
-      const updatedStop = await updateStopStatus(draftId, stop.id, nextStatus);
+      const updatedStop = await updateStopStatus(draftId, stop.id, nextStatus === 'ACTIVE');
       const nextDraft = {
         ...draft,
         stops: draft.stops.map((item) =>
-          item.id === stop.id ? { ...item, status: updatedStop.status } : item
+          item.id === stop.id ? { ...item, status: updatedStop.status, eta: updatedStop.eta } : item
         ),
       };
       setDraft(nextDraft);

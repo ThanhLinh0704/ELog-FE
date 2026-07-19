@@ -60,8 +60,9 @@ export interface TripDraftListItem {
   skippedStopCount: number;
 }
 
-export interface ToggleStopStatusPayload {
-  status: TripDraftStopStatus;
+export interface StopUpdateRequestPayload {
+  isActive: boolean;
+  overrideNote?: string;
 }
 
 export interface RecalculateEtaPayload {
@@ -303,11 +304,12 @@ export async function getTripDrafts(): Promise<TripDraftListItem[]> {
 export async function updateStopStatus(
   draftId: string | number,
   stopId: string | number,
-  status: TripDraftStopStatus
+  isActive: boolean,
+  overrideNote?: string
 ): Promise<TripDraftStop> {
-  const payload: ToggleStopStatusPayload = { status };
+  const payload: StopUpdateRequestPayload = { isActive, overrideNote };
   const response = await axiosInstance.patch<ApiResponse<TripDraftStop>>(
-    `/api/trip-drafts/${draftId}/stops/${stopId}/status`,
+    `/api/trip-drafts/${draftId}/stops/${stopId}`,
     payload
   );
   return normalizeStop(unwrapApiResponse(response.data));
