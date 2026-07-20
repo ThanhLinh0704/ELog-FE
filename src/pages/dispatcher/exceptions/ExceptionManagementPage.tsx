@@ -423,7 +423,7 @@ const ExceptionManagementPage: React.FC = () => {
         <Breadcrumb
           items={[
             { title: 'Trang chủ' },
-            { title: 'Theo dõi chuyến hàng', href: roles.includes('LOGISTICS_MANAGER') && !roles.includes('DISPATCHER') ? '/manager/monitoring' : '/dispatcher/monitoring' },
+            { title: 'Theo dõi chuyến hàng', href: '/dispatcher/monitoring' },
             { title: 'Quản lý ngoại lệ' },
           ]}
         />

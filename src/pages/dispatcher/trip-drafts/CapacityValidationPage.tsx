@@ -22,6 +22,8 @@ import { ShieldAlert, Scale } from 'lucide-react';
 import AdminShell from '../../../components/AdminShell';
 import { tripDraftApi } from '../../../api/tripDraftApi';
 import type { CapacityValidationResult, IneligibleVehicle } from '../../../types/tripDraft';
+import { usePermissions } from '../../../hooks/usePermissions';
+import { PERMISSIONS } from '../../../constants/permissions';
 
 const { Title, Text, Paragraph } = Typography;
 
@@ -47,15 +49,14 @@ const CapacityValidationPage: React.FC = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const currentUser = getCurrentUser();
+  const { can } = usePermissions();
+  const canValidateCapacity = can(PERMISSIONS.TRIP_CONFIRM);
 
   const [loading, setLoading] = useState(true);
   const [validating, setValidating] = useState(false);
   const [result, setResult] = useState<CapacityValidationResult | null>(null);
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
   const [errorCode, setErrorCode] = useState<string | null>(null);
-
-  const roles = currentUser.roles || [];
-  const isDispatcher = roles.includes('DISPATCHER');
 
   const fetchValidationResult = async (showLoading = true) => {
     if (!id) return;
@@ -88,7 +89,7 @@ const CapacityValidationPage: React.FC = () => {
   }, [id]);
 
   const handleValidate = async () => {
-    if (!id || !isDispatcher) return;
+    if (!id || !canValidateCapacity) return;
     setValidating(true);
     setErrorMsg(null);
     setErrorCode(null);
@@ -379,7 +380,7 @@ const CapacityValidationPage: React.FC = () => {
                   </div>
                 }
               >
-                {isDispatcher ? (
+                {canValidateCapacity ? (
                   <Button
                     type="primary"
                     size="large"
@@ -391,7 +392,7 @@ const CapacityValidationPage: React.FC = () => {
                   </Button>
                 ) : (
                   <Alert
-                    message="Chỉ Điều phối viên (Dispatcher) mới có quyền thực hiện kiểm tra tải trọng."
+                    message="Bạn không có quyền thực hiện kiểm tra tải trọng."
                     type="info"
                     showIcon
                     style={{ display: 'inline-block', textAlign: 'left', borderRadius: 8 }}
@@ -521,7 +522,7 @@ const CapacityValidationPage: React.FC = () => {
                       Tiến hành phân xe
                     </Button>
                   </Tooltip>
-                  {isDispatcher && (
+                  {canValidateCapacity && (
                     <Button size="large" onClick={handleValidate} loading={validating} style={{ borderRadius: 6 }}>
                       Kiểm tra lại
                     </Button>
@@ -632,12 +633,12 @@ const CapacityValidationPage: React.FC = () => {
                   <Button size="large" onClick={() => navigate(`/dispatcher/trip-drafts/${id}`)} style={{ borderRadius: 6 }}>
                     Quay lại xem Trip Draft
                   </Button>
-                  {isDispatcher && (
+                  {canValidateCapacity && (
                     <Button size="large" onClick={handleValidate} loading={validating} style={{ borderRadius: 6 }}>
                       Kiểm tra lại
                     </Button>
                   )}
-                  {isDispatcher && result?.validationPassed && (
+                  {canValidateCapacity && result?.validationPassed && (
                     <Button
                       type="primary"
                       size="large"

@@ -44,8 +44,8 @@ import {
   type TripDraftStopStatus,
 } from '../api/tripDraftApi';
 import { storeApi } from '../api/storeApi';
-import { importApi } from '../api/importApi';
-import { productApi } from '../api/productApi';
+import { usePermissions } from '../hooks/usePermissions';
+import { PERMISSIONS } from '../constants/permissions';
 
 function getCurrentUser() {
   const username = localStorage.getItem('username') || '';
@@ -137,6 +137,9 @@ const TripDraftReviewPage: React.FC = () => {
   const { draftId } = useParams<{ draftId: string }>();
   const navigate = useNavigate();
   const currentUser = getCurrentUser();
+  const { can } = usePermissions();
+  const canEditTrip = can(PERMISSIONS.TRIP_WRITE);
+  const canConfirmTrip = can(PERMISSIONS.TRIP_CONFIRM);
 
   const [draft, setDraft] = useState<TripDraftDetail | null>(null);
   const [loading, setLoading] = useState(true);
@@ -149,7 +152,6 @@ const TripDraftReviewPage: React.FC = () => {
   const [plannedTime, setPlannedTime] = useState<dayjs.Dayjs | null>(dayjs('07:30:00', 'HH:mm:ss'));
 
   // Order Details Modal States
-  const [activeBatchId, setActiveBatchId] = useState<number | null>(null);
   const [detailModalVisible, setDetailModalVisible] = useState(false);
   const [selectedStopForDetail, setSelectedStopForDetail] = useState<TripDraftStop | null>(null);
   const [stopOrderItems, setStopOrderItems] = useState<any[]>([]);
@@ -219,7 +221,7 @@ const TripDraftReviewPage: React.FC = () => {
     [draft]
   );
   const isDraftEditable = draft?.status === 'DRAFT';
-  const actionDisabled = !isDraftEditable || recalculating || confirming;
+  const actionDisabled = !canEditTrip || !isDraftEditable || recalculating || confirming;
 
   async function fetchDraft() {
     if (!draftId) return;
@@ -252,20 +254,6 @@ const TripDraftReviewPage: React.FC = () => {
         console.error("Failed to enrich stops with store details", storeErr);
       }
       
-      // Get the active import batch for this delivery date to look up cached excel rows
-      try {
-        const dateStr = result.deliveryDate;
-        const batchesRes = await importApi.getImportHistory({ deliveryDate: dateStr, page: 0, size: 100 });
-        const activeBatch = batchesRes.content.find((b: any) => b.isActive && b.deliveryDate === dateStr);
-        if (activeBatch) {
-          setActiveBatchId(activeBatch.id);
-        } else if (batchesRes.content.length > 0) {
-          setActiveBatchId(batchesRes.content[0].id);
-        }
-      } catch (batchErr) {
-        console.error("Failed to find active batch for delivery date", batchErr);
-      }
-      
       setDraft(result);
     } catch (err) {
       if (getTripDraftApiStatus(err) === 403) {
@@ -296,7 +284,7 @@ const TripDraftReviewPage: React.FC = () => {
   }, [draft?.plannedDepartureTime]);
 
   async function runRecalculate(currentDraft = draft) {
-    if (!draftId || !currentDraft) return;
+    if (!draftId || !currentDraft || !canEditTrip) return;
 
     setRecalculating(true);
 
@@ -320,7 +308,7 @@ const TripDraftReviewPage: React.FC = () => {
   }
 
   async function handleToggleStop(stop: TripDraftStop) {
-    if (!draftId || !draft) return;
+    if (!draftId || !draft || !canEditTrip) return;
 
     const nextStatus: TripDraftStopStatus = stop.status === 'ACTIVE' ? 'SKIPPED' : 'ACTIVE';
     setToggleStopId(stop.id);
@@ -348,7 +336,7 @@ const TripDraftReviewPage: React.FC = () => {
   }
 
   function handleConfirm() {
-    if (!draftId || !draft) return;
+    if (!draftId || !draft || !canConfirmTrip) return;
 
     modal.confirm({
       title: 'Xác nhận bản nháp chuyến?',
@@ -486,6 +474,10 @@ const TripDraftReviewPage: React.FC = () => {
       render: (_value, record) => {
         const isActive = record.status === 'ACTIVE';
         const label = isActive ? 'Bỏ qua' : 'Kích hoạt';
+
+        if (!canEditTrip) {
+          return <Typography.Text type="secondary">Chỉ xem</Typography.Text>;
+        }
 
         return (
           <Popconfirm
@@ -686,13 +678,14 @@ const TripDraftReviewPage: React.FC = () => {
                         allowClear={false}
                         disabled={!isDraftEditable || confirming}
                         placeholder="Giờ đi"
-                        style={{ width: 100 }}
+                        style={{ width: 100, display: canEditTrip ? undefined : 'none' }}
                       />
                       <Button
                         icon={<RefreshCw size={16} />}
                         loading={recalculating}
                         disabled={!isDraftEditable || confirming}
                         onClick={() => runRecalculate()}
+                        style={{ display: canEditTrip ? undefined : 'none' }}
                       >
                         Tính lại ETA
                       </Button>
@@ -713,6 +706,7 @@ const TripDraftReviewPage: React.FC = () => {
                           recalculating
                         }
                         onClick={handleConfirm}
+                        style={{ display: canConfirmTrip ? undefined : 'none' }}
                       >
                         Xác nhận bản nháp
                       </Button>

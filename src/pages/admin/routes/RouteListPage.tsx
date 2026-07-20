@@ -14,6 +14,8 @@ import { getActivateButtonState } from '../../../utils/routeCalculations';
 import dayjs from 'dayjs';
 import ActivateRouteModal from './components/ActivateRouteModal';
 import DeactivateRouteModal from './components/DeactivateRouteModal';
+import { usePermissions } from '../../../hooks/usePermissions';
+import { PERMISSIONS } from '../../../constants/permissions';
 
 const { Paragraph } = Typography;
 
@@ -33,7 +35,8 @@ const RouteListPage: React.FC = () => {
     console.error('Failed to parse roles', e);
   }
 
-  const isAdmin = roles.includes('SYSTEM_ADMIN');
+  const { can } = usePermissions();
+  const canWriteRoute = can(PERMISSIONS.ROUTE_WRITE);
   const currentUser = {
     id: Number(userId),
     username,
@@ -122,17 +125,27 @@ const RouteListPage: React.FC = () => {
 
   // Status Action triggers
   const handleOpenDeactivate = (route: DeliveryRoute) => {
+    if (!canWriteRoute) {
+      message.warning('Bạn không có quyền vô hiệu hoá tuyến.');
+      return;
+    }
+
     setActionRoute(route);
     setDeactivateVisible(true);
   };
 
   const handleOpenActivate = (route: DeliveryRoute) => {
+    if (!canWriteRoute) {
+      message.warning('Bạn không có quyền kích hoạt tuyến.');
+      return;
+    }
+
     setActionRoute(route);
     setActivateVisible(true);
   };
 
   const handleConfirmDeactivate = async () => {
-    if (!actionRoute) return;
+    if (!actionRoute || !canWriteRoute) return;
     setModalLoading(true);
     try {
       await routeApi.updateStatus(actionRoute.id, 'INACTIVE');
@@ -148,7 +161,7 @@ const RouteListPage: React.FC = () => {
   };
 
   const handleConfirmActivate = async () => {
-    if (!actionRoute) return;
+    if (!actionRoute || !canWriteRoute) return;
     setModalLoading(true);
     try {
       await routeApi.updateStatus(actionRoute.id, 'ACTIVE');
@@ -236,7 +249,7 @@ const RouteListPage: React.FC = () => {
               />
             </Tooltip>
 
-            {isAdmin && (
+            {canWriteRoute && (
               <>
                 <Tooltip title="Chỉnh sửa">
                   <Button
@@ -350,7 +363,7 @@ const RouteListPage: React.FC = () => {
               >
                 Tải lại
               </Button>
-              {isAdmin && (
+              {canWriteRoute && (
                 <Button
                   type="primary"
                   icon={<Plus size={14} />}
@@ -370,7 +383,7 @@ const RouteListPage: React.FC = () => {
               <Empty
                 image={Empty.PRESENTED_IMAGE_SIMPLE}
                 description={
-                  isAdmin ? (
+                  canWriteRoute ? (
                     <div>
                       <Paragraph strong style={{ fontSize: 16, margin: 0 }}>Chưa có tuyến nào.</Paragraph>
                       <Paragraph style={{ color: '#8c8c8c' }}>Hãy tạo tuyến đầu tiên để bắt đầu quản lý.</Paragraph>
@@ -380,7 +393,7 @@ const RouteListPage: React.FC = () => {
                   )
                 }
               >
-                {isAdmin && (
+                {canWriteRoute && (
                   <Button type="primary" icon={<Plus size={14} />} onClick={() => navigate('/admin/routes/new')}>
                     Tạo tuyến
                   </Button>

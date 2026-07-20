@@ -8,13 +8,17 @@ import { ArrowLeft, HelpCircle } from 'lucide-react';
 import AdminShell from '../../../components/AdminShell';
 import { productApi } from '../../../api/productApi';
 import { calculateVolumeM3 } from '../../../utils/productCalculations';
+import { PERMISSIONS } from '../../../constants/permissions';
+import { usePermissions } from '../../../hooks/usePermissions';
 
 const { Paragraph, Text } = Typography;
 
 const ProductFormPage: React.FC = () => {
   const navigate = useNavigate();
   const { productId } = useParams<{ productId: string }>();
+  const { can } = usePermissions();
   const isEditMode = !!productId;
+  const canWriteProduct = can(PERMISSIONS.PRODUCT_WRITE);
 
   // Retrieve current user roles from localStorage
   const username = localStorage.getItem('username') || '';
@@ -29,7 +33,6 @@ const ProductFormPage: React.FC = () => {
     console.error('Failed to parse roles', e);
   }
 
-  const isSystemAdmin = roles.includes('SYSTEM_ADMIN');
   const currentUser = {
     id: Number(userId),
     username,
@@ -128,7 +131,7 @@ const ProductFormPage: React.FC = () => {
   };
 
   // Render 403 page if not authorized
-  if (!isSystemAdmin) {
+  if (!canWriteProduct) {
     return (
       <AdminShell currentUser={currentUser}>
         <Result

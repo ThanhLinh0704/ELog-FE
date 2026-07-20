@@ -38,6 +38,8 @@ import {
 import AdminShell from '../components/AdminShell';
 import { useDebounce } from '../hooks/useDebounce';
 import { storeApi, type StoreItem, type StorePayload } from '../api/storeApi';
+import { usePermissions } from '../hooks/usePermissions';
+import { PERMISSIONS } from '../constants/permissions';
 import { addressApi, type Province, type District, type Ward } from '../api/addressApi';
 
 type FormMode = 'create' | 'edit';
@@ -553,11 +555,10 @@ const StoreFormModal: React.FC<StoreFormModalProps> = ({
 const StoresPage: React.FC = () => {
   const navigate = useNavigate();
   const currentUser = getCurrentUser();
+  const { can } = usePermissions();
 
-  const isAdmin = currentUser.roles.includes('SYSTEM_ADMIN');
-  const canRead = currentUser.roles.some((role) =>
-    ['SYSTEM_ADMIN', 'DISPATCHER', 'LOGISTICS_MANAGER', 'WAREHOUSE_STAFF'].includes(role)
-  );
+  const canRead = can(PERMISSIONS.STORE_READ);
+  const canWriteStore = can(PERMISSIONS.STORE_WRITE);
 
   const [stores, setStores] = useState<StoreItem[]>([]);
   const [statStores, setStatStores] = useState<StoreItem[]>([]);
@@ -673,12 +674,22 @@ const StoresPage: React.FC = () => {
   }
 
   function openCreateModal() {
+    if (!canWriteStore) {
+      message.warning('Bạn không có quyền tạo cửa hàng.');
+      return;
+    }
+
     setFormMode('create');
     setEditingStore(null);
     setFormOpen(true);
   }
 
   async function openEditModal(store: StoreItem) {
+    if (!canWriteStore) {
+      message.warning('Bạn không có quyền chỉnh sửa cửa hàng.');
+      return;
+    }
+
     setFormMode('edit');
 
     try {
@@ -693,6 +704,11 @@ const StoresPage: React.FC = () => {
   }
 
   async function handleSubmit(payload: StorePayload) {
+    if (!canWriteStore) {
+      message.warning('Bạn không có quyền lưu thông tin cửa hàng.');
+      return;
+    }
+
     setSubmitting(true);
 
     try {
@@ -717,6 +733,11 @@ const StoresPage: React.FC = () => {
   }
 
   async function toggleStoreStatus(store: StoreItem) {
+    if (!canWriteStore) {
+      message.warning('Bạn không có quyền cập nhật trạng thái cửa hàng.');
+      return;
+    }
+
     const nextActive = !store.isActive;
     setStatusSubmittingId(store.id);
 
@@ -802,7 +823,7 @@ const StoresPage: React.FC = () => {
       key: 'actions',
       width: 120,
       render: (_: any, record: StoreItem) => {
-        if (!isAdmin) {
+        if (!canWriteStore) {
           return <span style={{ color: '#8c8c8c' }}>Chỉ xem</span>;
         }
 
@@ -889,8 +910,7 @@ const StoresPage: React.FC = () => {
             >
               <Statistic
                 title="Quyền truy cập"
-                value={isAdmin ? 'Admin' : 'Read-only'}
-                suffix={isAdmin ? 'SYSTEM_ADMIN' : 'Chỉ xem'}
+                value={canWriteStore ? 'Có thể chỉnh sửa' : 'Chỉ xem'}
               />
             </Card>
           </Col>
@@ -989,7 +1009,7 @@ const StoresPage: React.FC = () => {
                 Tải lại
               </Button>
 
-              {isAdmin ? (
+              {canWriteStore ? (
                 <Button type="primary" icon={<Plus size={14} />} onClick={openCreateModal}>
                   Thêm cửa hàng
                 </Button>

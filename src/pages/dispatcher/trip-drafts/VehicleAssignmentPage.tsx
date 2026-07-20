@@ -56,6 +56,8 @@ import type {
   FleetCapacityCheck,
   Trip,
 } from '../../../types/trip';
+import { usePermissions } from '../../../hooks/usePermissions';
+import { PERMISSIONS } from '../../../constants/permissions';
 
 const { Title, Text } = Typography;
 
@@ -146,7 +148,8 @@ const VehicleAssignmentPage: React.FC = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const currentUser = getCurrentUser();
-  const isDispatcher = currentUser.roles.includes('DISPATCHER');
+  const { can } = usePermissions();
+  const canCoordinateTrip = can(PERMISSIONS.TRIP_COORDINATE);
 
   // ── State ──────────────────────────────────────────────────────────────────
   const [loading, setLoading] = useState(true);
@@ -398,7 +401,7 @@ const VehicleAssignmentPage: React.FC = () => {
   }
 
   // ── Render: 403 ──────────────────────────────────────────────────────────
-  if (!isDispatcher) {
+  if (!canCoordinateTrip) {
     return (
       <AdminShell currentUser={currentUser}>
         <Result

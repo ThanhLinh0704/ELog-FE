@@ -34,7 +34,7 @@ function getCurrentUser() {
 
 const OrderImportPage: React.FC = () => {
   const currentUser = getCurrentUser();
-  const isDispatcher = canUploadOrders(currentUser.roles);
+  const canImportOrders = canUploadOrders();
   const navigate = useNavigate();
 
   // Loading states
@@ -86,9 +86,7 @@ const OrderImportPage: React.FC = () => {
       const sheetName = workbook.SheetNames[0];
       const sheet = workbook.Sheets[sheetName];
       const rowsJson = XLSX.utils.sheet_to_json<any[]>(sheet, { header: 1 });
-      
-      const headers = (rowsJson[0] || []) as string[];
-      
+
       const orderRefIdx = 0;
       const storeCodeIdx = 1;
       const skuIdx = 2;
@@ -180,7 +178,7 @@ const OrderImportPage: React.FC = () => {
       </div>
 
       {/* Upload Card for Dispatcher, ReadOnly Banner for managers */}
-      {isDispatcher ? (
+      {canImportOrders ? (
         <ImportUploadCard loading={uploadLoading} onUpload={handleUploadInitiated} />
       ) : (
         <ImportReadOnlyBanner />

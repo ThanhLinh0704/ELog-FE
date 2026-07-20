@@ -1,22 +1,11 @@
-export const canUploadOrders = (roles: string[] | string): boolean => {
-  const rolesArr = Array.isArray(roles) ? roles : [roles];
-  return rolesArr.includes("DISPATCHER");
-};
+import { PERMISSIONS } from '../constants/permissions';
+import { hasAnyPermission, hasPermission } from './permissionChecker';
 
-export const canViewImportHistory = (roles: string[] | string): boolean => {
-  const rolesArr = Array.isArray(roles) ? roles : [roles];
-  const allowed = ["DISPATCHER", "LOGISTICS_MANAGER", "SYSTEM_ADMIN"];
-  return rolesArr.some(role => allowed.includes(role));
-};
+export const canUploadOrders = (): boolean => hasPermission(PERMISSIONS.ORDER_IMPORT);
 
-export const canViewTripDrafts = (roles: string[] | string): boolean => {
-  const rolesArr = Array.isArray(roles) ? roles : [roles];
-  const allowed = ["DISPATCHER", "LOGISTICS_MANAGER", "WAREHOUSE_STAFF", "SYSTEM_ADMIN"];
-  return rolesArr.some(role => allowed.includes(role));
-};
+export const canViewImportHistory = (): boolean =>
+  hasAnyPermission([PERMISSIONS.ORDER_IMPORT, PERMISSIONS.TRIP_READ]);
 
-export const canConsolidate = (roles: string[] | string): boolean => {
-  const rolesArr = Array.isArray(roles) ? roles : [roles];
-  const allowed = ["DISPATCHER", "SYSTEM_ADMIN"];
-  return rolesArr.some(role => allowed.includes(role));
-};
+export const canViewTripDrafts = (): boolean => hasPermission(PERMISSIONS.TRIP_READ);
+
+export const canConsolidate = (): boolean => hasPermission(PERMISSIONS.TRIP_WRITE);
