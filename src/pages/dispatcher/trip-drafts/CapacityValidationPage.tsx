@@ -481,25 +481,33 @@ const CapacityValidationPage: React.FC = () => {
                           dataSource={result.ineligibleVehicles}
                           rowKey="vehicleId"
                           pagination={false}
-                          size="small"
+                          size="middle"
                           columns={[
                             {
                               title: 'Biển số',
                               dataIndex: 'plateNumber',
                               key: 'plateNumber',
+                              width: 150,
                               render: (val: string) => <Text strong>{val}</Text>
                             },
                             {
                               title: 'Loại xe',
                               dataIndex: 'vehicleType',
                               key: 'vehicleType',
+                              width: 120,
                               render: (val: string) => <Tag>{val}</Tag>
                             },
                             {
                               title: 'Lý do không đạt',
                               dataIndex: 'failureReason',
                               key: 'failureReason',
-                              render: (val: string) => <Text type="danger" style={{ fontSize: 12 }}>{val || 'Không đủ tải'}</Text>
+                              render: (val: string) => (
+                                <div style={{ padding: '4px 0', lineHeight: '1.6' }}>
+                                  <Text type="danger" style={{ fontSize: 13 }}>
+                                    {val || 'Không đủ tải'}
+                                  </Text>
+                                </div>
+                              )
                             }
                           ]}
                         />
@@ -578,22 +586,25 @@ const CapacityValidationPage: React.FC = () => {
                       dataSource={result.ineligibleVehicles}
                       rowKey="vehicleId"
                       pagination={false}
-                      size="small"
+                      size="middle"
                       columns={[
                         {
                           title: 'Biển số',
                           dataIndex: 'plateNumber',
                           key: 'plateNumber',
+                          width: 120,
                           render: (val: string) => <Text strong>{val}</Text>
                         },
                         {
                           title: 'Loại xe',
                           dataIndex: 'vehicleType',
                           key: 'vehicleType',
+                          width: 100,
                         },
                         {
                           title: 'Giới hạn tối đa',
                           key: 'limits',
+                          width: 180,
                           render: (_, vehicle: IneligibleVehicle) => (
                             <span style={{ fontSize: 13 }}>
                               {formatVolume(vehicle.maxVolumeM3)} m³ / {formatWeight(vehicle.maxWeightKg)} kg
@@ -603,8 +614,9 @@ const CapacityValidationPage: React.FC = () => {
                         {
                           title: 'Kết quả kiểm tra',
                           key: 'results',
+                          width: 180,
                           render: (_, vehicle: IneligibleVehicle) => (
-                            <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
+                            <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
                               <div>m³: {renderConstraintIcon(vehicle.volumeCheckResult)}</div>
                               <div>kg: {renderConstraintIcon(vehicle.weightCheckResult)}</div>
                             </div>
@@ -614,7 +626,11 @@ const CapacityValidationPage: React.FC = () => {
                           title: 'Lý do không đạt',
                           dataIndex: 'failureReason',
                           key: 'failureReason',
-                          render: (val: string) => <Text type="danger" style={{ fontSize: 12 }}>{val}</Text>
+                          render: (val: string) => (
+                            <div style={{ padding: '4px 0', lineHeight: '1.6' }}>
+                              <Text type="danger" style={{ fontSize: 13 }}>{val}</Text>
+                            </div>
+                          )
                         }
                       ]}
                     />
