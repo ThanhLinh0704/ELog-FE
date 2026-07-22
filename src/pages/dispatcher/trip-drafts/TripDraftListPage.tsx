@@ -12,10 +12,12 @@ import {
   Alert, 
   message, 
   Tooltip,
-  Empty
+  Empty,
+  Modal,
+  InputNumber
 } from 'antd';
 import { CalendarOutlined, PlayCircleOutlined, EyeOutlined } from '@ant-design/icons';
-import { Layers, AlertTriangle } from 'lucide-react';
+import { Layers, AlertTriangle, ClipboardList, Search, PackageCheck } from 'lucide-react';
 import dayjs from 'dayjs';
 import AdminShell from '../../../components/AdminShell';
 import { tripDraftApi } from '../../../api/tripDraftApi';
@@ -66,6 +68,8 @@ const TripDraftListPage: React.FC = () => {
   const [page, setPage] = useState(0);
   const [pageSize, setPageSize] = useState(20);
   const [totalElements, setTotalElements] = useState(0);
+  const [isDraftModalOpen, setIsDraftModalOpen] = useState(false);
+  const [draftId, setDraftId] = useState<number | null>(null);
 
   const deliveryDateStr = selectedDate.format('YYYY-MM-DD');
 
@@ -269,6 +273,14 @@ const TripDraftListPage: React.FC = () => {
             />
           </div>
 
+          <Button
+            icon={<ClipboardList size={16} />}
+            onClick={() => setIsDraftModalOpen(true)}
+            style={{ borderRadius: 6, height: 38 }}
+          >
+            Mở bản nháp chuyến
+          </Button>
+
           <Tooltip title={!canRunConsolidate ? "Bạn không có quyền Dispatcher để thực hiện gom đơn" : ""}>
             <Button
               type="primary"
@@ -349,6 +361,64 @@ const TripDraftListPage: React.FC = () => {
           }}
         />
       </Card>
+
+      {/* Modal Mở bản nháp chuyến */}
+      <Modal
+        title={
+          <Space>
+            <ClipboardList size={18} />
+            <span>Mở bản nháp chuyến</span>
+          </Space>
+        }
+        open={isDraftModalOpen}
+        onCancel={() => {
+          setIsDraftModalOpen(false);
+          setDraftId(null);
+        }}
+        footer={null}
+        width={400}
+      >
+        <div style={{ paddingTop: 16 }}>
+          <div style={{ marginBottom: 16 }}>
+            <label style={{ display: 'block', marginBottom: 8, fontWeight: 500 }}>
+              <span style={{ color: '#ff4d4f', marginRight: 4 }}>*</span>
+              ID bản nháp
+            </label>
+            <InputNumber
+              min={1}
+              precision={0}
+              value={draftId || undefined}
+              onChange={(value) => setDraftId(value)}
+              placeholder="Ví dụ: 10"
+              style={{ width: '100%' }}
+            />
+            <div style={{ color: '#8c8c8c', fontSize: 12, marginTop: 4 }}>
+              Nhập ID bản nháp để mở màn kiểm tra.
+            </div>
+          </div>
+          <Space size="middle" style={{ width: '100%', justifyContent: 'flex-end' }}>
+            <Button
+              type="primary"
+              icon={<Search size={16} />}
+              disabled={!draftId}
+              onClick={() => {
+                if (draftId) navigate(`/trip-drafts/${draftId}/review`);
+              }}
+            >
+              Kiểm tra bản nháp
+            </Button>
+            <Button
+              icon={<PackageCheck size={16} />}
+              disabled={!draftId}
+              onClick={() => {
+                if (draftId) navigate(`/trip-drafts/${draftId}/loading-manifest`);
+              }}
+            >
+              LIFO Manifest
+            </Button>
+          </Space>
+        </div>
+      </Modal>
     </AdminShell>
   );
 };

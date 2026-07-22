@@ -20,7 +20,7 @@ import ForbiddenPage from './pages/ForbiddenPage';
 import StoresPage from './pages/StoresPage';
 import VehiclesPage from './pages/VehiclesPage';
 import LifoManifestPage from './pages/LifoManifestPage';
-import TripDraftsPage from './pages/TripDraftsPage';
+
 import TripDraftReviewPage from './pages/TripDraftReviewPage';
 import RoleManagementPage from './pages/RoleManagementPage';
 
@@ -92,14 +92,7 @@ function App() {
           }
         />
 
-        <Route
-          path="/trip-drafts"
-          element={
-            <ProtectedPermissionRoute permission={PERMISSIONS.TRIP_READ}>
-              <TripDraftsPage />
-            </ProtectedPermissionRoute>
-          }
-        />
+
 
         <Route
           path="/trip-drafts/:draftId/review"

@@ -6,7 +6,6 @@ import {
   AlertTriangle,
   Bell,
   ChevronDown,
-  ClipboardList,
   FileSpreadsheet,
   Home,
   Layers,
@@ -188,14 +187,7 @@ const AdminShell: React.FC<AdminShellProps> = ({ currentUser, children }) => {
               onClick: () => navigate('/dispatcher/trip-drafts'),
             }
           : null,
-        canViewTripDraftsMenu
-          ? {
-              key: '/trip-drafts',
-              icon: <ClipboardList size={ICON_SIZE} />,
-              label: 'Lập kế hoạch chuyến',
-              onClick: () => navigate('/trip-drafts'),
-            }
-          : null,
+
         can(PERMISSIONS.ROLE_READ)
           ? {
               key: '/roles',
