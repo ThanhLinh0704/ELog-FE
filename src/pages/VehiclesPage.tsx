@@ -36,6 +36,8 @@ import {
 } from 'lucide-react';
 import AdminShell from '../components/AdminShell';
 import { useDebounce } from '../hooks/useDebounce';
+import { usePermissions } from '../hooks/usePermissions';
+import { PERMISSIONS } from '../constants/permissions';
 import {
   getVehicleApiErrorMessage,
   getVehicleApiStatus,
@@ -106,10 +108,23 @@ function getApiFieldErrors(err: any): Record<string, string> {
 
 function mapVehicleFieldName(field: string) {
   const fieldMap: Record<string, string> = {
+    vehicle_code: 'vehicleCode',
     plate_number: 'plateNumber',
     vehicle_type: 'vehicleType',
-    max_weight_kg: 'maxWeightKg',
+    vehicle_class: 'vehicleClass',
+    payload_kg: 'payloadKg',
+    gross_vehicle_weight_kg: 'grossVehicleWeightKg',
+    required_license: 'requiredLicense',
     max_volume_m3: 'maxVolumeM3',
+    cargo_length_mm: 'cargoLengthMm',
+    cargo_width_mm: 'cargoWidthMm',
+    cargo_height_mm: 'cargoHeightMm',
+    average_speed_kmh: 'averageSpeedKmh',
+    cost_per_km: 'costPerKm',
+    status: 'status',
+    image_url: 'imageUrl',
+    permit_info: 'permitInfo',
+    description: 'description',
   };
 
   return fieldMap[field] || field;
@@ -155,24 +170,51 @@ const VehicleFormModal: React.FC<VehicleFormModalProps> = ({
 
     if (isEdit && vehicle) {
       form.setFieldsValue({
+        vehicleCode: vehicle.vehicleCode,
         plateNumber: vehicle.plateNumber,
         vehicleType: vehicle.vehicleType,
-        maxWeightKg: vehicle.maxWeightKg,
+        vehicleClass: vehicle.vehicleClass,
+        payloadKg: vehicle.payloadKg,
+        grossVehicleWeightKg: vehicle.grossVehicleWeightKg,
+        requiredLicense: vehicle.requiredLicense,
         maxVolumeM3: vehicle.maxVolumeM3,
+        cargoLengthMm: vehicle.cargoLengthMm,
+        cargoWidthMm: vehicle.cargoWidthMm,
+        cargoHeightMm: vehicle.cargoHeightMm,
+        averageSpeedKmh: vehicle.averageSpeedKmh,
+        costPerKm: vehicle.costPerKm,
+        status: vehicle.status,
+        imageUrl: vehicle.imageUrl,
+        permitInfo: vehicle.permitInfo ? (typeof vehicle.permitInfo === 'object' ? JSON.stringify(vehicle.permitInfo) : vehicle.permitInfo) : null,
+        description: vehicle.description,
       });
     } else {
       form.resetFields();
+      form.setFieldsValue({ status: 'AVAILABLE', requiredLicense: 'B' });
     }
   }, [open, isEdit, vehicle, form]);
 
   async function handleFinish(values: any) {
     const payload: VehiclePayload = {
       vehicleType: values.vehicleType?.trim(),
-      maxWeightKg: Number(values.maxWeightKg),
+      payloadKg: Number(values.payloadKg),
       maxVolumeM3: Number(values.maxVolumeM3),
+      requiredLicense: values.requiredLicense,
+      vehicleClass: values.vehicleClass?.trim() || null,
+      grossVehicleWeightKg: values.grossVehicleWeightKg != null ? Number(values.grossVehicleWeightKg) : null,
+      cargoLengthMm: values.cargoLengthMm != null ? Number(values.cargoLengthMm) : null,
+      cargoWidthMm: values.cargoWidthMm != null ? Number(values.cargoWidthMm) : null,
+      cargoHeightMm: values.cargoHeightMm != null ? Number(values.cargoHeightMm) : null,
+      averageSpeedKmh: values.averageSpeedKmh != null ? Number(values.averageSpeedKmh) : null,
+      costPerKm: values.costPerKm != null ? Number(values.costPerKm) : null,
+      status: values.status,
+      imageUrl: values.imageUrl?.trim() || null,
+      permitInfo: values.permitInfo?.trim() || null,
+      description: values.description?.trim() || null,
     };
 
     if (!isEdit) {
+      payload.vehicleCode = values.vehicleCode?.trim();
       payload.plateNumber = values.plateNumber?.trim()?.toUpperCase();
     }
 
@@ -195,13 +237,19 @@ const VehicleFormModal: React.FC<VehicleFormModalProps> = ({
         return;
       }
 
-      if (getVehicleApiStatus(err) === 409) {
+      const status = getVehicleApiStatus(err);
+      if (status === 409 || apiMessage.includes('VEHICLE_CODE_DUPLICATE')) {
         form.setFields([
           {
-            name: 'plateNumber',
-            errors: [apiMessage || 'Biển số xe đã tồn tại.'],
+            name: 'vehicleCode',
+            errors: ['Mã xe đã tồn tại.'],
           },
         ]);
+        return;
+      }
+
+      if (apiMessage.includes('INVALID_CAPACITY_RATIO') || status === 422) {
+        message.error('Tỷ lệ tải trọng và thể tích của xe nằm ngoài phạm vi an toàn.');
         return;
       }
 
@@ -215,85 +263,206 @@ const VehicleFormModal: React.FC<VehicleFormModalProps> = ({
       open={open}
       onCancel={onCancel}
       footer={null}
-      width={720}
+      width={800}
       destroyOnHidden
     >
       <Form form={form} layout="vertical" onFinish={handleFinish}>
-        <Form.Item
-          label="Biển số"
-          name="plateNumber"
-          getValueFromEvent={(event) => event.target.value?.toUpperCase()}
-          rules={[
-            { required: true, message: 'Vui lòng nhập biển số xe.' },
-            { max: 30, message: 'Biển số không quá 30 ký tự.' },
-            {
-              pattern: /^\d{2}[A-Z]-\d{4,5}$/,
-              message: 'Biển số không đúng định dạng. Ví dụ: 51B-67890',
-            },
-          ]}
-        >
-          <Input placeholder="VD: 51B-67890" readOnly={isEdit} />
-        </Form.Item>
-
-        <Form.Item
-          label="Loại xe"
-          name="vehicleType"
-          tooltip="Có thể nhập tự do, ví dụ: Xe tải nhỏ / Xe tải trung / Xe tải lớn"
-          rules={[
-            { required: true, message: 'Vui lòng nhập loại xe.' },
-            { max: 100, message: 'Loại xe không quá 100 ký tự.' },
-          ]}
-        >
-          <Input placeholder="VD: Xe tải nhỏ / Xe tải trung / Xe tải lớn" />
-        </Form.Item>
+        <Row gutter={16}>
+          <Col xs={24} md={12}>
+            <Form.Item
+              label="Mã xe"
+              name="vehicleCode"
+              rules={[
+                { required: true, message: 'Vui lòng nhập mã xe.' },
+                { max: 50, message: 'Mã xe không quá 50 ký tự.' },
+              ]}
+            >
+              <Input placeholder="VD: XE001" disabled={isEdit} />
+            </Form.Item>
+          </Col>
+          <Col xs={24} md={12}>
+            <Form.Item
+              label="Biển số"
+              name="plateNumber"
+              getValueFromEvent={(event) => event.target.value?.toUpperCase()}
+              rules={[
+                { required: true, message: 'Vui lòng nhập biển số xe.' },
+                { max: 30, message: 'Biển số không quá 30 ký tự.' },
+                {
+                  pattern: /^[A-Za-z0-9]+(-[A-Za-z0-9]+)*$/,
+                  message: 'Biển số không đúng định dạng. Ví dụ: 29H-12001',
+                },
+              ]}
+            >
+              <Input placeholder="VD: 29H-12001" disabled={isEdit} />
+            </Form.Item>
+          </Col>
+        </Row>
 
         <Row gutter={16}>
           <Col xs={24} md={12}>
             <Form.Item
-              label="Tải trọng tối đa (kg)"
-              name="maxWeightKg"
-              extra="Nhập theo số liệu trên giấy phép lưu thông"
+              label="Loại xe"
+              name="vehicleType"
               rules={[
-                { required: true, message: 'Vui lòng nhập tải trọng tối đa.' },
-                {
-                  type: 'number',
-                  min: 0.01,
-                  message: 'Tải trọng phải lớn hơn 0.',
-                },
+                { required: true, message: 'Vui lòng nhập loại xe.' },
+                { max: 100, message: 'Loại xe không quá 100 ký tự.' },
               ]}
             >
-              <InputNumber
-                style={{ width: '100%' }}
-                min={0.01}
-                precision={0}
-                placeholder="VD: 2500"
-              />
+              <Input placeholder="VD: Xe tải nhỏ / Xe tải trung / Xe tải lớn" />
             </Form.Item>
           </Col>
-
           <Col xs={24} md={12}>
             <Form.Item
-              label="Thể tích tối đa (m³)"
-              name="maxVolumeM3"
-              extra="Đo khoang hàng thực tế: dài × rộng × cao"
-              rules={[
-                { required: true, message: 'Vui lòng nhập thể tích tối đa.' },
-                {
-                  type: 'number',
-                  min: 0.01,
-                  message: 'Thể tích phải lớn hơn 0.',
-                },
-              ]}
+              label="Phân khúc xe"
+              name="vehicleClass"
+              rules={[{ max: 20, message: 'Phân khúc xe không quá 20 ký tự.' }]}
             >
-              <InputNumber
-                style={{ width: '100%' }}
-                min={0.01}
-                precision={2}
-                placeholder="VD: 12.5"
-              />
+              <Input placeholder="VD: 1.25T / 2.5T / 5T" />
             </Form.Item>
           </Col>
         </Row>
+
+        <Row gutter={16}>
+          <Col xs={24} md={8}>
+            <Form.Item
+              label="Tải hàng cho phép (kg)"
+              name="payloadKg"
+              rules={[
+                { required: true, message: 'Vui lòng nhập tải hàng cho phép.' },
+                { type: 'number', min: 0.01, message: 'Tải trọng phải lớn hơn 0.' },
+              ]}
+            >
+              <InputNumber style={{ width: '100%' }} min={0.01} precision={0} placeholder="VD: 1250" />
+            </Form.Item>
+          </Col>
+          <Col xs={24} md={8}>
+            <Form.Item
+              label="Khối lượng toàn bộ (kg)"
+              name="grossVehicleWeightKg"
+              rules={[{ type: 'number', min: 0.01, message: 'Khối lượng toàn bộ phải lớn hơn 0.' }]}
+            >
+              <InputNumber style={{ width: '100%' }} min={0.01} precision={0} placeholder="VD: 3490" />
+            </Form.Item>
+          </Col>
+          <Col xs={24} md={8}>
+            <Form.Item
+              label="Hạng bằng yêu cầu"
+              name="requiredLicense"
+              rules={[{ required: true, message: 'Vui lòng chọn hạng bằng.' }]}
+            >
+              <Select placeholder="Chọn hạng bằng">
+                <Select.Option value="B">Hạng B</Select.Option>
+                <Select.Option value="C1">Hạng C1</Select.Option>
+                <Select.Option value="C">Hạng C</Select.Option>
+              </Select>
+            </Form.Item>
+          </Col>
+        </Row>
+
+        <Row gutter={16}>
+          <Col xs={24} md={6}>
+            <Form.Item
+              label="Thể tích tối đa (m³)"
+              name="maxVolumeM3"
+              rules={[
+                { required: true, message: 'Vui lòng nhập thể tích tối đa.' },
+                { type: 'number', min: 0.01, message: 'Thể tích phải lớn hơn 0.' },
+              ]}
+            >
+              <InputNumber style={{ width: '100%' }} min={0.01} precision={3} placeholder="VD: 8.0" />
+            </Form.Item>
+          </Col>
+          <Col xs={24} md={6}>
+            <Form.Item
+              label="Dài lòng thùng (mm)"
+              name="cargoLengthMm"
+              rules={[{ type: 'number', min: 1, message: 'Chiều dài phải lớn hơn 0.' }]}
+            >
+              <InputNumber style={{ width: '100%' }} min={1} precision={0} placeholder="VD: 3100" />
+            </Form.Item>
+          </Col>
+          <Col xs={24} md={6}>
+            <Form.Item
+              label="Rộng lòng thùng (mm)"
+              name="cargoWidthMm"
+              rules={[{ type: 'number', min: 1, message: 'Chiều rộng phải lớn hơn 0.' }]}
+            >
+              <InputNumber style={{ width: '100%' }} min={1} precision={0} placeholder="VD: 1700" />
+            </Form.Item>
+          </Col>
+          <Col xs={24} md={6}>
+            <Form.Item
+              label="Cao lòng thùng (mm)"
+              name="cargoHeightMm"
+              rules={[{ type: 'number', min: 1, message: 'Chiều cao phải lớn hơn 0.' }]}
+            >
+              <InputNumber style={{ width: '100%' }} min={1} precision={0} placeholder="VD: 1500" />
+            </Form.Item>
+          </Col>
+        </Row>
+
+        <Row gutter={16}>
+          <Col xs={24} md={8}>
+            <Form.Item
+              label="Tốc độ trung bình (km/h)"
+              name="averageSpeedKmh"
+              rules={[{ type: 'number', min: 0.01, message: 'Tốc độ phải lớn hơn 0.' }]}
+            >
+              <InputNumber style={{ width: '100%' }} min={0.01} precision={2} placeholder="VD: 38.0" />
+            </Form.Item>
+          </Col>
+          <Col xs={24} md={8}>
+            <Form.Item
+              label="Chi phí mỗi km (VND)"
+              name="costPerKm"
+              rules={[{ type: 'number', min: 0.01, message: 'Chi phí phải lớn hơn 0.' }]}
+            >
+              <InputNumber style={{ width: '100%' }} min={0.01} precision={2} placeholder="VD: 12000" />
+            </Form.Item>
+          </Col>
+          <Col xs={24} md={8}>
+            <Form.Item
+              label="Trạng thái xe"
+              name="status"
+              rules={[{ required: true, message: 'Vui lòng chọn trạng thái.' }]}
+            >
+              <Select placeholder="Chọn trạng thái">
+                <Select.Option value="AVAILABLE">Sẵn sàng (Available)</Select.Option>
+                <Select.Option value="IN_USE">Đang sử dụng (In use)</Select.Option>
+                <Select.Option value="MAINTENANCE">Bảo dưỡng (Maintenance)</Select.Option>
+                <Select.Option value="OUT_OF_SERVICE">Ngừng hoạt động (Out of service)</Select.Option>
+              </Select>
+            </Form.Item>
+          </Col>
+        </Row>
+
+        <Row gutter={16}>
+          <Col xs={24} md={12}>
+            <Form.Item
+              label="Đường dẫn ảnh xe (URL)"
+              name="imageUrl"
+              rules={[{ max: 512, message: 'Đường dẫn ảnh không quá 512 ký tự.' }]}
+            >
+              <Input placeholder="VD: /images/vehicles/truck.png" />
+            </Form.Item>
+          </Col>
+          <Col xs={24} md={12}>
+            <Form.Item
+              label="Thông tin giấy phép (JSON)"
+              name="permitInfo"
+            >
+              <Input placeholder='VD: {"insuranceExpiry":"2027-01-18"}' />
+            </Form.Item>
+          </Col>
+        </Row>
+
+        <Form.Item
+          label="Mô tả chi tiết"
+          name="description"
+        >
+          <Input.TextArea placeholder="Mô tả đặc điểm xe hoặc thông tin lưu ý..." rows={3} />
+        </Form.Item>
 
         <div style={{ display: 'flex', justifyContent: 'flex-end', gap: 10, flexWrap: 'wrap' }}>
           <Button onClick={onCancel}>Huỷ</Button>
@@ -309,11 +478,10 @@ const VehicleFormModal: React.FC<VehicleFormModalProps> = ({
 const VehiclesPage: React.FC = () => {
   const navigate = useNavigate();
   const currentUser = getCurrentUser();
+  const { can } = usePermissions();
 
-  const isAdmin = currentUser.roles.includes('SYSTEM_ADMIN');
-  const canRead = currentUser.roles.some((role) =>
-    ['SYSTEM_ADMIN', 'DISPATCHER', 'LOGISTICS_MANAGER'].includes(role)
-  );
+  const canReadVehicle = can(PERMISSIONS.VEHICLE_READ);
+  const canWriteVehicle = can(PERMISSIONS.VEHICLE_WRITE);
 
   const [vehicles, setVehicles] = useState<VehicleItem[]>([]);
   const [fleetCapacity, setFleetCapacity] = useState<FleetCapacity>({
@@ -386,18 +554,18 @@ const VehiclesPage: React.FC = () => {
   }
 
   useEffect(() => {
-    if (!canRead) {
+    if (!canReadVehicle) {
       navigate('/dashboard');
       return;
     }
 
     fetchVehicles(queryParams);
-  }, [canRead, navigate, queryParams]);
+  }, [canReadVehicle, navigate, queryParams]);
 
   useEffect(() => {
-    if (!canRead) return;
+    if (!canReadVehicle) return;
     fetchFleetCapacity();
-  }, [canRead]);
+  }, [canReadVehicle]);
 
   function resetToFirstPage(setter: (value: string) => void, value: string) {
     setter(value);
@@ -405,12 +573,22 @@ const VehiclesPage: React.FC = () => {
   }
 
   function openCreateModal() {
+    if (!canWriteVehicle) {
+      message.warning('Bạn không có quyền đăng ký xe.');
+      return;
+    }
+
     setFormMode('create');
     setEditingVehicle(null);
     setFormOpen(true);
   }
 
   async function openEditModal(vehicle: VehicleItem) {
+    if (!canWriteVehicle) {
+      message.warning('Bạn không có quyền chỉnh sửa xe.');
+      return;
+    }
+
     setFormMode('edit');
 
     try {
@@ -435,6 +613,11 @@ const VehiclesPage: React.FC = () => {
   }
 
   async function handleSubmit(payload: VehiclePayload) {
+    if (!canWriteVehicle) {
+      message.warning('Bạn không có quyền lưu thông tin xe.');
+      return;
+    }
+
     setSubmitting(true);
 
     try {
@@ -461,6 +644,11 @@ const VehiclesPage: React.FC = () => {
   }
 
   async function toggleVehicleStatus(vehicle: VehicleItem) {
+    if (!canWriteVehicle) {
+      message.warning('Bạn không có quyền cập nhật trạng thái xe.');
+      return;
+    }
+
     const nextActive = !vehicle.isActive;
     setBlockedVehicleMessage('');
     setStatusSubmittingId(vehicle.id);
@@ -518,9 +706,9 @@ const VehiclesPage: React.FC = () => {
       ),
     },
     {
-      title: 'Tải trọng tối đa',
-      dataIndex: 'maxWeightKg',
-      key: 'maxWeightKg',
+      title: 'Tải hàng cho phép',
+      dataIndex: 'payloadKg',
+      key: 'payloadKg',
       width: 170,
       render: (value: number) => `${formatNumber(value)} kg`,
     },
@@ -542,7 +730,7 @@ const VehiclesPage: React.FC = () => {
       key: 'actions',
       width: 150,
       render: (_: any, record) => {
-        if (!isAdmin) {
+        if (!canWriteVehicle) {
           return (
             <Button
               type="text"
@@ -719,7 +907,7 @@ const VehiclesPage: React.FC = () => {
                 Tải lại
               </Button>
 
-              {isAdmin ? (
+              {canWriteVehicle ? (
                 <Button type="primary" icon={<Plus size={14} />} onClick={openCreateModal}>
                   Đăng ký xe
                 </Button>
@@ -781,7 +969,7 @@ const VehiclesPage: React.FC = () => {
             <Button key="close" onClick={() => setDetailVehicle(null)}>
               Đóng
             </Button>,
-            isAdmin ? (
+            canWriteVehicle ? (
               <Button
                 key="edit"
                 type="primary"
@@ -798,27 +986,56 @@ const VehiclesPage: React.FC = () => {
         >
           {detailVehicle ? (
             <Space direction="vertical" size="large" style={{ width: '100%' }}>
-              <Descriptions bordered column={1} size="small">
+              <Descriptions bordered column={2} size="small">
+                <Descriptions.Item label="Mã xe">
+                  <Typography.Text strong>{detailVehicle.vehicleCode}</Typography.Text>
+                </Descriptions.Item>
                 <Descriptions.Item label="Biển số">
                   <Typography.Text strong>{detailVehicle.plateNumber}</Typography.Text>
                 </Descriptions.Item>
                 <Descriptions.Item label="Loại xe">
                   {detailVehicle.vehicleType}
                 </Descriptions.Item>
-                <Descriptions.Item label="Tải trọng tối đa">
-                  {formatNumber(detailVehicle.maxWeightKg)} kg
+                <Descriptions.Item label="Phân khúc xe">
+                  {detailVehicle.vehicleClass || '—'}
+                </Descriptions.Item>
+                <Descriptions.Item label="Tải hàng cho phép">
+                  {formatNumber(detailVehicle.payloadKg)} kg
+                </Descriptions.Item>
+                <Descriptions.Item label="Khối lượng toàn bộ">
+                  {detailVehicle.grossVehicleWeightKg ? `${formatNumber(detailVehicle.grossVehicleWeightKg)} kg` : '—'}
                 </Descriptions.Item>
                 <Descriptions.Item label="Thể tích tối đa">
                   {formatNumber(detailVehicle.maxVolumeM3, 2)} m³
                 </Descriptions.Item>
+                <Descriptions.Item label="Hạng bằng yêu cầu">
+                  Hạng {detailVehicle.requiredLicense}
+                </Descriptions.Item>
+                <Descriptions.Item label="Kích thước thùng xe (dài × rộng × cao)">
+                  {detailVehicle.cargoLengthMm && detailVehicle.cargoWidthMm && detailVehicle.cargoHeightMm
+                    ? `${detailVehicle.cargoLengthMm} × ${detailVehicle.cargoWidthMm} × ${detailVehicle.cargoHeightMm} mm`
+                    : '—'}
+                </Descriptions.Item>
+                <Descriptions.Item label="Tốc độ trung bình">
+                  {detailVehicle.averageSpeedKmh ? `${detailVehicle.averageSpeedKmh} km/h` : '—'}
+                </Descriptions.Item>
+                <Descriptions.Item label="Chi phí mỗi km">
+                  {detailVehicle.costPerKm ? `${formatNumber(detailVehicle.costPerKm)} VND/km` : '—'}
+                </Descriptions.Item>
                 <Descriptions.Item label="Trạng thái">
+                  <span style={{ fontWeight: 600 }}>{detailVehicle.status}</span>
+                </Descriptions.Item>
+                <Descriptions.Item label="Hoạt động hệ thống">
                   <VehicleStatusBadge active={detailVehicle.isActive} />
                 </Descriptions.Item>
-                <Descriptions.Item label="Ngày tạo">
-                  {detailVehicle.createdAt || '—'}
+                <Descriptions.Item label="Ảnh xe (URL)">
+                  {detailVehicle.imageUrl || '—'}
                 </Descriptions.Item>
-                <Descriptions.Item label="Cập nhật cuối">
-                  {detailVehicle.updatedAt || '—'}
+                <Descriptions.Item label="Giấy phép (JSON)" span={2}>
+                  {detailVehicle.permitInfo || '—'}
+                </Descriptions.Item>
+                <Descriptions.Item label="Mô tả chi tiết" span={2}>
+                  {detailVehicle.description || '—'}
                 </Descriptions.Item>
               </Descriptions>
 

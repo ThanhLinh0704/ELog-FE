@@ -4,10 +4,23 @@ import { mockVehicleApi } from '../mocks/mockVehicles';
 
 export interface VehicleItem {
   id: number;
+  vehicleCode: string;
   plateNumber: string;
   vehicleType: string;
-  maxWeightKg: number;
+  vehicleClass?: string | null;
+  payloadKg: number;
+  grossVehicleWeightKg?: number | null;
+  requiredLicense: 'B' | 'C1' | 'C';
   maxVolumeM3: number;
+  cargoLengthMm?: number | null;
+  cargoWidthMm?: number | null;
+  cargoHeightMm?: number | null;
+  averageSpeedKmh?: number | null;
+  costPerKm?: number | null;
+  status: 'AVAILABLE' | 'IN_USE' | 'MAINTENANCE' | 'OUT_OF_SERVICE';
+  imageUrl?: string | null;
+  permitInfo?: string | null;
+  description?: string | null;
   isActive: boolean;
   createdAt?: string | null;
   updatedAt?: string | null;
@@ -30,10 +43,23 @@ export interface VehicleQueryParams {
 }
 
 export interface VehiclePayload {
+  vehicleCode?: string;
   plateNumber?: string;
   vehicleType: string;
-  maxWeightKg: number;
+  vehicleClass?: string | null;
+  payloadKg: number;
+  grossVehicleWeightKg?: number | null;
+  requiredLicense: 'B' | 'C1' | 'C';
   maxVolumeM3: number;
+  cargoLengthMm?: number | null;
+  cargoWidthMm?: number | null;
+  cargoHeightMm?: number | null;
+  averageSpeedKmh?: number | null;
+  costPerKm?: number | null;
+  status?: 'AVAILABLE' | 'IN_USE' | 'MAINTENANCE' | 'OUT_OF_SERVICE';
+  imageUrl?: string | null;
+  permitInfo?: string | null;
+  description?: string | null;
 }
 
 export interface FleetCapacity {
@@ -105,10 +131,23 @@ function normalizeVehicle(raw: any): VehicleItem {
   return {
     ...raw,
     id: Number(raw.id ?? raw.vehicleId ?? raw.vehicle_id ?? 0),
+    vehicleCode: raw.vehicleCode ?? raw.vehicle_code ?? '',
     plateNumber: raw.plateNumber ?? raw.plate_number ?? '',
     vehicleType: raw.vehicleType ?? raw.vehicle_type ?? '',
-    maxWeightKg: Number(raw.maxWeightKg ?? raw.max_weight_kg ?? raw.maxWeight ?? 0),
+    vehicleClass: raw.vehicleClass ?? raw.vehicle_class ?? null,
+    payloadKg: Number(raw.payloadKg ?? raw.payload_kg ?? 0),
+    grossVehicleWeightKg: raw.grossVehicleWeightKg != null ? Number(raw.grossVehicleWeightKg) : null,
+    requiredLicense: raw.requiredLicense ?? 'B',
     maxVolumeM3: Number(raw.maxVolumeM3 ?? raw.max_volume_m3 ?? raw.maxVolume ?? 0),
+    cargoLengthMm: raw.cargoLengthMm != null ? Number(raw.cargoLengthMm) : null,
+    cargoWidthMm: raw.cargoWidthMm != null ? Number(raw.cargoWidthMm) : null,
+    cargoHeightMm: raw.cargoHeightMm != null ? Number(raw.cargoHeightMm) : null,
+    averageSpeedKmh: raw.averageSpeedKmh != null ? Number(raw.averageSpeedKmh) : null,
+    costPerKm: raw.costPerKm != null ? Number(raw.costPerKm) : null,
+    status: raw.status ?? 'AVAILABLE',
+    imageUrl: raw.imageUrl ?? raw.image_url ?? null,
+    permitInfo: raw.permitInfo ?? raw.permit_info ?? null,
+    description: raw.description ?? null,
     isActive: raw.isActive ?? raw.is_active ?? true,
     createdAt: raw.createdAt ?? raw.created_at ?? null,
     updatedAt: raw.updatedAt ?? raw.updated_at ?? null,
@@ -269,17 +308,30 @@ export const vehicleApi = {
 
   async createVehicle(payload: VehiclePayload): Promise<VehicleItem> {
     if (USE_MOCK_API) {
-      return mockVehicleApi.createVehicle(payload);
+      return mockVehicleApi.createVehicle(payload as any);
     }
 
     const data = await handleAxiosCall<any>(() =>
       axiosInstance.post(
         '/api/vehicles',
         cleanPayload({
+          vehicleCode: payload.vehicleCode?.trim(),
           plateNumber: payload.plateNumber?.trim().toUpperCase(),
           vehicleType: payload.vehicleType?.trim(),
-          maxWeightKg: payload.maxWeightKg,
+          vehicleClass: payload.vehicleClass?.trim() || null,
+          payloadKg: payload.payloadKg,
+          grossVehicleWeightKg: payload.grossVehicleWeightKg,
+          requiredLicense: payload.requiredLicense,
           maxVolumeM3: payload.maxVolumeM3,
+          cargoLengthMm: payload.cargoLengthMm,
+          cargoWidthMm: payload.cargoWidthMm,
+          cargoHeightMm: payload.cargoHeightMm,
+          averageSpeedKmh: payload.averageSpeedKmh,
+          costPerKm: payload.costPerKm,
+          status: payload.status,
+          imageUrl: payload.imageUrl?.trim() || null,
+          permitInfo: payload.permitInfo?.trim() || null,
+          description: payload.description?.trim() || null,
         })
       )
     );
@@ -289,7 +341,7 @@ export const vehicleApi = {
 
   async updateVehicle(id: number, payload: VehiclePayload): Promise<VehicleItem> {
     if (USE_MOCK_API) {
-      return mockVehicleApi.updateVehicle(id, payload);
+      return mockVehicleApi.updateVehicle(id, payload as any);
     }
 
     const data = await handleAxiosCall<any>(() =>
@@ -297,8 +349,20 @@ export const vehicleApi = {
         `/api/vehicles/${id}`,
         cleanPayload({
           vehicleType: payload.vehicleType?.trim(),
-          maxWeightKg: payload.maxWeightKg,
+          vehicleClass: payload.vehicleClass?.trim() || null,
+          payloadKg: payload.payloadKg,
+          grossVehicleWeightKg: payload.grossVehicleWeightKg,
+          requiredLicense: payload.requiredLicense,
           maxVolumeM3: payload.maxVolumeM3,
+          cargoLengthMm: payload.cargoLengthMm,
+          cargoWidthMm: payload.cargoWidthMm,
+          cargoHeightMm: payload.cargoHeightMm,
+          averageSpeedKmh: payload.averageSpeedKmh,
+          costPerKm: payload.costPerKm,
+          status: payload.status,
+          imageUrl: payload.imageUrl?.trim() || null,
+          permitInfo: payload.permitInfo?.trim() || null,
+          description: payload.description?.trim() || null,
         })
       )
     );

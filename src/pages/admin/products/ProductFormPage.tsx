@@ -2,19 +2,23 @@ import React, { useEffect, useState } from 'react';
 import { useNavigate, useParams, Link } from 'react-router-dom';
 import {
   Form, Input, InputNumber, Button, Card, Row, Col, Breadcrumb,
-  Result, Typography, message, Spin
+  Result, Typography, message, Spin, Switch, Select, Space
 } from 'antd';
 import { ArrowLeft, HelpCircle } from 'lucide-react';
 import AdminShell from '../../../components/AdminShell';
 import { productApi } from '../../../api/productApi';
 import { calculateVolumeM3 } from '../../../utils/productCalculations';
+import { PERMISSIONS } from '../../../constants/permissions';
+import { usePermissions } from '../../../hooks/usePermissions';
 
 const { Paragraph, Text } = Typography;
 
 const ProductFormPage: React.FC = () => {
   const navigate = useNavigate();
   const { productId } = useParams<{ productId: string }>();
+  const { can } = usePermissions();
   const isEditMode = !!productId;
+  const canWriteProduct = can(PERMISSIONS.PRODUCT_WRITE);
 
   // Retrieve current user roles from localStorage
   const username = localStorage.getItem('username') || '';
@@ -29,7 +33,6 @@ const ProductFormPage: React.FC = () => {
     console.error('Failed to parse roles', e);
   }
 
-  const isSystemAdmin = roles.includes('SYSTEM_ADMIN');
   const currentUser = {
     id: Number(userId),
     username,
@@ -65,6 +68,10 @@ const ProductFormPage: React.FC = () => {
             widthM: product.widthM,
             heightM: product.heightM,
             weightKg: product.weightKg,
+            shape: product.shape,
+            isFragile: product.isFragile,
+            packageImageUrl: product.packageImageUrl,
+            description: product.description,
           });
         } catch (err: any) {
           setLoadError(err.message === '404' ? 'Không tìm thấy sản phẩm yêu cầu.' : 'Không thể tải dữ liệu sản phẩm.');
@@ -90,6 +97,10 @@ const ProductFormPage: React.FC = () => {
         widthM: values.widthM,
         heightM: values.heightM,
         weightKg: values.weightKg,
+        shape: values.shape || null,
+        isFragile: !!values.isFragile,
+        packageImageUrl: values.packageImageUrl?.trim() || null,
+        description: values.description?.trim() || null,
       };
 
       if (isEditMode && productId) {
@@ -120,7 +131,7 @@ const ProductFormPage: React.FC = () => {
   };
 
   // Render 403 page if not authorized
-  if (!isSystemAdmin) {
+  if (!canWriteProduct) {
     return (
       <AdminShell currentUser={currentUser}>
         <Result
@@ -201,73 +212,123 @@ const ProductFormPage: React.FC = () => {
             onFinish={handleSubmit}
             scrollToFirstError
             requiredMark={false}
+            initialValues={{ isFragile: false }}
           >
             <Row gutter={[24, 24]}>
-              {/* Left Column: Basic Info */}
+              {/* Left Column: Basic Info & Packaging */}
               <Col xs={24} lg={12}>
-                <Card
-                  title="Thông tin cơ bản"
-                  bordered={false}
-                  style={{ height: '100%', boxShadow: '0 1px 2px 0 rgba(0, 0, 0, 0.03)' }}
-                >
-                  {/* SKU input */}
-                  <Form.Item
-                    label={
-                      <span style={{ fontWeight: 600, color: '#475569' }}>
-                        SKU <span style={{ color: '#ff4d4f' }}>*</span>
-                      </span>
-                    }
-                    name="sku"
-                    rules={[
-                      { required: true, message: 'Vui lòng nhập SKU' },
-                      {
-                        validator: (_, value) => {
-                          if (value && value.trim().length === 0) {
-                            return Promise.reject(new Error('SKU không thể chỉ chứa khoảng trắng'));
-                          }
-                          return Promise.resolve();
-                        }
-                      }
-                    ]}
+                <Space direction="vertical" size={24} style={{ width: '100%' }}>
+                  <Card
+                    title="Thông tin cơ bản"
+                    bordered={false}
+                    style={{ boxShadow: '0 1px 2px 0 rgba(0, 0, 0, 0.03)' }}
                   >
-                    <Input
-                      placeholder="Ví dụ: TV-SAM-55"
-                      disabled={isEditMode || submitting}
-                      onChange={(e) => {
-                        // Automatically make uppercase
-                        form.setFieldValue('sku', e.target.value.toUpperCase());
-                      }}
-                      maxLength={100}
-                    />
-                  </Form.Item>
+                    {/* SKU input */}
+                    <Form.Item
+                      label={
+                        <span style={{ fontWeight: 600, color: '#475569' }}>
+                          SKU <span style={{ color: '#ff4d4f' }}>*</span>
+                        </span>
+                      }
+                      name="sku"
+                      rules={[
+                        { required: true, message: 'Vui lòng nhập SKU' },
+                        {
+                          validator: (_, value) => {
+                            if (value && value.trim().length === 0) {
+                              return Promise.reject(new Error('SKU không thể chỉ chứa khoảng trắng'));
+                            }
+                            return Promise.resolve();
+                          }
+                        }
+                      ]}
+                    >
+                      <Input
+                        placeholder="Ví dụ: TV-SAM-55"
+                        disabled={isEditMode || submitting}
+                        onChange={(e) => {
+                          // Automatically make uppercase
+                          form.setFieldValue('sku', e.target.value.toUpperCase());
+                        }}
+                        maxLength={100}
+                      />
+                    </Form.Item>
 
-                  {/* Product Name input */}
-                  <Form.Item
-                    label={
-                      <span style={{ fontWeight: 600, color: '#475569' }}>
-                        Tên sản phẩm <span style={{ color: '#ff4d4f' }}>*</span>
-                      </span>
-                    }
-                    name="productName"
-                    rules={[
-                      { required: true, message: 'Vui lòng nhập tên sản phẩm' },
-                      {
-                        validator: (_, value) => {
-                          if (value && value.trim().length === 0) {
-                            return Promise.reject(new Error('Tên sản phẩm không thể chỉ chứa khoảng trắng'));
-                          }
-                          return Promise.resolve();
-                        }
+                    {/* Product Name input */}
+                    <Form.Item
+                      label={
+                        <span style={{ fontWeight: 600, color: '#475569' }}>
+                          Tên sản phẩm <span style={{ color: '#ff4d4f' }}>*</span>
+                        </span>
                       }
-                    ]}
+                      name="productName"
+                      rules={[
+                        { required: true, message: 'Vui lòng nhập tên sản phẩm' },
+                        {
+                          validator: (_, value) => {
+                            if (value && value.trim().length === 0) {
+                              return Promise.reject(new Error('Tên sản phẩm không thể chỉ chứa khoảng trắng'));
+                            }
+                            return Promise.resolve();
+                          }
+                        }
+                      ]}
+                    >
+                      <Input
+                        placeholder="Nhập tên sản phẩm"
+                        disabled={submitting}
+                        maxLength={200}
+                      />
+                    </Form.Item>
+                  </Card>
+
+                  <Card
+                    title="Đặc tính & Mô tả đóng gói"
+                    bordered={false}
+                    style={{ boxShadow: '0 1px 2px 0 rgba(0, 0, 0, 0.03)' }}
                   >
-                    <Input
-                      placeholder="Nhập tên sản phẩm"
-                      disabled={submitting}
-                      maxLength={200}
-                    />
-                  </Form.Item>
-                </Card>
+                    <Row gutter={16}>
+                      <Col xs={24} sm={12}>
+                        <Form.Item
+                          label={<span style={{ fontWeight: 600, color: '#475569' }}>Hình dáng đóng gói</span>}
+                          name="shape"
+                        >
+                          <Select placeholder="Chọn hình dáng đóng gói" allowClear>
+                            <Select.Option value="FLAT_BOX">Hộp phẳng (FLAT_BOX)</Select.Option>
+                            <Select.Option value="UPRIGHT_BOX">Hộp đứng (UPRIGHT_BOX)</Select.Option>
+                            <Select.Option value="RECTANGULAR_BOX">Hộp chữ nhật (RECTANGULAR_BOX)</Select.Option>
+                            <Select.Option value="CUBOID">Hình hộp (CUBOID)</Select.Option>
+                          </Select>
+                        </Form.Item>
+                      </Col>
+
+                      <Col xs={24} sm={12}>
+                        <Form.Item
+                          label={<span style={{ fontWeight: 600, color: '#475569' }}>Hàng dễ vỡ</span>}
+                          name="isFragile"
+                          valuePropName="checked"
+                        >
+                          <Switch checkedChildren="Dễ vỡ" unCheckedChildren="Thông thường" />
+                        </Form.Item>
+                      </Col>
+                    </Row>
+
+                    <Form.Item
+                      label={<span style={{ fontWeight: 600, color: '#475569' }}>Đường dẫn ảnh đóng gói (URL)</span>}
+                      name="packageImageUrl"
+                      rules={[{ max: 512, message: 'Đường dẫn ảnh không quá 512 ký tự.' }]}
+                    >
+                      <Input placeholder="VD: /images/products/tv-box.png" />
+                    </Form.Item>
+
+                    <Form.Item
+                      label={<span style={{ fontWeight: 600, color: '#475569' }}>Mô tả sản phẩm</span>}
+                      name="description"
+                    >
+                      <Input.TextArea placeholder="Nhập mô tả sản phẩm..." rows={3} />
+                    </Form.Item>
+                  </Card>
+                </Space>
               </Col>
 
               {/* Right Column: Physical Specs */}

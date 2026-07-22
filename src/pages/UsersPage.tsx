@@ -2,7 +2,7 @@ import React, { useEffect, useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import {
   Table, Card, Row, Col, Space, Button, Input, Select, Breadcrumb,
-  Statistic, Tag, Badge, Popconfirm, message, Alert, Avatar
+  Statistic, Tag, Badge, Popconfirm, message, Alert, Avatar, Typography
 } from 'antd';
 import { Edit3, Lock, Plus, RefreshCw, Search, Unlock } from 'lucide-react';
 import { USER_ROLES } from '../config';
@@ -11,6 +11,8 @@ import { userApi } from '../api/userApi';
 import { type User } from '../utils/userMapper';
 import UserFormModal from '../components/UserFormModal';
 import AdminShell from '../components/AdminShell';
+import { usePermissions } from '../hooks/usePermissions';
+import { PERMISSIONS } from '../constants/permissions';
 
 const UsersPage: React.FC = () => {
   const navigate = useNavigate();
@@ -34,6 +36,8 @@ const UsersPage: React.FC = () => {
     fullName: username,
     roles,
   };
+  const { can } = usePermissions();
+  const canWriteUser = can(PERMISSIONS.USER_WRITE);
 
   const [users, setUsers] = useState<User[]>([]);
   const [keyword, setKeyword] = useState('');
@@ -111,6 +115,11 @@ const UsersPage: React.FC = () => {
   }
 
   async function createUser(payload: any) {
+    if (!canWriteUser) {
+      message.warning('Bạn không có quyền tạo người dùng.');
+      return;
+    }
+
     setApiFieldErrors({});
     try {
       await userApi.createUser(payload);
@@ -130,6 +139,11 @@ const UsersPage: React.FC = () => {
   }
 
   async function updateProfile(id: number, payload: any) {
+    if (!canWriteUser) {
+      message.warning('Bạn không có quyền chỉnh sửa người dùng.');
+      return;
+    }
+
     setApiFieldErrors({});
     try {
       await userApi.updateUser(id, payload);
@@ -145,6 +159,11 @@ const UsersPage: React.FC = () => {
   }
 
   async function updateRoles(id: number, rolesPayload: string[]) {
+    if (!canWriteUser) {
+      message.warning('Bạn không có quyền cập nhật vai trò người dùng.');
+      return;
+    }
+
     try {
       await userApi.updateRoles(id, rolesPayload);
       setFormMode(null);
@@ -158,6 +177,11 @@ const UsersPage: React.FC = () => {
   }
 
   async function toggleUserStatus(user: User) {
+    if (!canWriteUser) {
+      message.warning('Bạn không có quyền cập nhật trạng thái người dùng.');
+      return;
+    }
+
     const nextActive = !user.isActive;
     try {
       await userApi.updateStatus(user.id, nextActive);
@@ -245,6 +269,10 @@ const UsersPage: React.FC = () => {
       key: 'actions',
       render: (_: any, record: User) => {
         const isCurrentUser = record.id === currentUser.id;
+        if (!canWriteUser) {
+          return <Typography.Text type="secondary">Chỉ xem</Typography.Text>;
+        }
+
         return (
           <Space size="small">
             <Button
@@ -312,7 +340,7 @@ const UsersPage: React.FC = () => {
           </Col>
           <Col xs={24} sm={8}>
             <Card size="small" bordered={false} style={{ boxShadow: '0 1px 2px 0 rgba(0, 0, 0, 0.03)' }}>
-              <Statistic title="Quyền truy cập" value="Admin" suffix="SYSTEM_ADMIN" />
+              <Statistic title="Quyền thao tác" value={canWriteUser ? 'Có thể chỉnh sửa' : 'Chỉ xem'} />
             </Card>
           </Col>
         </Row>
@@ -359,6 +387,7 @@ const UsersPage: React.FC = () => {
               <Button
                 type="primary"
                 icon={<Plus size={14} />}
+                style={{ display: canWriteUser ? undefined : 'none' }}
                 onClick={() => {
                   setApiFieldErrors({});
                   setEditingUser(null);

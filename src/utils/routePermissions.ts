@@ -1,10 +1,6 @@
-import type { UserRole } from '../types/route';
+import { PERMISSIONS } from '../constants/permissions';
+import { hasPermission } from './permissionChecker';
 
-export const canManageRoutes = (role: UserRole | string): boolean => role === "SYSTEM_ADMIN";
+export const canManageRoutes = (): boolean => hasPermission(PERMISSIONS.ROUTE_WRITE);
 
-export const canViewRoutes = (role: UserRole | string): boolean =>
-  [
-    "SYSTEM_ADMIN",
-    "DISPATCHER",
-    "LOGISTICS_MANAGER",
-  ].includes(role);
+export const canViewRoutes = (): boolean => hasPermission(PERMISSIONS.ROUTE_READ);

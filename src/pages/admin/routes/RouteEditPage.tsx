@@ -1,8 +1,6 @@
 import React, { useEffect, useState } from 'react';
-import { useNavigate, useParams, Link } from 'react-router-dom';
-import {
-  Form, Input, Button, Card, Row, Col, Breadcrumb, Result, Typography, message, Spin
-} from 'antd';
+import { Link, useNavigate, useParams } from 'react-router-dom';
+import { Breadcrumb, Button, Card, Col, Form, Input, Result, Row, Spin, Typography, message } from 'antd';
 import { ArrowLeft } from 'lucide-react';
 import AdminShell from '../../../components/AdminShell';
 import { routeApi } from '../../../api/routeApi';
@@ -13,7 +11,6 @@ const RouteEditPage: React.FC = () => {
   const navigate = useNavigate();
   const { routeId } = useParams<{ routeId: string }>();
 
-  // Retrieve current user roles from localStorage
   const username = localStorage.getItem('username') || '';
   const userId = localStorage.getItem('userId') || '';
   let roles: string[] = [];
@@ -22,11 +19,10 @@ const RouteEditPage: React.FC = () => {
     if (rolesStr) {
       roles = JSON.parse(rolesStr);
     }
-  } catch (e) {
-    console.error('Failed to parse roles', e);
+  } catch (error) {
+    console.error('Failed to parse roles', error);
   }
 
-  const isAdmin = roles.includes('SYSTEM_ADMIN');
   const currentUser = {
     id: Number(userId),
     username,
@@ -38,35 +34,40 @@ const RouteEditPage: React.FC = () => {
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
   const [loadError, setLoadError] = useState('');
-
-  // Watch description for character counter
   const description = Form.useWatch('description', form) || '';
 
-  // Load route detail on mount
   useEffect(() => {
-    if (routeId) {
-      const fetchRoute = async () => {
-        setLoading(true);
-        setLoadError('');
-        try {
-          const route = await routeApi.getRouteById(routeId);
-          form.setFieldsValue({
-            code: route.code,
-            name: route.name,
-            description: route.description,
-          });
-        } catch (err: any) {
-          setLoadError(err.message === '404' ? 'Không tìm thấy tuyến đường yêu cầu.' : 'Không thể tải dữ liệu tuyến đường.');
-        } finally {
-          setLoading(false);
-        }
-      };
-      fetchRoute();
+    if (!routeId) {
+      return;
     }
+
+    const fetchRoute = async () => {
+      setLoading(true);
+      setLoadError('');
+      try {
+        const route = await routeApi.getRouteById(routeId);
+        form.setFieldsValue({
+          code: route.code,
+          name: route.name,
+          description: route.description,
+        });
+      } catch (err: any) {
+        setLoadError(
+          err.message === '404'
+            ? 'Không tìm thấy tuyến đường yêu cầu.'
+            : 'Không thể tải dữ liệu tuyến đường.'
+        );
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    void fetchRoute();
   }, [routeId, form]);
 
-  const handleSubmit = async (values: any) => {
+  const handleSubmit = async (values: { name: string; description?: string }) => {
     if (!routeId) return;
+
     setSubmitting(true);
     try {
       const payload = {
@@ -84,25 +85,6 @@ const RouteEditPage: React.FC = () => {
     }
   };
 
-  // Render 403 page if not admin
-  if (!isAdmin) {
-    return (
-      <AdminShell currentUser={currentUser}>
-        <Result
-          status="403"
-          title="403"
-          subTitle="Bạn không có quyền thực hiện thao tác này."
-          extra={
-            <Button type="primary" onClick={() => navigate('/admin/routes')}>
-              Quay lại danh sách tuyến
-            </Button>
-          }
-        />
-      </AdminShell>
-    );
-  }
-
-  // Render 404 page if loading fails
   if (loadError) {
     return (
       <AdminShell currentUser={currentUser}>
@@ -123,13 +105,12 @@ const RouteEditPage: React.FC = () => {
   return (
     <AdminShell currentUser={currentUser}>
       <div style={{ display: 'flex', flexDirection: 'column', gap: 24 }}>
-        {/* Breadcrumbs & Title */}
         <div>
           <Breadcrumb
             items={[
               { title: 'Admin' },
               { title: <Link to="/admin/routes">Quản lý tuyến</Link> },
-              { title: 'Chỉnh sửa tuyến' }
+              { title: 'Chỉnh sửa tuyến' },
             ]}
           />
           <h2 style={{ margin: '8px 0 0 0', fontSize: 24, fontWeight: 700, color: '#1f1f1f' }}>
@@ -140,7 +121,6 @@ const RouteEditPage: React.FC = () => {
           </p>
         </div>
 
-        {/* Back Link */}
         <div>
           <Button
             type="text"
@@ -172,23 +152,15 @@ const RouteEditPage: React.FC = () => {
                   bordered={false}
                   style={{ boxShadow: '0 1px 2px 0 rgba(0, 0, 0, 0.03)' }}
                 >
-                  {/* Code Field (ReadOnly) */}
                   <Form.Item
-                    label={
-                      <span style={{ fontWeight: 600, color: '#475569' }}>Mã tuyến</span>
-                    }
+                    label={<span style={{ fontWeight: 600, color: '#475569' }}>Mã tuyến</span>}
                     name="code"
                   >
                     <Input disabled style={{ backgroundColor: '#f1f5f9', color: '#64748b' }} />
                   </Form.Item>
 
-                  {/* Name Field */}
                   <Form.Item
-                    label={
-                      <span style={{ fontWeight: 600, color: '#475569' }}>
-                        Tên tuyến <span style={{ color: '#ff4d4f' }}>*</span>
-                      </span>
-                    }
+                    label={<span style={{ fontWeight: 600, color: '#475569' }}>Tên tuyến <span style={{ color: '#ff4d4f' }}>*</span></span>}
                     name="name"
                     rules={[
                       { required: true, message: 'Vui lòng nhập tên tuyến' },
@@ -198,22 +170,15 @@ const RouteEditPage: React.FC = () => {
                             return Promise.reject(new Error('Vui lòng nhập tên tuyến'));
                           }
                           return Promise.resolve();
-                        }
-                      }
+                        },
+                      },
                     ]}
                   >
-                    <Input
-                      placeholder="Nhập tên tuyến"
-                      disabled={submitting}
-                      maxLength={200}
-                    />
+                    <Input placeholder="Nhập tên tuyến" disabled={submitting} maxLength={200} />
                   </Form.Item>
 
-                  {/* Description Field */}
                   <Form.Item
-                    label={
-                      <span style={{ fontWeight: 600, color: '#475569' }}>Mô tả</span>
-                    }
+                    label={<span style={{ fontWeight: 600, color: '#475569' }}>Mô tả</span>}
                     name="description"
                   >
                     <Input.TextArea
@@ -224,7 +189,6 @@ const RouteEditPage: React.FC = () => {
                     />
                   </Form.Item>
 
-                  {/* Character Counter */}
                   <div style={{ textAlign: 'right', marginTop: -12, marginBottom: 12, color: '#94a3b8', fontSize: 12 }}>
                     {description.length} / 500 ký tự
                   </div>
@@ -232,30 +196,23 @@ const RouteEditPage: React.FC = () => {
               </Col>
             </Row>
 
-            {/* Footer Buttons */}
-            <div style={{
-              display: 'flex',
-              justifyContent: 'flex-end',
-              gap: 12,
-              marginTop: 24,
-              maxWidth: 'calc(100% * 16 / 24)',
-              padding: '16px 24px',
-              backgroundColor: '#fff',
-              borderRadius: 12,
-              boxShadow: '0 1px 2px 0 rgba(0, 0, 0, 0.03)'
-            }}>
-              <Button
-                disabled={submitting}
-                onClick={() => navigate(`/admin/routes/${routeId}`)}
-              >
-                Huỷ
+            <div
+              style={{
+                display: 'flex',
+                justifyContent: 'flex-end',
+                gap: 12,
+                marginTop: 24,
+                maxWidth: 'calc(100% * 16 / 24)',
+                padding: '16px 24px',
+                backgroundColor: '#fff',
+                borderRadius: 12,
+                boxShadow: '0 1px 2px 0 rgba(0, 0, 0, 0.03)',
+              }}
+            >
+              <Button disabled={submitting} onClick={() => navigate(`/admin/routes/${routeId}`)}>
+                Hủy
               </Button>
-              <Button
-                type="primary"
-                htmlType="submit"
-                loading={submitting}
-                disabled={submitting}
-              >
+              <Button type="primary" htmlType="submit" loading={submitting} disabled={submitting}>
                 Lưu thay đổi
               </Button>
             </div>

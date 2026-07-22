@@ -20,6 +20,8 @@ import dayjs from 'dayjs';
 import AdminShell from '../../../components/AdminShell';
 import { tripDraftApi } from '../../../api/tripDraftApi';
 import type { TripDraft } from '../../../types/tripDraft';
+import { usePermissions } from '../../../hooks/usePermissions';
+import { PERMISSIONS } from '../../../constants/permissions';
 
 const { Title, Text } = Typography;
 
@@ -47,10 +49,8 @@ const TripDraftListPage: React.FC = () => {
   const navigate = useNavigate();
   const [searchParams, setSearchParams] = useSearchParams();
   const currentUser = getCurrentUser();
-
-  // Roles verification
-  const roles = currentUser.roles || [];
-  const canRunConsolidate = roles.some(role => ["SYSTEM_ADMIN", "DISPATCHER"].includes(role));
+  const { can } = usePermissions();
+  const canRunConsolidate = can(PERMISSIONS.TRIP_WRITE);
 
   // Date state (defaults to parameter or today)
   const dateParam = searchParams.get('deliveryDate');
@@ -81,6 +81,10 @@ const TripDraftListPage: React.FC = () => {
       setTotalElements(response.totalElements);
     } catch (e: any) {
       console.error(e);
+      if (e?.status === 403 || e?.response?.status === 403) {
+        navigate('/403');
+        return;
+      }
       message.error("Không thể tải danh sách đợt gom đơn.");
     } finally {
       setLoading(false);
@@ -103,6 +107,11 @@ const TripDraftListPage: React.FC = () => {
   };
 
   const handleConsolidate = async () => {
+    if (!canRunConsolidate) {
+      message.warning('Bạn không có quyền gom đơn.');
+      return;
+    }
+
     setConsolidating(true);
     setSkippedRoutes([]);
     try {
@@ -267,7 +276,7 @@ const TripDraftListPage: React.FC = () => {
               loading={consolidating}
               disabled={!canRunConsolidate || consolidating}
               onClick={handleConsolidate}
-              style={{ borderRadius: 6, fontWeight: 600, height: 38 }}
+              style={{ borderRadius: 6, fontWeight: 600, height: 38, display: canRunConsolidate ? undefined : 'none' }}
             >
               Gom đơn (Consolidate)
             </Button>

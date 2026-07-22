@@ -1,19 +1,19 @@
 import React from 'react';
 import { Navigate } from 'react-router-dom';
 import { PERMISSIONS } from '../constants/permissions';
-import { hasAnyPermission } from '../utils/permissionChecker';
+import { hasPermission } from '../utils/permissionChecker';
 
-interface ImportModuleGuardProps {
+interface MonitoringGuardProps {
   children: React.ReactNode;
 }
 
-const ImportModuleGuard: React.FC<ImportModuleGuardProps> = ({ children }) => {
+const MonitoringGuard: React.FC<MonitoringGuardProps> = ({ children }) => {
   const token = localStorage.getItem('accessToken') || localStorage.getItem('token');
   if (!token) {
     return <Navigate to="/login" replace />;
   }
 
-  const hasAccess = hasAnyPermission([PERMISSIONS.ORDER_IMPORT, PERMISSIONS.TRIP_READ]);
+  const hasAccess = hasPermission(PERMISSIONS.TRIP_READ);
 
   if (!hasAccess) {
     return <Navigate to="/403" replace />;
@@ -22,4 +22,4 @@ const ImportModuleGuard: React.FC<ImportModuleGuardProps> = ({ children }) => {
   return <>{children}</>;
 };
 
-export default ImportModuleGuard;
+export default MonitoringGuard;

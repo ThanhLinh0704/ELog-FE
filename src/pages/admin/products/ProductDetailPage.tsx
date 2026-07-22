@@ -11,6 +11,8 @@ import { formatVolume, formatWeight } from '../../../utils/numberFormat';
 import { calculateAccumulation } from '../../../utils/productCalculations';
 import DeactivateProductModal from './components/DeactivateProductModal';
 import ActivateProductModal from './components/ActivateProductModal';
+import { PERMISSIONS } from '../../../constants/permissions';
+import { usePermissions } from '../../../hooks/usePermissions';
 
 const { Paragraph, Text } = Typography;
 
@@ -34,6 +36,7 @@ const formatDate = (isoString?: string): string => {
 const ProductDetailPage: React.FC = () => {
   const navigate = useNavigate();
   const { productId } = useParams<{ productId: string }>();
+  const { can } = usePermissions();
 
   // Retrieve current user roles from localStorage
   const username = localStorage.getItem('username') || '';
@@ -48,7 +51,7 @@ const ProductDetailPage: React.FC = () => {
     console.error('Failed to parse roles', e);
   }
 
-  const isSystemAdmin = roles.includes('SYSTEM_ADMIN');
+  const canWriteProduct = can(PERMISSIONS.PRODUCT_WRITE);
   const currentUser = {
     id: Number(userId),
     username,
@@ -160,8 +163,8 @@ const ProductDetailPage: React.FC = () => {
               )}
             </div>
 
-            {/* Quick Actions (only for SYSTEM_ADMIN) */}
-            {isSystemAdmin && product && (
+            {/* Quick Actions */}
+            {canWriteProduct && product && (
               <Space>
                 <Button
                   icon={<Edit3 size={16} />}
@@ -229,11 +232,23 @@ const ProductDetailPage: React.FC = () => {
                   <Descriptions.Item label={<span style={{ fontWeight: 600 }}>Tên sản phẩm</span>}>
                     {product.productName}
                   </Descriptions.Item>
+                  <Descriptions.Item label={<span style={{ fontWeight: 600 }}>Hình dáng</span>}>
+                    {product.shape || '—'}
+                  </Descriptions.Item>
+                  <Descriptions.Item label={<span style={{ fontWeight: 600 }}>Tính chất</span>}>
+                    {product.isFragile ? <Tag color="warning">Dễ vỡ (Fragile)</Tag> : <Tag color="default">Thông thường</Tag>}
+                  </Descriptions.Item>
                   <Descriptions.Item label={<span style={{ fontWeight: 600 }}>Trạng thái</span>}>
                     <Badge
                       status={product.status === 'ACTIVE' ? 'success' : 'error'}
                       text={product.status === 'ACTIVE' ? 'Đang kinh doanh' : 'Ngừng kinh doanh'}
                     />
+                  </Descriptions.Item>
+                  <Descriptions.Item label={<span style={{ fontWeight: 600 }}>Ảnh đóng gói (URL)</span>}>
+                    {product.packageImageUrl || '—'}
+                  </Descriptions.Item>
+                  <Descriptions.Item label={<span style={{ fontWeight: 600 }}>Mô tả</span>}>
+                    {product.description || '—'}
                   </Descriptions.Item>
                   <Descriptions.Item label={<span style={{ fontWeight: 600 }}><Calendar size={13} style={{ display: 'inline', marginRight: 4, verticalAlign: 'middle' }} /> Ngày tạo</span>}>
                     {formatDate(product.createdAt)}
