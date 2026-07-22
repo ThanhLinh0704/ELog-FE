@@ -19,6 +19,7 @@ import {
   Typography,
   message,
   TimePicker,
+  Flex,
 } from 'antd';
 import dayjs from 'dayjs';
 import type { ColumnsType } from 'antd/es/table';
@@ -506,20 +507,28 @@ const TripDraftReviewPage: React.FC = () => {
     <AdminShell currentUser={currentUser}>
       {contextHolder}
       <Space direction="vertical" size="large" style={{ width: '100%' }}>
-        <div>
-          <Breadcrumb
-            items={[
-              { title: 'Quản trị' },
-              { title: 'Kiểm tra bản nháp chuyến' },
-            ]}
-          />
-          <Typography.Title level={2} style={{ margin: '8px 0 0 0' }}>
-            Kiểm tra bản nháp chuyến
-          </Typography.Title>
-          <Typography.Text type="secondary">
-            Kiểm tra điểm dừng đang hoạt động, điểm bị bỏ qua và ETA trước khi xác nhận chuyến.
-          </Typography.Text>
-        </div>
+        <Flex justify="space-between" align="center" style={{ marginBottom: 16 }}>
+          <Space align="center" size={12}>
+            <Button
+              icon={<ArrowLeft size={16} />}
+              onClick={() => navigate('/dispatcher/trip-drafts')}
+              style={{ borderRadius: 6 }}
+            >
+              Quay lại
+            </Button>
+            <div>
+              <Breadcrumb
+                items={[
+                  { title: 'Quản trị' },
+                  { title: 'Kiểm tra bản nháp chuyến' },
+                ]}
+              />
+              <Typography.Title level={2} style={{ margin: '8px 0 0 0' }}>
+                Kiểm tra bản nháp chuyến
+              </Typography.Title>
+            </div>
+          </Space>
+        </Flex>
 
         {forbiddenMessage ? (
           <Alert
