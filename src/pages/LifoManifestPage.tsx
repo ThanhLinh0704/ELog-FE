@@ -71,7 +71,9 @@ const LifoManifestPage = () => {
   const canGenerate = can(PERMISSIONS.TRIP_COORDINATE);
 
   const handleBack = () => {
-    if (params.tripDraftId) {
+    if (window.history.state && window.history.state.idx > 0) {
+      navigate(-1);
+    } else if (params.tripDraftId) {
       navigate('/dispatcher/trip-drafts');
     } else {
       navigate('/dispatcher/monitoring');
@@ -234,30 +236,39 @@ const LifoManifestPage = () => {
   return (
     <AdminShell currentUser={currentUser}>
       <Space direction="vertical" size="large" style={{ width: '100%' }}>
-        <Flex justify="space-between" align="flex-start" gap={16} wrap>
-          <Space align="center" size={12}>
-            <Button
-              icon={<ArrowLeft size={16} />}
-              onClick={handleBack}
-              style={{ borderRadius: 6 }}
-            >
-              Quay lại
-            </Button>
-            <Space direction="vertical" size={4}>
-              <Breadcrumb
-                items={[
-                  { title: 'Dashboard', href: '/dashboard' },
-                  { title: params.tripDraftId ? 'Quản lý gom đơn' : 'Theo dõi chuyến hàng', href: params.tripDraftId ? '/dispatcher/trip-drafts' : '/dispatcher/monitoring' },
-                  { title: 'Hướng dẫn xếp hàng' },
-                ]}
+        <Flex justify="space-between" align="center" gap={16} wrap style={{ marginBottom: 16 }}>
+          <Space direction="vertical" size={8}>
+            <Breadcrumb
+              items={[
+                { title: 'Dashboard', href: '/dashboard' },
+                { title: params.tripDraftId ? 'Quản lý gom đơn' : 'Theo dõi chuyến hàng', href: params.tripDraftId ? '/dispatcher/trip-drafts' : '/dispatcher/monitoring' },
+                { title: 'Hướng dẫn xếp hàng' },
+              ]}
+            />
+            <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+              <Button
+                type="text"
+                icon={<ArrowLeft size={18} />}
+                onClick={handleBack}
+                style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  width: 32,
+                  height: 32,
+                  borderRadius: '50%',
+                  backgroundColor: '#f5f5f5',
+                  border: 'none',
+                  padding: 0
+                }}
               />
               <Space align="center" wrap>
-                <Title level={2} style={{ margin: 0 }}>
+                <Title level={2} style={{ margin: 0, fontWeight: 700 }}>
                   Hướng dẫn xếp hàng lên xe
                 </Title>
                 {statusTag}
               </Space>
-            </Space>
+            </div>
           </Space>
 
           <Space wrap>
@@ -273,9 +284,6 @@ const LifoManifestPage = () => {
             ) : null}
             <Button icon={<RefreshCcw size={16} />} onClick={loadManifest} loading={loading}>
               Tải lại
-            </Button>
-            <Button icon={<ArrowLeft size={16} />} onClick={() => navigate(`/trip-drafts/${tripDraftId}/review`)}>
-              Quay lại lập kế hoạch
             </Button>
           </Space>
         </Flex>

@@ -507,28 +507,42 @@ const TripDraftReviewPage: React.FC = () => {
     <AdminShell currentUser={currentUser}>
       {contextHolder}
       <Space direction="vertical" size="large" style={{ width: '100%' }}>
-        <Flex justify="space-between" align="center" style={{ marginBottom: 16 }}>
-          <Space align="center" size={12}>
-            <Button
-              icon={<ArrowLeft size={16} />}
-              onClick={() => navigate('/dispatcher/trip-drafts')}
-              style={{ borderRadius: 6 }}
-            >
-              Quay lại
-            </Button>
-            <div>
-              <Breadcrumb
-                items={[
-                  { title: 'Quản trị' },
-                  { title: 'Kiểm tra bản nháp chuyến' },
-                ]}
-              />
-              <Typography.Title level={2} style={{ margin: '8px 0 0 0' }}>
-                Kiểm tra bản nháp chuyến
-              </Typography.Title>
-            </div>
-          </Space>
+      <Space direction="vertical" size={8} style={{ width: '100%', marginBottom: 16 }}>
+        <Breadcrumb
+          items={[
+            { title: 'Dashboard', href: '/dashboard' },
+            { title: 'Quản lý gom đơn', href: '/dispatcher/trip-drafts' },
+            { title: 'Kiểm tra bản nháp chuyến' },
+          ]}
+        />
+        <Flex align="center" gap={12}>
+          <Button
+            type="text"
+            icon={<ArrowLeft size={18} />}
+            onClick={() => {
+              if (window.history.state && window.history.state.idx > 0) {
+                navigate(-1);
+              } else {
+                navigate('/dispatcher/trip-drafts');
+              }
+            }}
+            style={{
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              width: 32,
+              height: 32,
+              borderRadius: '50%',
+              backgroundColor: '#f5f5f5',
+              border: 'none',
+              padding: 0
+            }}
+          />
+          <Typography.Title level={2} style={{ margin: 0, fontWeight: 700 }}>
+            Kiểm tra bản nháp chuyến
+          </Typography.Title>
         </Flex>
+      </Space>
 
         {forbiddenMessage ? (
           <Alert
