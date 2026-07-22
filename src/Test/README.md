@@ -83,6 +83,22 @@ npm run cy:run
 
 Kết quả in ra terminal, có tổng kết pass/fail ở cuối.
 
+### Tốc độ chạy test
+
+Mặc định E2E đang bật slow mode `1000ms` trước mỗi thao tác người dùng (`click`, `type`, `clear`, `select`, ...), để khi chạy `cy:open` hoặc `--headed` có thể nhìn rõ từng bước.
+
+Nếu muốn chạy nhanh khi regression:
+
+```bash
+npm run cy:run -- --env STEP_DELAY_MS=0
+```
+
+Nếu muốn mở browser nhìn thấy test chạy:
+
+```bash
+npm run cy:run -- --spec "e2e/us03-user-management.cy.ts" --headed --browser chrome
+```
+
 ---
 
 ## Cấu trúc file test
@@ -145,3 +161,55 @@ npm install
 
 **Tất cả test fail với "cy.visit() failed":**
 - Frontend chưa chạy, chạy `npm run dev` trước
+
+---
+
+## Hai nhóm E2E từ US-02 đến US-06
+
+### 1. Deterministic UI E2E
+
+Các file `e2e/us02-*.cy.ts` đến `e2e/us06-*.cy.ts` dùng `cy.intercept()` để kiểm tra ổn định:
+
+- Hành vi form và validation.
+- Phân quyền hiển thị trên giao diện.
+- Payload frontend gửi đi.
+- Cách giao diện ánh xạ lỗi API.
+- Search, filter, empty state và cập nhật UI sau thao tác.
+
+Chạy toàn bộ nhóm này:
+
+```powershell
+npm run cy:run:ui
+```
+
+### 2. Full-stack smoke E2E
+
+Các file trong `e2e/fullstack/` không dùng `cy.intercept()`. Request đi theo chuỗi thật:
+
+```text
+Cypress browser → React/Vite → ELog-BE → MySQL
+```
+
+Chuẩn bị:
+
+- Frontend chạy tại `http://localhost:5173` với `VITE_USE_MOCK=false`.
+- Backend chạy tại `http://localhost:8080`.
+- MySQL đã migration và có tài khoản SYSTEM_ADMIN.
+- Truyền credentials qua Cypress environment, không ghi password vào source.
+
+Chạy:
+
+```powershell
+npx cypress run --spec "e2e/fullstack/*.fullstack.cy.ts" `
+  --env "STEP_DELAY_MS=0,E2E_ADMIN_USERNAME=admin,E2E_ADMIN_PASSWORD=<password>"
+```
+
+Các smoke case hiện chỉ đọc dữ liệu để không tạo bản ghi rác trong MySQL.
+
+### Chạy tất cả
+
+```powershell
+npm run cy:run:all -- --env "E2E_ADMIN_USERNAME=admin,E2E_ADMIN_PASSWORD=<password>"
+```
+
+Lưu ý: `cy:run:all` chỉ được coi là đạt khi cả UI E2E và full-stack smoke đều pass. Không dùng kết quả mocked để thay thế bằng chứng FE → BE → MySQL.

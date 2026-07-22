@@ -23,7 +23,6 @@ const SEL = {
   passwordInput:  '#login_form_password',
   submitBtn:      'button[type="submit"]',
   alert:          '.ant-alert',
-  alertMessage:   '.ant-alert-message',
   fieldError:     '.ant-form-item-explain-error',
 };
 
@@ -134,7 +133,19 @@ function setTokens(accessToken: string, refreshToken: string) {
 describe('US-02 — Authentication & Authorization', () => {
 
   beforeEach(() => {
+    cy.clearCookies();
     cy.clearLocalStorage();
+    cy.window({ log: false }).then((win) => {
+      win.sessionStorage.clear();
+    });
+  });
+
+  afterEach(() => {
+    cy.clearCookies();
+    cy.clearLocalStorage();
+    cy.window({ log: false }).then((win) => {
+      win.sessionStorage.clear();
+    });
   });
 
   // ───────────────────────────────────────────────────────────────────────────
@@ -172,7 +183,7 @@ describe('US-02 — Authentication & Authorization', () => {
 
       cy.url().should('include', '/login');
       cy.get(SEL.alert).should('be.visible');
-      cy.get(SEL.alertMessage).should('contain', 'Invalid username or password');
+      cy.get(SEL.alert).should('contain', 'Invalid username or password');
 
       cy.window().then((win) => {
         expect(win.localStorage.getItem('token'), 'token KHÔNG được lưu').to.be.null;
@@ -193,10 +204,10 @@ describe('US-02 — Authentication & Authorization', () => {
 
       cy.url().should('include', '/login');
       cy.get(SEL.alert).should('be.visible');
-      cy.get(SEL.alertMessage).should('contain', 'Account has been disabled');
+      cy.get(SEL.alert).should('contain', 'Account has been disabled');
 
       // Thông báo PHẢI khác với TC-02
-      cy.get(SEL.alertMessage).should('not.contain', 'Invalid username or password');
+      cy.get(SEL.alert).should('not.contain', 'Invalid username or password');
 
       cy.window().then((win) => {
         expect(win.localStorage.getItem('token'), 'token KHÔNG được lưu').to.be.null;
@@ -240,7 +251,7 @@ describe('US-02 — Authentication & Authorization', () => {
   describe('TC-06: Sai role → 403 [REQUIRES: RBAC guard + /users page]', () => {
     it('DRIVER vào /users → API trả 403 · không hiển thị danh sách user', () => {
       cy.intercept('POST', '**/api/auth/login',  MOCK.driverLoginSuccess).as('loginReq');
-      cy.intercept('GET',  '**/api/users',       MOCK.accessDenied).as('getUsersReq');
+      cy.intercept('GET',  '**/api/users*',      MOCK.accessDenied).as('getUsersReq');
 
       loginViaUI('driver01', 'Driver@2025');
       cy.wait('@loginReq');
@@ -422,6 +433,77 @@ describe('US-02 — Authentication & Authorization', () => {
       cy.wait('@loginReq').its('response.statusCode').should('eq', 401);
       cy.url().should('include', '/login');
       cy.get(SEL.alert).should('be.visible');
+    });
+  });
+
+  describe('TC-10: Login UI resilience and session controls', () => {
+    it('nút hiện/ẩn mật khẩu đổi input giữa password và text', () => {
+      cy.visit('/login');
+      cy.get(SEL.passwordInput).type('Admin@2025').should('have.attr', 'type', 'password');
+      cy.get('.ant-input-password-icon').click();
+      cy.get(SEL.passwordInput).should('have.attr', 'type', 'text');
+      cy.get('.ant-input-password-icon').click();
+      cy.get(SEL.passwordInput).should('have.attr', 'type', 'password');
+    });
+
+    it('lỗi mạng hiển thị thông báo và giữ người dùng tại trang login', () => {
+      cy.intercept('POST', '**/api/auth/login', { forceNetworkError: true }).as('loginNetworkError');
+
+      loginViaUI('admin', 'Admin@2025');
+
+      cy.wait('@loginNetworkError');
+      cy.url().should('include', '/login');
+      cy.get(SEL.alert)
+        .should('be.visible')
+        .and('contain.text', 'Kết nối thất bại. Vui lòng kiểm tra lại server Backend.');
+      cy.window().then((win) => expect(win.localStorage.getItem('token')).to.be.null);
+    });
+
+    it('đã có token mà mở /login thì PublicRoute chuyển sang dashboard', () => {
+      cy.visit('/login', {
+        onBeforeLoad(win) {
+          win.localStorage.setItem('token', MOCK.adminLoginSuccess.body.data.accessToken);
+          win.localStorage.setItem('refreshToken', MOCK.adminLoginSuccess.body.data.refreshToken);
+          win.localStorage.setItem('username', 'admin');
+          win.localStorage.setItem('roles', JSON.stringify(['SYSTEM_ADMIN']));
+        },
+      });
+
+      cy.url().should('include', '/dashboard');
+    });
+
+    it('đăng xuất từ dashboard xoá phiên và chuyển về login', () => {
+      cy.intercept('POST', '**/api/auth/logout', { statusCode: 200, body: { success: true } }).as(
+        'logoutRequest'
+      );
+      cy.visit('/dashboard', {
+        onBeforeLoad(win) {
+          win.localStorage.setItem('token', MOCK.adminLoginSuccess.body.data.accessToken);
+          win.localStorage.setItem('refreshToken', MOCK.adminLoginSuccess.body.data.refreshToken);
+          win.localStorage.setItem('username', 'admin');
+          win.localStorage.setItem('roles', JSON.stringify(['SYSTEM_ADMIN']));
+        },
+      });
+
+      cy.contains('button', 'Đăng xuất').click();
+      cy.wait('@logoutRequest');
+      cy.url().should('include', '/login');
+      cy.window().then((win) => {
+        expect(win.localStorage.getItem('token')).to.be.null;
+        expect(win.localStorage.getItem('refreshToken')).to.be.null;
+      });
+    });
+
+    it('form login sử dụng được ở viewport điện thoại 375x812', () => {
+      cy.viewport(375, 812);
+      cy.visit('/login');
+
+      cy.get(SEL.usernameInput).should('be.visible');
+      cy.get(SEL.passwordInput).should('be.visible');
+      cy.get(SEL.submitBtn).should('be.visible');
+      cy.document().then((doc) => {
+        expect(doc.documentElement.scrollWidth).to.be.at.most(doc.documentElement.clientWidth + 1);
+      });
     });
   });
 
