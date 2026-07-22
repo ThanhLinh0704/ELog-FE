@@ -400,35 +400,18 @@ const TripDraftReviewPage: React.FC = () => {
       title: 'Đơn hàng',
       dataIndex: 'orderCount',
       key: 'orderCount',
-      width: 110,
+      width: 100,
       align: 'right' as const,
       render: (count: number, record: TripDraftStop) => {
         if (count === 0) return '0';
         return (
-          <Space size={4} style={{ display: 'inline-flex', alignItems: 'center' }}>
-            <Button 
-              type="link" 
-              onClick={() => showOrderDetails(record)}
-              style={{ padding: 0, fontWeight: 'bold' }}
-            >
-              {count}
-            </Button>
-            <Button
-              type="text"
-              size="small"
-              icon={<Eye size={14} style={{ color: '#1677ff' }} />}
-              onClick={() => showOrderDetails(record)}
-              title="Xem chi tiết đơn hàng"
-              style={{ 
-                display: 'flex', 
-                alignItems: 'center', 
-                justifyContent: 'center',
-                width: 24,
-                height: 24,
-                padding: 0
-              }}
-            />
-          </Space>
+          <Button 
+            type="link" 
+            onClick={() => showOrderDetails(record)}
+            style={{ padding: 0, fontWeight: 'bold' }}
+          >
+            {count}
+          </Button>
         );
       }
     },
