@@ -38,6 +38,7 @@ import {
 import AdminShell from '../components/AdminShell';
 import { useDebounce } from '../hooks/useDebounce';
 import { storeApi, type StoreItem, type StorePayload } from '../api/storeApi';
+import { MapSelector } from '../components/MapSelector';
 import { usePermissions } from '../hooks/usePermissions';
 import { PERMISSIONS } from '../constants/permissions';
 import { addressApi, type Province, type District, type Ward } from '../api/addressApi';
@@ -184,6 +185,13 @@ const StoreFormModal: React.FC<StoreFormModalProps> = ({
 }) => {
   const [form] = Form.useForm();
   const isEdit = mode === 'edit';
+  const [mapSearchText, setMapSearchText] = useState('');
+
+  useEffect(() => {
+    if (!open) {
+      setMapSearchText('');
+    }
+  }, [open]);
 
   const [provinces, setProvinces] = useState<Province[]>([]);
   const [districts, setDistricts] = useState<District[]>([]);
@@ -494,6 +502,27 @@ const StoreFormModal: React.FC<StoreFormModalProps> = ({
             </Form.Item>
           </Col>
         </Row>
+
+        <Form.Item noStyle shouldUpdate>
+          {({ getFieldValue, setFieldsValue }) => {
+            const lat = getFieldValue('latitude');
+            const lng = getFieldValue('longitude');
+            return (
+              <MapSelector
+                latitude={lat}
+                longitude={lng}
+                addressSearchText={mapSearchText}
+                onCoordinateChange={(newLat, newLng) => {
+                  setFieldsValue({
+                    latitude: Number(newLat.toFixed(6)),
+                    longitude: Number(newLng.toFixed(6)),
+                  });
+                  setMapSearchText('');
+                }}
+              />
+            );
+          }}
+        </Form.Item>
 
         <Row gutter={16}>
           <Col xs={24} md={12}>
