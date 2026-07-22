@@ -30,6 +30,7 @@ import {
   Navigation,
   PackageCheck,
   RefreshCw,
+  Eye,
 } from 'lucide-react';
 import AdminShell from '../components/AdminShell';
 import {
@@ -399,18 +400,35 @@ const TripDraftReviewPage: React.FC = () => {
       title: 'Đơn hàng',
       dataIndex: 'orderCount',
       key: 'orderCount',
-      width: 100,
+      width: 110,
       align: 'right' as const,
       render: (count: number, record: TripDraftStop) => {
         if (count === 0) return '0';
         return (
-          <Button 
-            type="link" 
-            onClick={() => showOrderDetails(record)}
-            style={{ padding: 0, fontWeight: 'bold' }}
-          >
-            {count}
-          </Button>
+          <Space size={4} style={{ display: 'inline-flex', alignItems: 'center' }}>
+            <Button 
+              type="link" 
+              onClick={() => showOrderDetails(record)}
+              style={{ padding: 0, fontWeight: 'bold' }}
+            >
+              {count}
+            </Button>
+            <Button
+              type="text"
+              size="small"
+              icon={<Eye size={14} style={{ color: '#1677ff' }} />}
+              onClick={() => showOrderDetails(record)}
+              title="Xem chi tiết đơn hàng"
+              style={{ 
+                display: 'flex', 
+                alignItems: 'center', 
+                justifyContent: 'center',
+                width: 24,
+                height: 24,
+                padding: 0
+              }}
+            />
+          </Space>
         );
       }
     },
@@ -470,17 +488,14 @@ const TripDraftReviewPage: React.FC = () => {
     {
       title: 'Thao tác',
       key: 'action',
-      width: 140,
+      width: 180,
       fixed: 'right',
       render: (_value, record) => {
         const isActive = record.status === 'ACTIVE';
         const label = isActive ? 'Bỏ qua' : 'Kích hoạt';
+        const hasOrders = record.orderCount > 0;
 
-        if (!canEditTrip) {
-          return <Typography.Text type="secondary">Chỉ xem</Typography.Text>;
-        }
-
-        return (
+        const isSkipButton = canEditTrip ? (
           <Popconfirm
             title={`${label} điểm dừng này?`}
             description="Tuyến đường và ETA sẽ được tính lại sau thay đổi này."
@@ -494,12 +509,32 @@ const TripDraftReviewPage: React.FC = () => {
               loading={toggleStopId === record.id}
               disabled={actionDisabled}
               type={isActive ? 'default' : 'primary'}
+              size="small"
+              style={{ borderRadius: 6 }}
             >
               {label}
             </Button>
           </Popconfirm>
+        ) : (
+          <Typography.Text type="secondary">Chỉ xem</Typography.Text>
         );
-      },
+
+        return (
+          <Space size={8}>
+            {hasOrders && (
+              <Button
+                icon={<Eye size={14} />}
+                size="small"
+                onClick={() => showOrderDetails(record)}
+                style={{ borderRadius: 6 }}
+              >
+                Chi tiết
+              </Button>
+            )}
+            {isSkipButton}
+          </Space>
+        );
+      }
     },
   ];
 
