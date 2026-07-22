@@ -261,19 +261,14 @@ const ProductListPage: React.FC = () => {
 
         {/* Statistic Cards */}
         <Row gutter={[16, 16]}>
-          <Col xs={24} sm={8}>
+          <Col xs={24} sm={12}>
             <Card size="small" bordered={false} style={{ boxShadow: '0 1px 2px 0 rgba(0, 0, 0, 0.03)' }}>
               <Statistic title="Tổng sản phẩm phù hợp" value={pageMeta.totalElements} suffix="sản phẩm" />
             </Card>
           </Col>
-          <Col xs={24} sm={8}>
+          <Col xs={24} sm={12}>
             <Card size="small" bordered={false} style={{ boxShadow: '0 1px 2px 0 rgba(0, 0, 0, 0.03)' }}>
               <Statistic title="Trang hiện tại" value={page + 1} suffix={`/ ${pageMeta.totalPages} trang`} />
-            </Card>
-          </Col>
-          <Col xs={24} sm={8}>
-            <Card size="small" bordered={false} style={{ boxShadow: '0 1px 2px 0 rgba(0, 0, 0, 0.03)' }}>
-              <Statistic title="Quyền truy cập" value={canWriteProduct ? 'Có quyền chỉnh sửa' : 'Chỉ xem'} suffix={canWriteProduct ? PERMISSIONS.PRODUCT_WRITE : PERMISSIONS.PRODUCT_READ} />
             </Card>
           </Col>
         </Row>

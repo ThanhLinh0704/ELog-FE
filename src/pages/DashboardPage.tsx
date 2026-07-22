@@ -444,23 +444,7 @@ const DashboardPage: React.FC = () => {
               </Card>
             </div>
 
-            {/* Extra Capacity Info */}
-            <Card bordered={false} style={{ marginTop: 16, boxShadow: '0 1px 2px 0 rgba(0, 0, 0, 0.03)' }} size="small">
-              <Row gutter={16} style={{ textAlign: 'center' }}>
-                <Col span={12} style={{ borderRight: '1px solid #f0f0f0' }}>
-                  <Text type="secondary" style={{ fontSize: 12 }}>TỔNG TẢI TRỌNG ĐỘI XE</Text>
-                  <div style={{ fontSize: 16, fontWeight: 700, color: '#1f1f1f', marginTop: 4 }}>
-                    {stats.totalWeight.toLocaleString('vi-VN')} kg
-                  </div>
-                </Col>
-                <Col span={12}>
-                  <Text type="secondary" style={{ fontSize: 12 }}>TỔNG THỂ TÍCH KHOANG HÀNG</Text>
-                  <div style={{ fontSize: 16, fontWeight: 700, color: '#1f1f1f', marginTop: 4 }}>
-                    {stats.totalVolume.toLocaleString('vi-VN')} m³
-                  </div>
-                </Col>
-              </Row>
-            </Card>
+
           </div>
         )}
 
