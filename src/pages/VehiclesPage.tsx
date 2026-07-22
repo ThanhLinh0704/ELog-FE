@@ -1039,12 +1039,7 @@ const VehiclesPage: React.FC = () => {
                 </Descriptions.Item>
               </Descriptions>
 
-              <Alert
-                type="info"
-                showIcon
-                message="Ghi chú Sprint 4"
-                description='Màn hình chi tiết xe sẽ bổ sung tab "Lịch sử chuyến" để xem các trips xe này đã thực hiện.'
-              />
+
             </Space>
           ) : null}
         </Modal>
