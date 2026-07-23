@@ -33,6 +33,7 @@ import {
   User,
 } from 'lucide-react';
 import AdminShell from '../../../components/AdminShell';
+import { TripRouteMap } from '../../../components/TripRouteMap';
 import { getActiveTrips, getTripProgress } from '../../../api/monitoringApi';
 import type {
   ActiveTripsResponse,
@@ -601,6 +602,25 @@ const MonitoringDashboardPage: React.FC = () => {
                   style={{ borderRadius: 8 }}
                 />
               )}
+
+              {/* Bản đồ tuyến đường */}
+              <Card
+                title={
+                  <Space>
+                    <MapPin size={16} />
+                    Bản đồ tuyến đường giao hàng
+                  </Space>
+                }
+                size="small"
+                style={{ borderRadius: 8 }}
+                extra={
+                  <Tag color="blue" style={{ fontSize: 11 }}>
+                    {tripProgress.stops.filter((s) => s.latitude != null && s.longitude != null).length} / {tripProgress.stops.length} điểm có tọa độ
+                  </Tag>
+                }
+              >
+                <TripRouteMap stops={tripProgress.stops} />
+              </Card>
 
               {/* Stops table */}
               <Card

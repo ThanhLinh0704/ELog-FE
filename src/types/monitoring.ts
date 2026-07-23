@@ -69,6 +69,8 @@ export interface StopProgress {
   delayMinutes: number | null;
   hasException: boolean;
   exceptions: ProgressExceptionDetail[];
+  latitude: number | null;
+  longitude: number | null;
 }
 
 /** Backend: TripProgressResponse.VehicleInfo */
