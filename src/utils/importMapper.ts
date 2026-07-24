@@ -5,7 +5,7 @@ export const mapBatchResponseToHistory = (raw: any): ImportBatchHistory => {
     id: raw.batchId,
     deliveryDate: raw.deliveryDate,
     fileName: raw.fileName,
-    uploadedBy: 'N/A', // Backend không trả về thông tin người dùng upload dưới dạng chuỗi, tạm hiển thị N/A
+    uploadedBy: raw.uploadedBy || raw.uploaded_by || 'System Admin',
     totalRows: raw.totalRows ?? 0,
     acceptedRows: raw.acceptedRows ?? 0,
     rejectedRows: raw.rejectedRows ?? 0,

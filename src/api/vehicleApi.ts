@@ -383,4 +383,18 @@ export const vehicleApi = {
 
     return normalizeVehicle(data?.data ?? data);
   },
+
+  async getAvailableVehicles(tripId?: number): Promise<VehicleItem[]> {
+    const params: Record<string, any> = {};
+    if (tripId) params.tripId = tripId;
+    const query = encodeQuery(params);
+
+    const data = await handleAxiosCall<any>(() =>
+      axiosInstance.get(`/api/vehicles/available${query ? `?${query}` : ''}`)
+    );
+
+    const payload = data?.data ?? data;
+    const list = Array.isArray(payload) ? payload : payload.content ?? [];
+    return list.map(normalizeVehicle);
+  },
 };

@@ -19,9 +19,9 @@ import {
   Alert,
 } from 'antd';
 import { ArrowLeftOutlined, CarOutlined } from '@ant-design/icons';
-import { MapPin, CheckCircle2, XCircle } from 'lucide-react';
+import { MapPin, CheckCircle2, XCircle, Sparkles } from 'lucide-react';
 import AdminShell from '../../../components/AdminShell';
-import { tripDraftApi } from '../../../api/tripDraftApi';
+import { tripDraftApi, getOptimalDeparture, recalculateEta, type OptimalDepartureResponse } from '../../../api/tripDraftApi';
 import { getTripsByTripDraftId } from '../../../api/tripApi';
 import type { TripDraft } from '../../../types/tripDraft';
 import type { Trip } from '../../../types/trip';
@@ -58,6 +58,45 @@ const TripDraftDetailPage: React.FC = () => {
   const [existingTrips, setExistingTrips] = useState<Trip[]>([]);
   const [revertLoading, setRevertLoading] = useState(false);
   const [revertModalOpen, setRevertModalOpen] = useState(false);
+
+  // Smart Departure states
+  const [optimalLoading, setOptimalLoading] = useState(false);
+  const [optimalData, setOptimalData] = useState<OptimalDepartureResponse | null>(null);
+  const [optimalModalOpen, setOptimalModalOpen] = useState(false);
+  const [applyOptimalLoading, setApplyOptimalLoading] = useState(false);
+
+  const handleFetchOptimalDeparture = async () => {
+    if (!id) return;
+    setOptimalLoading(true);
+    try {
+      const res = await getOptimalDeparture(id);
+      setOptimalData(res);
+      setOptimalModalOpen(true);
+    } catch (err: any) {
+      console.error(err);
+      message.error(err?.message || 'Không thể lấy gợi ý giờ xuất phát.');
+    } finally {
+      setOptimalLoading(false);
+    }
+  };
+
+  const handleApplyOptimalDeparture = async () => {
+    if (!id || !optimalData) return;
+    setApplyOptimalLoading(true);
+    try {
+      const result = await recalculateEta(id, {
+        plannedDepartureTime: optimalData.suggestedDepartureTime,
+      });
+      message.success(`Đã cập nhật giờ xuất phát thành ${optimalData.suggestedDepartureTime}`);
+      setOptimalModalOpen(false);
+      fetchDraftDetail();
+    } catch (err: any) {
+      console.error(err);
+      message.error('Không thể áp dụng giờ xuất phát mới.');
+    } finally {
+      setApplyOptimalLoading(false);
+    }
+  };
 
   const handleRevert = async () => {
     if (!id) return;
@@ -273,6 +312,14 @@ const TripDraftDetailPage: React.FC = () => {
           {(draft.status === 'PLANNED' || draft.status === 'VALIDATED') && (
             <>
               <Button
+                icon={<Sparkles size={16} />}
+                style={{ borderRadius: 6, fontWeight: 600, color: '#722ed1', borderColor: '#d3adf7', background: '#f9f0ff' }}
+                loading={optimalLoading}
+                onClick={handleFetchOptimalDeparture}
+              >
+                Gợi ý giờ xuất phát
+              </Button>
+              <Button
                 danger
                 style={{ borderRadius: 6, fontWeight: 600 }}
                 loading={revertLoading}
@@ -451,7 +498,56 @@ const TripDraftDetailPage: React.FC = () => {
             message="Chú ý"
             description="Nếu đợt gom đơn này đã được phân xe (assign) hoặc tách chuyến (assign-split), hệ thống sẽ từ chối thu hồi."
           />
-        </div>
+      {/* Modal gợi ý giờ xuất phát thông minh */}
+      <Modal
+        open={optimalModalOpen}
+        title={
+          <Space>
+            <Sparkles size={20} color="#722ed1" />
+            <span>Gợi ý giờ xuất phát tối ưu</span>
+          </Space>
+        }
+        onCancel={() => setOptimalModalOpen(false)}
+        footer={[
+          <Button key="cancel" onClick={() => setOptimalModalOpen(false)}>
+            Đóng
+          </Button>,
+          <Button
+            key="apply"
+            type="primary"
+            style={{ background: '#722ed1', borderColor: '#722ed1' }}
+            loading={applyOptimalLoading}
+            onClick={handleApplyOptimalDeparture}
+          >
+            Áp dụng giờ mới này
+          </Button>,
+        ]}
+      >
+        {optimalData && (
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 16, paddingTop: 12 }}>
+            <Alert
+              type={optimalData.hasViolations ? 'warning' : 'info'}
+              showIcon
+              message="Đề xuất thời gian xuất phát"
+              description={optimalData.reason}
+              style={{ borderRadius: 8 }}
+            />
+            <Card size="small" style={{ borderRadius: 8, background: '#fafafa' }}>
+              <Row gutter={16}>
+                <Col span={12}>
+                  <Text type="secondary">Giờ hiện tại</Text>
+                  <br />
+                  <Text strong style={{ fontSize: 16 }}>{optimalData.currentDepartureTime || 'Chưa đặt'}</Text>
+                </Col>
+                <Col span={12}>
+                  <Text type="secondary">Giờ gợi ý tối ưu</Text>
+                  <br />
+                  <Text strong style={{ fontSize: 18, color: '#722ed1' }}>{optimalData.suggestedDepartureTime}</Text>
+                </Col>
+              </Row>
+            </Card>
+          </div>
+        )}
       </Modal>
     </AdminShell>
   );

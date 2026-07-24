@@ -91,3 +91,33 @@ export async function resolveException(
   );
   return unwrap(res);
 }
+
+// ── Operational Violations ───────────────────────────────────────────────────
+
+export interface OperationalViolation {
+  id?: number;
+  type: string;
+  storeCode: string;
+  storeName?: string;
+  description: string;
+  severity?: 'HIGH' | 'MEDIUM' | 'LOW';
+  createdAt?: string;
+}
+
+/**
+ * GET /api/exceptions/violations?date=YYYY-MM-DD
+ * Returns operational violations (e.g. Time Window early/late, capacity violations).
+ */
+export async function getOperationalViolations(
+  date?: string
+): Promise<OperationalViolation[]> {
+  const params: Record<string, string> = {};
+  if (date) params.date = date;
+
+  const res = await axiosInstance.get<ApiResponseWrapper<OperationalViolation[]>>(
+    '/api/exceptions/violations',
+    { params }
+  );
+  return unwrap(res);
+}
+

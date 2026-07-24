@@ -426,3 +426,25 @@ export async function getStopOrderItems(
   return unwrapApiResponse(response.data);
 }
 
+export interface OptimalDepartureResponse {
+  tripDraftId: number;
+  currentDepartureTime: string;
+  suggestedDepartureTime: string;
+  reason: string;
+  hasViolations: boolean;
+}
+
+/**
+ * POST /api/trip-drafts/{id}/optimal-departure
+ * Smart Departure Adjustment: Returns suggested departure time to optimize store time windows.
+ */
+export async function getOptimalDeparture(
+  draftId: string | number
+): Promise<OptimalDepartureResponse> {
+  const response = await axiosInstance.post<ApiResponse<OptimalDepartureResponse>>(
+    `/api/trip-drafts/${draftId}/optimal-departure`
+  );
+  return unwrapApiResponse(response.data);
+}
+
+
