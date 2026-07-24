@@ -498,6 +498,9 @@ const TripDraftDetailPage: React.FC = () => {
             message="Chú ý"
             description="Nếu đợt gom đơn này đã được phân xe (assign) hoặc tách chuyến (assign-split), hệ thống sẽ từ chối thu hồi."
           />
+        </div>
+      </Modal>
+
       {/* Modal gợi ý giờ xuất phát thông minh */}
       <Modal
         open={optimalModalOpen}
