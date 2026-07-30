@@ -108,7 +108,8 @@ const ImportBatchDetailPage: React.FC = () => {
     loadBatchDetails();
   }, [batchId]);
 
-  const formatDateStr = (dateStr: string) => {
+  const formatDateStr = (dateStr?: string | null) => {
+    if (!dateStr) return 'Nhiều ngày giao hàng';
     try {
       const [year, month, day] = dateStr.split('-');
       return `${day}/${month}/${year}`;
@@ -202,7 +203,7 @@ const ImportBatchDetailPage: React.FC = () => {
           {ordersCreated > 0 && (
             <Button
               type="primary"
-              onClick={() => navigate(`/dispatcher/trip-drafts?deliveryDate=${batch.deliveryDate}`)}
+              onClick={() => navigate(batch.deliveryDate ? `/dispatcher/trip-drafts?deliveryDate=${batch.deliveryDate}` : '/dispatcher/trip-drafts')}
               style={{ borderRadius: 6, height: 40, fontWeight: 600, background: '#52c41a', borderColor: '#52c41a' }}
             >
               Đi đến Gom đơn

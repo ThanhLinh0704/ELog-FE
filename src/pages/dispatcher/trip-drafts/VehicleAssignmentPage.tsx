@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
+import { useParams, useNavigate, useSearchParams } from 'react-router-dom';
 import {
   Card,
   Button,
@@ -146,6 +146,7 @@ interface SplitGroup {
 
 const VehicleAssignmentPage: React.FC = () => {
   const { id } = useParams<{ id: string }>();
+  const [searchParams] = useSearchParams();
   const navigate = useNavigate();
   const currentUser = getCurrentUser();
   const { can } = usePermissions();
@@ -200,10 +201,21 @@ const VehicleAssignmentPage: React.FC = () => {
           getAvailableDrivers(deliveryDate),
           getFleetCapacityCheck(deliveryDate),
         ]);
-        setEligibleVehicles(vehicleData.eligibleVehicles ?? []);
+        const loadedEligible = vehicleData.eligibleVehicles ?? [];
+        setEligibleVehicles(loadedEligible);
         setIneligibleVehicles(vehicleData.ineligibleVehicles ?? []);
         setDrivers(driverData);
         setFleetCheck(fleetData);
+
+        const paramVId = searchParams.get('vehicleId');
+        if (paramVId && loadedEligible.some(v => v.vehicleId === Number(paramVId))) {
+          setSelectedVehicleId(Number(paramVId));
+        }
+
+        const paramDriverId = searchParams.get('driverId');
+        if (paramDriverId && driverData.some(d => d.userId === Number(paramDriverId))) {
+          setSelectedDriverId(Number(paramDriverId));
+        }
       } else if (tripsData.length === 0 && draftData.status !== 'VALIDATED') {
         // Draft not ready for assignment — load fleet check anyway
         const fleetData = await getFleetCapacityCheck(draftData.deliveryDate);
@@ -223,48 +235,8 @@ const VehicleAssignmentPage: React.FC = () => {
   };
 
   useEffect(() => {
-    const fetchData = async () => {
-      if (!id) return;
-      setLoading(true);
-      setLoadError(null);
-
-      try {
-        const [draftData, tripsData] = await Promise.all([
-          tripDraftApi.getTripDraftById(Number(id)),
-          getTripsByTripDraftId(id),
-        ]);
-        setDraft(draftData);
-        setExistingTrips(tripsData);
-
-        if (tripsData.length === 0 && draftData.status === 'VALIDATED') {
-          const deliveryDate = draftData.deliveryDate;
-          const [vehicleData, driverData, fleetData] = await Promise.all([
-            getEligibleVehicles(id),
-            getAvailableDrivers(deliveryDate),
-            getFleetCapacityCheck(deliveryDate),
-          ]);
-          setEligibleVehicles(vehicleData.eligibleVehicles ?? []);
-          setIneligibleVehicles(vehicleData.ineligibleVehicles ?? []);
-          setDrivers(driverData);
-          setFleetCheck(fleetData);
-        } else if (tripsData.length === 0 && draftData.status !== 'VALIDATED') {
-          const fleetData = await getFleetCapacityCheck(draftData.deliveryDate);
-          setFleetCheck(fleetData);
-        }
-      } catch (err) {
-        console.error(err);
-        const code = getErrorCode(err);
-        if (code === 'TRIP_DRAFT_NOT_VALIDATED') {
-          setLoadError('Trip Draft chưa được kiểm tra tải trọng. Vui lòng thực hiện kiểm tra tải trọng trước.');
-        } else {
-          setLoadError(getErrorMessage(err, 'Không thể tải dữ liệu phân xe. Vui lòng thử lại.'));
-        }
-      } finally {
-        setLoading(false);
-      }
-    };
-    fetchData();
-  }, [id]);
+    loadAll();
+  }, [id, searchParams]);
 
   // ── Derived: active stops for split ─────────────────────────────────────
   const activeStops: TripDraftStop[] = (draft?.stops ?? [])
@@ -273,7 +245,7 @@ const VehicleAssignmentPage: React.FC = () => {
 
   // ── Single mode: assign ──────────────────────────────────────────────────
   const handleConfirmAssign = async () => {
-    if (!id || !selectedVehicleId || !selectedDriverId) return;
+    if (!id || !selectedVehicleId) return;
     setSubmitting(true);
     try {
       await assignTrip(id, { vehicleId: selectedVehicleId, driverId: selectedDriverId });
@@ -895,6 +867,32 @@ const VehicleAssignmentPage: React.FC = () => {
                   )}
 
                   <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+                    {/* Auto driver option */}
+                    <div
+                      onClick={() => setSelectedDriverId(null)}
+                      style={{
+                        border: selectedDriverId === null ? '2px solid #1677ff' : '1px dashed #d9d9d9',
+                        borderRadius: 8,
+                        padding: '10px 14px',
+                        cursor: 'pointer',
+                        background: selectedDriverId === null ? '#e6f4ff' : '#fafafa',
+                        transition: 'all 0.15s',
+                      }}
+                    >
+                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                          <UserOutlined style={{ color: '#1677ff' }} />
+                          <div>
+                            <Text strong>Tự động gán tài xế cố định</Text>
+                            <div style={{ fontSize: 12, color: '#8c8c8c' }}>Sử dụng tài xế cố định của xe (nếu có)</div>
+                          </div>
+                        </div>
+                        {selectedDriverId === null && (
+                          <CheckOutlined style={{ color: '#1677ff', fontSize: 16 }} />
+                        )}
+                      </div>
+                    </div>
+
                     {/* Available drivers first */}
                     {drivers.filter((d) => d.available).map((d) => (
                       <div
@@ -994,7 +992,7 @@ const VehicleAssignmentPage: React.FC = () => {
                                   const d = drivers.find((x) => x.userId === selectedDriverId);
                                   return <Text strong>{d ? d.fullName : `ID: ${selectedDriverId}`}</Text>;
                                 })()
-                              : <Text type="secondary">Chưa chọn</Text>}
+                              : <Text type="secondary" style={{ fontStyle: 'italic' }}>Tự động chọn tài xế cố định của xe</Text>}
                           </div>
                         </div>
                         <div>
@@ -1016,7 +1014,6 @@ const VehicleAssignmentPage: React.FC = () => {
                           icon={<CheckCircleOutlined />}
                           disabled={
                             !selectedVehicleId ||
-                            !selectedDriverId ||
                             submitting ||
                             !fleetCheck?.canDispatch
                           }
@@ -1265,7 +1262,7 @@ const VehicleAssignmentPage: React.FC = () => {
             })()}</Text></div>
             <div><Text type="secondary">Tài xế:</Text> <Text strong>{(() => {
               const d = drivers.find((x) => x.userId === selectedDriverId);
-              return d ? d.fullName : '—';
+              return d ? d.fullName : 'Tự động chọn tài xế cố định của xe';
             })()}</Text></div>
             <div><Text type="secondary">Ngày giao:</Text> <Text strong>{formatDate(draft?.deliveryDate)}</Text></div>
             <div><Text type="secondary">Thể tích:</Text> <Text strong>{fmtVolume(draft?.totalVolumeM3)}</Text></div>

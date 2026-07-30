@@ -26,8 +26,8 @@ const ImportHistoryTable: React.FC<ImportHistoryTableProps> = ({
 }) => {
   const navigate = useNavigate();
 
-  const formatDate = (dateStr: string, format = 'DD/MM/YYYY') => {
-    if (!dateStr) return '';
+  const formatDate = (dateStr?: string | null, format = 'DD/MM/YYYY') => {
+    if (!dateStr) return <span style={{ fontStyle: 'italic', color: '#fa8c16' }}>Nhiều ngày giao hàng</span>;
     return dayjs(dateStr).format(format);
   };
 

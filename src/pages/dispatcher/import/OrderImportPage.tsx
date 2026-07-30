@@ -5,9 +5,9 @@ import AdminShell from '../../../components/AdminShell';
 import ImportUploadCard from './components/ImportUploadCard';
 import ImportReadOnlyBanner from './components/ImportReadOnlyBanner';
 import ImportHistoryTable from './components/ImportHistoryTable';
-import * as XLSX from 'xlsx';
+import ReplaceBatchModal from './components/ReplaceBatchModal';
 import { canUploadOrders } from '../../../utils/importPermissions';
-import { importApi } from '../../../api/importApi';
+import { importApi, ApiError } from '../../../api/importApi';
 import type { ImportBatchHistory } from '../../../types/import';
 
 const { Title, Paragraph } = Typography;
@@ -40,6 +40,12 @@ const OrderImportPage: React.FC = () => {
   // Loading states
   const [uploadLoading, setUploadLoading] = useState(false);
   const [historyLoading, setHistoryLoading] = useState(false);
+
+  // Duplicate delivery-date conflict (HTTP 409) awaiting confirmReplace
+  const [replaceModalOpen, setReplaceModalOpen] = useState(false);
+  const [replaceLoading, setReplaceLoading] = useState(false);
+  const [pendingUpload, setPendingUpload] = useState<{ file: File; deliveryDate?: string } | null>(null);
+  const [conflictDeliveryDate, setConflictDeliveryDate] = useState<string | undefined>(undefined);
 
   // History table pagination and data state
   const [historyData, setHistoryData] = useState<ImportBatchHistory[]>([]);
@@ -74,87 +80,58 @@ const OrderImportPage: React.FC = () => {
     loadHistory(page, newSize);
   };
 
-  // Perform the actual upload
-  const executeUpload = async (deliveryDate: string, file: File) => {
+  // Perform the actual upload. Backend parses the Excel file and is the sole
+  // source of truth for order data — the FE does not re-parse the file.
+  const executeUpload = async (file: File, deliveryDate?: string, confirmReplace: boolean = false) => {
     setUploadLoading(true);
-
-    // Parse excel file in frontend to extract all successfully imported items
-    let excelRows: any[] = [];
     try {
-      const dataBuffer = await file.arrayBuffer();
-      const workbook = XLSX.read(dataBuffer, { type: 'array' });
-      const sheetName = workbook.SheetNames[0];
-      const sheet = workbook.Sheets[sheetName];
-      const rowsJson = XLSX.utils.sheet_to_json<any[]>(sheet, { header: 1 });
-
-      const orderRefIdx = 0;
-      const storeCodeIdx = 1;
-      const skuIdx = 2;
-      const quantityIdx = 3;
-      const timeWindowIdx = 4;
-      const recipientNameIdx = 5;
-      const recipientPhoneIdx = 6;
-      const notesIdx = 7;
-
-      for (let i = 1; i < rowsJson.length; i++) {
-        const row = rowsJson[i] as any[];
-        if (row && row.length > 0) {
-          const orderRef = orderRefIdx < row.length ? String(row[orderRefIdx] || '').trim() : '';
-          const storeCode = storeCodeIdx < row.length ? String(row[storeCodeIdx] || '').trim() : '';
-          const sku = skuIdx < row.length ? String(row[skuIdx] || '').trim() : '';
-          const quantity = quantityIdx < row.length ? (parseInt(String(row[quantityIdx] || '0').trim()) || 0) : 0;
-          const deliveryTimeWindow = timeWindowIdx < row.length ? String(row[timeWindowIdx] || '').trim() : '';
-          const recipientName = recipientNameIdx < row.length ? String(row[recipientNameIdx] || '').trim() : '';
-          const recipientPhone = recipientPhoneIdx < row.length ? String(row[recipientPhoneIdx] || '').trim() : '';
-          const notes = notesIdx < row.length ? String(row[notesIdx] || '').trim() : '';
-
-          if (storeCode || sku) {
-            excelRows.push({
-              rowNumber: i + 1,
-              orderRef,
-              storeCode,
-              sku,
-              quantity,
-              deliveryTimeWindow,
-              recipientName,
-              recipientPhone,
-              notes,
-            });
-          }
-        }
-      }
-    } catch (err) {
-      console.error("Error parsing Excel in frontend", err);
-    }
-
-    try {
-      const result = await importApi.uploadOrders(deliveryDate, file, false);
-      
-      // Filter and save successful rows to localStorage
-      try {
-        const errorRowNumbers = new Set((result.errors || []).map((e: any) => e.rowNumber));
-        const successRows = excelRows.filter(r => !errorRowNumbers.has(r.rowNumber));
-        localStorage.setItem(`import_batch_success_rows_${result.batchId}`, JSON.stringify(successRows));
-      } catch (err) {
-        console.error("Error caching success rows in localStorage", err);
-      }
+      const result = await importApi.uploadOrders(file, deliveryDate, confirmReplace);
 
       message.success(`Tải lên file thành công. Tạo Batch #${result.batchId}`);
-      
+      setReplaceModalOpen(false);
+      setPendingUpload(null);
+
       // Redirect to detail page directly
       navigate(`/dispatcher/import/history/${result.batchId}`);
 
     } catch (error: any) {
-      console.error('Upload failed', error);
-      message.error(error?.message || 'Không thể xử lý file. Vui lòng thử lại.');
+      if (!confirmReplace && error instanceof ApiError && error.status === 409) {
+        // First attempt hit a duplicate-date conflict — ask the dispatcher to
+        // confirm replacing it (confirmReplace=true).
+        setConflictDeliveryDate(deliveryDate);
+        setPendingUpload({ file, deliveryDate });
+        setReplaceModalOpen(true);
+      } else {
+        // Either a non-conflict error, or the confirmReplace retry itself
+        // failed (backend could not resolve the conflict, e.g. for a
+        // multi-date batch with no explicit deliveryDate). Surface the real
+        // backend message instead of silently reopening the same modal —
+        // retrying again would not help.
+        console.error('Upload failed', error);
+        message.error(error?.message || 'Không thể xử lý file. Vui lòng thử lại.');
+        setReplaceModalOpen(false);
+        setPendingUpload(null);
+      }
     } finally {
       setUploadLoading(false);
+      setReplaceLoading(false);
     }
   };
 
   // Pre-upload checks
-  const handleUploadInitiated = async (deliveryDate: string, file: File) => {
-    await executeUpload(deliveryDate, file);
+  const handleUploadInitiated = async (file: File, deliveryDate?: string) => {
+    await executeUpload(file, deliveryDate, false);
+  };
+
+  const handleConfirmReplace = async () => {
+    if (!pendingUpload) return;
+    setReplaceLoading(true);
+    await executeUpload(pendingUpload.file, pendingUpload.deliveryDate, true);
+  };
+
+  const handleCancelReplace = () => {
+    setReplaceModalOpen(false);
+    setPendingUpload(null);
   };
 
   return (
@@ -194,6 +171,14 @@ const OrderImportPage: React.FC = () => {
         currentPage={currentPage}
         pageSize={pageSize}
         onPageChange={handlePageChange}
+      />
+
+      <ReplaceBatchModal
+        open={replaceModalOpen}
+        deliveryDateStr={conflictDeliveryDate}
+        confirmLoading={replaceLoading}
+        onCancel={handleCancelReplace}
+        onConfirm={handleConfirmReplace}
       />
     </AdminShell>
   );

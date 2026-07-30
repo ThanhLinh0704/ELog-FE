@@ -59,6 +59,11 @@ export const IMPORT_ERROR_META: Record<
     color: "volcano",
     icon: "🔴",
   },
+  DELIVERY_DATE_LOCKED: {
+    label: "Ngày giao đã khoá Trip Draft",
+    color: "purple",
+    icon: "🔒",
+  },
   UNKNOWN: {
     label: "Lỗi khác",
     color: "default",
@@ -266,6 +271,7 @@ const ImportErrorsTable: React.FC<ImportErrorsTableProps> = ({ batchId }) => {
                 { value: 'ORDER_REF_STORE_MISMATCH', label: 'Mã đơn sai cửa hàng' },
                 { value: 'INVALID_QUANTITY', label: 'Số lượng không hợp lệ' },
                 { value: 'SKU_INACTIVE', label: 'SKU ngừng kinh doanh' },
+                { value: 'DELIVERY_DATE_LOCKED', label: 'Ngày giao đã khoá Trip Draft' },
                 { value: 'UNKNOWN', label: 'Lỗi khác' },
               ]}
             />

@@ -9,766 +9,714 @@ import {
   Typography,
   Empty,
   message,
-  DatePicker,
   Breadcrumb,
   Progress,
+  Tabs,
+  Table,
+  Divider,
   Popconfirm,
   Badge,
-  Tooltip,
-  Divider,
 } from 'antd';
 import {
   Truck,
-  Clock,
-  AlertTriangle,
   CheckCircle2,
   Play,
-  Navigation,
-  CircleCheck,
-  ChevronDown,
-  ChevronUp,
-  FileText,
+  PackageCheck,
+  List,
+  ArrowUpDown,
   RefreshCw,
-  XCircle,
+  MapPin,
+  AlertTriangle,
 } from 'lucide-react';
 import AdminShell from '../../components/AdminShell';
-import { getMyTrips } from '../../api/tripApi';
-import { startTrip, arriveAtStop, completeStop, getTripProgress } from '../../api/monitoringApi';
-import DeliveryRejectionModal from './DeliveryRejectionModal';
-import type { Trip } from '../../types/trip';
+import {
+  getActiveTrip,
+  startExecution,
+  updateOrderResult,
+  completeExecution,
+  returnToWarehouse,
+} from '../../api/tripApi';
+import OrderResultModal from './OrderResultModal';
 import type {
-  TripProgressResponse,
-  StopProgress,
-} from '../../types/monitoring';
-import dayjs from 'dayjs';
+  DriverTripExecution,
+  DriverTripStop,
+  DriverOrder,
+  LifoLoadingItem,
+  OrderDeliveryStatus,
+  UpdateOrderResultPayload,
+} from '../../types/driverTrip';
+import {
+  EXECUTION_STATUS_LABEL,
+  ORDER_STATUS_LABEL,
+  STOP_STATUS_LABEL,
+} from '../../types/driverTrip';
+import type { TripOutcome } from '../../types/tripOutcome';
 
 const { Text, Title } = Typography;
 
-// ── Status maps ─────────────────────────────────────────────────────────────
-
-const TRIP_STATUS_LABEL: Record<string, { color: string; label: string }> = {
-  DISPATCHED: { color: 'purple', label: 'Đã điều phối' },
-  IN_PROGRESS: { color: 'processing', label: 'Đang giao' },
-  COMPLETED: { color: 'success', label: 'Hoàn thành' },
-  VALIDATED: { color: 'default', label: 'Đã xác nhận' },
-};
-
-const STOP_STATUS_LABEL: Record<string, { color: string; label: string }> = {
-  PENDING: { color: 'default', label: 'Chờ đến' },
-  IN_PROGRESS: { color: 'processing', label: 'Đang giao' },
-  COMPLETED: { color: 'success', label: 'Đã hoàn thành' },
-  EXCEPTION: { color: 'error', label: 'Có ngoại lệ' },
-};
-
-function formatTime(isoStr: string | null | undefined): string {
-  if (!isoStr) return '—';
-  try {
-    const d = new Date(isoStr);
-    return d.toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit' });
-  } catch {
-    return isoStr;
-  }
+function formatTime(t: string | null | undefined): string {
+  if (!t) return '—';
+  // "HH:mm:ss" format
+  return t.slice(0, 5);
 }
 
-function formatDelay(minutes: number | null | undefined): string {
-  if (minutes === null || minutes === undefined) return '—';
-  if (minutes === 0) return 'Đúng giờ';
-  return `Trễ ${minutes} phút`;
-}
-
-// ── Error helper ────────────────────────────────────────────────────────────
-
-interface ApiError {
-  response?: {
-    status?: number;
-    data?: {
-      error?: {
-        code?: string;
-        message?: string;
-      };
-    };
-  };
-}
-
-function getErrorInfo(err: unknown): { code: string; message: string } {
-  const axErr = err as ApiError;
-  const code = axErr?.response?.data?.error?.code || '';
-  const msg = axErr?.response?.data?.error?.message || '';
-
-  switch (code) {
-    case 'NOT_YOUR_TRIP':
-      return { code, message: 'Bạn không được phân công cho chuyến này.' };
-    case 'INVALID_TRIP_TRANSITION':
-      return { code, message: msg || 'Chuyến không ở trạng thái phù hợp để thực hiện.' };
-    case 'TRIP_COMPLETED':
-      return { code, message: 'Chuyến đã hoàn thành.' };
-    case 'STOP_ALREADY_DONE':
-      return { code, message: msg || 'Điểm giao đã được xử lý.' };
-    case 'STOP_NOT_PENDING':
-      return { code, message: msg || 'Điểm giao không ở trạng thái chờ.' };
-    case 'STOP_NOT_IN_PROGRESS':
-      return { code, message: msg || 'Điểm giao chưa được xác nhận đến.' };
-    case 'PREVIOUS_STOP_NOT_DONE':
-      return { code, message: msg || 'Vui lòng hoàn thành điểm giao trước đó.' };
-    case 'TRIP_NOT_FOUND':
-    case 'TRIP_STOP_NOT_FOUND':
-      return { code, message: msg || 'Không tìm thấy dữ liệu.' };
-    case 'ACCESS_DENIED':
-      return { code, message: 'Bạn không có quyền cập nhật chuyến này.' };
-    default:
-      if (axErr?.response?.status === 403) {
-        return { code: 'ACCESS_DENIED', message: 'Bạn không có quyền cập nhật chuyến này.' };
-      }
-      if (axErr?.response?.status === 404) {
-        return { code: 'NOT_FOUND', message: 'Không tìm thấy dữ liệu.' };
-      }
-      return { code: 'UNKNOWN', message: msg || 'Đã xảy ra lỗi. Vui lòng thử lại.' };
-  }
-}
-
-// ── Component ───────────────────────────────────────────────────────────────
-
-const DriverMyTripsPage: React.FC = () => {
-  // Auth
+// ── Auth helper ───────────────────────────────────────────────────────────────
+function getCurrentUser() {
   const username = localStorage.getItem('username') || '';
   const userId = localStorage.getItem('userId') || '';
   let roles: string[] = [];
   try {
     const rolesStr = localStorage.getItem('roles');
     if (rolesStr) roles = JSON.parse(rolesStr);
-  } catch { /* */ }
+  } catch { /* ignore */ }
+  return { id: Number(userId), username, fullName: username, roles };
+}
 
-  const currentUser = { id: Number(userId), username, fullName: username, roles };
+// ── Error helper ──────────────────────────────────────────────────────────────
+interface ApiErr {
+  response?: { data?: { error?: { code?: string; message?: string } } };
+}
+function getErrMsg(err: unknown): string {
+  const axErr = err as ApiErr;
+  return axErr?.response?.data?.error?.message || 'Đã xảy ra lỗi. Vui lòng thử lại.';
+}
 
-  // State
-  const [trips, setTrips] = useState<Trip[]>([]);
+// ── Component ─────────────────────────────────────────────────────────────────
+
+const DriverMyTripsPage: React.FC = () => {
+  const currentUser = getCurrentUser();
+
+  const [trip, setTrip] = useState<DriverTripExecution | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [selectedDate, setSelectedDate] = useState<dayjs.Dayjs>(dayjs());
+  const [completing, setCompleting] = useState(false);
+  const [starting, setStarting] = useState(false);
+  const [returningWarehouse, setReturningWarehouse] = useState(false);
+  const [outcome, setOutcome] = useState<TripOutcome | null>(null);
 
-  // Expanded trips with stop details
-  const [expandedTripId, setExpandedTripId] = useState<number | null>(null);
-  const [tripProgress, setTripProgress] = useState<Record<number, TripProgressResponse>>({});
-  const [progressLoading, setProgressLoading] = useState<Record<number, boolean>>({});
-
-  // Submitting states
-  const [submitting, setSubmitting] = useState<Record<string, boolean>>({});
-
-  // Rejection modal state
-  const [rejectModal, setRejectModal] = useState<{
+  // Order result modal state
+  const [orderModal, setOrderModal] = useState<{
     open: boolean;
-    tripStopId: number;
-    storeCode: string;
-    storeName: string | null;
-    tripId: number;
-  }>({ open: false, tripStopId: 0, storeCode: '', storeName: null, tripId: 0 });
+    executionId: number;
+    orderId: number;
+    orderRef: string;
+    currentStatus: OrderDeliveryStatus;
+  }>({ open: false, executionId: 0, orderId: 0, orderRef: '', currentStatus: 'PENDING' });
 
-  // ── Data fetching ─────────────────────────────────────────────────────────
+  // ── Fetch active trip ────────────────────────────────────────────────────
 
-  const fetchTrips = useCallback(async () => {
+  const fetchActiveTrip = useCallback(async () => {
     setLoading(true);
     setError(null);
     try {
-      const dateStr = selectedDate.format('YYYY-MM-DD');
-      const result = await getMyTrips(dateStr);
-      setTrips(result);
-    } catch (err: unknown) {
-      const { message: errMsg } = getErrorInfo(err);
-      setError(errMsg);
+      const data = await getActiveTrip();
+      if (data) {
+        setTrip(data);
+        return;
+      }
+      // Backend's GET /api/driver/trips/active only matches ASSIGNED/IN_PROGRESS
+      // executions, so a trip that was just completed but not yet confirmed back
+      // at the warehouse will never come back from this call. Keep it locally so
+      // the driver can still reach "Xác nhận xe đã về kho".
+      setTrip((prev) =>
+        prev &&
+        (prev.status === 'COMPLETED' || prev.status === 'COMPLETED_WITH_EXCEPTIONS') &&
+        !prev.returnedToWarehouseAt
+          ? prev
+          : null
+      );
+    } catch (err) {
+      setError(getErrMsg(err));
     } finally {
       setLoading(false);
     }
-  }, [selectedDate]);
-
-  const initialLoadRef = React.useRef(false);
-  useEffect(() => {
-    if (!initialLoadRef.current) {
-      initialLoadRef.current = true;
-      fetchTrips();
-    } else {
-      fetchTrips();
-    }
-  }, [fetchTrips]);
-
-  // ── Load progress for expanded trip ───────────────────────────────────────
-
-  const loadProgress = useCallback(async (tripId: number) => {
-    setProgressLoading((prev) => ({ ...prev, [tripId]: true }));
-    try {
-      const progress = await getTripProgress(tripId);
-      setTripProgress((prev) => ({ ...prev, [tripId]: progress }));
-    } catch {
-      // Silently fail — stops will just not show details
-    } finally {
-      setProgressLoading((prev) => ({ ...prev, [tripId]: false }));
-    }
   }, []);
 
-  const toggleExpand = (tripId: number) => {
-    if (expandedTripId === tripId) {
-      setExpandedTripId(null);
-    } else {
-      setExpandedTripId(tripId);
-      if (!tripProgress[tripId]) {
-        void loadProgress(tripId);
-      }
+  useEffect(() => { fetchActiveTrip(); }, [fetchActiveTrip]);
+
+  // ── Start execution ──────────────────────────────────────────────────────
+
+  const handleStart = async () => {
+    if (!trip) return;
+    setStarting(true);
+    try {
+      const updated = await startExecution(trip.executionId);
+      setTrip(updated);
+      message.success('Bắt đầu chuyến thành công!');
+    } catch (err) {
+      message.error(getErrMsg(err));
+    } finally {
+      setStarting(false);
     }
   };
 
-  // ── Actions ───────────────────────────────────────────────────────────────
+  // ── Complete execution ───────────────────────────────────────────────────
 
-  const handleStartTrip = async (tripId: number) => {
-    const key = `start-${tripId}`;
-    if (submitting[key]) return;
-    setSubmitting((prev) => ({ ...prev, [key]: true }));
-
+  const handleComplete = async () => {
+    if (!trip) return;
+    setCompleting(true);
     try {
-      const result = await startTrip(tripId);
-      message.success(result.message || 'Bắt đầu chuyến thành công!');
-      await fetchTrips();
-      // Auto expand started trip
-      setExpandedTripId(tripId);
-      void loadProgress(tripId);
-    } catch (err: unknown) {
-      const { code, message: errMsg } = getErrorInfo(err);
-      message.error(errMsg);
-      if (code === 'NOT_YOUR_TRIP' || code === 'INVALID_TRIP_TRANSITION' || code === 'TRIP_COMPLETED') {
-        await fetchTrips();
+      const result = await completeExecution(trip.executionId);
+      setOutcome(result);
+      message.success('Chuyến đã hoàn thành và nộp kết quả thành công!');
+      // Backend's GET /active would no longer return this execution (it only
+      // matches ASSIGNED/IN_PROGRESS), so derive the post-complete trip state
+      // locally instead of refetching — otherwise the "Xác nhận xe đã về kho"
+      // step becomes unreachable.
+      const hasExceptions = result.failedCount > 0 || result.partialCount > 0;
+      setTrip((prev) =>
+        prev
+          ? {
+              ...prev,
+              status: hasExceptions ? 'COMPLETED_WITH_EXCEPTIONS' : 'COMPLETED',
+              completedOrdersCount: result.totalOrders,
+              pendingOrdersCount: 0,
+            }
+          : prev
+      );
+    } catch (err) {
+      message.error(getErrMsg(err));
+    } finally {
+      setCompleting(false);
+    }
+  };
+
+  // ── Return to warehouse ─────────────────────────────────────────────────
+
+  const handleReturnToWarehouse = async () => {
+    if (!trip) return;
+    setReturningWarehouse(true);
+    try {
+      const updated = await returnToWarehouse(trip.executionId);
+      setTrip(updated);
+      message.success('Đã xác nhận xe về tới kho thành công!');
+    } catch (err: any) {
+      const msg = getErrMsg(err);
+      if (msg.includes('chưa hoàn thành')) {
+        message.error('Chuyến xe chưa hoàn thành nên chưa thể xác nhận về kho.');
+        fetchActiveTrip();
+      } else if (msg.includes('đã được xác nhận về kho')) {
+        message.info(msg);
+        fetchActiveTrip();
+      } else {
+        message.error(msg);
       }
     } finally {
-      setSubmitting((prev) => ({ ...prev, [key]: false }));
+      setReturningWarehouse(false);
     }
   };
 
-  const handleArrive = async (tripStopId: number, tripId: number) => {
-    const key = `arrive-${tripStopId}`;
-    if (submitting[key]) return;
-    setSubmitting((prev) => ({ ...prev, [key]: true }));
+  // ── Order result update ──────────────────────────────────────────────────
 
-    try {
-      const result = await arriveAtStop(tripStopId);
-      if (result.timeExceptionFlagged) {
-        message.warning(result.message || `⚠️ Trễ ${result.delayMinutes} phút — Ngoại lệ thời gian!`);
-      } else {
-        message.success(result.message || 'Đã xác nhận đến điểm giao.');
-      }
-      void loadProgress(tripId);
-    } catch (err: unknown) {
-      const { code, message: errMsg } = getErrorInfo(err);
-      message.error(errMsg);
-      if (code === 'NOT_YOUR_TRIP' || code === 'TRIP_COMPLETED') {
-        await fetchTrips();
-      } else {
-        void loadProgress(tripId);
-      }
-    } finally {
-      setSubmitting((prev) => ({ ...prev, [key]: false }));
-    }
+  const handleOrderResult = async (
+    executionId: number,
+    orderId: number,
+    payload: UpdateOrderResultPayload
+  ) => {
+    const updated = await updateOrderResult(executionId, orderId, payload);
+    setTrip(updated);
   };
 
-  const handleComplete = async (tripStopId: number, tripId: number) => {
-    const key = `complete-${tripStopId}`;
-    if (submitting[key]) return;
-    setSubmitting((prev) => ({ ...prev, [key]: true }));
+  // ── Render: No trip ──────────────────────────────────────────────────────
 
-    try {
-      const result = await completeStop(tripStopId);
-      if (result.tripCompleted) {
-        message.success(result.message || 'Tất cả điểm giao đã hoàn thành. Chuyến đã kết thúc!');
-        await fetchTrips();
-      } else {
-        message.success(result.message || 'Hoàn thành điểm giao.');
-        void loadProgress(tripId);
-      }
-    } catch (err: unknown) {
-      const { code, message: errMsg } = getErrorInfo(err);
-      message.error(errMsg);
-      if (code === 'NOT_YOUR_TRIP' || code === 'TRIP_COMPLETED') {
-        await fetchTrips();
-      } else {
-        void loadProgress(tripId);
-      }
-    } finally {
-      setSubmitting((prev) => ({ ...prev, [key]: false }));
-    }
-  };
-
-  // ── Check if LIFO manifest route exists ───────────────────────────────────
-
-  const hasLIFORoute = true; // Route `/trips/:tripId/loading-manifest` exists in App.tsx
-
-  // ── Helpers to determine which stop can be actioned ───────────────────────
-  // Backend enforces sequential order, so we find the first PENDING stop as actionable
-
-  function getNextActionableStop(stops: StopProgress[]): StopProgress | null {
-    const sorted = [...stops].sort((a, b) => a.sequenceOrder - b.sequenceOrder);
-    // First find IN_PROGRESS — that's the current stop to complete
-    const inProgress = sorted.find((s) => s.status === 'IN_PROGRESS');
-    if (inProgress) return inProgress;
-    // Then find first PENDING — that's the next to arrive
-    const pending = sorted.find((s) => s.status === 'PENDING');
-    return pending || null;
+  if (loading) {
+    return (
+      <AdminShell currentUser={currentUser}>
+        <div style={{ textAlign: 'center', padding: '80px 0' }}>
+          <Spin size="large" tip="Đang tải thông tin chuyến xe..." />
+        </div>
+      </AdminShell>
+    );
   }
 
-  // ── Render ────────────────────────────────────────────────────────────────
-
-  return (
-    <AdminShell currentUser={currentUser}>
-      <div style={{ display: 'flex', flexDirection: 'column', gap: 16, maxWidth: 800, margin: '0 auto' }}>
-        {/* Header */}
-        <Breadcrumb
-          items={[
-            { title: 'Trang chủ' },
-            { title: 'Chuyến giao hàng' },
-          ]}
+  if (error) {
+    return (
+      <AdminShell currentUser={currentUser}>
+        <Alert
+          type="error"
+          showIcon
+          message={error}
+          action={<Button size="small" onClick={fetchActiveTrip}>Thử lại</Button>}
         />
+      </AdminShell>
+    );
+  }
 
+  // ── Render: Outcome (trip just completed) ────────────────────────────────
+
+  if (outcome) {
+    return (
+      <AdminShell currentUser={currentUser}>
+        <Breadcrumb style={{ marginBottom: 12 }} items={[{ title: 'Trang chủ' }, { title: 'Chuyến giao hàng' }]} />
+        <Card style={{ borderRadius: 12, textAlign: 'center', padding: '40px 20px' }}>
+          <CheckCircle2 size={56} color="#52c41a" style={{ marginBottom: 16 }} />
+          <Title level={3} style={{ color: '#52c41a' }}>Chuyến hoàn thành!</Title>
+          <Text type="secondary">Kết quả đã được nộp cho Dispatcher nghiệm thu.</Text>
+          <Divider />
+          <Space direction="vertical" size={4}>
+            <Text>Mã chuyến: <strong>{outcome.tripCode}</strong></Text>
+            <Text>Đã giao: <strong style={{ color: '#52c41a' }}>{outcome.deliveredCount}/{outcome.totalOrders}</strong></Text>
+            {outcome.failedCount > 0 && <Text>Thất bại: <strong style={{ color: '#ff4d4f' }}>{outcome.failedCount}</strong></Text>}
+          </Space>
+          <div style={{ marginTop: 24 }}>
+            <Button onClick={() => { setOutcome(null); fetchActiveTrip(); }}>
+              Xem chuyến tiếp theo
+            </Button>
+          </div>
+        </Card>
+      </AdminShell>
+    );
+  }
+
+  // ── Render: No active trip ───────────────────────────────────────────────
+
+  if (!trip) {
+    return (
+      <AdminShell currentUser={currentUser}>
+        <Breadcrumb style={{ marginBottom: 12 }} items={[{ title: 'Trang chủ' }, { title: 'Chuyến giao hàng' }]} />
         <div style={{
           background: 'linear-gradient(135deg, #1e293b 0%, #0f172a 100%)',
           padding: '20px 24px',
           borderRadius: 12,
-          color: '#ffffff',
+          color: '#fff',
+          marginBottom: 20,
         }}>
-          <Title level={4} style={{ margin: 0, color: '#ffffff' }}>
+          <Title level={4} style={{ margin: 0, color: '#fff' }}>
             <Truck size={20} style={{ marginRight: 8, verticalAlign: 'middle' }} />
             Chuyến giao hàng của tôi
           </Title>
-          <Text style={{ color: '#94a3b8', fontSize: 13 }}>
-            Xin chào {username}! Dưới đây là danh sách chuyến giao hàng của bạn.
-          </Text>
+          <Text style={{ color: '#94a3b8', fontSize: 13 }}>Xin chào {currentUser.username}!</Text>
+        </div>
+        <Card style={{ borderRadius: 12, textAlign: 'center', padding: '40px 0' }}>
+          <Empty description="Bạn chưa có chuyến xe nào được phân công hôm nay." />
+          <Button icon={<RefreshCw size={14} />} onClick={fetchActiveTrip} style={{ marginTop: 16 }}>
+            Làm mới
+          </Button>
+        </Card>
+      </AdminShell>
+    );
+  }
+
+  // ── Render: Active trip ──────────────────────────────────────────────────
+
+  const statusInfo = EXECUTION_STATUS_LABEL[trip.status] || { color: 'default', label: trip.status };
+  const progressPercent = trip.totalOrders > 0
+    ? Math.round((trip.completedOrdersCount / trip.totalOrders) * 100)
+    : 0;
+  const canComplete = trip.status === 'IN_PROGRESS' && trip.pendingOrdersCount === 0;
+
+  // ── LIFO tab ──────────────────────────────────────────────────────────────
+
+  const lifoColumns = [
+    {
+      title: 'Thứ tự xếp',
+      dataIndex: 'loadingOrder',
+      key: 'loadingOrder',
+      width: 90,
+      render: (n: number) => <Badge count={n} style={{ backgroundColor: '#1677ff' }} />,
+    },
+    {
+      title: 'Điểm dừng',
+      dataIndex: 'stopSequenceNo',
+      key: 'stopSequenceNo',
+      width: 90,
+      render: (n: number, row: LifoLoadingItem) => (
+        <span><Text type="secondary">#{n} </Text><Text strong>{row.storeName}</Text></span>
+      ),
+    },
+    {
+      title: 'Đơn hàng',
+      dataIndex: 'orderRef',
+      key: 'orderRef',
+      render: (ref: string) => <Tag color="blue">{ref}</Tag>,
+    },
+    {
+      title: 'SKU',
+      dataIndex: 'sku',
+      key: 'sku',
+      render: (sku: string, row: LifoLoadingItem) => (
+        <span><Text code>{sku}</Text> <Text style={{ fontSize: 12 }}>{row.productName}</Text></span>
+      ),
+    },
+    {
+      title: 'SL',
+      dataIndex: 'quantity',
+      key: 'quantity',
+      width: 60,
+      align: 'center' as const,
+      render: (n: number) => <Text strong>{n}</Text>,
+    },
+    {
+      title: 'Hướng dẫn',
+      dataIndex: 'instruction',
+      key: 'instruction',
+      render: (instr: string) => <Text type="secondary" style={{ fontSize: 12 }}>{instr}</Text>,
+    },
+  ];
+
+  // ── Schedule tab ─────────────────────────────────────────────────────────
+
+  const renderStop = (stop: DriverTripStop) => {
+    const stopInfo = STOP_STATUS_LABEL[stop.aggregatedStatus] || { color: 'default', label: stop.aggregatedStatus };
+    return (
+      <Card
+        key={stop.stopId}
+        size="small"
+        style={{
+          borderRadius: 10,
+          marginBottom: 12,
+          border: stop.aggregatedStatus === 'FAILED' ? '1px solid #ffa39e'
+            : stop.aggregatedStatus === 'DELIVERED' ? '1px solid #b7eb8f'
+            : stop.aggregatedStatus === 'PARTIAL' ? '1px solid #ffe58f'
+            : '1px solid #f0f0f0',
+        }}
+        bodyStyle={{ padding: 16 }}
+      >
+        {/* Stop header */}
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 8 }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+            <Badge count={stop.sequenceNo} style={{ backgroundColor: '#1677ff' }} />
+            <div>
+              <Text strong style={{ fontSize: 14 }}>{stop.storeCode}</Text>
+              <Text style={{ display: 'block', fontSize: 12, color: '#595959' }}>{stop.storeName}</Text>
+            </div>
+          </div>
+          <Tag color={stopInfo.color}>{stopInfo.label}</Tag>
         </div>
 
-        {/* Date picker */}
-        <Card size="small" style={{ borderRadius: 10 }}>
-          <Space align="center">
-            <Clock size={16} style={{ color: '#8c8c8c' }} />
-            <Text strong>Ngày giao:</Text>
-            <DatePicker
-              value={selectedDate}
-              onChange={(v) => v && setSelectedDate(v)}
-              format="DD/MM/YYYY"
-              allowClear={false}
-            />
-            <Button
-              icon={<RefreshCw size={14} />}
-              onClick={fetchTrips}
-              size="small"
+        {/* Time info */}
+        <div style={{ display: 'flex', gap: 16, marginBottom: 8, fontSize: 12 }}>
+          {stop.plannedEta && (
+            <span><Text type="secondary">ETA: </Text><Text strong>{formatTime(stop.plannedEta)}</Text></span>
+          )}
+          {stop.closingTime && (
+            <span><Text type="secondary">Đóng cửa: </Text><Text strong>{formatTime(stop.closingTime)}</Text></span>
+          )}
+          {stop.address && (
+            <span><MapPin size={12} style={{ verticalAlign: 'middle', color: '#8c8c8c' }} /> <Text style={{ fontSize: 12 }}>{stop.address}</Text></span>
+          )}
+        </div>
+
+        <Divider style={{ margin: '8px 0' }} />
+
+        {/* Orders */}
+        {stop.orders.map((order: DriverOrder) => {
+          const orderInfo = ORDER_STATUS_LABEL[order.deliveryStatus] || { color: 'default', label: order.deliveryStatus };
+          const isPending = order.deliveryStatus === 'PENDING' && trip.status === 'IN_PROGRESS';
+
+          return (
+            <div
+              key={order.orderId}
+              style={{
+                padding: '10px 12px',
+                marginBottom: 8,
+                borderRadius: 8,
+                background: order.deliveryStatus === 'DELIVERED' ? '#f6ffed'
+                  : order.deliveryStatus === 'FAILED' ? '#fff1f0'
+                  : order.deliveryStatus === 'PARTIALLY_DELIVERED' ? '#fffbe6'
+                  : '#fafafa',
+                border: '1px solid',
+                borderColor: order.deliveryStatus === 'DELIVERED' ? '#b7eb8f'
+                  : order.deliveryStatus === 'FAILED' ? '#ffa39e'
+                  : order.deliveryStatus === 'PARTIALLY_DELIVERED' ? '#ffe58f'
+                  : '#f0f0f0',
+              }}
             >
-              Làm mới
-            </Button>
-          </Space>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                <div>
+                  <Tag color="blue">{order.orderRef}</Tag>
+                  {order.recipientName && <Text style={{ fontSize: 12, marginLeft: 4 }}>{order.recipientName}</Text>}
+                </div>
+                <Tag color={orderInfo.color}>{orderInfo.label}</Tag>
+              </div>
+
+              {/* Reason for failed/partial */}
+              {order.exceptionReason && (
+                <div style={{ marginTop: 6 }}>
+                  <Alert
+                    type="warning"
+                    showIcon
+                    icon={<AlertTriangle size={12} />}
+                    message={order.exceptionReason}
+                    style={{ borderRadius: 6, fontSize: 11 }}
+                  />
+                </div>
+              )}
+
+              {/* Items summary */}
+              {order.items.length > 0 && (
+                <div style={{ marginTop: 6, fontSize: 12, color: '#595959' }}>
+                  {order.items.slice(0, 2).map((item, i) => (
+                    <span key={i} style={{ marginRight: 8 }}>
+                      <Text code style={{ fontSize: 11 }}>{item.sku}</Text> × {item.quantity}
+                    </span>
+                  ))}
+                  {order.items.length > 2 && <Text type="secondary">+{order.items.length - 2} SKU</Text>}
+                </div>
+              )}
+
+              {/* Action button */}
+              {isPending && (
+                <div style={{ marginTop: 10 }}>
+                  <Button
+                    type="primary"
+                    size="small"
+                    block
+                    icon={<PackageCheck size={14} />}
+                    style={{ borderRadius: 8, height: 36, fontWeight: 600 }}
+                    onClick={() => setOrderModal({
+                      open: true,
+                      executionId: trip.executionId,
+                      orderId: order.orderId,
+                      orderRef: order.orderRef,
+                      currentStatus: order.deliveryStatus,
+                    })}
+                  >
+                    Cập nhật kết quả
+                  </Button>
+                </div>
+              )}
+            </div>
+          );
+        })}
+      </Card>
+    );
+  };
+
+  const sortedStops = [...trip.stops].sort((a, b) => a.sequenceNo - b.sequenceNo);
+
+  return (
+    <AdminShell currentUser={currentUser}>
+      <div style={{ maxWidth: 860, margin: '0 auto' }}>
+        <Breadcrumb
+          style={{ marginBottom: 12 }}
+          items={[{ title: 'Trang chủ' }, { title: 'Chuyến giao hàng' }]}
+        />
+
+        {/* Header */}
+        <div style={{
+          background: 'linear-gradient(135deg, #1e293b 0%, #0f172a 100%)',
+          padding: '20px 24px',
+          borderRadius: 12,
+          color: '#fff',
+          marginBottom: 16,
+        }}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', flexWrap: 'wrap', gap: 8 }}>
+            <div>
+              <Title level={4} style={{ margin: 0, color: '#fff' }}>
+                <Truck size={20} style={{ marginRight: 8, verticalAlign: 'middle' }} />
+                {trip.tripCode}
+              </Title>
+              <Text style={{ color: '#94a3b8', fontSize: 13 }}>
+                {trip.plateNumber && `Xe: ${trip.plateNumber}`}
+                {trip.deliveryDate && ` · Ngày: ${trip.deliveryDate}`}
+              </Text>
+            </div>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+              <Tag color={statusInfo.color} style={{ fontWeight: 600, fontSize: 13, padding: '4px 12px' }}>
+                {statusInfo.label}
+              </Tag>
+              <Button
+                icon={<RefreshCw size={13} />}
+                size="small"
+                onClick={fetchActiveTrip}
+                style={{ color: '#94a3b8', borderColor: '#334155', background: 'transparent' }}
+              />
+            </div>
+          </div>
+        </div>
+
+        {/* Progress */}
+        <Card style={{ borderRadius: 10, marginBottom: 16 }} bodyStyle={{ padding: '12px 20px' }}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 6 }}>
+            <Text type="secondary" style={{ fontSize: 13 }}>Tiến độ giao hàng</Text>
+            <Text strong>{trip.completedOrdersCount}/{trip.totalOrders} đơn</Text>
+          </div>
+          <Progress
+            percent={progressPercent}
+            status={progressPercent === 100 ? 'success' : 'active'}
+            strokeColor={{ '0%': '#1677ff', '100%': '#52c41a' }}
+          />
+          {trip.pendingOrdersCount > 0 && (
+            <Text type="secondary" style={{ fontSize: 12 }}>
+              Còn lại: {trip.pendingOrdersCount} đơn chờ giao
+            </Text>
+          )}
         </Card>
 
-        {/* Content */}
-        {loading ? (
-          <div style={{ textAlign: 'center', padding: '60px 0' }}>
-            <Spin size="large" tip="Đang tải chuyến xe..." />
-          </div>
-        ) : error ? (
-          <Alert
-            type="error"
-            showIcon
-            message={error}
-            action={<Button size="small" onClick={fetchTrips}>Thử lại</Button>}
-          />
-        ) : trips.length === 0 ? (
-          <Card>
-            <Empty
-              description={
-                <span>
-                  Không có chuyến xe nào được gán cho bạn ngày{' '}
-                  <strong>{selectedDate.format('DD/MM/YYYY')}</strong>.
-                </span>
-              }
-            />
-          </Card>
-        ) : (
-          trips.map((trip) => {
-            const isExpanded = expandedTripId === trip.tripId;
-            const progress = tripProgress[trip.tripId];
-            const isLoadingProgress = progressLoading[trip.tripId] || false;
-            const statusInfo = TRIP_STATUS_LABEL[trip.status] || { color: 'default', label: trip.status };
-
-            return (
-              <Card
-                key={trip.tripId}
-                style={{
-                  borderRadius: 12,
-                  border: trip.status === 'IN_PROGRESS'
-                    ? '2px solid #1677ff'
-                    : trip.status === 'COMPLETED'
-                    ? '1px solid #b7eb8f'
-                    : '1px solid #f0f0f0',
-                }}
-                styles={{
-                  body: { padding: '16px 20px' },
-                }}
-                id={`driver-trip-${trip.tripId}`}
-              >
-                {/* Trip header */}
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
-                  <div>
-                    <Text strong style={{ fontSize: 16 }}>
-                      {trip.fixedRouteCode}
-                    </Text>
-                    <br />
-                    <Space size={8} style={{ marginTop: 4 }}>
-                      <Tag icon={<Truck size={12} />}>
-                        {trip.vehicle?.plateNumber || '—'}
-                      </Tag>
-                      <Tag icon={<Clock size={12} />}>
-                        {trip.plannedDepartureTime ? String(trip.plannedDepartureTime) : '—'}
-                      </Tag>
-                    </Space>
-                  </div>
-                  <Tag color={statusInfo.color} style={{ fontWeight: 600, fontSize: 13, padding: '4px 12px' }}>
-                    {statusInfo.label}
-                  </Tag>
-                </div>
-
-                {/* Stop count */}
-                <div style={{ margin: '12px 0' }}>
-                  <Text type="secondary" style={{ fontSize: 12 }}>
-                    {trip.tripStopCount} điểm giao
-                  </Text>
-                </div>
-
-                {/* Actions for DISPATCHED */}
-                {trip.status === 'DISPATCHED' && (
-                  <Popconfirm
-                    title="Bắt đầu chuyến"
-                    description="Bạn có muốn bắt đầu chuyến này không?"
-                    onConfirm={() => handleStartTrip(trip.tripId)}
-                    okText="Bắt đầu"
-                    cancelText="Hủy"
-                  >
-                    <Button
-                      type="primary"
-                      size="large"
-                      block
-                      icon={<Play size={16} />}
-                      loading={submitting[`start-${trip.tripId}`]}
-                      style={{
-                        height: 48,
-                        fontSize: 15,
-                        fontWeight: 600,
-                        borderRadius: 10,
-                        display: 'flex',
-                        alignItems: 'center',
-                        justifyContent: 'center',
-                        gap: 8,
-                      }}
-                    >
-                      Bắt đầu chuyến
-                    </Button>
-                  </Popconfirm>
-                )}
-
-                {/* COMPLETED badge */}
-                {trip.status === 'COMPLETED' && (
-                  <Alert
-                    type="success"
-                    showIcon
-                    icon={<CheckCircle2 size={16} />}
-                    message="Chuyến đã hoàn thành"
-                    style={{ borderRadius: 8, marginTop: 8 }}
-                  />
-                )}
-
-                {/* Expand button for IN_PROGRESS */}
-                {(trip.status === 'IN_PROGRESS' || trip.status === 'DISPATCHED') && (
-                  <Button
-                    type="text"
-                    block
-                    onClick={() => toggleExpand(trip.tripId)}
-                    style={{ marginTop: 8, color: '#1677ff' }}
-                    icon={isExpanded ? <ChevronUp size={14} /> : <ChevronDown size={14} />}
-                  >
-                    {isExpanded ? 'Thu gọn' : 'Xem danh sách điểm giao'}
-                  </Button>
-                )}
-
-                {/* LIFO manifest link */}
-                {hasLIFORoute && (
-                  <Button
-                    type="link"
-                    icon={<FileText size={14} />}
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      window.open(`/trips/${trip.tripId}/loading-manifest`, '_blank');
-                    }}
-                    style={{ padding: '4px 0', fontSize: 13 }}
-                  >
-                    Xem Manifest LIFO
-                  </Button>
-                )}
-
-                {/* ── Expanded stop list ─────────────────────────────────── */}
-                {isExpanded && (
-                  <div style={{ marginTop: 12 }}>
-                    <Divider style={{ margin: '8px 0' }} />
-
-                    {isLoadingProgress ? (
-                      <div style={{ textAlign: 'center', padding: '24px 0' }}>
-                        <Spin tip="Đang tải điểm giao..." />
-                      </div>
-                    ) : progress ? (
-                      <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
-                        {/* Progress bar */}
-                        <div>
-                          <Text type="secondary" style={{ fontSize: 12 }}>
-                            Tiến độ:{' '}
-                            {progress.stops.filter((s) => s.status === 'COMPLETED').length}/{progress.stops.length} điểm giao
-                          </Text>
-                          <Progress
-                            percent={
-                              progress.stops.length > 0
-                                ? Math.floor(
-                                    (progress.stops.filter((s) => s.status === 'COMPLETED').length * 100) /
-                                      progress.stops.length
-                                  )
-                                : 0
-                            }
-                            size="small"
-                          />
-                        </div>
-
-                        {/* Stops */}
-                        {[...progress.stops]
-                          .sort((a, b) => a.sequenceOrder - b.sequenceOrder)
-                          .map((stop) => {
-                            const sInfo = STOP_STATUS_LABEL[stop.status] || { color: 'default', label: stop.status };
-                            const actionable = getNextActionableStop(progress.stops);
-                            const isCurrentActionable = actionable?.tripStopId === stop.tripStopId;
-                            const canArrive = stop.status === 'PENDING' && isCurrentActionable && trip.status === 'IN_PROGRESS';
-                            const canComplete = stop.status === 'IN_PROGRESS' && isCurrentActionable;
-
-                            return (
-                              <Card
-                                key={stop.tripStopId}
-                                size="small"
-                                style={{
-                                  borderRadius: 10,
-                                  border: isCurrentActionable && (canArrive || canComplete)
-                                    ? '2px solid #1677ff'
-                                    : stop.hasException
-                                    ? '1px solid #ff7a45'
-                                    : '1px solid #f0f0f0',
-                                  background: stop.status === 'COMPLETED' ? '#f6ffed' : stop.hasException ? '#fff7e6' : '#fff',
-                                }}
-                              >
-                                {/* Stop header */}
-                                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
-                                  <div>
-                                    <Badge count={stop.sequenceOrder} style={{ backgroundColor: '#1677ff' }}>
-                                      <Text strong style={{ fontSize: 14, paddingRight: 8 }}>
-                                        {stop.storeCode}
-                                      </Text>
-                                    </Badge>
-                                    {stop.storeName && (
-                                      <Text style={{ display: 'block', fontSize: 12, color: '#595959', marginTop: 4 }}>
-                                        {stop.storeName}
-                                      </Text>
-                                    )}
-                                  </div>
-                                  <Tag color={sInfo.color}>{sInfo.label}</Tag>
-                                </div>
-
-                                {/* Time info */}
-                                <div style={{ display: 'flex', gap: 16, marginTop: 8, fontSize: 12, flexWrap: 'wrap' }}>
-                                  <div>
-                                    <Text type="secondary">ETA: </Text>
-                                    <Text>{formatTime(stop.plannedEta)}</Text>
-                                  </div>
-                                  {stop.actualArrivalTime && (
-                                    <div>
-                                      <Text type="secondary">Đến: </Text>
-                                      <Text>{formatTime(stop.actualArrivalTime)}</Text>
-                                    </div>
-                                  )}
-                                  {stop.actualDepartureTime && (
-                                    <div>
-                                      <Text type="secondary">Rời: </Text>
-                                      <Text>{formatTime(stop.actualDepartureTime)}</Text>
-                                    </div>
-                                  )}
-                                </div>
-
-                                {/* Delay info */}
-                                {stop.delayMinutes !== null && stop.delayMinutes !== undefined && stop.delayMinutes > 0 && (
-                                  <div style={{ marginTop: 6 }}>
-                                    {stop.hasException ? (
-                                      <Tag color="error" icon={<AlertTriangle size={12} />}>
-                                        {formatDelay(stop.delayMinutes)} — Ngoại lệ thời gian
-                                      </Tag>
-                                    ) : (
-                                      <Tag color="warning">
-                                        {formatDelay(stop.delayMinutes)}
-                                      </Tag>
-                                    )}
-                                  </div>
-                                )}
-                                {stop.delayMinutes !== null && stop.delayMinutes !== undefined && stop.delayMinutes === 0 && stop.actualArrivalTime && (
-                                  <div style={{ marginTop: 6 }}>
-                                    <Tag color="success" icon={<CheckCircle2 size={12} />}>Đúng giờ</Tag>
-                                  </div>
-                                )}
-
-                                {/* Exception details */}
-                                {stop.exceptions && stop.exceptions.length > 0 && (
-                                  <Alert
-                                    type="warning"
-                                    showIcon
-                                    icon={<AlertTriangle size={14} />}
-                                    message={stop.exceptions[0].description}
-                                    style={{ marginTop: 8, borderRadius: 6, fontSize: 12 }}
-                                  />
-                                )}
-
-                                {/* Actions */}
-                                {canArrive && (
-                                  <Popconfirm
-                                    title="Xác nhận đến điểm giao"
-                                    description={`Xác nhận bạn đã đến ${stop.storeCode}?`}
-                                    onConfirm={() => handleArrive(stop.tripStopId, trip.tripId)}
-                                    okText="Xác nhận"
-                                    cancelText="Hủy"
-                                  >
-                                    <Button
-                                      type="primary"
-                                      block
-                                      size="large"
-                                      icon={<Navigation size={16} />}
-                                      loading={submitting[`arrive-${stop.tripStopId}`]}
-                                      style={{
-                                        marginTop: 12,
-                                        height: 48,
-                                        fontSize: 15,
-                                        fontWeight: 600,
-                                        borderRadius: 10,
-                                        background: '#1677ff',
-                                        display: 'flex',
-                                        alignItems: 'center',
-                                        justifyContent: 'center',
-                                        gap: 8,
-                                      }}
-                                    >
-                                      Đã đến điểm giao
-                                    </Button>
-                                  </Popconfirm>
-                                )}
-
-                                {canComplete && (
-                                  <Space direction="vertical" style={{ width: '100%', marginTop: 12 }} size={8}>
-                                    <Popconfirm
-                                      title="Hoàn thành điểm giao"
-                                      description={`Xác nhận hoàn thành ${stop.storeCode}?`}
-                                      onConfirm={() => handleComplete(stop.tripStopId, trip.tripId)}
-                                      okText="Hoàn thành"
-                                      cancelText="Hủy"
-                                    >
-                                      <Button
-                                        type="primary"
-                                        block
-                                        size="large"
-                                        icon={<CircleCheck size={16} />}
-                                        loading={submitting[`complete-${stop.tripStopId}`]}
-                                        style={{
-                                          height: 48,
-                                          fontSize: 15,
-                                          fontWeight: 600,
-                                          borderRadius: 10,
-                                          background: '#52c41a',
-                                          borderColor: '#52c41a',
-                                          display: 'flex',
-                                          alignItems: 'center',
-                                          justifyContent: 'center',
-                                          gap: 8,
-                                        }}
-                                      >
-                                        Hoàn thành điểm giao
-                                      </Button>
-                                    </Popconfirm>
-
-                                    {/* US-18: Reject delivery button — only for IN_PROGRESS stops */}
-                                    {stop.status === 'IN_PROGRESS' && trip.status !== 'COMPLETED' && (
-                                      <Button
-                                        block
-                                        size="large"
-                                        danger
-                                        icon={<XCircle size={16} />}
-                                        onClick={() => setRejectModal({
-                                          open: true,
-                                          tripStopId: stop.tripStopId,
-                                          storeCode: stop.storeCode,
-                                          storeName: stop.storeName || null,
-                                          tripId: trip.tripId,
-                                        })}
-                                        style={{
-                                          height: 48,
-                                          fontSize: 15,
-                                          fontWeight: 600,
-                                          borderRadius: 10,
-                                          display: 'flex',
-                                          alignItems: 'center',
-                                          justifyContent: 'center',
-                                          gap: 8,
-                                        }}
-                                      >
-                                        Báo lỗi giao hàng
-                                      </Button>
-                                    )}
-                                  </Space>
-                                )}
-
-                                {/* Non-actionable pending stops tooltip */}
-                                {stop.status === 'PENDING' && !canArrive && trip.status === 'IN_PROGRESS' && (
-                                  <Tooltip title="Vui lòng hoàn thành điểm giao trước đó">
-                                    <Button
-                                      block
-                                      disabled
-                                      style={{
-                                        marginTop: 12,
-                                        height: 44,
-                                        borderRadius: 10,
-                                        opacity: 0.5,
-                                      }}
-                                    >
-                                      Chờ hoàn thành điểm trước
-                                    </Button>
-                                  </Tooltip>
-                                )}
-                              </Card>
-                            );
-                          })}
-                      </div>
-                    ) : (
-                      <Empty description="Không thể tải danh sách điểm giao." />
-                    )}
-                  </div>
-                )}
-              </Card>
-            );
-          })
+        {/* Start button */}
+        {trip.status === 'ASSIGNED' && (
+          <Popconfirm
+            title="Bắt đầu chuyến"
+            description="Bạn có muốn bắt đầu chuyến giao hàng này không?"
+            onConfirm={handleStart}
+            okText="Bắt đầu"
+            cancelText="Hủy"
+          >
+            <Button
+              type="primary"
+              block
+              size="large"
+              icon={<Play size={18} />}
+              loading={starting}
+              style={{
+                marginBottom: 16,
+                height: 52,
+                fontSize: 16,
+                fontWeight: 700,
+                borderRadius: 10,
+                background: '#1677ff',
+              }}
+            >
+              Bắt đầu chuyến
+            </Button>
+          </Popconfirm>
         )}
 
-        {/* US-18: Delivery Rejection Modal */}
-        <DeliveryRejectionModal
-          open={rejectModal.open}
-          tripStopId={rejectModal.tripStopId}
-          storeCode={rejectModal.storeCode}
-          storeName={rejectModal.storeName}
-          onClose={() => setRejectModal({ open: false, tripStopId: 0, storeCode: '', storeName: null, tripId: 0 })}
-          onSuccess={() => {
-            setRejectModal({ open: false, tripStopId: 0, storeCode: '', storeName: null, tripId: 0 });
-            // Reload trip data to reflect EXCEPTION status
-            void fetchTrips();
-            if (rejectModal.tripId) {
-              void loadProgress(rejectModal.tripId);
-            }
-          }}
+        {/* Complete button */}
+        {canComplete && (
+          <Popconfirm
+            title="Hoàn thành chuyến"
+            description="Tất cả đơn hàng đã được cập nhật. Xác nhận hoàn thành chuyến và nộp kết quả?"
+            onConfirm={handleComplete}
+            okText="Hoàn thành"
+            cancelText="Hủy"
+          >
+            <Button
+              type="primary"
+              block
+              size="large"
+              icon={<CheckCircle2 size={18} />}
+              loading={completing}
+              style={{
+                marginBottom: 16,
+                height: 52,
+                fontSize: 16,
+                fontWeight: 700,
+                borderRadius: 10,
+                background: '#52c41a',
+                borderColor: '#52c41a',
+              }}
+            >
+              Hoàn thành chuyến
+            </Button>
+          </Popconfirm>
+        )}
+
+        {/* Return to Warehouse UI */}
+        {(trip.status === 'COMPLETED' || trip.status === 'COMPLETED_WITH_EXCEPTIONS') && (
+          <div style={{ marginBottom: 16 }}>
+            {trip.returnedToWarehouseAt ? (
+              <Alert
+                type="success"
+                showIcon
+                message={`Đã về kho lúc ${trip.returnedToWarehouseAt}`}
+                description="Xe đã được chuyển sang trạng thái sẵn sàng để phân cho chuyến mới."
+                style={{ borderRadius: 10 }}
+              />
+            ) : (
+              <>
+                <Alert
+                  type="warning"
+                  showIcon
+                  message="Chuyến giao hàng đã hoàn tất."
+                  description="Xe vẫn đang trong trạng thái trở về kho."
+                  style={{ marginBottom: 12, borderRadius: 10 }}
+                />
+                <Popconfirm
+                  title="Xác nhận xe đã về kho"
+                  description="Bạn có chắc chắn xe đã về đến kho? Sau khi xác nhận, xe sẽ được chuyển sang trạng thái sẵn sàng để phân cho chuyến mới."
+                  onConfirm={handleReturnToWarehouse}
+                  okText="Xác nhận"
+                  cancelText="Hủy"
+                >
+                  <Button
+                    type="primary"
+                    block
+                    size="large"
+                    icon={<Truck size={18} />}
+                    loading={returningWarehouse}
+                    style={{
+                      height: 52,
+                      fontSize: 16,
+                      fontWeight: 700,
+                      borderRadius: 10,
+                      background: '#fa8c16',
+                      borderColor: '#fa8c16',
+                    }}
+                  >
+                    Xác nhận xe đã về kho
+                  </Button>
+                </Popconfirm>
+              </>
+            )}
+          </div>
+        )}
+
+        {/* Tabs: LIFO + Delivery Schedule */}
+        <Tabs
+          defaultActiveKey="lifo"
+          items={[
+            {
+              key: 'lifo',
+              label: (
+                <Space>
+                  <ArrowUpDown size={14} />
+                  Hướng dẫn xếp hàng LIFO
+                </Space>
+              ),
+              children: trip.lifoLoadingGuidance.length === 0 ? (
+                <Empty description="Không có dữ liệu hướng dẫn xếp hàng." />
+              ) : (
+                <Card style={{ borderRadius: 10 }} bodyStyle={{ padding: 0 }}>
+                  <Alert
+                    type="info"
+                    showIcon
+                    message="Xếp hàng theo thứ tự từ trên xuống (loadingOrder = 1 xếp vào đầu tiên — nằm sâu nhất trong xe, dỡ sau cùng)."
+                    style={{ borderRadius: '10px 10px 0 0', borderBottom: '1px solid #e8f4ff' }}
+                  />
+                  <Table
+                    columns={lifoColumns}
+                    dataSource={[...trip.lifoLoadingGuidance].sort((a, b) => a.loadingOrder - b.loadingOrder)}
+                    rowKey={(r) => `${r.loadingOrder}-${r.sku}`}
+                    pagination={false}
+                    size="small"
+                    style={{ borderRadius: '0 0 10px 10px' }}
+                  />
+                </Card>
+              ),
+            },
+            {
+              key: 'schedule',
+              label: (
+                <Space>
+                  <List size={14} />
+                  Lịch giao hàng
+                  <Badge count={trip.pendingOrdersCount} style={{ backgroundColor: '#1677ff' }} />
+                </Space>
+              ),
+              children: sortedStops.length === 0 ? (
+                <Empty description="Không có điểm dừng nào." />
+              ) : (
+                <div>
+                  {sortedStops.map(renderStop)}
+                </div>
+              ),
+            },
+          ]}
         />
       </div>
+
+      {/* Order Result Modal */}
+      <OrderResultModal
+        open={orderModal.open}
+        executionId={orderModal.executionId}
+        orderId={orderModal.orderId}
+        orderRef={orderModal.orderRef}
+        currentStatus={orderModal.currentStatus}
+        onClose={() => setOrderModal(prev => ({ ...prev, open: false }))}
+        onSuccess={handleOrderResult}
+      />
     </AdminShell>
   );
 };

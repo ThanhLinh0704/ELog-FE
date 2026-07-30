@@ -182,7 +182,15 @@ const TripDraftListPage: React.FC = () => {
       title: 'ID',
       dataIndex: 'id',
       key: 'id',
-      render: (id: number) => <Text strong style={{ color: '#1677ff' }}>#{id}</Text>,
+      render: (id: number) => (
+        <Text
+          strong
+          style={{ color: '#1677ff', cursor: 'pointer' }}
+          onClick={() => navigate(`/dispatcher/trip-drafts/${id}`)}
+        >
+          #{id}
+        </Text>
+      ),
       width: 80,
     },
     {
@@ -230,13 +238,24 @@ const TripDraftListPage: React.FC = () => {
       title: 'Thao tác',
       key: 'actions',
       render: (_: any, record: TripDraft) => (
-        <Button
-          type="link"
-          icon={<EyeOutlined />}
-          onClick={() => navigate(`/dispatcher/trip-drafts/${record.id}`)}
-        >
-          Xem chi tiết
-        </Button>
+        <Space size="small">
+          <Button
+            type="link"
+            icon={<EyeOutlined />}
+            onClick={() => navigate(`/dispatcher/trip-drafts/${record.id}`)}
+          >
+            Xem chi tiết
+          </Button>
+          <Button
+            type="primary"
+            ghost
+            icon={<ClipboardList size={14} />}
+            style={{ borderRadius: 6, fontWeight: 500 }}
+            onClick={() => navigate(`/trip-drafts/${record.id}/review`)}
+          >
+            Mở bản nháp
+          </Button>
+        </Space>
       ),
     },
   ];
@@ -272,14 +291,6 @@ const TripDraftListPage: React.FC = () => {
               style={{ width: 150 }}
             />
           </div>
-
-          <Button
-            icon={<ClipboardList size={16} />}
-            onClick={() => setIsDraftModalOpen(true)}
-            style={{ borderRadius: 6, height: 38 }}
-          >
-            Mở bản nháp chuyến
-          </Button>
 
           <Tooltip title={!canRunConsolidate ? "Bạn không có quyền Dispatcher để thực hiện gom đơn" : ""}>
             <Button

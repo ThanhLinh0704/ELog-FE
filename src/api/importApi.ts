@@ -10,7 +10,7 @@ import {
   mapBatchResponseToResult, 
   mapErrorResponseToRow 
 } from '../utils/importMapper';
-import type { ImportBatchHistory, ImportResult, ImportErrorRow } from '../types/import';
+import type { ImportBatchHistory, ImportResult, ImportErrorRow, ImportedOrderDetail } from '../types/import';
 
 export class ApiError extends Error {
   status?: number;
@@ -41,21 +41,25 @@ async function handleAxiosCall<T>(call: () => Promise<any>): Promise<T> {
 
 export const importApi = {
   async uploadOrders(
-    deliveryDate: string,
     file: File,
+    deliveryDate?: string,
     confirmReplace: boolean = false
   ): Promise<ImportResult> {
     if (USE_MOCK_API) {
-      return uploadOrdersMock(deliveryDate, file, { confirmReplace });
+      return uploadOrdersMock(deliveryDate || '', file, { confirmReplace });
     }
 
     const formData = new FormData();
     formData.append('file', file);
-    formData.append('deliveryDate', deliveryDate);
+    if (deliveryDate) {
+      formData.append('deliveryDate', deliveryDate);
+    }
     formData.append('confirmReplace', String(confirmReplace));
 
     const queryParams = new URLSearchParams();
-    queryParams.set('deliveryDate', deliveryDate);
+    if (deliveryDate) {
+      queryParams.set('deliveryDate', deliveryDate);
+    }
     queryParams.set('confirmReplace', String(confirmReplace));
 
     const res = await handleAxiosCall<any>(() =>
@@ -201,5 +205,17 @@ export const importApi = {
       responseType: 'blob',
     });
     return response.data;
+  },
+
+  async getImportedOrders(batchId: number, deliveryDate?: string): Promise<ImportedOrderDetail[]> {
+    const query = new URLSearchParams();
+    if (deliveryDate) {
+      query.set('deliveryDate', deliveryDate);
+    }
+    const queryString = query.toString() ? `?${query.toString()}` : '';
+    const res = await handleAxiosCall<any>(() =>
+      axiosInstance.get(`/api/imports/${batchId}/orders${queryString}`)
+    );
+    return res?.data || [];
   }
 };

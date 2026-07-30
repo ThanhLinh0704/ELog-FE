@@ -84,3 +84,11 @@ export interface CapacityValidationResult {
   message?: string;
 }
 
+export interface AdjustDepartureTimePayload {
+  newDepartureTime: string;
+}
+
+export interface SettleDelayPayload {
+  reason: string;
+}
+

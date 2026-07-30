@@ -222,7 +222,7 @@ const TripDraftReviewPage: React.FC = () => {
     () => draft?.stops.filter((stop) => stop.status === 'ACTIVE') ?? [],
     [draft]
   );
-  const isDraftEditable = draft?.status === 'DRAFT';
+  const isDraftEditable = draft?.status === 'DRAFT' || draft?.status === 'PLANNED' || draft?.status === 'VALIDATED';
   const actionDisabled = !canEditTrip || !isDraftEditable || recalculating || confirming;
 
   async function fetchDraft() {
@@ -350,9 +350,7 @@ const TripDraftReviewPage: React.FC = () => {
         setConfirming(true);
 
         try {
-          await confirmTripDraft(draftId, {
-            confirmNote: 'Đã kiểm tra và xác nhận bởi điều phối viên',
-          });
+          await confirmTripDraft(draftId);
           message.success('Đã xác nhận bản nháp chuyến thành công.');
           navigate(`/dispatcher/trip-drafts/${draftId}`);
         } catch (err) {

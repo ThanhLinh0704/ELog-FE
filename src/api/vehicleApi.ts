@@ -18,6 +18,10 @@ export interface VehicleItem {
   averageSpeedKmh?: number | null;
   costPerKm?: number | null;
   status: 'AVAILABLE' | 'IN_USE' | 'MAINTENANCE' | 'OUT_OF_SERVICE';
+  assignedDriverId?: number | null;
+  assignedDriverName?: string | null;
+  assignedDriverPhone?: string | null;
+  assignedDriverLicenseClass?: 'B' | 'C1' | 'C' | null;
   imageUrl?: string | null;
   permitInfo?: string | null;
   description?: string | null;
@@ -57,6 +61,7 @@ export interface VehiclePayload {
   averageSpeedKmh?: number | null;
   costPerKm?: number | null;
   status?: 'AVAILABLE' | 'IN_USE' | 'MAINTENANCE' | 'OUT_OF_SERVICE';
+  assignedDriverId?: number | null;
   imageUrl?: string | null;
   permitInfo?: string | null;
   description?: string | null;
@@ -145,6 +150,10 @@ function normalizeVehicle(raw: any): VehicleItem {
     averageSpeedKmh: raw.averageSpeedKmh != null ? Number(raw.averageSpeedKmh) : null,
     costPerKm: raw.costPerKm != null ? Number(raw.costPerKm) : null,
     status: raw.status ?? 'AVAILABLE',
+    assignedDriverId: raw.assignedDriverId ?? raw.assigned_driver_id ?? null,
+    assignedDriverName: raw.assignedDriverName ?? raw.assigned_driver_name ?? null,
+    assignedDriverPhone: raw.assignedDriverPhone ?? raw.assigned_driver_phone ?? null,
+    assignedDriverLicenseClass: raw.assignedDriverLicenseClass ?? raw.assigned_driver_license_class ?? null,
     imageUrl: raw.imageUrl ?? raw.image_url ?? null,
     permitInfo: raw.permitInfo ?? raw.permit_info ?? null,
     description: raw.description ?? null,
@@ -329,6 +338,7 @@ export const vehicleApi = {
           averageSpeedKmh: payload.averageSpeedKmh,
           costPerKm: payload.costPerKm,
           status: payload.status,
+          assignedDriverId: payload.assignedDriverId ?? null,
           imageUrl: payload.imageUrl?.trim() || null,
           permitInfo: payload.permitInfo?.trim() || null,
           description: payload.description?.trim() || null,
@@ -360,6 +370,7 @@ export const vehicleApi = {
           averageSpeedKmh: payload.averageSpeedKmh,
           costPerKm: payload.costPerKm,
           status: payload.status,
+          assignedDriverId: payload.assignedDriverId ?? null,
           imageUrl: payload.imageUrl?.trim() || null,
           permitInfo: payload.permitInfo?.trim() || null,
           description: payload.description?.trim() || null,

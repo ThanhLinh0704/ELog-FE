@@ -8,7 +8,7 @@ import { validateExcelFile } from '../../../../utils/validateExcel';
 
 interface ImportUploadCardProps {
   loading: boolean;
-  onUpload: (deliveryDate: string, file: File) => void;
+  onUpload: (file: File, deliveryDate?: string) => void;
 }
 
 const ImportUploadCard: React.FC<ImportUploadCardProps> = ({ loading, onUpload }) => {
@@ -42,9 +42,9 @@ const ImportUploadCard: React.FC<ImportUploadCardProps> = ({ loading, onUpload }
       }
       
       const file = fileList[0] as unknown as File;
-      const formattedDate = values.deliveryDate.format('YYYY-MM-DD');
+      const formattedDate = values.deliveryDate ? values.deliveryDate.format('YYYY-MM-DD') : undefined;
       
-      onUpload(formattedDate, file);
+      onUpload(file, formattedDate);
     } catch (errorInfo) {
       console.log('Validation failed:', errorInfo);
     }
@@ -66,19 +66,17 @@ const ImportUploadCard: React.FC<ImportUploadCardProps> = ({ loading, onUpload }
           requiredMark={false}
         >
           <div style={{ display: 'flex', flexWrap: 'wrap', gap: 24, alignItems: 'flex-start' }}>
-            {/* Delivery Date Field */}
+            {/* Delivery Date Field (Optional) */}
             <div style={{ flex: '1 1 250px' }}>
               <Form.Item
-                label={<span style={{ fontWeight: 500 }}>Ngày giao hàng</span>}
+                label={<span style={{ fontWeight: 500 }}>Ngày giao hàng mặc định (Tùy chọn)</span>}
                 name="deliveryDate"
-                rules={[{ required: true, message: 'Vui lòng chọn ngày giao hàng' }]}
               >
                 <DatePicker
                   format="DD/MM/YYYY"
                   style={{ width: '100%', height: 40, borderRadius: 6 }}
                   disabled={loading}
-                  placeholder="Chọn ngày giao hàng"
-                  disabledDate={(current) => current && current < dayjs().startOf('day')}
+                  placeholder="Để trống nếu đã ghi trong Excel"
                 />
               </Form.Item>
             </div>

@@ -46,6 +46,8 @@ import {
   type VehicleItem,
   type VehiclePayload,
 } from '../api/vehicleApi';
+import { userApi } from '../api/userApi';
+import type { User } from '../utils/userMapper';
 
 type FormMode = 'create' | 'edit';
 
@@ -164,6 +166,15 @@ const VehicleFormModal: React.FC<VehicleFormModalProps> = ({
 }) => {
   const [form] = Form.useForm();
   const isEdit = mode === 'edit';
+  const [drivers, setDrivers] = useState<User[]>([]);
+
+  useEffect(() => {
+    if (open) {
+      userApi.getUsers({ role: 'DRIVER', size: 100 })
+        .then(res => setDrivers(res.content || []))
+        .catch(err => console.error('Failed to load drivers for vehicle assignment', err));
+    }
+  }, [open]);
 
   useEffect(() => {
     if (!open) return;
@@ -184,15 +195,29 @@ const VehicleFormModal: React.FC<VehicleFormModalProps> = ({
         averageSpeedKmh: vehicle.averageSpeedKmh,
         costPerKm: vehicle.costPerKm,
         status: vehicle.status,
+        assignedDriverId: vehicle.assignedDriverId || null,
         imageUrl: vehicle.imageUrl,
         permitInfo: vehicle.permitInfo ? (typeof vehicle.permitInfo === 'object' ? JSON.stringify(vehicle.permitInfo) : vehicle.permitInfo) : null,
         description: vehicle.description,
       });
     } else {
       form.resetFields();
-      form.setFieldsValue({ status: 'AVAILABLE', requiredLicense: 'B' });
+      form.setFieldsValue({ status: 'AVAILABLE', requiredLicense: 'B', assignedDriverId: null });
     }
   }, [open, isEdit, vehicle, form]);
+
+  const selectedDriverId = Form.useWatch('assignedDriverId', form);
+  const selectedRequiredLicense = Form.useWatch('requiredLicense', form);
+
+  const selectedDriverObj = drivers.find(d => d.id === selectedDriverId);
+  const driverLicenseClass = selectedDriverObj?.licenseClass;
+
+  const LICENSE_RANK: Record<string, number> = { B: 1, C1: 2, C: 3 };
+  const isLicenseLower =
+    selectedDriverId &&
+    driverLicenseClass &&
+    selectedRequiredLicense &&
+    (LICENSE_RANK[driverLicenseClass] || 0) < (LICENSE_RANK[selectedRequiredLicense] || 0);
 
   async function handleFinish(values: any) {
     const payload: VehiclePayload = {
@@ -208,6 +233,7 @@ const VehicleFormModal: React.FC<VehicleFormModalProps> = ({
       averageSpeedKmh: values.averageSpeedKmh != null ? Number(values.averageSpeedKmh) : null,
       costPerKm: values.costPerKm != null ? Number(values.costPerKm) : null,
       status: values.status,
+      assignedDriverId: values.assignedDriverId || null,
       imageUrl: values.imageUrl?.trim() || null,
       permitInfo: values.permitInfo?.trim() || null,
       description: values.description?.trim() || null,
@@ -267,8 +293,35 @@ const VehicleFormModal: React.FC<VehicleFormModalProps> = ({
       destroyOnHidden
     >
       <Form form={form} layout="vertical" onFinish={handleFinish}>
+        {isLicenseLower ? (
+          <Alert
+            type="warning"
+            showIcon
+            message={`Cảnh báo: Hạng bằng lái của tài xế (${driverLicenseClass}) thấp hơn yêu cầu của xe (${selectedRequiredLicense}). Có thể không đủ điều kiện vận hành.`}
+            style={{ marginBottom: 16 }}
+          />
+        ) : null}
+
         <Row gutter={16}>
           <Col xs={24} md={12}>
+            <Form.Item
+              label="Tài xế cố định (Tùy chọn)"
+              name="assignedDriverId"
+            >
+              <Select
+                placeholder="Chọn tài xế cố định phụ trách xe"
+                allowClear
+                options={[
+                  { value: null, label: '— Không gán tài xế cố định —' },
+                  ...drivers.map(d => ({
+                    value: d.id,
+                    label: `${d.fullName || d.username} (${d.phone || 'N/A'}) - Bằng ${d.licenseClass || 'N/A'}`,
+                  })),
+                ]}
+              />
+            </Form.Item>
+          </Col>
+          <Col xs={24} md={6}>
             <Form.Item
               label="Mã xe"
               name="vehicleCode"
@@ -280,7 +333,7 @@ const VehicleFormModal: React.FC<VehicleFormModalProps> = ({
               <Input placeholder="VD: XE001" disabled={isEdit} />
             </Form.Item>
           </Col>
-          <Col xs={24} md={12}>
+          <Col xs={24} md={6}>
             <Form.Item
               label="Biển số"
               name="plateNumber"
@@ -720,6 +773,23 @@ const VehiclesPage: React.FC = () => {
       render: (value: number) => `${formatNumber(value, 2)} m³`,
     },
     {
+      title: 'Tài xế cố định',
+      key: 'assignedDriver',
+      width: 200,
+      render: (_: any, record) => (
+        record.assignedDriverName ? (
+          <div>
+            <div style={{ fontWeight: 500 }}>{record.assignedDriverName}</div>
+            <Typography.Text type="secondary" style={{ fontSize: 12 }}>
+              {record.assignedDriverPhone || ''} {record.assignedDriverLicenseClass ? `(Bằng ${record.assignedDriverLicenseClass})` : ''}
+            </Typography.Text>
+          </div>
+        ) : (
+          <Typography.Text type="secondary" style={{ fontStyle: 'italic' }}>Chưa gán</Typography.Text>
+        )
+      ),
+    },
+    {
       title: 'Trạng thái',
       key: 'isActive',
       width: 150,
@@ -992,6 +1062,15 @@ const VehiclesPage: React.FC = () => {
                 </Descriptions.Item>
                 <Descriptions.Item label="Biển số">
                   <Typography.Text strong>{detailVehicle.plateNumber}</Typography.Text>
+                </Descriptions.Item>
+                <Descriptions.Item label="Tài xế cố định" span={2}>
+                  {detailVehicle.assignedDriverName ? (
+                    <span style={{ fontWeight: 600 }}>
+                      {detailVehicle.assignedDriverName} ({detailVehicle.assignedDriverPhone || 'N/A'}) - Bằng {detailVehicle.assignedDriverLicenseClass || 'N/A'}
+                    </span>
+                  ) : (
+                    <span style={{ fontStyle: 'italic', color: '#8c8c8c' }}>Chưa gán tài xế cố định</span>
+                  )}
                 </Descriptions.Item>
                 <Descriptions.Item label="Loại xe">
                   {detailVehicle.vehicleType}

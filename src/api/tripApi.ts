@@ -1,4 +1,5 @@
-// API service for US-15 (Vehicle Assignment) & US-16 (Dispatch Execution)
+// API service for US-15 (Vehicle Assignment), US-16 (Dispatch Execution)
+// & FT-09 (Driver Trip Execution — new flow)
 // Uses existing axiosInstance — Bearer token is handled by request interceptor.
 // Error format from Backend: { success: false, error: { code, message } }
 
@@ -12,6 +13,8 @@ import type {
   TripAssignRequest,
   TripSplitAssignRequest,
 } from '../types/trip';
+import type { DriverTripExecution, UpdateOrderResultPayload } from '../types/driverTrip';
+import type { TripOutcome } from '../types/tripOutcome';
 
 interface ApiResponseWrapper<T> {
   success: boolean;
@@ -205,4 +208,82 @@ export async function getMyTrips(date: string, status?: string): Promise<Trip[]>
   );
   return unwrap(res);
 }
+
+// ── NEW Driver Execution APIs (FT-09) ────────────────────────────────────────
+// These call /api/driver/trips/* endpoints served by DriverTripController.
+// Authorization: trip:read / trip:write via Bearer JWT — driver ID taken from token.
+
+/**
+ * GET /api/driver/trips/active
+ * Returns the active TripExecution for the logged-in Driver (from JWT).
+ * Returns null if no active trip exists (data: null in response).
+ */
+export async function getActiveTrip(): Promise<DriverTripExecution | null> {
+  try {
+    const res = await axiosInstance.get<ApiResponseWrapper<DriverTripExecution | null>>(
+      '/api/driver/trips/active'
+    );
+    return res.data.data ?? null;
+  } catch (err: any) {
+    if (err?.response?.status === 404) {
+      return null;
+    }
+    throw err;
+  }
+}
+
+/**
+ * POST /api/driver/trips/{executionId}/start
+ * Transitions TripExecution from ASSIGNED -> IN_PROGRESS.
+ * Returns updated DriverTripResponse.
+ */
+export async function startExecution(executionId: number): Promise<DriverTripExecution> {
+  const res = await axiosInstance.post<ApiResponseWrapper<DriverTripExecution>>(
+    `/api/driver/trips/${executionId}/start`
+  );
+  return unwrap(res);
+}
+
+/**
+ * PUT /api/driver/trips/{executionId}/orders/{orderId}/result
+ * Update delivery result for a single Order.
+ * reasonCode required when status is PARTIALLY_DELIVERED or FAILED.
+ * Returns updated DriverTripResponse (full state refresh).
+ */
+export async function updateOrderResult(
+  executionId: number,
+  orderId: number,
+  payload: UpdateOrderResultPayload
+): Promise<DriverTripExecution> {
+  const res = await axiosInstance.put<ApiResponseWrapper<DriverTripExecution>>(
+    `/api/driver/trips/${executionId}/orders/${orderId}/result`,
+    payload
+  );
+  return unwrap(res);
+}
+
+/**
+ * POST /api/driver/trips/{executionId}/complete
+ * Complete the trip — only allowed when pendingOrdersCount == 0.
+ * Returns TripOutcomeResponse with status SUBMITTED.
+ */
+export async function completeExecution(executionId: number): Promise<TripOutcome> {
+  const res = await axiosInstance.post<ApiResponseWrapper<TripOutcome>>(
+    `/api/driver/trips/${executionId}/complete`
+  );
+  return unwrap(res);
+}
+
+/**
+ * POST /api/driver/trips/{executionId}/return-to-warehouse
+ * Driver confirms vehicle has returned to warehouse, transitioning vehicle status from IN_USE to AVAILABLE.
+ * Returns updated DriverTripExecution.
+ */
+export async function returnToWarehouse(executionId: number): Promise<DriverTripExecution> {
+  const res = await axiosInstance.post<ApiResponseWrapper<DriverTripExecution>>(
+    `/api/driver/trips/${executionId}/return-to-warehouse`
+  );
+  return unwrap(res);
+}
+
 

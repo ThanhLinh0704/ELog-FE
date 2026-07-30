@@ -39,6 +39,7 @@ import DriverGuard from './guards/DriverGuard';
 
 import ExceptionManagementPage from './pages/dispatcher/exceptions/ExceptionManagementPage';
 import ExceptionGuard from './guards/ExceptionGuard';
+import TripOutcomePage from './pages/dispatcher/outcomes/TripOutcomePage';
 
 
 function App() {
@@ -294,6 +295,24 @@ function App() {
             <ExceptionGuard>
               <ExceptionManagementPage />
             </ExceptionGuard>
+          }
+        />
+
+        {/* Trip Outcomes — Dispatcher / Manager review */}
+        <Route
+          path="/dispatcher/trip-outcomes"
+          element={
+            <ProtectedPermissionRoute permission={PERMISSIONS.TRIP_READ}>
+              <TripOutcomePage />
+            </ProtectedPermissionRoute>
+          }
+        />
+        <Route
+          path="/manager/trip-outcomes"
+          element={
+            <ProtectedPermissionRoute permission={PERMISSIONS.TRIP_READ}>
+              <TripOutcomePage />
+            </ProtectedPermissionRoute>
           }
         />
 

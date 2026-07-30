@@ -1,4 +1,5 @@
 import axiosInstance from './axiosInstance';
+import { normalizeRecommendationResult } from './recommendationNormalizer';
 import type { TripDraft, ConsolidateResponse, CapacityValidationResult } from '../types/tripDraft';
 
 // --- Types from US-11 ---
@@ -73,10 +74,56 @@ export interface ConfirmTripDraftPayload {
   confirmNote: string;
 }
 
-export interface ConfirmTripDraftResult {
-  tripId: number;
-  tripCode: string;
+export interface ConfirmResponse {
+  tripDraftId: number;
+  fixedRouteCode: string;
+  deliveryDate: string;
   status: string;
+  confirmedAt: string | null;
+  confirmedBy: { userId: number; fullName: string } | null;
+  activeStopCount: number | null;
+  summary: string | null;
+}
+
+export interface RecommendedVehicleDto {
+  vehicleId: number;
+  vehicleCode: string;
+  plateNumber: string;
+  vehicleType: string;
+  payloadKg: number;
+  maxVolumeM3: number;
+  costPerKm?: number | null;
+  averageSpeedKmh?: number | null;
+  driverId?: number | null;
+  driverName?: string | null;
+  driverPhone?: string | null;
+  driverLicenseClass?: 'B' | 'C1' | 'C' | null;
+  isTemporaryDriver?: boolean;
+}
+
+export interface SubTrip {
+  subTripIndex: number;
+  vehicleId: number;
+  plateNumber: string;
+  stopIds: number[];
+  totalWeightKg: number;
+  totalVolumeM3: number;
+}
+
+export interface VehicleRecommendation {
+  planType: string;
+  vehicles: RecommendedVehicleDto[];
+  subTrips: SubTrip[];
+  totalScore: number;
+  explanation: string;
+}
+
+export interface RecommendationResult {
+  tripDraftId: number;
+  planType: string;
+  recommendations: VehicleRecommendation[];
+  message: string | null;
+  violatedConstraints: string[];
 }
 
 interface ApiResponse<T> {
@@ -118,7 +165,6 @@ function toNumber(value: unknown, fallback = 0): number {
   const parsed = Number(value);
   return Number.isFinite(parsed) ? parsed : fallback;
 }
-
 
 function normalizeVehicle(raw: unknown): TripDraftVehicle | null {
   if (!raw || typeof raw !== 'object') return null;
@@ -331,22 +377,6 @@ export async function recalculateEta(
   };
 }
 
-export async function confirmTripDraft(
-  draftId: string | number,
-  payload: ConfirmTripDraftPayload
-): Promise<ConfirmTripDraftResult> {
-  const response = await axiosInstance.post<ApiResponse<ConfirmTripDraftResult>>(
-    `/api/trip-drafts/${draftId}/confirm`,
-    payload
-  );
-  const data = unwrapApiResponse(response.data) as Partial<ConfirmTripDraftResult>;
-  return {
-    tripId: toNumber(data.tripId),
-    tripCode: String(data.tripCode ?? ''),
-    status: String(data.status ?? ''),
-  };
-}
-
 // --- Object export for US-10/12 ---
 export const tripDraftApi = {
   async consolidate(deliveryDate: string): Promise<ConsolidateResponse> {
@@ -404,16 +434,39 @@ export const tripDraftApi = {
       `/api/trip-drafts/${id}/revert`
     );
     return res.data;
+  },
+
+  async getExcludedOrders(draftId: string | number): Promise<StopOrderItem[]> {
+    return getExcludedOrders(draftId);
+  },
+
+  async adjustDepartureTime(draftId: string | number, newDepartureTime: string): Promise<TripDraftDetail> {
+    return adjustDepartureTime(draftId, newDepartureTime);
+  },
+
+  async settleDelay(draftId: string | number, orderId: number, reason: string): Promise<{ success?: boolean; message?: string }> {
+    return settleDelay(draftId, orderId, reason);
+  },
+
+  async excludeOrder(draftId: string | number, orderId: number): Promise<{ success?: boolean; message?: string }> {
+    return excludeOrder(draftId, orderId);
+  },
+
+  async reIncludeOrder(draftId: string | number, orderId: number): Promise<{ success?: boolean; message?: string }> {
+    return reIncludeOrder(draftId, orderId);
   }
 };
 
 export interface StopOrderItem {
+  orderId: number;
   orderRef: string;
   sku: string;
   productName: string;
   quantity: number;
   weightKg: number;
   volumeM3: number;
+  isDeliveryTimeOverridden?: boolean;
+  timeOverrideReason?: string;
 }
 
 export async function getStopOrderItems(
@@ -424,6 +477,67 @@ export async function getStopOrderItems(
     `/api/trip-drafts/${draftId}/stops/${stopId}/order-items`
   );
   return unwrapApiResponse(response.data);
+}
+
+export async function getExcludedOrders(
+  draftId: string | number
+): Promise<StopOrderItem[]> {
+  const response = await axiosInstance.get<ApiResponse<StopOrderItem[]>>(
+    `/api/trip-drafts/${draftId}/excluded-orders`
+  );
+  return unwrapApiResponse(response.data);
+}
+
+export async function adjustDepartureTime(
+  draftId: string | number,
+  newDepartureTime: string
+): Promise<TripDraftDetail> {
+  const response = await axiosInstance.post<ApiResponse<TripDraftDetail>>(
+    `/api/trip-drafts/${draftId}/adjust-departure-time`,
+    { newDepartureTime }
+  );
+  return normalizeTripDraft(unwrapApiResponse(response.data));
+}
+
+export async function settleDelay(
+  draftId: string | number,
+  orderId: number,
+  reason: string
+): Promise<{ success?: boolean; message?: string }> {
+  const response = await axiosInstance.post<ApiResponse<void>>(
+    `/api/trip-drafts/${draftId}/orders/${orderId}/settle-delay`,
+    { reason: reason.trim() }
+  );
+  return {
+    success: response.data?.success ?? true,
+    message: response.data?.message || 'Ghi nhận dàn xếp giao trễ thành công',
+  };
+}
+
+export async function excludeOrder(
+  draftId: string | number,
+  orderId: number
+): Promise<{ success?: boolean; message?: string }> {
+  const response = await axiosInstance.post<ApiResponse<void>>(
+    `/api/trip-drafts/${draftId}/orders/${orderId}/exclude`
+  );
+  return {
+    success: response.data?.success ?? true,
+    message: response.data?.message || 'Đã tách đơn hàng khỏi chuyến thành công',
+  };
+}
+
+export async function reIncludeOrder(
+  draftId: string | number,
+  orderId: number
+): Promise<{ success?: boolean; message?: string }> {
+  const response = await axiosInstance.post<ApiResponse<void>>(
+    `/api/trip-drafts/${draftId}/orders/${orderId}/re-include`
+  );
+  return {
+    success: response.data?.success ?? true,
+    message: response.data?.message || 'Đã thêm lại đơn hàng vào chuyến thành công',
+  };
 }
 
 export interface OptimalDepartureResponse {
@@ -447,4 +561,34 @@ export async function getOptimalDeparture(
   return unwrapApiResponse(response.data);
 }
 
+// ── Recommendations (SRS v2.5.0 / US-13) ─────────────────────────────────────
 
+/**
+ * GET /api/trip-drafts/{id}/recommendations
+ * Returns top-3 vehicle recommendation options for a TripDraft.
+ * planType: 'SINGLE_VEHICLE' | 'TWO_VEHICLE' (feasible) | 'NO_PLAN'
+ */
+export async function getRecommendations(
+  draftId: string | number
+): Promise<RecommendationResult> {
+  const response = await axiosInstance.get<ApiResponse<RecommendationResult>>(
+    `/api/trip-drafts/${draftId}/recommendations`
+  );
+  return normalizeRecommendationResult(unwrapApiResponse(response.data));
+}
+
+// ── Confirm TripDraft (SRS v2.5.0 / US-14) ───────────────────────────────────
+
+/**
+ * POST /api/trip-drafts/{id}/confirm
+ * Confirm a TripDraft plan. NO request body required.
+ * Returns ConfirmResponse with status 'CONFIRMED'.
+ */
+export async function confirmTripDraft(
+  draftId: string | number
+): Promise<ConfirmResponse> {
+  const response = await axiosInstance.post<ApiResponse<ConfirmResponse>>(
+    `/api/trip-drafts/${draftId}/confirm`
+  );
+  return unwrapApiResponse(response.data);
+}
