@@ -17,7 +17,7 @@ import {
   Table,
   Empty
 } from 'antd';
-import { ArrowLeftOutlined, LoadingOutlined, CheckCircleOutlined, CloseCircleOutlined, InfoCircleOutlined, WarningOutlined } from '@ant-design/icons';
+import { ArrowLeftOutlined, LoadingOutlined, CheckCircleOutlined, CloseCircleOutlined, InfoCircleOutlined, WarningOutlined, DownOutlined, UpOutlined } from '@ant-design/icons';
 import { ShieldAlert, Scale } from 'lucide-react';
 import AdminShell from '../../../components/AdminShell';
 import { tripDraftApi } from '../../../api/tripDraftApi';
@@ -57,6 +57,10 @@ const CapacityValidationPage: React.FC = () => {
   const [result, setResult] = useState<CapacityValidationResult | null>(null);
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
   const [errorCode, setErrorCode] = useState<string | null>(null);
+  const [showAllEligible, setShowAllEligible] = useState(false);
+  const [showIneligible, setShowIneligible] = useState(false);
+
+  const ELIGIBLE_PREVIEW_COUNT = 5;
 
   const fetchValidationResult = async (showLoading = true) => {
     if (!id) return;
@@ -431,7 +435,7 @@ const CapacityValidationPage: React.FC = () => {
                         bodyStyle={{ padding: 16 }}
                       >
                         <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
-                          {result.eligibleVehicles.map((vehicle, idx) => (
+                          {(showAllEligible ? result.eligibleVehicles : result.eligibleVehicles.slice(0, ELIGIBLE_PREVIEW_COUNT)).map((vehicle, idx) => (
                             <Card
                               key={vehicle.vehicleId}
                               style={{
@@ -462,6 +466,18 @@ const CapacityValidationPage: React.FC = () => {
                               </div>
                             </Card>
                           ))}
+                          {result.eligibleVehicles.length > ELIGIBLE_PREVIEW_COUNT && (
+                            <Button
+                              type="dashed"
+                              block
+                              icon={showAllEligible ? <UpOutlined /> : <DownOutlined />}
+                              onClick={() => setShowAllEligible((prev) => !prev)}
+                            >
+                              {showAllEligible
+                                ? 'Thu gọn'
+                                : `Xem thêm ${result.eligibleVehicles.length - ELIGIBLE_PREVIEW_COUNT} xe`}
+                            </Button>
+                          )}
                         </div>
                       </Card>
                     )}
@@ -474,43 +490,55 @@ const CapacityValidationPage: React.FC = () => {
                             Danh sách xe không đủ tải ({result.ineligibleVehicles.length})
                           </Text>
                         }
+                        extra={
+                          <Button
+                            type="link"
+                            size="small"
+                            icon={showIneligible ? <UpOutlined /> : <DownOutlined />}
+                            onClick={() => setShowIneligible((prev) => !prev)}
+                          >
+                            {showIneligible ? 'Ẩn' : 'Xem'}
+                          </Button>
+                        }
                         style={{ borderRadius: 12, boxShadow: '0 4px 12px rgba(0,0,0,0.02)' }}
                         bodyStyle={{ padding: 0 }}
                       >
-                        <Table
-                          dataSource={result.ineligibleVehicles}
-                          rowKey="vehicleId"
-                          pagination={false}
-                          size="middle"
-                          columns={[
-                            {
-                              title: 'Biển số',
-                              dataIndex: 'plateNumber',
-                              key: 'plateNumber',
-                              width: 150,
-                              render: (val: string) => <Text strong>{val}</Text>
-                            },
-                            {
-                              title: 'Loại xe',
-                              dataIndex: 'vehicleType',
-                              key: 'vehicleType',
-                              width: 120,
-                              render: (val: string) => <Tag>{val}</Tag>
-                            },
-                            {
-                              title: 'Lý do không đạt',
-                              dataIndex: 'failureReason',
-                              key: 'failureReason',
-                              render: (val: string) => (
-                                <div style={{ padding: '4px 0', lineHeight: '1.6' }}>
-                                  <Text type="danger" style={{ fontSize: 13 }}>
-                                    {val || 'Không đủ tải'}
-                                  </Text>
-                                </div>
-                              )
-                            }
-                          ]}
-                        />
+                        {showIneligible && (
+                          <Table
+                            dataSource={result.ineligibleVehicles}
+                            rowKey="vehicleId"
+                            pagination={false}
+                            size="middle"
+                            columns={[
+                              {
+                                title: 'Biển số',
+                                dataIndex: 'plateNumber',
+                                key: 'plateNumber',
+                                width: 150,
+                                render: (val: string) => <Text strong>{val}</Text>
+                              },
+                              {
+                                title: 'Loại xe',
+                                dataIndex: 'vehicleType',
+                                key: 'vehicleType',
+                                width: 120,
+                                render: (val: string) => <Tag>{val}</Tag>
+                              },
+                              {
+                                title: 'Lý do không đạt',
+                                dataIndex: 'failureReason',
+                                key: 'failureReason',
+                                render: (val: string) => (
+                                  <div style={{ padding: '4px 0', lineHeight: '1.6' }}>
+                                    <Text type="danger" style={{ fontSize: 13 }}>
+                                      {val || 'Không đủ tải'}
+                                    </Text>
+                                  </div>
+                                )
+                              }
+                            ]}
+                          />
+                        )}
                       </Card>
                     )}
                   </>
@@ -576,7 +604,7 @@ const CapacityValidationPage: React.FC = () => {
                   <Card
                     title={
                       <Text strong style={{ fontSize: 15 }}>
-                        Chi tiết giới hạn tải trọng của đội xe
+                        Chi tiết giới hạn tải trọng của đội xe ({result.ineligibleVehicles.length})
                       </Text>
                     }
                     style={{ borderRadius: 12, boxShadow: '0 4px 12px rgba(0,0,0,0.02)' }}
@@ -585,7 +613,7 @@ const CapacityValidationPage: React.FC = () => {
                     <Table
                       dataSource={result.ineligibleVehicles}
                       rowKey="vehicleId"
-                      pagination={false}
+                      pagination={result.ineligibleVehicles.length > 5 ? { pageSize: 5, showSizeChanger: false } : false}
                       size="middle"
                       columns={[
                         {

@@ -45,6 +45,8 @@ import {
   type TripDraftStop,
   type TripDraftStopStatus,
 } from '../api/tripDraftApi';
+import { getTripsByTripDraftId } from '../api/tripApi';
+import type { Trip } from '../types/trip';
 import { storeApi } from '../api/storeApi';
 import { usePermissions } from '../hooks/usePermissions';
 import { PERMISSIONS } from '../constants/permissions';
@@ -144,6 +146,7 @@ const TripDraftReviewPage: React.FC = () => {
   const canConfirmTrip = can(PERMISSIONS.TRIP_CONFIRM);
 
   const [draft, setDraft] = useState<TripDraftDetail | null>(null);
+  const [assignedTrips, setAssignedTrips] = useState<Trip[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [forbiddenMessage, setForbiddenMessage] = useState('');
@@ -225,6 +228,18 @@ const TripDraftReviewPage: React.FC = () => {
   const isDraftEditable = draft?.status === 'DRAFT' || draft?.status === 'PLANNED' || draft?.status === 'VALIDATED';
   const actionDisabled = !canEditTrip || !isDraftEditable || recalculating || confirming;
 
+  const vehicleDisplay = useMemo(() => {
+    const withVehicle = assignedTrips.filter((t) => t.vehicle);
+    if (withVehicle.length === 0) return { value: 'Chưa phân xe', suffix: '' };
+    if (withVehicle.length === 1) {
+      return {
+        value: withVehicle[0].vehicle!.plateNumber,
+        suffix: withVehicle[0].vehicle!.vehicleType ? ` / ${withVehicle[0].vehicle!.vehicleType}` : '',
+      };
+    }
+    return { value: `${withVehicle.length} xe (tách chuyến)`, suffix: '' };
+  }, [assignedTrips]);
+
   async function fetchDraft() {
     if (!draftId) return;
 
@@ -257,6 +272,16 @@ const TripDraftReviewPage: React.FC = () => {
       }
       
       setDraft(result);
+
+      // TripDraft itself never carries a vehicle — assignment lives on the
+      // Trip(s) created from it (possibly split into multiple, per BR-07).
+      try {
+        const trips = await getTripsByTripDraftId(draftId);
+        setAssignedTrips(trips);
+      } catch (tripErr) {
+        console.error('Failed to load assigned trips for draft', tripErr);
+        setAssignedTrips([]);
+      }
     } catch (err) {
       if (getTripDraftApiStatus(err) === 403) {
         setForbiddenMessage(
@@ -604,8 +629,8 @@ const TripDraftReviewPage: React.FC = () => {
                   <Card size="small" bordered={false}>
                     <Statistic
                       title="Xe giao hàng"
-                      value={draft.vehicle?.plateNumber || '-'}
-                      suffix={draft.vehicle?.vehicleType ? ` / ${draft.vehicle.vehicleType}` : ''}
+                      value={vehicleDisplay.value}
+                      suffix={vehicleDisplay.suffix}
                     />
                   </Card>
                 </Col>

@@ -34,6 +34,8 @@ import {
   PlusOutlined,
   DeleteOutlined,
   PrinterOutlined,
+  DownOutlined,
+  UpOutlined,
 } from '@ant-design/icons';
 import { Truck, Users, ShieldCheck, ShieldAlert } from 'lucide-react';
 import AdminShell from '../../../components/AdminShell';
@@ -171,6 +173,9 @@ const VehicleAssignmentPage: React.FC = () => {
   const [selectedVehicleId, setSelectedVehicleId] = useState<number | null>(null);
   const [selectedDriverId, setSelectedDriverId] = useState<number | null>(null);
   const [confirmModalOpen, setConfirmModalOpen] = useState(false);
+  const [showIneligibleVehicles, setShowIneligibleVehicles] = useState(false);
+  const [showAllEligibleVehicles, setShowAllEligibleVehicles] = useState(false);
+  const ELIGIBLE_PREVIEW_COUNT = 5;
 
   // Split mode
   const [mode, setMode] = useState<Mode>('single');
@@ -776,7 +781,7 @@ const VehicleAssignmentPage: React.FC = () => {
                   )}
 
                   <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
-                    {eligibleVehicles.map((v, idx) => (
+                    {(showAllEligibleVehicles ? eligibleVehicles : eligibleVehicles.slice(0, ELIGIBLE_PREVIEW_COUNT)).map((v, idx) => (
                       <div
                         key={v.vehicleId}
                         onClick={() => setSelectedVehicleId(v.vehicleId)}
@@ -813,13 +818,34 @@ const VehicleAssignmentPage: React.FC = () => {
                       </div>
                     ))}
 
+                    {eligibleVehicles.length > ELIGIBLE_PREVIEW_COUNT && (
+                      <Button
+                        type="dashed"
+                        block
+                        icon={showAllEligibleVehicles ? <UpOutlined /> : <DownOutlined />}
+                        onClick={() => setShowAllEligibleVehicles((prev) => !prev)}
+                      >
+                        {showAllEligibleVehicles
+                          ? 'Thu gọn'
+                          : `Xem thêm ${eligibleVehicles.length - ELIGIBLE_PREVIEW_COUNT} xe`}
+                      </Button>
+                    )}
+
                     {/* Ineligible vehicles */}
                     {ineligibleVehicles.length > 0 && (
                       <>
                         <Divider style={{ margin: '8px 0', fontSize: 12 }}>
-                          <Text type="secondary" style={{ fontSize: 12 }}>Xe không đủ tải</Text>
+                          <Button
+                            type="link"
+                            size="small"
+                            icon={showIneligibleVehicles ? <UpOutlined /> : <DownOutlined />}
+                            onClick={() => setShowIneligibleVehicles((prev) => !prev)}
+                            style={{ fontSize: 12, padding: 0, height: 'auto' }}
+                          >
+                            {showIneligibleVehicles ? 'Ẩn' : 'Xem'} xe không đủ tải ({ineligibleVehicles.length})
+                          </Button>
                         </Divider>
-                        {ineligibleVehicles.map((v) => (
+                        {showIneligibleVehicles && ineligibleVehicles.map((v) => (
                           <Tooltip
                             key={v.vehicleId}
                             title={v.failureReason || `Thể tích: ${v.volumeCheckResult} · Tải trọng: ${v.weightCheckResult}`}

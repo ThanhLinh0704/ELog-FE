@@ -1,8 +1,7 @@
 import React, { useState } from 'react';
-import { Card, Form, DatePicker, Upload, Button, message, Spin } from 'antd';
+import { Card, Upload, Button, message, Spin } from 'antd';
 import { UploadOutlined, DownloadOutlined, FileExcelOutlined } from '@ant-design/icons';
 import type { UploadFile } from 'antd/es/upload/interface';
-import dayjs from 'dayjs';
 import { downloadImportTemplate } from '../../../../utils/excelTemplate';
 import { validateExcelFile } from '../../../../utils/validateExcel';
 
@@ -12,7 +11,6 @@ interface ImportUploadCardProps {
 }
 
 const ImportUploadCard: React.FC<ImportUploadCardProps> = ({ loading, onUpload }) => {
-  const [form] = Form.useForm();
   const [fileList, setFileList] = useState<UploadFile[]>([]);
   const [fileError, setFileError] = useState<string | null>(null);
 
@@ -33,21 +31,14 @@ const ImportUploadCard: React.FC<ImportUploadCardProps> = ({ loading, onUpload }
     setFileError(null);
   };
 
-  const handleSubmit = async () => {
-    try {
-      const values = await form.validateFields();
-      if (fileList.length === 0) {
-        setFileError("Vui lòng chọn file Excel");
-        return;
-      }
-      
-      const file = fileList[0] as unknown as File;
-      const formattedDate = values.deliveryDate ? values.deliveryDate.format('YYYY-MM-DD') : undefined;
-      
-      onUpload(file, formattedDate);
-    } catch (errorInfo) {
-      console.log('Validation failed:', errorInfo);
+  const handleSubmit = () => {
+    if (fileList.length === 0) {
+      setFileError("Vui lòng chọn file Excel");
+      return;
     }
+
+    const file = fileList[0] as unknown as File;
+    onUpload(file);
   };
 
   return (
@@ -60,80 +51,47 @@ const ImportUploadCard: React.FC<ImportUploadCardProps> = ({ loading, onUpload }
       }}
     >
       <Spin spinning={loading} tip="Đang xử lý file, vui lòng đợi...">
-        <Form
-          form={form}
-          layout="vertical"
-          requiredMark={false}
+        <div
+          style={{
+            display: 'flex',
+            justifyContent: 'space-between',
+            alignItems: 'center',
+            flexWrap: 'wrap',
+            gap: 16,
+          }}
         >
-          <div style={{ display: 'flex', flexWrap: 'wrap', gap: 24, alignItems: 'flex-start' }}>
-            {/* Delivery Date Field (Optional) */}
-            <div style={{ flex: '1 1 250px' }}>
-              <Form.Item
-                label={<span style={{ fontWeight: 500 }}>Ngày giao hàng mặc định (Tùy chọn)</span>}
-                name="deliveryDate"
-              >
-                <DatePicker
-                  format="DD/MM/YYYY"
-                  style={{ width: '100%', height: 40, borderRadius: 6 }}
-                  disabled={loading}
-                  placeholder="Để trống nếu đã ghi trong Excel"
-                />
-              </Form.Item>
-            </div>
-
-            {/* Excel File Upload Field */}
-            <div style={{ flex: '1 1 350px' }}>
-              <Form.Item
-                label={<span style={{ fontWeight: 500 }}>File Excel đơn hàng (.xlsx)</span>}
-                validateStatus={fileError ? 'error' : ''}
-                help={fileError}
-                required
-              >
-                <Upload
-                  fileList={fileList}
-                  beforeUpload={handleBeforeUpload}
-                  onRemove={handleRemoveFile}
-                  maxCount={1}
-                  accept=".xlsx"
+          <div style={{ display: 'flex', alignItems: 'center', flexWrap: 'wrap', gap: 16 }}>
+            <Upload
+              fileList={fileList}
+              beforeUpload={handleBeforeUpload}
+              onRemove={handleRemoveFile}
+              maxCount={1}
+              accept=".xlsx"
+              disabled={loading}
+            >
+              {fileList.length === 0 && (
+                <Button
+                  icon={<UploadOutlined />}
+                  style={{
+                    height: 40,
+                    borderRadius: 6,
+                    display: 'flex',
+                    alignItems: 'center',
+                  }}
                   disabled={loading}
                 >
-                  {fileList.length === 0 && (
-                    <Button
-                      icon={<UploadOutlined />}
-                      style={{
-                        height: 40,
-                        borderRadius: 6,
-                        display: 'flex',
-                        alignItems: 'center',
-                      }}
-                      disabled={loading}
-                    >
-                      Chọn file Excel
-                    </Button>
-                  )}
-                </Upload>
-                {fileList.length > 0 && (
-                  <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginTop: 8, color: '#1890ff' }}>
-                    <FileExcelOutlined style={{ fontSize: 16 }} />
-                    <span style={{ fontSize: 13, wordBreak: 'break-all' }}>{fileList[0].name}</span>
-                  </div>
-                )}
-              </Form.Item>
-            </div>
-          </div>
+                  Chọn file Excel
+                </Button>
+              )}
+            </Upload>
 
-          <div
-            style={{
-              display: 'flex',
-              justifyContent: 'space-between',
-              alignItems: 'center',
-              marginTop: 16,
-              borderTop: '1px solid #f0f0f0',
-              paddingTop: 16,
-              flexWrap: 'wrap',
-              gap: 12
-            }}
-          >
+            {fileList.length > 0 && (
+              <div style={{ display: 'flex', alignItems: 'center', gap: 8, color: '#1890ff' }}>
+                <FileExcelOutlined style={{ fontSize: 16 }} />
+                <span style={{ fontSize: 13, wordBreak: 'break-all' }}>{fileList[0].name}</span>
+              </div>
+            )}
+
             <Button
               type="link"
               icon={<DownloadOutlined />}
@@ -143,22 +101,25 @@ const ImportUploadCard: React.FC<ImportUploadCardProps> = ({ loading, onUpload }
             >
               Tải xuống file mẫu
             </Button>
-
-            <Button
-              type="primary"
-              onClick={handleSubmit}
-              disabled={loading || fileList.length === 0}
-              style={{
-                height: 40,
-                borderRadius: 6,
-                padding: '0 24px',
-                fontWeight: 600,
-              }}
-            >
-              Tải lên
-            </Button>
           </div>
-        </Form>
+
+          <Button
+            type="primary"
+            onClick={handleSubmit}
+            disabled={loading || fileList.length === 0}
+            style={{
+              height: 40,
+              borderRadius: 6,
+              padding: '0 24px',
+              fontWeight: 600,
+            }}
+          >
+            Tải lên
+          </Button>
+        </div>
+        {fileError && (
+          <div style={{ color: '#ff4d4f', fontSize: 13, marginTop: 8 }}>{fileError}</div>
+        )}
       </Spin>
     </Card>
   );

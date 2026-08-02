@@ -339,7 +339,7 @@ const DispatchPage: React.FC = () => {
               onClick={() => setConfirmModalOpen(true)}
               style={{ background: canDispatch ? '#722ed1' : undefined, borderColor: canDispatch ? '#722ed1' : undefined }}
             >
-              Dispatch và khóa chuyến
+              Điều phối và khóa chuyến
             </Button>
           )}
         </div>
@@ -565,7 +565,7 @@ const DispatchPage: React.FC = () => {
                     borderColor: canDispatch ? '#722ed1' : undefined,
                   }}
                 >
-                  Dispatch và khóa chuyến
+                  Điều phối và khóa chuyến
                 </Button>
               )}
               {isDispatched && (
@@ -624,7 +624,7 @@ const DispatchPage: React.FC = () => {
             onClick={handleDispatch}
             danger
           >
-            Xác nhận Dispatch
+            Xác nhận điều phối
           </Button>,
         ]}
       >
