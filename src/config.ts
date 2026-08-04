@@ -1,5 +1,5 @@
 export const API_BASE_URL = (import.meta.env.VITE_API_BASE_URL as string) || 'http://localhost:8080';
-export const USE_MOCK_API = String(import.meta.env.VITE_USE_MOCK ?? 'true') === 'true';
+export const USE_MOCK_API = String(import.meta.env.VITE_USE_MOCK ?? 'false') === 'true';
 
 export interface UserRole {
   value: string;

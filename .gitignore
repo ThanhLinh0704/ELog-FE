@@ -45,3 +45,25 @@ Thumbs.db
 # ─── Misc ───────────────────────────────────────────────────
 *.log
 logs/
+
+# Local documentation artifacts (Markdown remains trackable)
+*.doc
+*.docx
+*.pdf
+*.xls
+*.xlsx
+*.ppt
+*.pptx
+*.odt
+*.ods
+*.rtf
+*.txt
+*.docm
+*.xlsm
+*.pptm
+*.drawio
+*.puml
+*.vsdx
+~$*
+!*.md
+!**/*.md

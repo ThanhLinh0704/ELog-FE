@@ -1,0 +1,244 @@
+{
+  "runDate": "2026-08-02T17:45:12.707Z",
+  "passed": 39,
+  "failed": 0,
+  "skipped": 1,
+  "total": 39,
+  "passRate": "100.0%",
+  "results": [
+    {
+      "id": "L3-AUTH-01",
+      "desc": "POST /api/auth/login → 200 SYSTEM_ADMIN",
+      "status": "PASS",
+      "detail": "status=200 token=true"
+    },
+    {
+      "id": "L3-AUTH-06",
+      "desc": "POST /api/auth/login → 200 DISPATCHER (coordinator role)",
+      "status": "PASS",
+      "detail": "status=200 token=true"
+    },
+    {
+      "id": "L3-AUTH-07",
+      "desc": "POST /api/auth/login → 200 DRIVER",
+      "status": "PASS",
+      "detail": "status=200 token=true"
+    },
+    {
+      "id": "L3-AUTH-02",
+      "desc": "POST /api/auth/login → 401 (user not found)",
+      "status": "PASS",
+      "detail": "status=401"
+    },
+    {
+      "id": "L3-AUTH-03",
+      "desc": "POST /api/auth/login → 401 (wrong password)",
+      "status": "PASS",
+      "detail": "status=401"
+    },
+    {
+      "id": "L3-AUTH-05",
+      "desc": "POST /api/auth/login → 400 (missing password)",
+      "status": "PASS",
+      "detail": "status=400"
+    },
+    {
+      "id": "L3-AUTH-10",
+      "desc": "POST /api/auth/logout → 200 (token blacklisted)",
+      "status": "PASS",
+      "detail": "status=200 response={\"success\":true,\"data\":{\"message\":\"Logged out successfully\"}}"
+    },
+    {
+      "id": "L3-USR-05",
+      "desc": "GET /api/users → 200 paginated list",
+      "status": "PASS",
+      "detail": "status=200 count=10"
+    },
+    {
+      "id": "L3-USR-06",
+      "desc": "GET /api/users → 401 (no token)",
+      "status": "PASS",
+      "detail": "status=401"
+    },
+    {
+      "id": "L3-USR-02",
+      "desc": "POST /api/users → 403 (COORDINATOR lacks permission)",
+      "status": "PASS",
+      "detail": "status=403"
+    },
+    {
+      "id": "L3-USR-04",
+      "desc": "POST /api/users → 400 (invalid fields)",
+      "status": "PASS",
+      "detail": "status=400"
+    },
+    {
+      "id": "L3-USR-08",
+      "desc": "PATCH /api/users/999999/status → 404 (not found)",
+      "status": "PASS",
+      "detail": "status=404 response={\"error\":{\"code\":\"RESOURCE_NOT_FOUND\",\"message\":\"User not found\"},\"success\":false}"
+    },
+    {
+      "id": "L3-STR-06",
+      "desc": "GET /api/stores → 200 paginated",
+      "status": "PASS",
+      "detail": "status=200"
+    },
+    {
+      "id": "L3-STR-02",
+      "desc": "POST /api/stores → 409 (duplicate code)",
+      "status": "PASS",
+      "detail": "status=409"
+    },
+    {
+      "id": "L3-ROU-01",
+      "desc": "POST /api/routes → 201 (create route)",
+      "status": "PASS",
+      "detail": "status=201 data={\"success\":true,\"data\":{\"id\":22,\"code\":\"RT-L3-1785692710776\",\"name\":\"L3 Test Route 1785692710776\",\"i"
+    },
+    {
+      "id": "L3-ROU-02",
+      "desc": "POST /api/routes → 409 (duplicate code)",
+      "status": "PASS",
+      "detail": "status=409"
+    },
+    {
+      "id": "L3-VEH-04",
+      "desc": "GET /api/fleet/capacity-check → 200",
+      "status": "PASS",
+      "detail": "status=200"
+    },
+    {
+      "id": "L3-PRD-02",
+      "desc": "POST /api/products → 409 (duplicate SKU)",
+      "status": "PASS",
+      "detail": "status=409"
+    },
+    {
+      "id": "L3-PRD-03",
+      "desc": "POST /api/products → 400 (zero dimension BVA)",
+      "status": "PASS",
+      "detail": "status=400"
+    },
+    {
+      "id": "L3-IMP-02",
+      "desc": "POST /api/imports → 400 (corrupt file)",
+      "status": "PASS",
+      "detail": "status=400"
+    },
+    {
+      "id": "L3-IMP-05",
+      "desc": "POST /api/imports → 403 (DRIVER role)",
+      "status": "PASS",
+      "detail": "status=403"
+    },
+    {
+      "id": "L3-IMP-08",
+      "desc": "GET /api/imports/999999 → 404 (not found)",
+      "status": "PASS",
+      "detail": "status=404"
+    },
+    {
+      "id": "L3-TRD-01",
+      "desc": "POST /api/trip-drafts/consolidate → 200",
+      "status": "PASS",
+      "detail": "status=200"
+    },
+    {
+      "id": "L3-TRD-02",
+      "desc": "POST /api/trip-drafts/consolidate → 200 (empty date = 0 drafts)",
+      "status": "PASS",
+      "detail": "status=200 draftsCreated=0"
+    },
+    {
+      "id": "L3-TRD-GET",
+      "desc": "GET /api/trip-drafts → 200 (list)",
+      "status": "PASS",
+      "detail": "status=200 draftId=null"
+    },
+    {
+      "id": "L3-TRD-10",
+      "desc": "POST /api/trip-drafts/999999/assign → 404/409 (not found)",
+      "status": "PASS",
+      "detail": "status=404"
+    },
+    {
+      "id": "L3-TRP-04",
+      "desc": "GET /api/trips/999999 → 404 (not found)",
+      "status": "PASS",
+      "detail": "status=404"
+    },
+    {
+      "id": "L3-TRP-02",
+      "desc": "POST /api/trips/999999/dispatch → 404/409",
+      "status": "PASS",
+      "detail": "status=404"
+    },
+    {
+      "id": "L3-MON-01",
+      "desc": "GET /api/dashboard/active-trips → 200",
+      "status": "PASS",
+      "detail": "status=200"
+    },
+    {
+      "id": "L3-MON-02",
+      "desc": "GET /api/dashboard/active-trips → 403 (DRIVER)",
+      "status": "PASS",
+      "detail": "status=403"
+    },
+    {
+      "id": "L3-MON-03",
+      "desc": "GET /api/exceptions → 200",
+      "status": "PASS",
+      "detail": "status=200"
+    },
+    {
+      "id": "L3-SEC-01",
+      "desc": "A01 POST /api/users with DRIVER JWT → 403",
+      "status": "PASS",
+      "detail": "status=403"
+    },
+    {
+      "id": "L3-SEC-03",
+      "desc": "A01 GET /api/trip-drafts (no token) → 401",
+      "status": "PASS",
+      "detail": "status=401"
+    },
+    {
+      "id": "L3-SEC-04",
+      "desc": "A02 JWT alg=none attack → 401",
+      "status": "PASS",
+      "detail": "status=401"
+    },
+    {
+      "id": "L3-SEC-05",
+      "desc": "A02 Tampered JWT payload → 401",
+      "status": "PASS",
+      "detail": "status=401"
+    },
+    {
+      "id": "L3-SEC-06",
+      "desc": "A02 Expired JWT (exp=1) → 401",
+      "status": "PASS",
+      "detail": "status=401"
+    },
+    {
+      "id": "L3-SEC-07",
+      "desc": "A03 SQL injection in search param → 200 empty (not DB error)",
+      "status": "PASS",
+      "detail": "status=200 (must NOT be 500)"
+    },
+    {
+      "id": "L3-SEC-10",
+      "desc": "A07 Blacklisted token reuse after logout → 401",
+      "status": "PASS",
+      "detail": "status=401"
+    },
+    {
+      "id": "L3-DRV-02",
+      "desc": "POST /api/driver/trips/1/start with wrong driver → 403/404",
+      "status": "PASS",
+      "detail": "status=403"
+    }
+  ]
+}
