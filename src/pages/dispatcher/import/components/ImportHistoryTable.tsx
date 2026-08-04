@@ -134,7 +134,7 @@ const ImportHistoryTable: React.FC<ImportHistoryTableProps> = ({
           pageSize: pageSize,
           total: totalElements,
           showSizeChanger: true,
-          pageSizeOptions: ['10', '20', '50'],
+          pageSizeOptions: ['5', '10', '20', '50'],
           onChange: (page, pSize) => onPageChange(page - 1, pSize),
         }}
         scroll={{ x: 'max-content' }}

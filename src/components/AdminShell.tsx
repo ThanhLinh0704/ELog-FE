@@ -17,6 +17,7 @@ import {
   Search,
   Settings,
   Truck,
+  UserCog,
   Users,
 } from 'lucide-react';
 import axiosInstance from '../api/axiosInstance';
@@ -137,6 +138,14 @@ const AdminShell: React.FC<AdminShellProps> = ({ currentUser, children }) => {
               icon: <Users size={ICON_SIZE} />,
               label: 'Quản lý người dùng',
               onClick: () => navigate('/users'),
+            }
+          : null,
+        can(PERMISSIONS.DRIVER_READ)
+          ? {
+              key: '/admin/drivers',
+              icon: <UserCog size={ICON_SIZE} />,
+              label: 'Quản lý tài xế',
+              onClick: () => navigate('/admin/drivers'),
             }
           : null,
         can(PERMISSIONS.STORE_READ)

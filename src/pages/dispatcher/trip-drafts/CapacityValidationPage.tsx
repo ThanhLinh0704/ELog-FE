@@ -412,13 +412,23 @@ const CapacityValidationPage: React.FC = () => {
             {/* Case PASS */}
             {result.validationPassed ? (
               <div style={{ display: 'flex', flexDirection: 'column', gap: 24 }}>
-                <Alert
-                  message={<Text strong style={{ color: '#27272a' }}>Kiểm tra tải trọng thành công</Text>}
-                  description={`Tìm thấy các xe đơn lẻ trong fleet có đủ sức chứa cho chuyến đi này.`}
-                  type="success"
-                  showIcon
-                  style={{ borderRadius: 8 }}
-                />
+                {(result.eligibleVehicles?.length ?? 0) === 0 ? (
+                  <Alert
+                    message={<Text strong style={{ color: '#27272a' }}>Kiểm tra tải trọng thành công — cần chia 2 xe</Text>}
+                    description="Không có xe đơn lẻ nào đủ tải cho tuyến này, nhưng hệ thống xác nhận có thể chia tải thành 2 xe (tối đa cho phép). Vào mục 'Gợi ý phân xe tự động' để xem chi tiết phương án 2 xe và tiến hành phân xe."
+                    type="success"
+                    showIcon
+                    style={{ borderRadius: 8 }}
+                  />
+                ) : (
+                  <Alert
+                    message={<Text strong style={{ color: '#27272a' }}>Kiểm tra tải trọng thành công</Text>}
+                    description={`Tìm thấy các xe đơn lẻ trong fleet có đủ sức chứa cho chuyến đi này.`}
+                    type="success"
+                    showIcon
+                    style={{ borderRadius: 8 }}
+                  />
+                )}
 
                 {/* Check if vehicle list is provided by backend */}
                 {((result.eligibleVehicles && result.eligibleVehicles.length > 0) || (result.ineligibleVehicles && result.ineligibleVehicles.length > 0)) ? (

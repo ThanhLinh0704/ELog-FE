@@ -102,20 +102,24 @@ export interface RecommendedVehicleDto {
 }
 
 export interface SubTrip {
-  subTripIndex: number;
+  label: string;
   vehicleId: number;
-  plateNumber: string;
-  stopIds: number[];
-  totalWeightKg: number;
-  totalVolumeM3: number;
+  stopSequenceNos: number[];
+  subTotalVolumeM3: number;
+  subTotalWeightKg: number;
+  volumeUtilizationPct: number;
+  weightUtilizationPct: number;
+  subScore: number;
+  warnings: string[] | null;
 }
 
 export interface VehicleRecommendation {
   planType: string;
   vehicles: RecommendedVehicleDto[];
-  subTrips: SubTrip[];
+  subTrips: SubTrip[] | null;
   totalScore: number;
   explanation: string;
+  warnings: string[] | null;
 }
 
 export interface RecommendationResult {

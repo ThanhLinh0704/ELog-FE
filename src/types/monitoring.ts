@@ -92,6 +92,9 @@ export interface TripProgressResponse {
   fixedRouteCode: string;
   deliveryDate: string;
   status: string;
+  totalDistanceKm: number | null;
+  /** Encoded polyline (Goong.io format); multiple legs joined by ';'. */
+  routePolyline: string | null;
   vehicle: ProgressVehicleInfo;
   driver: ProgressDriverInfo;
   stops: StopProgress[];

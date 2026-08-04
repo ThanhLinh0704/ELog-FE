@@ -7,6 +7,7 @@ import PublicRoute from './components/PublicRoute';
 import ProtectedPermissionRoute from './components/auth/ProtectedPermissionRoute';
 import { PERMISSIONS } from './constants/permissions';
 import UsersPage from './pages/UsersPage';
+import DriverManagementPage from './pages/admin/drivers/DriverManagementPage';
 import ProductListPage from './pages/admin/products/ProductListPage';
 import ProductFormPage from './pages/admin/products/ProductFormPage';
 import ProductDetailPage from './pages/admin/products/ProductDetailPage';
@@ -71,6 +72,15 @@ function App() {
           element={
             <ProtectedPermissionRoute permission={PERMISSIONS.USER_READ}>
               <UsersPage />
+            </ProtectedPermissionRoute>
+          }
+        />
+
+        <Route
+          path="/admin/drivers"
+          element={
+            <ProtectedPermissionRoute permission={PERMISSIONS.DRIVER_READ}>
+              <DriverManagementPage />
             </ProtectedPermissionRoute>
           }
         />

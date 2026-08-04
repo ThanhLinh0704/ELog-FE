@@ -236,10 +236,11 @@ const MonitoringDashboardPage: React.FC = () => {
   const stopColumns = [
     {
       title: '#',
-      dataIndex: 'sequenceOrder',
-      key: 'sequenceOrder',
+      key: 'sequenceIndex',
       width: 50,
-      render: (v: number) => <Text strong style={{ color: '#1677ff' }}>#{v}</Text>,
+      render: (_: unknown, __: unknown, index: number) => (
+        <Text strong style={{ color: '#1677ff' }}>#{index + 1}</Text>
+      ),
     },
     {
       title: 'Mã CH',
@@ -647,7 +648,11 @@ const MonitoringDashboardPage: React.FC = () => {
                   </Tag>
                 }
               >
-                <TripRouteMap stops={tripProgress.stops} />
+                <TripRouteMap
+                  stops={tripProgress.stops}
+                  routePolyline={tripProgress.routePolyline}
+                  totalDistanceKm={tripProgress.totalDistanceKm}
+                />
               </Card>
 
               {/* Stops table */}

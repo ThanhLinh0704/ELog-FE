@@ -18,40 +18,34 @@ import {
   Modal,
   Alert,
   TimePicker,
-  Input,
   Form,
-  Badge,
   Tooltip,
+  Progress,
+  Collapse,
 } from 'antd';
-import { ArrowLeftOutlined, CarOutlined, ClockCircleOutlined, ExclamationCircleOutlined, UserOutlined } from '@ant-design/icons';
-import { MapPin, CheckCircle2, XCircle, Sparkles, PhoneCall, Scissors, PlusCircle, PackageX, Eye } from 'lucide-react';
+import { ArrowLeftOutlined, CarOutlined, ClockCircleOutlined, UserOutlined } from '@ant-design/icons';
+import { MapPin, CheckCircle2, XCircle, Sparkles, Eye } from 'lucide-react';
 import dayjs from 'dayjs';
 import AdminShell from '../../../components/AdminShell';
 import {
   tripDraftApi,
-  getOptimalDeparture,
-  recalculateEta,
   adjustDepartureTime,
-  settleDelay,
-  excludeOrder,
-  reIncludeOrder,
-  getExcludedOrders,
   getStopOrderItems,
   getApiErrorMessage,
   getRecommendations,
   confirmTripDraft,
-  type OptimalDepartureResponse,
   type StopOrderItem,
   type RecommendationResult,
   type VehicleRecommendation,
 } from '../../../api/tripDraftApi';
 import { isFeasibleRecommendationPlan } from '../../../api/recommendationNormalizer';
 import { getTripsByTripDraftId } from '../../../api/tripApi';
-import type { TripDraft, TripDraftStop } from '../../../types/tripDraft';
+import { getTripDraftPlanningHistory } from '../../../api/planningHistoryApi';
+import { PLANNING_EVENT_TYPE_LABEL, type PlanningEvent } from '../../../types/planningEvent';
+import type { TripDraft, TripDraftStop, CapacityValidationResult } from '../../../types/tripDraft';
 import type { Trip } from '../../../types/trip';
 
-const { Title, Text, Paragraph } = Typography;
-const { TextArea } = Input;
+const { Title, Text } = Typography;
 
 function getCurrentUser() {
   const username = localStorage.getItem('username') || '';
@@ -84,42 +78,16 @@ const TripDraftDetailPage: React.FC = () => {
   const [revertLoading, setRevertLoading] = useState(false);
   const [revertModalOpen, setRevertModalOpen] = useState(false);
 
-  // Smart Departure states
-  const [optimalLoading, setOptimalLoading] = useState(false);
-  const [optimalData, setOptimalData] = useState<OptimalDepartureResponse | null>(null);
-  const [optimalModalOpen, setOptimalModalOpen] = useState(false);
-  const [applyOptimalLoading, setApplyOptimalLoading] = useState(false);
-
   // Adjust Departure Time states
   const [adjustDepModalOpen, setAdjustDepModalOpen] = useState(false);
   const [adjustDepTime, setAdjustDepTime] = useState<dayjs.Dayjs | null>(dayjs('07:30:00', 'HH:mm:ss'));
   const [adjustDepLoading, setAdjustDepLoading] = useState(false);
-
-  // Excluded Orders Queue states
-  const [excludedOrders, setExcludedOrders] = useState<StopOrderItem[]>([]);
-  const [excludedLoading, setExcludedLoading] = useState(false);
 
   // Stop Order Items Modal states
   const [orderItemsModalOpen, setOrderItemsModalOpen] = useState(false);
   const [selectedStop, setSelectedStop] = useState<TripDraftStop | null>(null);
   const [orderItems, setOrderItems] = useState<StopOrderItem[]>([]);
   const [orderItemsLoading, setOrderItemsLoading] = useState(false);
-
-  // Settle Delay Modal states
-  const [settleModalOpen, setSettleModalOpen] = useState(false);
-  const [settleTargetOrder, setSettleTargetOrder] = useState<StopOrderItem | null>(null);
-  const [settleReason, setSettleReason] = useState('');
-  const [settleLoading, setSettleLoading] = useState(false);
-
-  // Exclude Order Modal states
-  const [excludeModalOpen, setExcludeModalOpen] = useState(false);
-  const [excludeTargetOrder, setExcludeTargetOrder] = useState<StopOrderItem | null>(null);
-  const [excludeLoading, setExcludeLoading] = useState(false);
-
-  // Re-include Order Modal states
-  const [reIncludeModalOpen, setReIncludeModalOpen] = useState(false);
-  const [reIncludeTargetOrder, setReIncludeTargetOrder] = useState<StopOrderItem | null>(null);
-  const [reIncludeLoading, setReIncludeLoading] = useState(false);
 
   // Recommendations state (US-13)
   const [recLoading, setRecLoading] = useState(false);
@@ -128,6 +96,33 @@ const TripDraftDetailPage: React.FC = () => {
 
   // Confirm TripDraft state (US-14)
   const [confirmLoading, setConfirmLoading] = useState(false);
+
+  // Auto capacity-check result (surfaced when confirm couldn't reach VALIDATED)
+  const [capacityFailInfo, setCapacityFailInfo] = useState<CapacityValidationResult | null>(null);
+
+  // Planning history panel (ELOG-140)
+  const HISTORY_PAGE_SIZE = 10;
+  const [historyEvents, setHistoryEvents] = useState<PlanningEvent[]>([]);
+  const [historyLoading, setHistoryLoading] = useState(false);
+  const [historyLoaded, setHistoryLoaded] = useState(false);
+  const [historyPage, setHistoryPage] = useState(0);
+  const [historyTotal, setHistoryTotal] = useState(0);
+
+  const fetchHistory = async (page = 0) => {
+    if (!id) return;
+    setHistoryLoading(true);
+    try {
+      const result = await getTripDraftPlanningHistory(id, { page, size: HISTORY_PAGE_SIZE });
+      setHistoryEvents(result.items);
+      setHistoryTotal(result.pagination.totalElements);
+      setHistoryPage(page);
+      setHistoryLoaded(true);
+    } catch (err) {
+      message.error((err as Error).message);
+    } finally {
+      setHistoryLoading(false);
+    }
+  };
 
   const hasFeasibleRecommendations = isFeasibleRecommendationPlan(recResult?.planType);
 
@@ -142,6 +137,18 @@ const TripDraftDetailPage: React.FC = () => {
 
       if (data.plannedDepartureTime) {
         setAdjustDepTime(dayjs(data.plannedDepartureTime, 'HH:mm:ss'));
+      }
+
+      if (data.status === 'PLANNED') {
+        try {
+          const capacityResult = await tripDraftApi.getCapacityValidationResult(id);
+          setCapacityFailInfo(capacityResult.validationPassed ? null : capacityResult);
+        } catch (err) {
+          console.error('Failed to fetch capacity validation result', err);
+          setCapacityFailInfo(null);
+        }
+      } else {
+        setCapacityFailInfo(null);
       }
 
       try {
@@ -159,21 +166,8 @@ const TripDraftDetailPage: React.FC = () => {
   };
 
 
-  const fetchExcludedOrdersQueue = async () => {
-    if (!id) return;
-    setExcludedLoading(true);
-    try {
-      const data = await getExcludedOrders(id);
-      setExcludedOrders(data || []);
-    } catch (err) {
-      console.error("Failed to fetch excluded orders", err);
-    } finally {
-      setExcludedLoading(false);
-    }
-  };
-
   const reloadAllData = async () => {
-    await Promise.all([fetchDraftDetail(), fetchExcludedOrdersQueue()]);
+    await fetchDraftDetail();
   };
 
   useEffect(() => {
@@ -239,39 +233,6 @@ const TripDraftDetailPage: React.FC = () => {
     }
   };
 
-  const handleFetchOptimalDeparture = async () => {
-    if (!id) return;
-    setOptimalLoading(true);
-    try {
-      const res = await getOptimalDeparture(id);
-      setOptimalData(res);
-      setOptimalModalOpen(true);
-    } catch (err: any) {
-      console.error(err);
-      message.error(getApiErrorMessage(err, 'Không thể lấy gợi ý giờ xuất phát.'));
-    } finally {
-      setOptimalLoading(false);
-    }
-  };
-
-  const handleApplyOptimalDeparture = async () => {
-    if (!id || !optimalData) return;
-    setApplyOptimalLoading(true);
-    try {
-      await recalculateEta(id, {
-        plannedDepartureTime: optimalData.suggestedDepartureTime,
-      });
-      message.success(`Đã cập nhật giờ xuất phát thành ${optimalData.suggestedDepartureTime}`);
-      setOptimalModalOpen(false);
-      await reloadAllData();
-    } catch (err: any) {
-      console.error(err);
-      message.error(getApiErrorMessage(err, 'Không thể áp dụng giờ xuất phát mới.'));
-    } finally {
-      setApplyOptimalLoading(false);
-    }
-  };
-
   const handleAdjustDepartureTimeSubmit = async () => {
     if (!id || !adjustDepTime) {
       message.warning('Vui lòng chọn giờ xuất phát mới');
@@ -305,89 +266,6 @@ const TripDraftDetailPage: React.FC = () => {
       message.error(getApiErrorMessage(err, "Không thể tải chi tiết mặt hàng của điểm dừng."));
     } finally {
       setOrderItemsLoading(false);
-    }
-  };
-
-  const handleSettleDelayClick = (item: StopOrderItem) => {
-    setSettleTargetOrder(item);
-    setSettleReason('');
-    setSettleModalOpen(true);
-  };
-
-  const [settledOrdersMap, setSettledOrdersMap] = useState<Record<number, string>>({});
-
-  const handleSettleDelaySubmit = async () => {
-    if (!id || !settleTargetOrder) return;
-    const trimmedReason = settleReason.trim();
-    if (!trimmedReason) {
-      message.warning('Vui lòng nhập lý do dàn xếp.');
-      return;
-    }
-    setSettleLoading(true);
-    try {
-      const res = await settleDelay(id, settleTargetOrder.orderId, trimmedReason);
-      message.success(res.message || 'Ghi nhận dàn xếp giao trễ thành công');
-      setSettledOrdersMap((prev) => ({
-        ...prev,
-        [settleTargetOrder.orderId]: trimmedReason,
-      }));
-      setSettleModalOpen(false);
-      setSettleReason('');
-      await reloadAllData();
-      if (selectedStop) {
-        handleOpenStopOrderItems(selectedStop);
-      }
-    } catch (err: any) {
-      console.error(err);
-      message.error(getApiErrorMessage(err, 'Không thể ghi nhận dàn xếp giao trễ.'));
-    } finally {
-      setSettleLoading(false);
-    }
-  };
-
-
-  const handleExcludeOrderClick = (item: StopOrderItem) => {
-    setExcludeTargetOrder(item);
-    setExcludeModalOpen(true);
-  };
-
-  const handleExcludeOrderSubmit = async () => {
-    if (!id || !excludeTargetOrder) return;
-    setExcludeLoading(true);
-    try {
-      const res = await excludeOrder(id, excludeTargetOrder.orderId);
-      message.success(res.message || 'Đã tách đơn hàng khỏi chuyến thành công');
-      setExcludeModalOpen(false);
-      await reloadAllData();
-      if (selectedStop) {
-        handleOpenStopOrderItems(selectedStop);
-      }
-    } catch (err: any) {
-      console.error(err);
-      message.error(getApiErrorMessage(err, 'Tách đơn hàng thất bại.'));
-    } finally {
-      setExcludeLoading(false);
-    }
-  };
-
-  const handleReIncludeClick = (item: StopOrderItem) => {
-    setReIncludeTargetOrder(item);
-    setReIncludeModalOpen(true);
-  };
-
-  const handleReIncludeSubmit = async () => {
-    if (!id || !reIncludeTargetOrder) return;
-    setReIncludeLoading(true);
-    try {
-      const res = await reIncludeOrder(id, reIncludeTargetOrder.orderId);
-      message.success(res.message || 'Đã thêm lại đơn hàng vào chuyến thành công');
-      setReIncludeModalOpen(false);
-      await reloadAllData();
-    } catch (err: any) {
-      console.error(err);
-      message.error(getApiErrorMessage(err, 'Thêm lại đơn hàng thất bại.'));
-    } finally {
-      setReIncludeLoading(false);
     }
   };
 
@@ -572,110 +450,6 @@ const TripDraftDetailPage: React.FC = () => {
       align: 'right' as const,
       render: (vol: number) => `${Number(vol || 0).toFixed(4)} m³`,
     },
-    {
-      title: 'Thao tác',
-      key: 'action',
-      width: 220,
-      render: (_: any, record: StopOrderItem) => {
-        if (!isOperableStatus || !record.orderId) return null;
-        const settledReason = settledOrdersMap[record.orderId] || record.timeOverrideReason;
-        const isSettled = Boolean(settledOrdersMap[record.orderId] || record.isDeliveryTimeOverridden);
-
-        return (
-          <Space size="small">
-            {isSettled ? (
-              <Tooltip title={`Lý do dàn xếp: ${settledReason || 'Khách đồng ý nhận trễ'}`}>
-                <Tag color="green" icon={<CheckCircle2 size={12} style={{ verticalAlign: 'middle', marginRight: 2 }} />}>
-                  Đã dàn xếp
-                </Tag>
-              </Tooltip>
-            ) : (
-              <Tooltip title="Ghi nhận Dispatcher đã liên hệ và dàn xếp khách hàng nhận trễ">
-                <Button
-                  size="small"
-                  icon={<PhoneCall size={13} />}
-                  style={{ borderRadius: 4, borderColor: '#fa8c16', color: '#fa8c16' }}
-                  onClick={() => handleSettleDelayClick(record)}
-                >
-                  Dàn xếp trễ
-                </Button>
-              </Tooltip>
-            )}
-            <Tooltip title="Tách đơn vi phạm ra khỏi chuyến đưa về hàng chờ ngoại lệ">
-              <Button
-                size="small"
-                danger
-                icon={<Scissors size={13} />}
-                style={{ borderRadius: 4 }}
-                onClick={() => handleExcludeOrderClick(record)}
-              >
-                Tách đơn
-              </Button>
-            </Tooltip>
-          </Space>
-        );
-      },
-    },
-
-  ];
-
-  const excludedOrdersColumns = [
-    {
-      title: 'Mã đơn (orderRef)',
-      dataIndex: 'orderRef',
-      key: 'orderRef',
-      render: (ref: string) => <Text strong style={{ color: '#cf1322' }}>{ref}</Text>,
-    },
-    {
-      title: 'SKU',
-      dataIndex: 'sku',
-      key: 'sku',
-      render: (sku: string) => <Tag color="volcano">{sku}</Tag>,
-    },
-    {
-      title: 'Tên sản phẩm',
-      dataIndex: 'productName',
-      key: 'productName',
-    },
-    {
-      title: 'Số lượng',
-      dataIndex: 'quantity',
-      key: 'quantity',
-      align: 'right' as const,
-      render: (qty: number) => <Text strong>{qty}</Text>,
-    },
-    {
-      title: 'Trọng lượng',
-      dataIndex: 'weightKg',
-      key: 'weightKg',
-      align: 'right' as const,
-      render: (wt: number) => `${Number(wt || 0).toFixed(2)} kg`,
-    },
-    {
-      title: 'Thể tích',
-      dataIndex: 'volumeM3',
-      key: 'volumeM3',
-      align: 'right' as const,
-      render: (vol: number) => `${Number(vol || 0).toFixed(4)} m³`,
-    },
-    {
-      title: 'Thao tác',
-      key: 'action',
-      width: 160,
-      render: (_: any, record: StopOrderItem) => (
-        isOperableStatus && record.orderId ? (
-          <Button
-            type="primary"
-            size="small"
-            icon={<PlusCircle size={14} />}
-            style={{ borderRadius: 4, background: '#13c2c2', borderColor: '#13c2c2' }}
-            onClick={() => handleReIncludeClick(record)}
-          >
-            Thêm lại vào chuyến
-          </Button>
-        ) : null
-      ),
-    },
   ];
 
   if (loading) {
@@ -738,6 +512,30 @@ const TripDraftDetailPage: React.FC = () => {
         />
       )}
 
+      {capacityFailInfo && (
+        <Alert
+          type="error"
+          showIcon
+          message={
+            capacityFailInfo.volumeCheckResult === 'NOT_CHECKED'
+              ? 'Chưa thể kiểm tra tải trọng tự động'
+              : 'Không có xe nào đủ tải cho tuyến này'
+          }
+          description={
+            <div>
+              {capacityFailInfo.suggestion && <div>{capacityFailInfo.suggestion}</div>}
+              {capacityFailInfo.message && <div style={{ marginTop: capacityFailInfo.suggestion ? 4 : 0 }}>{capacityFailInfo.message}</div>}
+            </div>
+          }
+          action={
+            <Button size="small" danger onClick={() => navigate(`/dispatcher/trip-drafts/${draft.id}/capacity`)}>
+              Xem chi tiết &amp; kiểm tra lại
+            </Button>
+          }
+          style={{ marginBottom: 16, borderRadius: 8 }}
+        />
+      )}
+
 
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 24, flexWrap: 'wrap', gap: 12 }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: 12, flexWrap: 'wrap' }}>
@@ -770,14 +568,6 @@ const TripDraftDetailPage: React.FC = () => {
           {(draft.status === 'PLANNED' || draft.status === 'VALIDATED') && (
             <>
               <Button
-                icon={<Sparkles size={16} />}
-                style={{ borderRadius: 6, fontWeight: 600, color: '#722ed1', borderColor: '#d3adf7', background: '#f9f0ff' }}
-                loading={optimalLoading}
-                onClick={handleFetchOptimalDeparture}
-              >
-                Gợi ý giờ xuất phát
-              </Button>
-              <Button
                 danger
                 style={{ borderRadius: 6, fontWeight: 600 }}
                 loading={revertLoading}
@@ -789,7 +579,7 @@ const TripDraftDetailPage: React.FC = () => {
                 style={{ borderRadius: 6, fontWeight: 600 }}
                 onClick={() => navigate(`/dispatcher/trip-drafts/${draft.id}/capacity`)}
               >
-                {draft.status === 'PLANNED' ? 'Kiểm tra tải trọng' : 'Xem kết quả tải trọng'}
+                Xem kết quả tải trọng
               </Button>
             </>
           )}
@@ -933,8 +723,8 @@ const TripDraftDetailPage: React.FC = () => {
             <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
               <Sparkles size={18} style={{ color: '#1677ff' }} />
               <span style={{ fontSize: 16, fontWeight: 600 }}>Gợi ý phân xe tự động</span>
-              <Tag color={hasFeasibleRecommendations ? 'success' : 'default'}>
-                {hasFeasibleRecommendations ? 'Khả thi' : 'Không có kế hoạch'}
+              <Tag color={hasFeasibleRecommendations ? 'success' : 'error'}>
+                {hasFeasibleRecommendations ? 'Khả thi' : 'Cần xử lý thủ công'}
               </Tag>
             </div>
           }
@@ -948,10 +738,17 @@ const TripDraftDetailPage: React.FC = () => {
         >
           {!hasFeasibleRecommendations ? (
             <>
+              <Alert
+                type="error"
+                showIcon
+                message="Không thể tự động phân xe cho tuyến này"
+                description="Hệ thống chỉ hỗ trợ đề xuất tối đa 2 xe cho 1 tuyến. Nếu tuyến này cần nhiều hơn 2 xe mới đủ tải, vui lòng phối hợp xử lý thủ công (tách bớt đơn hàng sang đợt gom đơn/ngày giao khác, hoặc báo Logistics Manager để quyết định phương án)."
+                style={{ marginBottom: 12 }}
+              />
               {recResult.message && <Alert type="warning" showIcon message={recResult.message} style={{ marginBottom: 12 }} />}
               {(recResult.violatedConstraints?.length ?? 0) > 0 && (
                 <div>
-                  <Text strong style={{ color: '#cf1322' }}>Ràng buộc vi phạm:</Text>
+                  <Text strong style={{ color: '#cf1322' }}>Chi tiết ràng buộc vi phạm:</Text>
                   <ul style={{ margin: '8px 0', paddingLeft: 20 }}>
                     {recResult.violatedConstraints.map((c, i) => (
                       <li key={i}><Text type="danger">{c}</Text></li>
@@ -984,6 +781,15 @@ const TripDraftDetailPage: React.FC = () => {
                           {rec.planType === 'SINGLE_VEHICLE' ? '1 xe' : 'Nhiều xe'}
                         </Tag>
                       </div>
+                      {(rec.warnings?.length ?? 0) > 0 && (
+                        <div style={{ marginBottom: 8 }}>
+                          {rec.warnings!.map((w, wi) => (
+                            <Tag key={wi} color="gold" style={{ fontSize: 11, marginBottom: 4, whiteSpace: 'normal' }}>
+                              ⚠ {w}
+                            </Tag>
+                          ))}
+                        </div>
+                      )}
                       <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 8 }}>
                         <Text type="secondary" style={{ fontSize: 12 }}>Điểm khả thi</Text>
                         <Text strong style={{ color: rec.totalScore >= 80 ? '#52c41a' : rec.totalScore >= 60 ? '#fa8c16' : '#ff4d4f', fontSize: 16 }}>
@@ -1031,6 +837,49 @@ const TripDraftDetailPage: React.FC = () => {
                           </div>
                         </div>
                       ))}
+                      {rec.planType === 'TWO_VEHICLE' && (rec.subTrips?.length ?? 0) > 0 && (
+                        <>
+                          <Divider style={{ margin: '8px 0' }} />
+                          <Text type="secondary" style={{ fontSize: 11, fontWeight: 600 }}>Chia điểm dừng theo xe</Text>
+                          {rec.subTrips!.map((st, si) => (
+                            <div key={si} style={{ marginTop: 8, padding: 8, background: '#fafafa', borderRadius: 6 }}>
+                              <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 4 }}>
+                                <Text strong style={{ fontSize: 12 }}>{st.label}</Text>
+                                <Text type="secondary" style={{ fontSize: 11 }}>{st.stopSequenceNos.length} điểm dừng</Text>
+                              </div>
+                              <div style={{ display: 'flex', gap: 12, marginBottom: st.warnings?.length ? 6 : 0 }}>
+                                <div style={{ flex: 1 }}>
+                                  <Text style={{ fontSize: 10, color: '#8c8c8c' }}>Thể tích</Text>
+                                  <Progress
+                                    percent={st.volumeUtilizationPct}
+                                    size="small"
+                                    format={(p) => `${p}%`}
+                                    status={st.volumeUtilizationPct < 30 ? 'exception' : 'normal'}
+                                  />
+                                </div>
+                                <div style={{ flex: 1 }}>
+                                  <Text style={{ fontSize: 10, color: '#8c8c8c' }}>Khối lượng</Text>
+                                  <Progress
+                                    percent={st.weightUtilizationPct}
+                                    size="small"
+                                    format={(p) => `${p}%`}
+                                    status={st.weightUtilizationPct < 30 ? 'exception' : 'normal'}
+                                  />
+                                </div>
+                              </div>
+                              {(st.warnings?.length ?? 0) > 0 && (
+                                <div>
+                                  {st.warnings!.map((w, wi) => (
+                                    <Tag key={wi} color="orange" style={{ fontSize: 10, marginBottom: 2, whiteSpace: 'normal' }}>
+                                      ⚠ {w}
+                                    </Tag>
+                                  ))}
+                                </div>
+                              )}
+                            </div>
+                          ))}
+                        </>
+                      )}
                       {rec.explanation && (
                         <Tooltip title={rec.explanation}>
                           <Text type="secondary" style={{ fontSize: 11, display: 'block', marginTop: 8, cursor: 'help' }}>
@@ -1081,35 +930,65 @@ const TripDraftDetailPage: React.FC = () => {
         />
       </Card>
 
-      {/* Hàng chờ ngoại lệ (Excluded Orders Queue) */}
-      <Card
-        title={
-          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-              <PackageX size={18} style={{ color: '#ff4d4f' }} />
-              <span style={{ fontSize: 16, fontWeight: 600, color: '#cf1322' }}>Hàng chờ ngoại lệ (Excluded Orders)</span>
-              <Badge count={excludedOrders.length} showZero style={{ backgroundColor: excludedOrders.length > 0 ? '#ff4d4f' : '#d9d9d9' }} />
-            </div>
-          </div>
-        }
-        style={{
-          borderRadius: 12,
-          boxShadow: '0 4px 12px rgba(0,0,0,0.05)',
-          border: excludedOrders.length > 0 ? '1px solid #ffa39e' : undefined,
+      {/* Lịch sử lập kế hoạch (ELOG-140) */}
+      <Collapse
+        style={{ marginBottom: 24, borderRadius: 12 }}
+        onChange={(keys) => {
+          const opened = Array.isArray(keys) ? keys.length > 0 : !!keys;
+          if (opened && !historyLoaded && !historyLoading) {
+            fetchHistory(0);
+          }
         }}
-        bodyStyle={{ padding: 0 }}
-      >
-        <Table
-          columns={excludedOrdersColumns}
-          dataSource={excludedOrders}
-          rowKey={(item) => `${item.orderId}-${item.sku}`}
-          loading={excludedLoading}
-          pagination={false}
-          locale={{
-            emptyText: <Empty description="Không có đơn hàng nào đang chờ xử lý ngoại lệ." />
-          }}
-        />
-      </Card>
+        items={[
+          {
+            key: 'planning-history',
+            label: <span style={{ fontSize: 16, fontWeight: 600 }}>Lịch sử lập kế hoạch</span>,
+            children: (
+              <Table
+                size="small"
+                loading={historyLoading}
+                dataSource={historyEvents}
+                rowKey="id"
+                pagination={{
+                  current: historyPage + 1,
+                  pageSize: HISTORY_PAGE_SIZE,
+                  total: historyTotal,
+                  onChange: (p) => fetchHistory(p - 1),
+                }}
+                locale={{ emptyText: <Empty description="Chưa có sự kiện lập kế hoạch nào." /> }}
+                columns={[
+                  { title: 'Thời gian', dataIndex: 'occurredAt', key: 'occurredAt', render: (t: string) => t || '—' },
+                  {
+                    title: 'Loại sự kiện',
+                    dataIndex: 'eventType',
+                    key: 'eventType',
+                    render: (t: PlanningEvent['eventType']) => <Tag color="blue">{PLANNING_EVENT_TYPE_LABEL[t] ?? t}</Tag>,
+                  },
+                  {
+                    title: 'Người thực hiện',
+                    key: 'actor',
+                    render: (_: unknown, record: PlanningEvent) =>
+                      record.actorType === 'USER'
+                        ? `${record.actorUsername ?? '—'}${record.actorRole ? ` (${record.actorRole})` : ''}`
+                        : record.actorType === 'RECOMMENDATION_ENGINE'
+                        ? 'Hệ thống gợi ý'
+                        : 'Hệ thống',
+                  },
+                  {
+                    title: 'Trạng thái',
+                    key: 'status',
+                    render: (_: unknown, record: PlanningEvent) =>
+                      record.statusBefore || record.statusAfter
+                        ? `${record.statusBefore ?? '—'} → ${record.statusAfter ?? '—'}`
+                        : '—',
+                  },
+                  { title: 'Tóm tắt', dataIndex: 'changeSummary', key: 'changeSummary', render: (t: string) => t || '—' },
+                ]}
+              />
+            ),
+          },
+        ]}
+      />
 
       {/* Modal Điều chỉnh giờ xuất phát */}
       <Modal
@@ -1188,155 +1067,6 @@ const TripDraftDetailPage: React.FC = () => {
         />
       </Modal>
 
-      {/* Modal Ghi nhận dàn xếp giao trễ */}
-      <Modal
-        open={settleModalOpen}
-        title={
-          <Space>
-            <PhoneCall size={18} color="#fa8c16" />
-            <span>Ghi nhận dàn xếp nhận trễ qua điện thoại</span>
-          </Space>
-        }
-        onCancel={() => !settleLoading && setSettleModalOpen(false)}
-        footer={[
-          <Button key="cancel" onClick={() => setSettleModalOpen(false)} disabled={settleLoading}>
-            Huỷ
-          </Button>,
-          <Button
-            key="submit"
-            type="primary"
-            style={{ background: '#fa8c16', borderColor: '#fa8c16' }}
-            loading={settleLoading}
-            onClick={handleSettleDelaySubmit}
-          >
-            Xác nhận
-          </Button>,
-        ]}
-      >
-        {settleTargetOrder && (
-          <div style={{ paddingTop: 12 }}>
-            <Alert
-              type="warning"
-              showIcon
-              message="Xác nhận làm việc trực tiếp với khách hàng"
-              description="Đây là xác nhận Dispatcher đã liên hệ thành công với người nhận và thỏa thuận chấp nhận thời gian giao trễ. Hệ thống sẽ bỏ qua cảnh báo ETA cho đơn này."
-              style={{ marginBottom: 16, borderRadius: 8 }}
-            />
-            <Row gutter={[16, 12]} style={{ marginBottom: 16 }}>
-              <Col span={12}>
-                <Text type="secondary">Mã đơn hàng:</Text>
-                <div><Text strong>{settleTargetOrder.orderRef}</Text></div>
-              </Col>
-              <Col span={12}>
-                <Text type="secondary">Sản phẩm:</Text>
-                <div><Text strong>{settleTargetOrder.productName}</Text></div>
-              </Col>
-            </Row>
-            <Form layout="vertical">
-              <Form.Item label="Lý do / Ghi chú dàn xếp" required>
-                <TextArea
-                  rows={3}
-                  value={settleReason}
-                  onChange={(e) => setSettleReason(e.target.value)}
-                  placeholder="Ví dụ: Khách đồng ý nhận hàng lúc 11:30 sáng..."
-                  maxLength={255}
-                  showCount
-                />
-              </Form.Item>
-            </Form>
-          </div>
-        )}
-      </Modal>
-
-      {/* Modal Xác nhận tách đơn ngoại lệ */}
-      <Modal
-        open={excludeModalOpen}
-        title={
-          <Space>
-            <ExclamationCircleOutlined style={{ color: '#ff4d4f' }} />
-            <span>Xác nhận tách đơn khỏi chuyến</span>
-          </Space>
-        }
-        onCancel={() => !excludeLoading && setExcludeModalOpen(false)}
-        footer={[
-          <Button key="cancel" onClick={() => setExcludeModalOpen(false)} disabled={excludeLoading}>
-            Huỷ
-          </Button>,
-          <Button
-            key="submit"
-            type="primary"
-            danger
-            loading={excludeLoading}
-            onClick={handleExcludeOrderSubmit}
-          >
-            Xác nhận tách đơn
-          </Button>,
-        ]}
-      >
-        {excludeTargetOrder && (
-          <div style={{ paddingTop: 12 }}>
-            <Paragraph>
-              Bạn có chắc chắn muốn tách đơn <strong>{excludeTargetOrder.orderRef}</strong> ({excludeTargetOrder.productName}) khỏi chuyến?
-            </Paragraph>
-            <Alert
-              type="warning"
-              showIcon
-              message="Sau khi tách:"
-              description={
-                <ul style={{ margin: 0, paddingLeft: 16 }}>
-                  <li>Đơn sẽ chuyển sang <strong>Hàng chờ ngoại lệ</strong>.</li>
-                  <li>Tải trọng và thể tích chuyến sẽ được Backend tính lại.</li>
-                  <li>ETA các điểm dừng có thể thay đổi.</li>
-                  <li>Điểm dừng có thể bị vô hiệu hóa nếu không còn đơn.</li>
-                </ul>
-              }
-              style={{ borderRadius: 8 }}
-            />
-          </div>
-        )}
-      </Modal>
-
-      {/* Modal Xác nhận thêm lại đơn */}
-      <Modal
-        open={reIncludeModalOpen}
-        title={
-          <Space>
-            <PlusCircle size={18} color="#13c2c2" />
-            <span>Xác nhận thêm lại đơn vào chuyến</span>
-          </Space>
-        }
-        onCancel={() => !reIncludeLoading && setReIncludeModalOpen(false)}
-        footer={[
-          <Button key="cancel" onClick={() => setReIncludeModalOpen(false)} disabled={reIncludeLoading}>
-            Huỷ
-          </Button>,
-          <Button
-            key="submit"
-            type="primary"
-            style={{ background: '#13c2c2', borderColor: '#13c2c2' }}
-            loading={reIncludeLoading}
-            onClick={handleReIncludeSubmit}
-          >
-            Xác nhận thêm lại
-          </Button>,
-        ]}
-      >
-        {reIncludeTargetOrder && (
-          <div style={{ paddingTop: 12 }}>
-            <Paragraph>
-              Thêm lại đơn <strong>{reIncludeTargetOrder.orderRef}</strong> ({reIncludeTargetOrder.productName}) vào đợt gom chuyến này.
-            </Paragraph>
-            <Alert
-              type="info"
-              showIcon
-              message="Tác động"
-              description="Đơn sẽ được thêm lại vào chuyến và hệ thống sẽ tự động tính lại tải trọng cùng ETA của tất cả các điểm dừng."
-              style={{ borderRadius: 8 }}
-            />
-          </div>
-        )}
-      </Modal>
-
       {/* Modal Xác nhận thu hồi đợt gom đơn */}
       <Modal
         open={revertModalOpen}
@@ -1368,57 +1098,6 @@ const TripDraftDetailPage: React.FC = () => {
         </div>
       </Modal>
 
-      {/* Modal gợi ý giờ xuất phát thông minh */}
-      <Modal
-        open={optimalModalOpen}
-        title={
-          <Space>
-            <Sparkles size={20} color="#722ed1" />
-            <span>Gợi ý giờ xuất phát tối ưu</span>
-          </Space>
-        }
-        onCancel={() => setOptimalModalOpen(false)}
-        footer={[
-          <Button key="cancel" onClick={() => setOptimalModalOpen(false)}>
-            Đóng
-          </Button>,
-          <Button
-            key="apply"
-            type="primary"
-            style={{ background: '#722ed1', borderColor: '#722ed1' }}
-            loading={applyOptimalLoading}
-            onClick={handleApplyOptimalDeparture}
-          >
-            Áp dụng giờ mới này
-          </Button>,
-        ]}
-      >
-        {optimalData && (
-          <div style={{ display: 'flex', flexDirection: 'column', gap: 16, paddingTop: 12 }}>
-            <Alert
-              type={optimalData.hasViolations ? 'warning' : 'info'}
-              showIcon
-              message="Đề xuất thời gian xuất phát"
-              description={optimalData.reason}
-              style={{ borderRadius: 8 }}
-            />
-            <Card size="small" style={{ borderRadius: 8, background: '#fafafa' }}>
-              <Row gutter={16}>
-                <Col span={12}>
-                  <Text type="secondary">Giờ hiện tại</Text>
-                  <br />
-                  <Text strong style={{ fontSize: 16 }}>{optimalData.currentDepartureTime || 'Chưa đặt'}</Text>
-                </Col>
-                <Col span={12}>
-                  <Text type="secondary">Giờ gợi ý tối ưu</Text>
-                  <br />
-                  <Text strong style={{ fontSize: 18, color: '#722ed1' }}>{optimalData.suggestedDepartureTime}</Text>
-                </Col>
-              </Row>
-            </Card>
-          </div>
-        )}
-      </Modal>
     </AdminShell>
   );
 };

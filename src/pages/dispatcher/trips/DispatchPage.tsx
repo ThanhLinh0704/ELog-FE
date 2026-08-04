@@ -15,6 +15,9 @@ import {
   Divider,
   Result,
   Statistic,
+  Collapse,
+  Table,
+  Empty,
 } from 'antd';
 import {
   ArrowLeftOutlined,
@@ -38,6 +41,8 @@ import {
 import type { Trip, FleetCapacityCheck } from '../../../types/trip';
 import { usePermissions } from '../../../hooks/usePermissions';
 import { PERMISSIONS } from '../../../constants/permissions';
+import { getTripOutcomeHistory } from '../../../api/tripOutcomeEventApi';
+import { TRIP_OUTCOME_EVENT_TYPE_LABEL, type TripOutcomeEvent } from '../../../types/tripOutcomeEvent';
 
 const { Title, Text } = Typography;
 
@@ -133,6 +138,14 @@ const DispatchPage: React.FC = () => {
   const [loadError, setLoadError] = useState<string | null>(null);
   const [handoverLoading, setHandoverLoading] = useState(false);
 
+  // Outcome history panel (ELOG-141)
+  const OUTCOME_HISTORY_PAGE_SIZE = 10;
+  const [outcomeEvents, setOutcomeEvents] = useState<TripOutcomeEvent[]>([]);
+  const [outcomeHistoryLoading, setOutcomeHistoryLoading] = useState(false);
+  const [outcomeHistoryLoaded, setOutcomeHistoryLoaded] = useState(false);
+  const [outcomeHistoryPage, setOutcomeHistoryPage] = useState(0);
+  const [outcomeHistoryTotal, setOutcomeHistoryTotal] = useState(0);
+
   // ── Load trip + fleet check ───────────────────────────────────────────────
   // Used by error handlers to reload after TRIP_LOCKED etc.
   const loadData = async () => {
@@ -218,6 +231,23 @@ const DispatchPage: React.FC = () => {
       }
     } finally {
       setHandoverLoading(false);
+    }
+  };
+
+  // ── Outcome history ───────────────────────────────────────────────────────
+  const fetchOutcomeHistory = async (page = 0) => {
+    if (!tripId) return;
+    setOutcomeHistoryLoading(true);
+    try {
+      const result = await getTripOutcomeHistory(tripId, { page, size: OUTCOME_HISTORY_PAGE_SIZE });
+      setOutcomeEvents(result.items);
+      setOutcomeHistoryTotal(result.pagination.totalElements);
+      setOutcomeHistoryPage(page);
+      setOutcomeHistoryLoaded(true);
+    } catch (err) {
+      message.error(getErrorMessage(err, 'Không tải được lịch sử thực thi.'));
+    } finally {
+      setOutcomeHistoryLoading(false);
     }
   };
 
@@ -601,6 +631,77 @@ const DispatchPage: React.FC = () => {
           </Card>
         </Col>
       </Row>
+
+      {/* Lịch sử thực thi chuyến giao hàng (ELOG-141) */}
+      <Collapse
+        style={{ marginTop: 16, borderRadius: 12 }}
+        onChange={(keys) => {
+          const opened = Array.isArray(keys) ? keys.length > 0 : !!keys;
+          if (opened && !outcomeHistoryLoaded && !outcomeHistoryLoading) {
+            fetchOutcomeHistory(0);
+          }
+        }}
+        items={[
+          {
+            key: 'outcome-history',
+            label: <span style={{ fontSize: 16, fontWeight: 600 }}>Lịch sử thực thi chuyến giao hàng</span>,
+            children: (
+              <Table
+                size="small"
+                loading={outcomeHistoryLoading}
+                dataSource={outcomeEvents}
+                rowKey="id"
+                pagination={{
+                  current: outcomeHistoryPage + 1,
+                  pageSize: OUTCOME_HISTORY_PAGE_SIZE,
+                  total: outcomeHistoryTotal,
+                  onChange: (p) => fetchOutcomeHistory(p - 1),
+                }}
+                locale={{ emptyText: <Empty description="Chưa có sự kiện thực thi nào." /> }}
+                columns={[
+                  { title: 'Thời gian', dataIndex: 'occurredAt', key: 'occurredAt', render: (t: string) => t || '—' },
+                  {
+                    title: 'Loại sự kiện',
+                    dataIndex: 'eventType',
+                    key: 'eventType',
+                    render: (t: TripOutcomeEvent['eventType']) => <Tag color="geekblue">{TRIP_OUTCOME_EVENT_TYPE_LABEL[t] ?? t}</Tag>,
+                  },
+                  {
+                    title: 'Người thực hiện',
+                    key: 'actor',
+                    render: (_: unknown, record: TripOutcomeEvent) =>
+                      record.actorType === 'USER'
+                        ? `${record.driverUsername || record.actorUsername || '—'}${record.actorRole ? ` (${record.actorRole})` : ''}`
+                        : 'Hệ thống',
+                  },
+                  {
+                    title: 'Đơn hàng / Cửa hàng',
+                    key: 'order',
+                    render: (_: unknown, record: TripOutcomeEvent) =>
+                      record.orderRef || record.storeCode
+                        ? `${record.orderRef ?? '—'}${record.storeCode ? ` · ${record.storeCode}` : ''}`
+                        : '—',
+                  },
+                  {
+                    title: 'Kết quả',
+                    key: 'result',
+                    render: (_: unknown, record: TripOutcomeEvent) =>
+                      record.deliveryResult || record.reasonCode || record.exceptionText
+                        ? [record.deliveryResult, record.reasonCode, record.exceptionText].filter(Boolean).join(' — ')
+                        : '—',
+                  },
+                  {
+                    title: 'Ghi chú duyệt',
+                    dataIndex: 'validationNote',
+                    key: 'validationNote',
+                    render: (t: string | null) => t || '—',
+                  },
+                ]}
+              />
+            ),
+          },
+        ]}
+      />
 
       {/* Dispatch confirmation modal */}
       <Modal

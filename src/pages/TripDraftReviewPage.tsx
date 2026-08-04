@@ -15,7 +15,6 @@ import {
   Statistic,
   Table,
   Tag,
-  Tooltip,
   Typography,
   message,
   TimePicker,
@@ -41,6 +40,7 @@ import {
   recalculateEta,
   updateStopStatus,
   getStopOrderItems,
+  tripDraftApi,
   type TripDraftDetail,
   type TripDraftStop,
   type TripDraftStopStatus,
@@ -108,10 +108,6 @@ function getDraftStatusLabel(status?: string | null) {
   return statusMap[normalizedStatus] || normalizedStatus || '-';
 }
 
-function hasGps(stop: TripDraftStop) {
-  return stop.latitude !== null && stop.longitude !== null;
-}
-
 function mergeRecalculatedDraft(
   draft: TripDraftDetail,
   recalculated: Pick<TripDraftDetail, 'estimatedDistanceKm' | 'estimatedDurationMin' | 'stops'>
@@ -129,6 +125,8 @@ function mergeRecalculatedDraft(
           return {
             ...stop,
             eta: recalculatedStop.eta,
+            estimatedTravelMin: recalculatedStop.estimatedTravelMin,
+            estimatedDistanceKm: recalculatedStop.estimatedDistanceKm,
           };
         }
         return stop;
@@ -224,6 +222,21 @@ const TripDraftReviewPage: React.FC = () => {
   const activeStops = useMemo(
     () => draft?.stops.filter((stop) => stop.status === 'ACTIVE') ?? [],
     [draft]
+  );
+
+  // BE không trả tổng thời lượng dự kiến (không có field nào ở TripDraftResponse/RecalculateEtaResponse),
+  // và tổng quãng đường trả về sau "Tính lại ETA" cũng không có — tự cộng dồn từ từng điểm dừng
+  // (estimatedDistanceKm/estimatedTravelMin) để luôn đúng cả lúc tải trang lẫn sau khi tính lại ETA.
+  const estimatedTotals = useMemo(
+    () =>
+      activeStops.reduce(
+        (acc, stop) => ({
+          distanceKm: acc.distanceKm + (stop.estimatedDistanceKm ?? 0),
+          durationMin: acc.durationMin + (stop.estimatedTravelMin ?? 0),
+        }),
+        { distanceKm: 0, durationMin: 0 }
+      ),
+    [activeStops]
   );
   const isDraftEditable = draft?.status === 'DRAFT' || draft?.status === 'PLANNED' || draft?.status === 'VALIDATED';
   const actionDisabled = !canEditTrip || !isDraftEditable || recalculating || confirming;
@@ -376,7 +389,23 @@ const TripDraftReviewPage: React.FC = () => {
 
         try {
           await confirmTripDraft(draftId);
-          message.success('Đã xác nhận bản nháp chuyến thành công.');
+
+          // Auto-run capacity validation right after confirm (existing endpoint —
+          // no manual "Kiểm tra tải trọng" click needed anymore).
+          try {
+            const capacityRes = await tripDraftApi.validateTripDraftCapacity(draftId);
+            if (capacityRes.validationPassed) {
+              message.success('Đã xác nhận kế hoạch và kiểm tra tải trọng thành công.');
+            } else {
+              message.warning(
+                `Đã xác nhận kế hoạch nhưng chưa có xe nào đủ tải.${capacityRes.suggestion ? ' ' + capacityRes.suggestion : ''}`
+              );
+            }
+          } catch (capacityErr) {
+            console.error('Auto capacity validation failed after confirm', capacityErr);
+            message.info('Đã xác nhận kế hoạch. Chưa thể tự động kiểm tra tải trọng, vui lòng kiểm tra thủ công.');
+          }
+
           navigate(`/dispatcher/trip-drafts/${draftId}`);
         } catch (err) {
           const apiMessage = getApiErrorMessage(err, 'Không xác nhận được bản nháp chuyến.');
@@ -425,18 +454,7 @@ const TripDraftReviewPage: React.FC = () => {
       key: 'orderCount',
       width: 100,
       align: 'right' as const,
-      render: (count: number, record: TripDraftStop) => {
-        if (count === 0) return '0';
-        return (
-          <Button 
-            type="link" 
-            onClick={() => showOrderDetails(record)}
-            style={{ padding: 0, fontWeight: 'bold' }}
-          >
-            {count}
-          </Button>
-        );
-      }
+      render: (count: number) => count,
     },
     {
       title: 'Khối lượng / Thể tích',
@@ -450,19 +468,6 @@ const TripDraftReviewPage: React.FC = () => {
           </Typography.Text>
         </Space>
       ),
-    },
-    {
-      title: 'GPS',
-      key: 'gps',
-      width: 120,
-      render: (_value, record) =>
-        hasGps(record) ? (
-          <Tooltip title={`${record.latitude}, ${record.longitude}`}>
-            <Tag color="blue">Đã có GPS</Tag>
-          </Tooltip>
-        ) : (
-          <Tag color="orange">Thiếu GPS</Tag>
-        ),
     },
     {
       title: 'ETA',
@@ -668,7 +673,7 @@ const TripDraftReviewPage: React.FC = () => {
                   <Card size="small" bordered={false}>
                     <Statistic
                       title="Quãng đường dự kiến"
-                      value={draft.estimatedDistanceKm}
+                      value={estimatedTotals.distanceKm}
                       suffix="km"
                       precision={1}
                     />
@@ -678,7 +683,7 @@ const TripDraftReviewPage: React.FC = () => {
                   <Card size="small" bordered={false}>
                     <Statistic
                       title="Thời lượng dự kiến"
-                      value={draft.estimatedDurationMin}
+                      value={estimatedTotals.durationMin}
                       suffix="phút"
                     />
                   </Card>

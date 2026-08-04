@@ -1,0 +1,289 @@
+import React, { useEffect, useMemo, useState } from 'react';
+import {
+  Table, Card, Row, Col, Space, Button, Input, Select, Breadcrumb,
+  Statistic, Tag, Badge, message, Alert, Tooltip, Typography,
+} from 'antd';
+import { History, RefreshCw, Search, Lock, Unlock } from 'lucide-react';
+import { useDebounce } from '../../../hooks/useDebounce';
+import { usePermissions } from '../../../hooks/usePermissions';
+import { PERMISSIONS } from '../../../constants/permissions';
+import AdminShell from '../../../components/AdminShell';
+import { getDrivers, updateDriverStatus, type DriverStatusUpdatePayload } from '../../../api/driverApi';
+import {
+  DRIVER_STATUS_LABEL,
+  REASON_CODE_LABEL,
+  type Driver,
+  type DriverStatus,
+} from '../../../types/driver';
+import DriverStatusModal from './components/DriverStatusModal';
+import DriverStatusHistoryDrawer from './components/DriverStatusHistoryDrawer';
+
+const { Text } = Typography;
+
+const DriverManagementPage: React.FC = () => {
+  const username = localStorage.getItem('username') || '';
+  let roles: string[] = [];
+  try {
+    const rolesStr = localStorage.getItem('roles');
+    if (rolesStr) roles = JSON.parse(rolesStr);
+  } catch {
+    // ignore malformed roles in storage
+  }
+  const currentUser = { id: Number(localStorage.getItem('userId') || 0), username, fullName: username, roles };
+
+  const { can } = usePermissions();
+  const canWrite = can(PERMISSIONS.DRIVER_WRITE);
+
+  const [drivers, setDrivers] = useState<Driver[]>([]);
+  const [keyword, setKeyword] = useState('');
+  const [status, setStatus] = useState<DriverStatus | ''>('');
+  const [page, setPage] = useState(0);
+  const [size, setSize] = useState(10);
+  const [pageMeta, setPageMeta] = useState({ totalElements: 0, totalPages: 1 });
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState('');
+
+  const [statusModalDriver, setStatusModalDriver] = useState<Driver | null>(null);
+  const [statusUpdating, setStatusUpdating] = useState(false);
+  const [historyDriver, setHistoryDriver] = useState<Driver | null>(null);
+
+  const debouncedKeyword = useDebounce(keyword, 350);
+
+  const queryParams = useMemo(
+    () => ({ keyword: debouncedKeyword || undefined, status: status || undefined, page, size }),
+    [debouncedKeyword, status, page, size]
+  );
+
+  async function fetchDrivers(params = queryParams) {
+    setLoading(true);
+    setError('');
+    try {
+      const result = await getDrivers(params);
+      setDrivers(result.items);
+      setPageMeta({ totalElements: result.pagination.totalElements, totalPages: result.pagination.totalPages });
+    } catch (err) {
+      setError((err as Error).message);
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  useEffect(() => {
+    fetchDrivers(queryParams);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [queryParams]);
+
+  function resetToFirstPage<T>(setter: (val: T) => void, value: T) {
+    setter(value);
+    setPage(0);
+  }
+
+  async function handleConfirmStatusChange(payload: DriverStatusUpdatePayload) {
+    if (!statusModalDriver) return;
+    setStatusUpdating(true);
+    try {
+      const updated = await updateDriverStatus(statusModalDriver.id, payload);
+      setDrivers((prev) => prev.map((d) => (d.id === updated.id ? updated : d)));
+      message.success(
+        updated.driverStatus === 'INACTIVE'
+          ? `Đã chuyển tài xế ${updated.fullName} sang Ngừng hoạt động.`
+          : `Đã kích hoạt lại tài xế ${updated.fullName}.`
+      );
+      setStatusModalDriver(null);
+    } catch (err) {
+      message.error((err as Error).message);
+    } finally {
+      setStatusUpdating(false);
+    }
+  }
+
+  const columns = [
+    {
+      title: 'Họ tên',
+      dataIndex: 'fullName',
+      key: 'fullName',
+    },
+    {
+      title: 'Liên hệ',
+      key: 'contact',
+      render: (_: unknown, record: Driver) => (
+        <>
+          <div>{record.phoneNumber || '—'}</div>
+          <Text type="secondary" style={{ fontSize: 12 }}>{record.email}</Text>
+        </>
+      ),
+    },
+    {
+      title: 'Trạng thái',
+      key: 'driverStatus',
+      render: (_: unknown, record: Driver) => {
+        const meta = DRIVER_STATUS_LABEL[record.driverStatus];
+        const badge = <Badge status={meta.color === 'success' ? 'success' : 'error'} text={meta.label} />;
+        if (record.driverStatus === 'INACTIVE' && record.reasonCode) {
+          return (
+            <Tooltip
+              title={
+                <>
+                  {REASON_CODE_LABEL[record.reasonCode]}
+                  {record.reasonNote ? ` — ${record.reasonNote}` : ''}
+                </>
+              }
+            >
+              {badge}
+            </Tooltip>
+          );
+        }
+        return badge;
+      },
+    },
+    {
+      title: 'Cập nhật lần cuối',
+      key: 'statusUpdatedAt',
+      render: (_: unknown, record: Driver) => (
+        <>
+          <div>{record.statusUpdatedAt || '—'}</div>
+          {record.statusUpdatedByName ? (
+            <Text type="secondary" style={{ fontSize: 12 }}>bởi {record.statusUpdatedByName}</Text>
+          ) : null}
+        </>
+      ),
+    },
+    {
+      title: 'Chuyến đang hoạt động',
+      key: 'activeTripsWarning',
+      render: (_: unknown, record: Driver) =>
+        record.activeTripsWarning?.length ? (
+          <Tag color="warning">{record.activeTripsWarning.length} chuyến</Tag>
+        ) : (
+          '—'
+        ),
+    },
+    {
+      title: 'Thao tác',
+      key: 'actions',
+      render: (_: unknown, record: Driver) => (
+        <Space size="small">
+          <Button
+            type="text"
+            icon={<History size={16} />}
+            title="Lịch sử trạng thái"
+            onClick={() => setHistoryDriver(record)}
+          />
+          {canWrite ? (
+            <Button
+              type="text"
+              danger={record.driverStatus === 'ACTIVE'}
+              style={{ color: record.driverStatus === 'ACTIVE' ? undefined : '#52c41a' }}
+              icon={record.driverStatus === 'ACTIVE' ? <Lock size={16} /> : <Unlock size={16} />}
+              title={record.driverStatus === 'ACTIVE' ? 'Ngừng hoạt động' : 'Kích hoạt lại'}
+              onClick={() => setStatusModalDriver(record)}
+            />
+          ) : null}
+        </Space>
+      ),
+    },
+  ];
+
+  return (
+    <AdminShell currentUser={currentUser}>
+      <div style={{ display: 'flex', flexDirection: 'column', gap: 24 }}>
+        <div>
+          <Breadcrumb items={[{ title: 'Admin' }, { title: 'Quản lý tài xế' }]} />
+          <h2 style={{ margin: '8px 0 0 0', fontSize: 24, fontWeight: 700, color: '#1f1f1f' }}>
+            Quản lý tài xế
+          </h2>
+          <p style={{ margin: '4px 0 0 0', color: '#8c8c8c' }}>
+            Bật/tắt trạng thái hoạt động của tài xế và xem lịch sử thay đổi.
+          </p>
+        </div>
+
+        <Row gutter={[16, 16]}>
+          <Col xs={24} sm={8}>
+            <Card size="small" bordered={false} style={{ boxShadow: '0 1px 2px 0 rgba(0, 0, 0, 0.03)' }}>
+              <Statistic title="Tổng kết quả" value={pageMeta.totalElements} suffix="tài xế" />
+            </Card>
+          </Col>
+          <Col xs={24} sm={8}>
+            <Card size="small" bordered={false} style={{ boxShadow: '0 1px 2px 0 rgba(0, 0, 0, 0.03)' }}>
+              <Statistic title="Trang hiện tại" value={page + 1} suffix={`/ ${pageMeta.totalPages} trang`} />
+            </Card>
+          </Col>
+          <Col xs={24} sm={8}>
+            <Card size="small" bordered={false} style={{ boxShadow: '0 1px 2px 0 rgba(0, 0, 0, 0.03)' }}>
+              <Statistic title="Quyền thao tác" value={canWrite ? 'Có thể chỉnh sửa' : 'Chỉ xem'} />
+            </Card>
+          </Col>
+        </Row>
+
+        <Card bordered={false} style={{ boxShadow: '0 1px 2px 0 rgba(0, 0, 0, 0.03)' }}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 16, flexWrap: 'wrap', gap: 12 }}>
+            <Space size="middle" wrap>
+              <Input
+                placeholder="Tìm theo họ tên..."
+                value={keyword}
+                onChange={(e) => resetToFirstPage(setKeyword, e.target.value)}
+                prefix={<Search size={16} style={{ color: '#bfbfbf' }} />}
+                style={{ width: 260, borderRadius: 6 }}
+                allowClear
+              />
+              <Select
+                placeholder="Tất cả trạng thái"
+                value={status || undefined}
+                onChange={(val) => resetToFirstPage(setStatus, (val || '') as DriverStatus | '')}
+                style={{ width: 200 }}
+                allowClear
+                options={[
+                  { value: 'ACTIVE', label: 'Đang hoạt động' },
+                  { value: 'INACTIVE', label: 'Ngừng hoạt động' },
+                ]}
+              />
+            </Space>
+
+            <Button icon={<RefreshCw size={14} />} onClick={() => fetchDrivers()}>
+              Tải lại
+            </Button>
+          </div>
+
+          {error ? <Alert message={error} type="error" showIcon style={{ marginBottom: 16 }} /> : null}
+
+          <Table
+            columns={columns}
+            dataSource={drivers}
+            rowKey="id"
+            loading={loading}
+            pagination={{
+              current: page + 1,
+              pageSize: size,
+              total: pageMeta.totalElements,
+              showSizeChanger: true,
+              pageSizeOptions: ['10', '20', '50'],
+              onChange: (p, s) => {
+                setPage(p - 1);
+                if (s) setSize(s);
+              },
+              showTotal: (total) => `Tổng cộng ${total} tài xế`,
+              position: ['bottomRight'],
+            }}
+          />
+        </Card>
+      </div>
+
+      <DriverStatusModal
+        visible={!!statusModalDriver}
+        driver={statusModalDriver}
+        loading={statusUpdating}
+        onCancel={() => setStatusModalDriver(null)}
+        onConfirm={handleConfirmStatusChange}
+      />
+
+      <DriverStatusHistoryDrawer
+        visible={!!historyDriver}
+        driverId={historyDriver?.id ?? null}
+        driverName={historyDriver?.fullName ?? ''}
+        onClose={() => setHistoryDriver(null)}
+      />
+    </AdminShell>
+  );
+};
+
+export default DriverManagementPage;
