@@ -25,6 +25,7 @@ import {
 import axiosInstance from '../api/axiosInstance';
 import { PERMISSIONS } from '../constants/permissions';
 import { usePermissions } from '../hooks/usePermissions';
+import { antdTheme, palette } from '../theme/tokens';
 
 const { Header, Sider, Content } = Layout;
 
@@ -262,24 +263,7 @@ const AdminShell: React.FC<AdminShellProps> = ({ currentUser, children }) => {
   ];
 
   return (
-    <ConfigProvider
-      theme={{
-        components: {
-          Layout: {
-            siderBg: '#0d1727',
-          },
-          Menu: {
-            darkItemBg: '#0d1727',
-            darkItemColor: '#a6b0cf',
-            darkItemHoverBg: 'rgba(255, 255, 255, 0.05)',
-            darkItemSelectedBg: 'rgba(255, 255, 255, 0.08)',
-            darkItemSelectedColor: '#ffffff',
-            darkSubMenuItemBg: '#0d1727',
-            darkGroupTitleColor: '#64748b',
-          },
-        },
-      }}
-    >
+    <ConfigProvider theme={antdTheme}>
       <Layout style={{ minHeight: '100vh' }}>
         <Sider theme="dark" width={260} className="elog-admin-sider">
           <div onClick={() => navigate('/dashboard')} className="elog-sidebar-logo">
@@ -301,7 +285,7 @@ const AdminShell: React.FC<AdminShellProps> = ({ currentUser, children }) => {
                 theme="dark"
                 selectedKeys={[selectedKey]}
                 items={sidebarMenuItems}
-                style={{ borderRight: 0, padding: '16px 0', background: '#0d1727' }}
+                style={{ borderRight: 0, padding: '16px 0', background: palette.navySider }}
               />
             </div>
 
@@ -309,8 +293,8 @@ const AdminShell: React.FC<AdminShellProps> = ({ currentUser, children }) => {
               <div className="elog-profile-info">
                 <Avatar
                   style={{
-                    backgroundColor: '#e6f7ff',
-                    color: '#1677ff',
+                    backgroundColor: palette.primaryBg,
+                    color: palette.primary,
                     fontWeight: 600,
                     marginRight: 12,
                   }}
@@ -340,30 +324,31 @@ const AdminShell: React.FC<AdminShellProps> = ({ currentUser, children }) => {
         <Layout style={{ marginLeft: 260 }}>
           <Header className="elog-admin-header">
             <Input
-              prefix={<Search size={ICON_SIZE - 2} style={{ color: '#bfbfbf' }} />}
+              prefix={<Search size={ICON_SIZE - 2} style={{ color: palette.textFaint }} />}
               placeholder="Tìm kiếm nhanh..."
-              style={{ width: 250, borderRadius: 6 }}
+              style={{ width: 260 }}
             />
-            <Space size={16}>
+            <Space size={12}>
               <Button
                 type="text"
                 shape="circle"
+                className="elog-header-icon-btn"
                 icon={
-                  <Badge dot color="#ff4d4f" offset={[-2, 2]}>
-                    <Bell size={ICON_SIZE} style={{ color: '#595959' }} />
+                  <Badge dot color={palette.danger} offset={[-2, 2]}>
+                    <Bell size={ICON_SIZE} style={{ color: palette.textBody }} />
                   </Badge>
                 }
               />
               <Dropdown menu={userMenuItems} placement="bottomRight" trigger={['click']}>
-                <Button type="text" style={{ height: 40, padding: '0 8px' }}>
+                <Button type="text" style={{ height: 40, padding: '0 8px', borderRadius: 10 }}>
                   <Space>
-                    <Avatar size="small" style={{ backgroundColor: '#1677ff' }}>
+                    <Avatar size="small" style={{ backgroundColor: palette.primary }}>
                       {(currentUser.fullName || currentUser.username).slice(0, 1).toUpperCase()}
                     </Avatar>
-                    <span style={{ color: '#595959', fontWeight: 500 }}>
+                    <span style={{ color: palette.textBody, fontWeight: 500 }}>
                       {currentUser.fullName || currentUser.username}
                     </span>
-                    <ChevronDown size={CHEVRON_ICON_SIZE} style={{ color: '#8c8c8c' }} />
+                    <ChevronDown size={CHEVRON_ICON_SIZE} style={{ color: palette.textFaint }} />
                   </Space>
                 </Button>
               </Dropdown>

@@ -115,7 +115,7 @@ code {
   top: 0;
   bottom: 0;
   z-index: 100;
-  background: #0d1727;
+  background: #16233b;
 }
 
 .elog-sidebar-logo {
@@ -125,14 +125,14 @@ code {
   padding: 0 24px;
   cursor: pointer;
   border-bottom: 1px solid rgba(255, 255, 255, 0.05);
-  background: #0d1727;
+  background: #16233b;
 }
 
 .elog-logo-badge {
   width: 34px;
   height: 34px;
   border-radius: 10px;
-  background: linear-gradient(135deg, #06b6d4 0%, #10b981 100%);
+  background: linear-gradient(135deg, #1677ff 0%, #0d9488 100%);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -140,7 +140,7 @@ code {
   font-weight: 800;
   font-size: 18px;
   color: #fff;
-  box-shadow: 0 4px 12px rgba(6, 182, 212, 0.2);
+  box-shadow: 0 4px 12px rgba(22, 119, 255, 0.25);
 }
 
 .elog-sidebar-menu-wrapper {
@@ -158,7 +158,7 @@ code {
 .elog-sidebar-profile {
   padding: 16px 24px;
   border-top: 1px solid rgba(255, 255, 255, 0.05);
-  background-color: #09101c;
+  background-color: #121c30;
 }
 
 .elog-profile-info {
@@ -198,8 +198,34 @@ code {
   align-items: center;
   justify-content: space-between;
   height: 64px;
-  border-bottom: 1px solid #f0f0f0;
+  border-bottom: 1px solid #eef1f6;
   position: sticky;
   top: 0;
   z-index: 99;
+}
+
+.elog-admin-header .ant-input-affix-wrapper {
+  background: #f4f6fb;
+  border-color: transparent;
+}
+
+.elog-admin-header .ant-input-affix-wrapper:hover,
+.elog-admin-header .ant-input-affix-wrapper:focus,
+.elog-admin-header .ant-input-affix-wrapper-focused {
+  background: #fff;
+  border-color: #1677ff;
+}
+
+.elog-admin-header .ant-input-affix-wrapper .ant-input {
+  background: transparent;
+}
+
+.elog-header-icon-btn {
+  width: 40px;
+  height: 40px;
+  border-radius: 10px;
+}
+
+.elog-header-icon-btn:hover {
+  background: #f4f6fb !important;
 }

@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Card, Row, Col, Statistic, Space, Typography, Tag, Badge, Spin, Descriptions, Table, DatePicker, Button, Alert, Empty } from 'antd';
+import { Card, Row, Col, Space, Typography, Tag, Badge, Spin, Descriptions, Table, DatePicker, Button, Alert, Empty } from 'antd';
 import { 
   Users, 
   Store, 
@@ -13,6 +13,8 @@ import {
   ShieldAlert
 } from 'lucide-react';
 import AdminShell from '../components/AdminShell';
+import StatCard from '../components/StatCard';
+import { palette } from '../theme/tokens';
 import { userApi } from '../api/userApi';
 import { storeApi } from '../api/storeApi';
 import { vehicleApi } from '../api/vehicleApi';
@@ -159,45 +161,45 @@ const DashboardPage: React.FC = () => {
     {
       title: 'Quản lý người dùng',
       desc: 'Quản lý tài khoản, phân chia vai trò và trạng thái hoạt động của nhân viên.',
-      icon: <Users size={24} style={{ color: '#1677ff' }} />,
+      icon: <Users size={24} style={{ color: palette.primary }} />,
       path: '/users',
-      bgColor: '#e6f7ff',
+      bgColor: palette.primaryBg,
       borderColor: '#91d5ff',
       visible: canReadUsers,
     },
     {
       title: 'Quản lý cửa hàng',
       desc: 'Quản lý danh sách đại lý, địa chỉ liên hệ và cấu hình tọa độ GPS.',
-      icon: <Store size={24} style={{ color: '#52c41a' }} />,
+      icon: <Store size={24} style={{ color: palette.success }} />,
       path: '/stores',
-      bgColor: '#f6ffed',
+      bgColor: palette.successBg,
       borderColor: '#b7eb8f',
       visible: canReadStores,
     },
     {
       title: 'Quản lý xe',
       desc: 'Quản lý đội xe vận chuyển, tải trọng (kg) và thể tích khoang hàng (m³).',
-      icon: <Truck size={24} style={{ color: '#faad14' }} />,
+      icon: <Truck size={24} style={{ color: palette.gold }} />,
       path: '/vehicles',
-      bgColor: '#fffbe6',
+      bgColor: palette.goldBg,
       borderColor: '#ffe58f',
       visible: canReadVehicles,
     },
     {
       title: 'Quản lý sản phẩm',
       desc: 'Danh mục sản phẩm kinh doanh cùng trọng lượng, kích thước vật lý.',
-      icon: <Package size={24} style={{ color: '#13c2c2' }} />,
+      icon: <Package size={24} style={{ color: palette.teal }} />,
       path: '/admin/products',
-      bgColor: '#e6fffb',
+      bgColor: palette.tealBg,
       borderColor: '#87e8de',
       visible: true,
     },
     {
       title: 'Quản lý tuyến đường',
       desc: 'Tối ưu lộ trình, gán cửa hàng dừng chân và phân bổ xe giao hàng.',
-      icon: <Map size={24} style={{ color: '#722ed1' }} />,
+      icon: <Map size={24} style={{ color: palette.violet }} />,
       path: '/admin/routes',
-      bgColor: '#f9f0ff',
+      bgColor: palette.violetBg,
       borderColor: '#d3adf7',
       visible: canReadRoutes,
     },
@@ -208,11 +210,11 @@ const DashboardPage: React.FC = () => {
       <AdminShell currentUser={currentUser}>
         <div style={{ display: 'flex', flexDirection: 'column', gap: 24 }}>
           {/* Welcome Section */}
-          <div style={{ 
-            background: 'linear-gradient(135deg, #1e293b 0%, #0f172a 100%)', 
-            padding: '24px 32px', 
-            borderRadius: 12, 
-            boxShadow: '0 4px 12px rgba(15, 23, 42, 0.05)',
+          <div style={{
+            background: palette.bannerGradient,
+            padding: '24px 32px',
+            borderRadius: 12,
+            boxShadow: '0 8px 20px rgba(13, 23, 42, 0.18)',
             color: '#ffffff'
           }}>
             <h2 style={{ margin: 0, fontSize: 22, fontWeight: 700, color: '#ffffff' }}>
@@ -337,11 +339,11 @@ const DashboardPage: React.FC = () => {
       <div style={{ display: 'flex', flexDirection: 'column', gap: 24 }}>
         
         {/* Welcome Section */}
-        <div style={{ 
-          background: 'linear-gradient(135deg, #1e293b 0%, #0f172a 100%)', 
-          padding: '24px 32px', 
-          borderRadius: 12, 
-          boxShadow: '0 4px 12px rgba(15, 23, 42, 0.05)',
+        <div style={{
+          background: palette.bannerGradient,
+          padding: '24px 32px',
+          borderRadius: 12,
+          boxShadow: '0 8px 20px rgba(13, 23, 42, 0.18)',
           color: '#ffffff'
         }}>
           <h2 style={{ margin: 0, fontSize: 22, fontWeight: 700, color: '#ffffff' }}>
@@ -373,78 +375,42 @@ const DashboardPage: React.FC = () => {
               gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))',
               gap: 16
             }}>
-              {/* Card 1: Người dùng */}
-              <Card bordered={false} style={{ boxShadow: '0 1px 2px 0 rgba(0, 0, 0, 0.03)' }}>
-                <Statistic
-                  title={
-                    <Space size={8}>
-                      <Users size={16} style={{ color: '#8c8c8c' }} />
-                      <span>Người dùng</span>
-                    </Space>
-                  }
-                  value={stats.usersCount}
-                  suffix="tài khoản"
-                />
-              </Card>
-
-              {/* Card 2: Cửa hàng */}
-              <Card bordered={false} style={{ boxShadow: '0 1px 2px 0 rgba(0, 0, 0, 0.03)' }}>
-                <Statistic
-                  title={
-                    <Space size={8}>
-                      <Store size={16} style={{ color: '#8c8c8c' }} />
-                      <span>Cửa hàng</span>
-                    </Space>
-                  }
-                  value={stats.storesCount}
-                  suffix="đại lý"
-                />
-              </Card>
-
-              {/* Card 3: Đội xe */}
-              <Card bordered={false} style={{ boxShadow: '0 1px 2px 0 rgba(0, 0, 0, 0.03)' }}>
-                <Statistic
-                  title={
-                    <Space size={8}>
-                      <Truck size={16} style={{ color: '#8c8c8c' }} />
-                      <span>Đội xe</span>
-                    </Space>
-                  }
-                  value={stats.vehiclesCount}
-                  suffix={`xe (${stats.activeVehicles} active)`}
-                />
-              </Card>
-
-              {/* Card 4: Sản phẩm */}
-              <Card bordered={false} style={{ boxShadow: '0 1px 2px 0 rgba(0, 0, 0, 0.03)' }}>
-                <Statistic
-                  title={
-                    <Space size={8}>
-                      <Package size={16} style={{ color: '#8c8c8c' }} />
-                      <span>Sản phẩm</span>
-                    </Space>
-                  }
-                  value={stats.productsCount}
-                  suffix="mặt hàng"
-                />
-              </Card>
-
-              {/* Card 5: Tuyến đường */}
-              <Card bordered={false} style={{ boxShadow: '0 1px 2px 0 rgba(0, 0, 0, 0.03)' }}>
-                <Statistic
-                  title={
-                    <Space size={8}>
-                      <Map size={16} style={{ color: '#8c8c8c' }} />
-                      <span>Tuyến đường</span>
-                    </Space>
-                  }
-                  value={stats.routesCount}
-                  suffix="hành trình"
-                />
-              </Card>
+              <StatCard
+                accent="primary"
+                icon={<Users size={18} />}
+                label="Người dùng"
+                value={stats.usersCount}
+                caption="tài khoản"
+              />
+              <StatCard
+                accent="success"
+                icon={<Store size={18} />}
+                label="Cửa hàng"
+                value={stats.storesCount}
+                caption="đại lý"
+              />
+              <StatCard
+                accent="gold"
+                icon={<Truck size={18} />}
+                label="Đội xe"
+                value={stats.vehiclesCount}
+                caption={`${stats.activeVehicles} xe đang hoạt động`}
+              />
+              <StatCard
+                accent="teal"
+                icon={<Package size={18} />}
+                label="Sản phẩm"
+                value={stats.productsCount}
+                caption="mặt hàng"
+              />
+              <StatCard
+                accent="violet"
+                icon={<Map size={18} />}
+                label="Tuyến đường"
+                value={stats.routesCount}
+                caption="hành trình"
+              />
             </div>
-
-
           </div>
         )}
 
@@ -524,7 +490,7 @@ const DashboardPage: React.FC = () => {
                 <Activity size={16} style={{ color: '#1677ff' }} />
                 <span>Trạng thái tài khoản đang đăng nhập</span>
               </Space>
-            } bordered={false} style={{ boxShadow: '0 1px 2px 0 rgba(0, 0, 0, 0.03)' }}>
+            } bordered={false} style={{ boxShadow: palette.cardShadow }}>
               <Descriptions column={1} size="small" bordered>
                 <Descriptions.Item label="Mã User (User ID)">
                   <Text copyable>{userId}</Text>
@@ -551,7 +517,7 @@ const DashboardPage: React.FC = () => {
                 <Database size={16} style={{ color: '#52c41a' }} />
                 <span>Môi trường kết nối & API</span>
               </Space>
-            } bordered={false} style={{ boxShadow: '0 1px 2px 0 rgba(0, 0, 0, 0.03)' }}>
+            } bordered={false} style={{ boxShadow: palette.cardShadow }}>
               <Descriptions column={1} size="small" bordered>
                 <Descriptions.Item label="Chế độ dữ liệu (Data Mode)">
                   <Badge 

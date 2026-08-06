@@ -38,6 +38,7 @@ import { useNavigate } from 'react-router-dom';
 import dayjs from 'dayjs';
 import type { ColumnsType } from 'antd/es/table';
 import AdminShell from '../../../components/AdminShell';
+import { palette } from '../../../theme/tokens';
 import { getKpiByRoute, getKpiDailyTrend, getKpiSummary } from '../../../api/kpiApi';
 import type {
   KpiByRouteResponse,
@@ -74,10 +75,10 @@ function formatPct(value: number | null): string {
 }
 
 function utilColor(value: number | null): string {
-  if (value === null) return '#8c8c8c';
-  if (value >= 85) return '#52c41a';
-  if (value >= 60) return '#1677ff';
-  return '#faad14';
+  if (value === null) return palette.textFaint;
+  if (value >= 85) return palette.success;
+  if (value >= 60) return palette.primary;
+  return palette.gold;
 }
 
 // ── Component ────────────────────────────────────────────────────────────────
@@ -196,9 +197,10 @@ const KpiDashboardPage: React.FC = () => {
 
         <div
           style={{
-            background: 'linear-gradient(135deg, #1e293b 0%, #0f172a 100%)',
+            background: palette.bannerGradient,
             padding: '20px 24px',
             borderRadius: 12,
+            boxShadow: '0 8px 20px rgba(13, 23, 42, 0.18)',
             color: '#ffffff',
           }}
         >
@@ -248,7 +250,7 @@ const KpiDashboardPage: React.FC = () => {
 
         <Row gutter={16}>
           <Col xs={24} sm={12} lg={4} style={{ marginBottom: 16 }}>
-            <Card size="small" style={{ borderRadius: 10, height: '100%' }} loading={loading && !summary}>
+            <Card size="small" style={{ borderRadius: 12, height: '100%', boxShadow: palette.cardShadow, border: `1px solid ${palette.borderSoft}` }} loading={loading && !summary}>
               <Statistic
                 title={<Space size={6}><Clock size={14} /> Tỷ lệ đúng giờ</Space>}
                 value={summary ? formatPct(summary.onTimeDelivery.rate) : '—'}
@@ -262,7 +264,7 @@ const KpiDashboardPage: React.FC = () => {
             </Card>
           </Col>
           <Col xs={24} sm={12} lg={5} style={{ marginBottom: 16 }}>
-            <Card size="small" style={{ borderRadius: 10, height: '100%' }} loading={loading && !summary}>
+            <Card size="small" style={{ borderRadius: 12, height: '100%', boxShadow: palette.cardShadow, border: `1px solid ${palette.borderSoft}` }} loading={loading && !summary}>
               <Statistic
                 title={<Space size={6}><Package size={14} /> Lấp đầy thể tích</Space>}
                 value={summary ? formatPct(summary.fleetUtilization.avgVolumeUtilizationPct) : '—'}
@@ -271,7 +273,7 @@ const KpiDashboardPage: React.FC = () => {
             </Card>
           </Col>
           <Col xs={24} sm={12} lg={5} style={{ marginBottom: 16 }}>
-            <Card size="small" style={{ borderRadius: 10, height: '100%' }} loading={loading && !summary}>
+            <Card size="small" style={{ borderRadius: 12, height: '100%', boxShadow: palette.cardShadow, border: `1px solid ${palette.borderSoft}` }} loading={loading && !summary}>
               <Statistic
                 title={<Space size={6}><Weight size={14} /> Lấp đầy tải trọng</Space>}
                 value={summary ? formatPct(summary.fleetUtilization.avgWeightUtilizationPct) : '—'}
@@ -280,7 +282,7 @@ const KpiDashboardPage: React.FC = () => {
             </Card>
           </Col>
           <Col xs={24} sm={12} lg={5} style={{ marginBottom: 16 }}>
-            <Card size="small" style={{ borderRadius: 10, height: '100%' }} loading={loading && !summary}>
+            <Card size="small" style={{ borderRadius: 12, height: '100%', boxShadow: palette.cardShadow, border: `1px solid ${palette.borderSoft}` }} loading={loading && !summary}>
               <Statistic
                 title={<Space size={6}><CheckCircle2 size={14} /> Chuyến hoàn thành</Space>}
                 value={summary ? formatPct(summary.tripCompletion.rate) : '—'}
@@ -294,7 +296,7 @@ const KpiDashboardPage: React.FC = () => {
             </Card>
           </Col>
           <Col xs={24} sm={12} lg={5} style={{ marginBottom: 16 }}>
-            <Card size="small" style={{ borderRadius: 10, height: '100%' }} loading={loading && !summary}>
+            <Card size="small" style={{ borderRadius: 12, height: '100%', boxShadow: palette.cardShadow, border: `1px solid ${palette.borderSoft}` }} loading={loading && !summary}>
               <Statistic
                 title={<Space size={6}><AlertTriangle size={14} /> Tỷ lệ sự cố</Space>}
                 value={summary ? formatPct(summary.exceptions.exceptionRate) : '—'}
@@ -318,7 +320,7 @@ const KpiDashboardPage: React.FC = () => {
         <Card
           title="Xu hướng: Tỷ lệ đúng giờ & Tỷ lệ lấp đầy thể tích"
           size="small"
-          style={{ borderRadius: 10 }}
+          style={{ borderRadius: 12, boxShadow: palette.cardShadow, border: `1px solid ${palette.borderSoft}` }}
           loading={loading && !trend}
         >
           {chartData.length === 0 ? (
@@ -335,7 +337,7 @@ const KpiDashboardPage: React.FC = () => {
                   type="monotone"
                   dataKey="onTimeRatePct"
                   name="Tỷ lệ đúng giờ"
-                  stroke="#1677ff"
+                  stroke={palette.primary}
                   connectNulls={false}
                   dot={{ r: 3 }}
                 />
@@ -343,7 +345,7 @@ const KpiDashboardPage: React.FC = () => {
                   type="monotone"
                   dataKey="volumeUtilPct"
                   name="Tỷ lệ lấp đầy thể tích"
-                  stroke="#52c41a"
+                  stroke={palette.success}
                   connectNulls={false}
                   dot={{ r: 3 }}
                 />
@@ -355,7 +357,7 @@ const KpiDashboardPage: React.FC = () => {
         <Card
           title="Hiệu suất theo tuyến"
           size="small"
-          style={{ borderRadius: 10 }}
+          style={{ borderRadius: 12, boxShadow: palette.cardShadow, border: `1px solid ${palette.borderSoft}` }}
           styles={{ body: { padding: 0 } }}
           loading={loading && !byRoute}
         >
