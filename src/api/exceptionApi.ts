@@ -24,7 +24,7 @@ function unwrap<T>(res: { data: ApiResponseWrapper<T> }): T {
 // ── Driver rejection ─────────────────────────────────────────────────────────
 
 /**
- * POST /api/trip-stops/{id}/reject
+ * POST /api/v1/trip-stops/{id}/reject
  * Driver records store rejection for an IN_PROGRESS stop.
  * Returns 201 Created on success.
  */
@@ -33,7 +33,7 @@ export async function rejectDelivery(
   request: RejectStopRequest
 ): Promise<DeliveryExceptionResponse> {
   const res = await axiosInstance.post<ApiResponseWrapper<DeliveryExceptionResponse>>(
-    `/api/trip-stops/${tripStopId}/reject`,
+    `/api/v1/trip-stops/${tripStopId}/reject`,
     request
   );
   return unwrap(res);
@@ -42,7 +42,7 @@ export async function rejectDelivery(
 // ── Exception list (Dispatcher / Logistics Manager) ──────────────────────────
 
 /**
- * GET /api/exceptions?date=YYYY-MM-DD&type=ALL&resolved=false
+ * GET /api/v1/exceptions?date=YYYY-MM-DD&type=ALL&resolved=false
  * Backend does NOT support pagination — returns all matching exceptions.
  */
 export async function getExceptions(
@@ -54,7 +54,7 @@ export async function getExceptions(
   if (filters?.resolved) params.resolved = filters.resolved;
 
   const res = await axiosInstance.get<ApiResponseWrapper<ExceptionListResponse>>(
-    '/api/exceptions',
+    '/api/v1/exceptions',
     { params }
   );
   return unwrap(res);
@@ -63,14 +63,14 @@ export async function getExceptions(
 // ── Exception detail ─────────────────────────────────────────────────────────
 
 /**
- * GET /api/exceptions/{id}
+ * GET /api/v1/exceptions/{id}
  * Returns full detail of a single exception.
  */
 export async function getExceptionById(
   exceptionId: number
 ): Promise<DeliveryExceptionResponse> {
   const res = await axiosInstance.get<ApiResponseWrapper<DeliveryExceptionResponse>>(
-    `/api/exceptions/${exceptionId}`
+    `/api/v1/exceptions/${exceptionId}`
   );
   return unwrap(res);
 }
@@ -78,7 +78,7 @@ export async function getExceptionById(
 // ── Resolve exception ────────────────────────────────────────────────────────
 
 /**
- * PATCH /api/exceptions/{id}/resolve
+ * PATCH /api/v1/exceptions/{id}/resolve
  * Dispatcher or Logistics Manager closes an exception.
  */
 export async function resolveException(
@@ -86,7 +86,7 @@ export async function resolveException(
   request: ResolveExceptionRequest
 ): Promise<DeliveryExceptionResponse> {
   const res = await axiosInstance.patch<ApiResponseWrapper<DeliveryExceptionResponse>>(
-    `/api/exceptions/${exceptionId}/resolve`,
+    `/api/v1/exceptions/${exceptionId}/resolve`,
     request
   );
   return unwrap(res);
@@ -105,7 +105,7 @@ export interface OperationalViolation {
 }
 
 /**
- * GET /api/exceptions/violations?date=YYYY-MM-DD
+ * GET /api/v1/exceptions/violations?date=YYYY-MM-DD
  * Returns operational violations (e.g. Time Window early/late, capacity violations).
  */
 export async function getOperationalViolations(
@@ -115,7 +115,7 @@ export async function getOperationalViolations(
   if (date) params.date = date;
 
   const res = await axiosInstance.get<ApiResponseWrapper<OperationalViolation[]>>(
-    '/api/exceptions/violations',
+    '/api/v1/exceptions/violations',
     { params }
   );
   return unwrap(res);

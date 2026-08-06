@@ -90,7 +90,7 @@ export const routeApi = {
 
     const query = encodeQuery(queryParams);
     const data = await handleAxiosCall<any>(() =>
-      axiosInstance.get(`/api/routes?${query}`)
+      axiosInstance.get(`/api/v1/routes?${query}`)
     );
 
     return normalizeRoutePage(data, page, size);
@@ -102,7 +102,7 @@ export const routeApi = {
     }
 
     const data = await handleAxiosCall<any>(() =>
-      axiosInstance.get(`/api/routes/${id}`)
+      axiosInstance.get(`/api/v1/routes/${id}`)
     );
     const rawData = data?.data ?? data;
     return normalizeRoute(rawData);
@@ -114,7 +114,7 @@ export const routeApi = {
     }
 
     const data = await handleAxiosCall<any>(() =>
-      axiosInstance.get(`/api/routes/${routeId}`)
+      axiosInstance.get(`/api/v1/routes/${routeId}`)
     );
     const rawData = data?.data ?? data;
     const rawStops = Array.isArray(rawData?.stops) ? rawData.stops : [];
@@ -134,7 +134,7 @@ export const routeApi = {
       };
 
       const data = await handleAxiosCall<any>(() =>
-        axiosInstance.post('/api/routes', requestBody)
+        axiosInstance.post('/api/v1/routes', requestBody)
       );
       return normalizeRoute(data?.data ?? data);
     } catch (error: any) {
@@ -166,7 +166,7 @@ export const routeApi = {
     };
 
     const data = await handleAxiosCall<any>(() =>
-      axiosInstance.put(`/api/routes/${id}`, requestBody)
+      axiosInstance.put(`/api/v1/routes/${id}`, requestBody)
     );
     return normalizeRoute(data?.data ?? data);
   },
@@ -178,7 +178,7 @@ export const routeApi = {
 
     const isActive = status === 'ACTIVE';
     const data = await handleAxiosCall<any>(() =>
-      axiosInstance.patch(`/api/routes/${id}/status`, { isActive })
+      axiosInstance.patch(`/api/v1/routes/${id}/status`, { isActive })
     );
     return normalizeRoute(data?.data ?? data);
   },
@@ -195,7 +195,7 @@ export const routeApi = {
     };
 
     const data = await handleAxiosCall<any>(() =>
-      axiosInstance.post(`/api/routes/${routeId}/stops`, requestBody)
+      axiosInstance.post(`/api/v1/routes/${routeId}/stops`, requestBody)
     );
     return normalizeRouteStop(data?.data ?? data);
   },
@@ -210,7 +210,7 @@ export const routeApi = {
     };
 
     const data = await handleAxiosCall<any>(() =>
-      axiosInstance.put(`/api/routes/${routeId}/stops/reorder`, requestBody)
+      axiosInstance.put(`/api/v1/routes/${routeId}/stops/reorder`, requestBody)
     );
     const rawStops = Array.isArray(data?.data) ? data.data : (Array.isArray(data) ? data : []);
     return rawStops.map(normalizeRouteStop);
@@ -223,7 +223,7 @@ export const routeApi = {
     }
 
     await handleAxiosCall<any>(() =>
-      axiosInstance.delete(`/api/routes/${routeId}/stops/${stopId}`)
+      axiosInstance.delete(`/api/v1/routes/${routeId}/stops/${stopId}`)
     );
   },
 
@@ -244,7 +244,7 @@ export const routeApi = {
 
     const query = encodeQuery(queryParams);
     const data = await handleAxiosCall<any>(() =>
-      axiosInstance.get(`/api/stores?${query}`)
+      axiosInstance.get(`/api/v1/stores?${query}`)
     );
 
     const rawStores = Array.isArray(data?.data) ? data.data : [];

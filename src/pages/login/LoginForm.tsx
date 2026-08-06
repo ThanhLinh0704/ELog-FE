@@ -16,7 +16,7 @@ const LoginForm: React.FC = () => {
 
     try {
       // Gửi yêu cầu đăng nhập lên API Backend
-      const response = await axiosInstance.post('/api/auth/login', {
+      const response = await axiosInstance.post('/api/v1/auth/login', {
         username: values.username.trim(),
         password: values.password,
       });

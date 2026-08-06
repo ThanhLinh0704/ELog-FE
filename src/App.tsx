@@ -42,6 +42,9 @@ import ExceptionManagementPage from './pages/dispatcher/exceptions/ExceptionMana
 import ExceptionGuard from './guards/ExceptionGuard';
 import TripOutcomePage from './pages/dispatcher/outcomes/TripOutcomePage';
 
+import KpiDashboardPage from './pages/dispatcher/kpi/KpiDashboardPage';
+import ActivityHistoryPage from './pages/dispatcher/activity-history/ActivityHistoryPage';
+
 
 function App() {
   return (
@@ -322,6 +325,42 @@ function App() {
           element={
             <ProtectedPermissionRoute permission={PERMISSIONS.TRIP_READ}>
               <TripOutcomePage />
+            </ProtectedPermissionRoute>
+          }
+        />
+
+        {/* US-19 KPI Dashboard */}
+        <Route
+          path="/dispatcher/kpi"
+          element={
+            <ProtectedPermissionRoute permission={PERMISSIONS.KPI_READ}>
+              <KpiDashboardPage />
+            </ProtectedPermissionRoute>
+          }
+        />
+        <Route
+          path="/manager/kpi"
+          element={
+            <ProtectedPermissionRoute permission={PERMISSIONS.KPI_READ}>
+              <KpiDashboardPage />
+            </ProtectedPermissionRoute>
+          }
+        />
+
+        {/* Activity History — Planning + Trip Outcome audit log */}
+        <Route
+          path="/dispatcher/activity-history"
+          element={
+            <ProtectedPermissionRoute anyOf={[PERMISSIONS.TRIP_READ, PERMISSIONS.PLANNING_HISTORY_READ]}>
+              <ActivityHistoryPage />
+            </ProtectedPermissionRoute>
+          }
+        />
+        <Route
+          path="/manager/activity-history"
+          element={
+            <ProtectedPermissionRoute anyOf={[PERMISSIONS.TRIP_READ, PERMISSIONS.PLANNING_HISTORY_READ]}>
+              <ActivityHistoryPage />
             </ProtectedPermissionRoute>
           }
         />

@@ -2,7 +2,7 @@
  * OrderResultModal — cập nhật kết quả giao hàng cho một Order.
  * Thay thế DeliveryRejectionModal cũ (stop-level) bằng order-level result.
  *
- * API: PUT /api/driver/trips/{executionId}/orders/{orderId}/result
+ * API: PUT /api/v1/driver/trips/{executionId}/orders/{orderId}/result
  * Body: UpdateOrderResultPayload { status, reasonCode?, exceptionText? }
  */
 import React, { useState } from 'react';

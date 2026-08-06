@@ -4,9 +4,11 @@ import { Avatar, Badge, Button, ConfigProvider, Dropdown, Input, Layout, Menu, S
 import {
   Activity,
   AlertTriangle,
+  BarChart3,
   Bell,
   ChevronDown,
   FileSpreadsheet,
+  History,
   Home,
   Layers,
   LayoutGrid,
@@ -57,7 +59,7 @@ const AdminShell: React.FC<AdminShellProps> = ({ currentUser, children }) => {
     const refreshToken = localStorage.getItem('refreshToken');
     if (refreshToken) {
       try {
-        await axiosInstance.post('/api/auth/logout', { refreshToken });
+        await axiosInstance.post('/api/v1/auth/logout', { refreshToken });
       } catch (err) {
         console.error('Failed to logout in backend', err);
       }
@@ -102,11 +104,19 @@ const AdminShell: React.FC<AdminShellProps> = ({ currentUser, children }) => {
                 ? '/exceptions'
                 : location.pathname.startsWith('/manager/exceptions')
                   ? '/exceptions'
-                  : location.pathname.startsWith('/driver/my-trips')
-                    ? '/driver/my-trips'
-                    : location.pathname.startsWith('/trip-drafts')
-                      ? '/trip-drafts'
-                      : location.pathname;
+                  : location.pathname.startsWith('/dispatcher/kpi')
+                    ? '/kpi'
+                    : location.pathname.startsWith('/manager/kpi')
+                      ? '/kpi'
+                      : location.pathname.startsWith('/dispatcher/activity-history')
+                        ? '/activity-history'
+                        : location.pathname.startsWith('/manager/activity-history')
+                          ? '/activity-history'
+                          : location.pathname.startsWith('/driver/my-trips')
+                            ? '/driver/my-trips'
+                            : location.pathname.startsWith('/trip-drafts')
+                              ? '/trip-drafts'
+                              : location.pathname;
 
   const roles = currentUser.roles || [];
   const roleLabel = roles.map((role) => ROLE_LABELS[role] || role).join(', ') || 'User';
@@ -114,6 +124,8 @@ const AdminShell: React.FC<AdminShellProps> = ({ currentUser, children }) => {
   const canViewTripDraftsMenu = can(PERMISSIONS.TRIP_READ);
   const canViewMonitoring = can(PERMISSIONS.TRIP_READ);
   const canViewExceptions = can(PERMISSIONS.TRIP_READ);
+  const canViewKpi = can(PERMISSIONS.KPI_READ);
+  const canViewActivityHistory = can(PERMISSIONS.TRIP_READ) || can(PERMISSIONS.PLANNING_HISTORY_READ);
   const canViewDriverTrips = can(PERMISSIONS.TRIP_EXECUTE);
 
   const sidebarMenuItems = [
@@ -219,6 +231,22 @@ const AdminShell: React.FC<AdminShellProps> = ({ currentUser, children }) => {
               icon: <AlertTriangle size={ICON_SIZE} />,
               label: 'Quản lý ngoại lệ',
               onClick: () => navigate('/dispatcher/exceptions'),
+            }
+          : null,
+        canViewKpi
+          ? {
+              key: '/kpi',
+              icon: <BarChart3 size={ICON_SIZE} />,
+              label: 'KPI vận hành',
+              onClick: () => navigate('/dispatcher/kpi'),
+            }
+          : null,
+        canViewActivityHistory
+          ? {
+              key: '/activity-history',
+              icon: <History size={ICON_SIZE} />,
+              label: 'Nhật ký hoạt động',
+              onClick: () => navigate('/dispatcher/activity-history'),
             }
           : null,
         canViewDriverTrips

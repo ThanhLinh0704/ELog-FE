@@ -43,10 +43,10 @@ axiosInstance.interceptors.response.use(
     // Chỉ thực hiện refresh khi nhận mã lỗi 401 và request chưa được thử lại
     if (error.response?.status === 401 && !originalRequest._retry) {
       // Nếu là request gọi trực tiếp tới login hoặc refresh thì clear localStorage và chuyển hướng về /login
-      if (originalRequest.url && (originalRequest.url.includes('/api/auth/refresh') || originalRequest.url.includes('/api/auth/login'))) {
+      if (originalRequest.url && (originalRequest.url.includes('/api/v1/auth/refresh') || originalRequest.url.includes('/api/v1/auth/login'))) {
         localStorage.clear();
         // Chỉ reload trình duyệt về /login nếu refresh token bị hết hạn
-        if (originalRequest.url.includes('/api/auth/refresh')) {
+        if (originalRequest.url.includes('/api/v1/auth/refresh')) {
           window.location.href = '/login';
         }
         return Promise.reject(error);
@@ -75,7 +75,7 @@ axiosInstance.interceptors.response.use(
 
       try {
         const response = await axios.post(
-          (import.meta.env.VITE_API_BASE_URL ?? '') + '/api/auth/refresh',
+          (import.meta.env.VITE_API_BASE_URL ?? '') + '/api/v1/auth/refresh',
           { refreshToken }
         );
 

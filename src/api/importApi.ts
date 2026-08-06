@@ -63,7 +63,7 @@ export const importApi = {
     queryParams.set('confirmReplace', String(confirmReplace));
 
     const res = await handleAxiosCall<any>(() =>
-      axiosInstance.post(`/api/imports?${queryParams.toString()}`, formData, {
+      axiosInstance.post(`/api/v1/imports?${queryParams.toString()}`, formData, {
         headers: {
           'Content-Type': undefined,
         },
@@ -105,7 +105,7 @@ export const importApi = {
     }
 
     const res = await handleAxiosCall<any>(() =>
-      axiosInstance.get(`/api/imports?${query.toString()}`)
+      axiosInstance.get(`/api/v1/imports?${query.toString()}`)
     );
 
     const rawList = res?.data || [];
@@ -124,7 +124,7 @@ export const importApi = {
     }
 
     const res = await handleAxiosCall<any>(() =>
-      axiosInstance.get(`/api/imports/${batchId}`)
+      axiosInstance.get(`/api/v1/imports/${batchId}`)
     );
 
     const batchData = res?.data;
@@ -186,7 +186,7 @@ export const importApi = {
     }
 
     const res = await handleAxiosCall<any>(() =>
-      axiosInstance.get(`/api/imports/${params.batchId}/errors?${query.toString()}`)
+      axiosInstance.get(`/api/v1/imports/${params.batchId}/errors?${query.toString()}`)
     );
 
     const rawErrors = res?.data || [];
@@ -201,7 +201,7 @@ export const importApi = {
       return new Blob(["Mock file content"], { type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" });
     }
 
-    const response = await axiosInstance.get(`/api/imports/${batchId}/errors/export`, {
+    const response = await axiosInstance.get(`/api/v1/imports/${batchId}/errors/export`, {
       responseType: 'blob',
     });
     return response.data;
@@ -214,7 +214,7 @@ export const importApi = {
     }
     const queryString = query.toString() ? `?${query.toString()}` : '';
     const res = await handleAxiosCall<any>(() =>
-      axiosInstance.get(`/api/imports/${batchId}/orders${queryString}`)
+      axiosInstance.get(`/api/v1/imports/${batchId}/orders${queryString}`)
     );
     return res?.data || [];
   }

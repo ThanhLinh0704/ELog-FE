@@ -328,14 +328,14 @@ export function getApiErrorMessage(
 
 export async function getTripDraft(draftId: string | number): Promise<TripDraftDetail> {
   const response = await axiosInstance.get<ApiResponse<TripDraftDetail>>(
-    `/api/trip-drafts/${draftId}`
+    `/api/v1/trip-drafts/${draftId}`
   );
   return normalizeTripDraft(unwrapApiResponse(response.data));
 }
 
 export async function getTripDrafts(): Promise<TripDraftListItem[]> {
   const response = await axiosInstance.get<ApiResponse<TripDraftDetail[]> | TripDraftDetail[]>(
-    '/api/trip-drafts'
+    '/api/v1/trip-drafts'
   );
   const data = unwrapApiResponse(response.data);
   const listPayload = data as
@@ -359,7 +359,7 @@ export async function updateStopStatus(
 ): Promise<TripDraftStop> {
   const payload: StopUpdateRequestPayload = { isActive, overrideNote };
   const response = await axiosInstance.patch<ApiResponse<TripDraftStop>>(
-    `/api/trip-drafts/${draftId}/stops/${stopId}`,
+    `/api/v1/trip-drafts/${draftId}/stops/${stopId}`,
     payload
   );
   return normalizeStop(unwrapApiResponse(response.data));
@@ -371,7 +371,7 @@ export async function recalculateEta(
 ): Promise<Pick<TripDraftDetail, 'estimatedDistanceKm' | 'estimatedDurationMin' | 'stops'>> {
   const response = await axiosInstance.post<
     ApiResponse<Pick<TripDraftDetail, 'estimatedDistanceKm' | 'estimatedDurationMin' | 'stops'>>
-  >(`/api/trip-drafts/${draftId}/recalculate-eta`, payload);
+  >(`/api/v1/trip-drafts/${draftId}/recalculate-eta`, payload);
   const data = unwrapApiResponse(response.data);
   const normalized = normalizeTripDraft(data);
   return {
@@ -385,7 +385,7 @@ export async function recalculateEta(
 export const tripDraftApi = {
   async consolidate(deliveryDate: string): Promise<ConsolidateResponse> {
     const res = await handleAxiosCall<any>(() =>
-      axiosInstance.post('/api/trip-drafts/consolidate', { deliveryDate })
+      axiosInstance.post('/api/v1/trip-drafts/consolidate', { deliveryDate })
     );
     return res.data;
   },
@@ -402,7 +402,7 @@ export const tripDraftApi = {
     query.set('sort', 'route.code,asc');
 
     const res = await handleAxiosCall<any>(() =>
-      axiosInstance.get(`/api/trip-drafts?${query.toString()}`)
+      axiosInstance.get(`/api/v1/trip-drafts?${query.toString()}`)
     );
 
     return {
@@ -414,28 +414,28 @@ export const tripDraftApi = {
 
   async getTripDraftById(id: number): Promise<TripDraft> {
     const res = await handleAxiosCall<any>(() =>
-      axiosInstance.get(`/api/trip-drafts/${id}`)
+      axiosInstance.get(`/api/v1/trip-drafts/${id}`)
     );
     return res.data;
   },
 
   async getCapacityValidationResult(tripDraftId: number | string): Promise<CapacityValidationResult> {
     const res = await handleAxiosCall<any>(() =>
-      axiosInstance.get(`/api/trip-drafts/${tripDraftId}/validation-result`)
+      axiosInstance.get(`/api/v1/trip-drafts/${tripDraftId}/validation-result`)
     );
     return res.data;
   },
 
   async validateTripDraftCapacity(tripDraftId: number | string): Promise<CapacityValidationResult> {
     const res = await handleAxiosCall<any>(() =>
-      axiosInstance.post(`/api/trip-drafts/${tripDraftId}/validate-capacity`)
+      axiosInstance.post(`/api/v1/trip-drafts/${tripDraftId}/validate-capacity`)
     );
     return res.data;
   },
 
   async revertTripDraft(id: number | string): Promise<{ success: boolean; message: string }> {
     const res = await axiosInstance.post<{ success: boolean; message: string }>(
-      `/api/trip-drafts/${id}/revert`
+      `/api/v1/trip-drafts/${id}/revert`
     );
     return res.data;
   },
@@ -478,7 +478,7 @@ export async function getStopOrderItems(
   stopId: string | number
 ): Promise<StopOrderItem[]> {
   const response = await axiosInstance.get<ApiResponse<StopOrderItem[]>>(
-    `/api/trip-drafts/${draftId}/stops/${stopId}/order-items`
+    `/api/v1/trip-drafts/${draftId}/stops/${stopId}/order-items`
   );
   return unwrapApiResponse(response.data);
 }
@@ -487,7 +487,7 @@ export async function getExcludedOrders(
   draftId: string | number
 ): Promise<StopOrderItem[]> {
   const response = await axiosInstance.get<ApiResponse<StopOrderItem[]>>(
-    `/api/trip-drafts/${draftId}/excluded-orders`
+    `/api/v1/trip-drafts/${draftId}/excluded-orders`
   );
   return unwrapApiResponse(response.data);
 }
@@ -497,7 +497,7 @@ export async function adjustDepartureTime(
   newDepartureTime: string
 ): Promise<TripDraftDetail> {
   const response = await axiosInstance.post<ApiResponse<TripDraftDetail>>(
-    `/api/trip-drafts/${draftId}/adjust-departure-time`,
+    `/api/v1/trip-drafts/${draftId}/adjust-departure-time`,
     { newDepartureTime }
   );
   return normalizeTripDraft(unwrapApiResponse(response.data));
@@ -509,7 +509,7 @@ export async function settleDelay(
   reason: string
 ): Promise<{ success?: boolean; message?: string }> {
   const response = await axiosInstance.post<ApiResponse<void>>(
-    `/api/trip-drafts/${draftId}/orders/${orderId}/settle-delay`,
+    `/api/v1/trip-drafts/${draftId}/orders/${orderId}/settle-delay`,
     { reason: reason.trim() }
   );
   return {
@@ -523,7 +523,7 @@ export async function excludeOrder(
   orderId: number
 ): Promise<{ success?: boolean; message?: string }> {
   const response = await axiosInstance.post<ApiResponse<void>>(
-    `/api/trip-drafts/${draftId}/orders/${orderId}/exclude`
+    `/api/v1/trip-drafts/${draftId}/orders/${orderId}/exclude`
   );
   return {
     success: response.data?.success ?? true,
@@ -536,7 +536,7 @@ export async function reIncludeOrder(
   orderId: number
 ): Promise<{ success?: boolean; message?: string }> {
   const response = await axiosInstance.post<ApiResponse<void>>(
-    `/api/trip-drafts/${draftId}/orders/${orderId}/re-include`
+    `/api/v1/trip-drafts/${draftId}/orders/${orderId}/re-include`
   );
   return {
     success: response.data?.success ?? true,
@@ -553,14 +553,14 @@ export interface OptimalDepartureResponse {
 }
 
 /**
- * POST /api/trip-drafts/{id}/optimal-departure
+ * POST /api/v1/trip-drafts/{id}/optimal-departure
  * Smart Departure Adjustment: Returns suggested departure time to optimize store time windows.
  */
 export async function getOptimalDeparture(
   draftId: string | number
 ): Promise<OptimalDepartureResponse> {
   const response = await axiosInstance.post<ApiResponse<OptimalDepartureResponse>>(
-    `/api/trip-drafts/${draftId}/optimal-departure`
+    `/api/v1/trip-drafts/${draftId}/optimal-departure`
   );
   return unwrapApiResponse(response.data);
 }
@@ -568,7 +568,7 @@ export async function getOptimalDeparture(
 // ── Recommendations (SRS v2.5.0 / US-13) ─────────────────────────────────────
 
 /**
- * GET /api/trip-drafts/{id}/recommendations
+ * GET /api/v1/trip-drafts/{id}/recommendations
  * Returns top-3 vehicle recommendation options for a TripDraft.
  * planType: 'SINGLE_VEHICLE' | 'TWO_VEHICLE' (feasible) | 'NO_PLAN'
  */
@@ -576,7 +576,7 @@ export async function getRecommendations(
   draftId: string | number
 ): Promise<RecommendationResult> {
   const response = await axiosInstance.get<ApiResponse<RecommendationResult>>(
-    `/api/trip-drafts/${draftId}/recommendations`
+    `/api/v1/trip-drafts/${draftId}/recommendations`
   );
   return normalizeRecommendationResult(unwrapApiResponse(response.data));
 }
@@ -584,7 +584,7 @@ export async function getRecommendations(
 // ── Confirm TripDraft (SRS v2.5.0 / US-14) ───────────────────────────────────
 
 /**
- * POST /api/trip-drafts/{id}/confirm
+ * POST /api/v1/trip-drafts/{id}/confirm
  * Confirm a TripDraft plan. NO request body required.
  * Returns ConfirmResponse with status 'CONFIRMED'.
  */
@@ -592,7 +592,7 @@ export async function confirmTripDraft(
   draftId: string | number
 ): Promise<ConfirmResponse> {
   const response = await axiosInstance.post<ApiResponse<ConfirmResponse>>(
-    `/api/trip-drafts/${draftId}/confirm`
+    `/api/v1/trip-drafts/${draftId}/confirm`
   );
   return unwrapApiResponse(response.data);
 }

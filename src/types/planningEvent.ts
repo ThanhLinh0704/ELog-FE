@@ -1,5 +1,5 @@
-// Mirrors Backend DTO: PlanningEventResponse (PlanningHistoryController — /api/planning-events,
-// /api/trip-drafts/{id}/history). Exact match with Backend DTOs — do NOT add fields not in the DTO.
+// Mirrors Backend DTO: PlanningEventResponse (PlanningHistoryController — /api/v1/planning-events,
+// /api/v1/trip-drafts/{id}/history). Exact match with Backend DTOs — do NOT add fields not in the DTO.
 
 export type PlanningEventType =
   | 'TRIP_DRAFT_CREATED'

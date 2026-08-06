@@ -49,7 +49,7 @@ export async function getDrivers(params: {
   size?: number;
 } = {}): Promise<DriverPage> {
   try {
-    const response = await axiosInstance.get<ApiResponse<Driver[]>>('/api/drivers', { params });
+    const response = await axiosInstance.get<ApiResponse<Driver[]>>('/api/v1/drivers', { params });
     return {
       items: unwrap(response.data) ?? [],
       pagination: response.data.pagination ?? DEFAULT_PAGINATION,
@@ -61,7 +61,7 @@ export async function getDrivers(params: {
 
 export async function getDriverById(id: number | string): Promise<Driver> {
   try {
-    const response = await axiosInstance.get<ApiResponse<Driver>>(`/api/drivers/${id}`);
+    const response = await axiosInstance.get<ApiResponse<Driver>>(`/api/v1/drivers/${id}`);
     return unwrap(response.data);
   } catch (error) {
     throw new Error(toErrorMessage(error, 'Không tải được thông tin tài xế.'), { cause: error });
@@ -73,7 +73,7 @@ export async function updateDriverStatus(
   payload: DriverStatusUpdatePayload
 ): Promise<Driver> {
   try {
-    const response = await axiosInstance.patch<ApiResponse<Driver>>(`/api/drivers/${id}/status`, payload);
+    const response = await axiosInstance.patch<ApiResponse<Driver>>(`/api/v1/drivers/${id}/status`, payload);
     return unwrap(response.data);
   } catch (error) {
     throw new Error(toErrorMessage(error, 'Không cập nhật được trạng thái tài xế.'), { cause: error });
@@ -86,7 +86,7 @@ export async function getDriverStatusHistory(
 ): Promise<DriverStatusHistoryPage> {
   try {
     const response = await axiosInstance.get<ApiResponse<DriverStatusHistoryEntry[]>>(
-      `/api/drivers/${id}/status-history`,
+      `/api/v1/drivers/${id}/status-history`,
       { params }
     );
     return {

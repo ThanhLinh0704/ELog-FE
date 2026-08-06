@@ -114,7 +114,7 @@ const DriverMyTripsPage: React.FC = () => {
         setTrip(data);
         return;
       }
-      // Backend's GET /api/driver/trips/active only matches ASSIGNED/IN_PROGRESS
+      // Backend's GET /api/v1/driver/trips/active only matches ASSIGNED/IN_PROGRESS
       // executions, so a trip that was just completed but not yet confirmed back
       // at the warehouse will never come back from this call. Keep it locally so
       // the driver can still reach "Xác nhận xe đã về kho".

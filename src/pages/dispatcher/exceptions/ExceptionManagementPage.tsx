@@ -64,10 +64,13 @@ const EXCEPTION_TYPE_LABELS: Record<string, string> = {
 const REJECTION_TYPE_LABELS: Record<string, string> = {
   STORE_CLOSED: 'Cửa hàng đóng cửa',
   STORE_REFUSED: 'Cửa hàng từ chối nhận',
+  STORE_REJECTED: 'Cửa hàng từ chối nhận',
   WRONG_ITEMS: 'Hàng không đúng đơn',
   DAMAGED_GOODS: 'Hàng bị hư hỏng',
   NO_SPACE: 'Không có chỗ chứa hàng',
+  RECIPIENT_ABSENT: 'Người nhận vắng mặt',
   OTHER: 'Lý do khác',
+  DELIVERY_FAILED_OTHER: 'Lý do khác',
 };
 
 function formatDateTime(isoStr: string | null | undefined): string {

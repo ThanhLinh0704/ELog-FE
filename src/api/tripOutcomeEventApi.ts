@@ -1,7 +1,7 @@
-// API cho ELOG-141 (audit trail chỉ-đọc, /api/trip-outcome-events, /api/trips/{id}/outcome-history).
-// KHÁC với tripOutcomeApi.ts (feature validate/amend outcome cũ, /api/trip-outcomes).
+// API cho ELOG-141 (audit trail chỉ-đọc, /api/v1/trip-outcome-events, /api/v1/trips/{id}/outcome-history).
+// KHÁC với tripOutcomeApi.ts (feature validate/amend outcome cũ, /api/v1/trip-outcomes).
 import axiosInstance from './axiosInstance';
-import type { TripOutcomeEvent } from '../types/tripOutcomeEvent';
+import type { TripOutcomeEvent, TripOutcomeEventType } from '../types/tripOutcomeEvent';
 
 interface ApiPagination {
   page: number;
@@ -35,9 +35,38 @@ export async function getTripOutcomeHistory(
 ): Promise<TripOutcomeEventPage> {
   try {
     const response = await axiosInstance.get<ApiResponse<TripOutcomeEvent[]>>(
-      `/api/trips/${tripId}/outcome-history`,
+      `/api/v1/trips/${tripId}/outcome-history`,
       { params }
     );
+    return {
+      items: response.data.data ?? [],
+      pagination: response.data.pagination ?? DEFAULT_PAGINATION,
+    };
+  } catch (error) {
+    throw new Error(toErrorMessage(error, 'Không tải được lịch sử thực thi chuyến giao hàng.'), { cause: error });
+  }
+}
+
+export interface TripOutcomeEventSearchFilters {
+  tripId?: number;
+  driverUsername?: string;
+  routeCode?: string;
+  deliveryDate?: string;
+  storeCode?: string;
+  deliveryResult?: string;
+  eventType?: TripOutcomeEventType;
+  fromDate?: string;
+  toDate?: string;
+}
+
+export async function searchTripOutcomeEvents(
+  filters: TripOutcomeEventSearchFilters = {},
+  params: { page?: number; size?: number } = {}
+): Promise<TripOutcomeEventPage> {
+  try {
+    const response = await axiosInstance.get<ApiResponse<TripOutcomeEvent[]>>('/api/v1/trip-outcome-events', {
+      params: { ...filters, ...params },
+    });
     return {
       items: response.data.data ?? [],
       pagination: response.data.pagination ?? DEFAULT_PAGINATION,

@@ -271,7 +271,7 @@ export const storeApi = {
     });
 
     const data = await handleAxiosCall<any>(() =>
-      axiosInstance.get(`/api/stores?${query}`)
+      axiosInstance.get(`/api/v1/stores?${query}`)
     );
 
     return normalizeStorePage(data, page, size);
@@ -283,7 +283,7 @@ export const storeApi = {
     }
 
     const data = await handleAxiosCall<any>(() =>
-      axiosInstance.get(`/api/stores/${id}`)
+      axiosInstance.get(`/api/v1/stores/${id}`)
     );
 
     return normalizeStore(data?.data ?? data);
@@ -296,7 +296,7 @@ export const storeApi = {
 
     const data = await handleAxiosCall<any>(() =>
       axiosInstance.post(
-        '/api/stores',
+        '/api/v1/stores',
         cleanPayload({
           storeCode: payload.storeCode?.trim().toUpperCase(),
           storeName: payload.storeName?.trim(),
@@ -325,7 +325,7 @@ export const storeApi = {
 
     const data = await handleAxiosCall<any>(() =>
       axiosInstance.put(
-        `/api/stores/${id}`,
+        `/api/v1/stores/${id}`,
         cleanPayload({
           storeName: payload.storeName?.trim(),
           provinceCode: payload.provinceCode,
@@ -352,7 +352,7 @@ export const storeApi = {
     }
 
     const data = await handleAxiosCall<any>(() =>
-      axiosInstance.patch(`/api/stores/${id}/status`, {
+      axiosInstance.patch(`/api/v1/stores/${id}/status`, {
         isActive,
       })
     );

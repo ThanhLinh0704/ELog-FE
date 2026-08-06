@@ -102,7 +102,7 @@ export const productApi = {
     const query = encodeQuery(queryParams);
 
     const data = await handleAxiosCall<any>(() =>
-      axiosInstance.get(`/api/products?${query}`)
+      axiosInstance.get(`/api/v1/products?${query}`)
     );
     return normalizeProductPage(data, page, size);
   },
@@ -113,7 +113,7 @@ export const productApi = {
     }
 
     const data = await handleAxiosCall<any>(() =>
-      axiosInstance.get(`/api/products/${id}`)
+      axiosInstance.get(`/api/v1/products/${id}`)
     );
     return normalizeProduct(data?.data ?? data);
   },
@@ -126,7 +126,7 @@ export const productApi = {
     try {
       const requestBody = buildProductCreateRequest(payload);
       const data = await handleAxiosCall<any>(() =>
-        axiosInstance.post('/api/products', requestBody)
+        axiosInstance.post('/api/v1/products', requestBody)
       );
       return normalizeProduct(data?.data ?? data);
     } catch (error: any) {
@@ -162,7 +162,7 @@ export const productApi = {
     };
 
     const data = await handleAxiosCall<any>(() =>
-      axiosInstance.put(`/api/products/${id}`, requestBody)
+      axiosInstance.put(`/api/v1/products/${id}`, requestBody)
     );
     return normalizeProduct(data?.data ?? data);
   },
@@ -174,7 +174,7 @@ export const productApi = {
 
     const isActive = status === 'ACTIVE';
     const data = await handleAxiosCall<any>(() =>
-      axiosInstance.patch(`/api/products/${id}/status`, { isActive })
+      axiosInstance.patch(`/api/v1/products/${id}/status`, { isActive })
     );
     return normalizeProduct(data?.data ?? data);
   },

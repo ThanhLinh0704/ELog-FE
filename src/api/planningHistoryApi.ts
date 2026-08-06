@@ -1,5 +1,5 @@
 import axiosInstance from './axiosInstance';
-import type { PlanningEvent } from '../types/planningEvent';
+import type { PlanningEvent, PlanningEventType } from '../types/planningEvent';
 
 interface ApiPagination {
   page: number;
@@ -33,7 +33,7 @@ export async function getTripDraftPlanningHistory(
 ): Promise<PlanningEventPage> {
   try {
     const response = await axiosInstance.get<ApiResponse<PlanningEvent[]>>(
-      `/api/trip-drafts/${tripDraftId}/history`,
+      `/api/v1/trip-drafts/${tripDraftId}/history`,
       { params }
     );
     return {
@@ -42,5 +42,34 @@ export async function getTripDraftPlanningHistory(
     };
   } catch (error) {
     throw new Error(toErrorMessage(error, 'Không tải được lịch sử lập kế hoạch.'), { cause: error });
+  }
+}
+
+export interface PlanningEventSearchFilters {
+  tripDraftId?: number;
+  tripId?: number;
+  routeCode?: string;
+  deliveryDate?: string;
+  eventType?: PlanningEventType;
+  actorUsername?: string;
+  fromDate?: string;
+  toDate?: string;
+  status?: string;
+}
+
+export async function searchPlanningEvents(
+  filters: PlanningEventSearchFilters = {},
+  params: { page?: number; size?: number } = {}
+): Promise<PlanningEventPage> {
+  try {
+    const response = await axiosInstance.get<ApiResponse<PlanningEvent[]>>('/api/v1/planning-events', {
+      params: { ...filters, ...params },
+    });
+    return {
+      items: response.data.data ?? [],
+      pagination: response.data.pagination ?? DEFAULT_PAGINATION,
+    };
+  } catch (error) {
+    throw new Error(toErrorMessage(error, 'Không tải được nhật ký điều phối.'), { cause: error });
   }
 }

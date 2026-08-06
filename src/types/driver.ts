@@ -1,5 +1,5 @@
 // Mirrors Backend DTOs: DriverResponse, DriverStatusHistoryResponse, ActiveTripWarningResponse
-// (DriverStatusController — /api/drivers/*). Exact match with Backend DTOs — do NOT add fields not in the DTO.
+// (DriverStatusController — /api/v1/drivers/*). Exact match with Backend DTOs — do NOT add fields not in the DTO.
 
 export type DriverStatus = 'ACTIVE' | 'INACTIVE';
 

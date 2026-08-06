@@ -1,6 +1,6 @@
 // Mirrors Backend DTO: TripOutcomeEventResponse (TripOutcomeHistoryController —
-// /api/trip-outcome-events, /api/trips/{id}/outcome-history). Exact match with Backend DTOs.
-// KHÁC với tripOutcome.ts (mirrors TripOutcomeResponse / /api/trip-outcomes — feature validate/amend
+// /api/v1/trip-outcome-events, /api/v1/trips/{id}/outcome-history). Exact match with Backend DTOs.
+// KHÁC với tripOutcome.ts (mirrors TripOutcomeResponse / /api/v1/trip-outcomes — feature validate/amend
 // cũ, khác hoàn toàn với audit trail chỉ-đọc này).
 
 export type TripOutcomeEventType =

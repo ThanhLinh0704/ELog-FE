@@ -285,7 +285,7 @@ export const vehicleApi = {
     });
 
     const data = await handleAxiosCall<any>(() =>
-      axiosInstance.get(`/api/vehicles?${query}`)
+      axiosInstance.get(`/api/v1/vehicles?${query}`)
     );
 
     return normalizeVehiclePage(data, page, size);
@@ -297,7 +297,7 @@ export const vehicleApi = {
     }
 
     const data = await handleAxiosCall<any>(() =>
-      axiosInstance.get(`/api/vehicles/${id}`)
+      axiosInstance.get(`/api/v1/vehicles/${id}`)
     );
 
     return normalizeVehicle(data?.data ?? data);
@@ -309,7 +309,7 @@ export const vehicleApi = {
     }
 
     const data = await handleAxiosCall<any>(() =>
-      axiosInstance.get('/api/vehicles/fleet-capacity')
+      axiosInstance.get('/api/v1/vehicles/fleet-capacity')
     );
 
     return normalizeFleetCapacity(data);
@@ -322,7 +322,7 @@ export const vehicleApi = {
 
     const data = await handleAxiosCall<any>(() =>
       axiosInstance.post(
-        '/api/vehicles',
+        '/api/v1/vehicles',
         cleanPayload({
           vehicleCode: payload.vehicleCode?.trim(),
           plateNumber: payload.plateNumber?.trim().toUpperCase(),
@@ -356,7 +356,7 @@ export const vehicleApi = {
 
     const data = await handleAxiosCall<any>(() =>
       axiosInstance.put(
-        `/api/vehicles/${id}`,
+        `/api/v1/vehicles/${id}`,
         cleanPayload({
           vehicleType: payload.vehicleType?.trim(),
           vehicleClass: payload.vehicleClass?.trim() || null,
@@ -387,7 +387,7 @@ export const vehicleApi = {
     }
 
     const data = await handleAxiosCall<any>(() =>
-      axiosInstance.patch(`/api/vehicles/${id}/status`, {
+      axiosInstance.patch(`/api/v1/vehicles/${id}/status`, {
         isActive,
       })
     );
@@ -401,7 +401,7 @@ export const vehicleApi = {
     const query = encodeQuery(params);
 
     const data = await handleAxiosCall<any>(() =>
-      axiosInstance.get(`/api/vehicles/available${query ? `?${query}` : ''}`)
+      axiosInstance.get(`/api/v1/vehicles/available${query ? `?${query}` : ''}`)
     );
 
     const payload = data?.data ?? data;

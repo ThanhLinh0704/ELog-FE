@@ -31,17 +31,17 @@ function unwrapData<T>(response: ApiEnvelope<T> | T): T {
 }
 
 export async function getRoles(): Promise<RoleItem[]> {
-  const response = await axiosInstance.get<ApiEnvelope<RoleItem[]>>('/api/roles');
+  const response = await axiosInstance.get<ApiEnvelope<RoleItem[]>>('/api/v1/roles');
   return unwrapData(response.data);
 }
 
 export async function getRoleById(id: number | string): Promise<RoleItem> {
-  const response = await axiosInstance.get<ApiEnvelope<RoleItem>>(`/api/roles/${id}`);
+  const response = await axiosInstance.get<ApiEnvelope<RoleItem>>(`/api/v1/roles/${id}`);
   return unwrapData(response.data);
 }
 
 export async function getPermissions(): Promise<PermissionItem[]> {
-  const response = await axiosInstance.get<ApiEnvelope<PermissionItem[]>>('/api/permissions');
+  const response = await axiosInstance.get<ApiEnvelope<PermissionItem[]>>('/api/v1/permissions');
   return unwrapData(response.data);
 }
 
@@ -50,7 +50,7 @@ export async function updateRolePermissions(
   payload: UpdateRolePermissionsPayload
 ): Promise<RoleItem> {
   const response = await axiosInstance.put<ApiEnvelope<RoleItem>>(
-    `/api/roles/${id}/permissions`,
+    `/api/v1/roles/${id}/permissions`,
     payload
   );
   return unwrapData(response.data);
