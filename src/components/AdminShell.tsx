@@ -269,7 +269,7 @@ const AdminShell: React.FC<AdminShellProps> = ({ currentUser, children }) => {
           <div onClick={() => navigate('/dashboard')} className="elog-sidebar-logo">
             <div className="elog-logo-badge">E</div>
             <div style={{ lineHeight: 1.2 }}>
-              <h1 style={{ margin: 0, fontSize: 15, fontWeight: 700, color: '#ffffff' }}>
+              <h1 style={{ margin: 0, fontSize: 15, fontWeight: 700, color: '#ffffff', letterSpacing: 0.4 }}>
                 ELog Quản trị
               </h1>
               <p style={{ margin: 0, fontSize: 10, color: '#64748b', fontWeight: 500 }}>

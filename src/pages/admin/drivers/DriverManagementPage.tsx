@@ -1,4 +1,5 @@
 import React, { useEffect, useMemo, useState } from 'react';
+import dayjs from 'dayjs';
 import {
   Table, Card, Row, Col, Space, Button, Input, Select, Breadcrumb,
   Statistic, Tag, Badge, message, Alert, Tooltip, Typography,
@@ -9,6 +10,8 @@ import { usePermissions } from '../../../hooks/usePermissions';
 import { PERMISSIONS } from '../../../constants/permissions';
 import AdminShell from '../../../components/AdminShell';
 import { getDrivers, updateDriverStatus, type DriverStatusUpdatePayload } from '../../../api/driverApi';
+import { getAvailableDrivers } from '../../../api/tripApi';
+import type { AvailableDriver } from '../../../types/trip';
 import {
   DRIVER_STATUS_LABEL,
   REASON_CODE_LABEL,
@@ -37,6 +40,9 @@ const DriverManagementPage: React.FC = () => {
   const [drivers, setDrivers] = useState<Driver[]>([]);
   const [keyword, setKeyword] = useState('');
   const [status, setStatus] = useState<DriverStatus | ''>('');
+  // "Đang rảnh/bận" không phải cột do BE phân trang (đến từ API /drivers/available riêng),
+  // nên khi lọc theo cột này ta phải kéo toàn bộ danh sách khớp keyword/status rồi tự phân trang ở FE.
+  const [availabilityFilter, setAvailabilityFilter] = useState<'' | 'AVAILABLE' | 'BUSY'>('');
   const [page, setPage] = useState(0);
   const [size, setSize] = useState(10);
   const [pageMeta, setPageMeta] = useState({ totalElements: 0, totalPages: 1 });
@@ -47,11 +53,20 @@ const DriverManagementPage: React.FC = () => {
   const [statusUpdating, setStatusUpdating] = useState(false);
   const [historyDriver, setHistoryDriver] = useState<Driver | null>(null);
 
+  // Đang chạy/bận/rảnh hôm nay — tách biệt với "Trạng thái" (khóa/mở tài khoản).
+  // Dùng lại đúng logic busy đã có ở màn phân công chuyến (Trip.status DISPATCHED/IN_PROGRESS
+  // hôm nay, hoặc còn xe chưa xác nhận về kho từ chuyến trước).
+  const [availability, setAvailability] = useState<Record<number, AvailableDriver>>({});
+  const [availabilityLoading, setAvailabilityLoading] = useState(true);
+
   const debouncedKeyword = useDebounce(keyword, 350);
 
   const queryParams = useMemo(
-    () => ({ keyword: debouncedKeyword || undefined, status: status || undefined, page, size }),
-    [debouncedKeyword, status, page, size]
+    () =>
+      availabilityFilter
+        ? { keyword: debouncedKeyword || undefined, status: status || undefined, page: 0, size: 1000 }
+        : { keyword: debouncedKeyword || undefined, status: status || undefined, page, size },
+    [debouncedKeyword, status, page, size, availabilityFilter]
   );
 
   async function fetchDrivers(params = queryParams) {
@@ -73,10 +88,51 @@ const DriverManagementPage: React.FC = () => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [queryParams]);
 
+  async function fetchAvailability() {
+    setAvailabilityLoading(true);
+    try {
+      const today = dayjs().format('YYYY-MM-DD');
+      const result = await getAvailableDrivers(today);
+      const map: Record<number, AvailableDriver> = {};
+      result.forEach((d) => {
+        map[d.userId] = d;
+      });
+      setAvailability(map);
+    } catch {
+      // Không chặn hiển thị danh sách tài xế nếu API này lỗi — cột sẽ hiện "—".
+      setAvailability({});
+    } finally {
+      setAvailabilityLoading(false);
+    }
+  }
+
+  useEffect(() => {
+    fetchAvailability();
+  }, []);
+
   function resetToFirstPage<T>(setter: (val: T) => void, value: T) {
     setter(value);
     setPage(0);
   }
+
+  const filteredDrivers = useMemo(() => {
+    if (!availabilityFilter) return drivers;
+    return drivers.filter((d) => {
+      const avail = availability[d.id];
+      if (!avail) return false;
+      return availabilityFilter === 'AVAILABLE' ? avail.available : !avail.available;
+    });
+  }, [drivers, availability, availabilityFilter]);
+
+  const displayedDrivers = useMemo(() => {
+    if (!availabilityFilter) return filteredDrivers;
+    return filteredDrivers.slice(page * size, page * size + size);
+  }, [filteredDrivers, availabilityFilter, page, size]);
+
+  const displayTotal = availabilityFilter ? filteredDrivers.length : pageMeta.totalElements;
+  const displayTotalPages = availabilityFilter
+    ? Math.max(1, Math.ceil(displayTotal / size))
+    : pageMeta.totalPages;
 
   async function handleConfirmStatusChange(payload: DriverStatusUpdatePayload) {
     if (!statusModalDriver) return;
@@ -134,6 +190,24 @@ const DriverManagementPage: React.FC = () => {
           );
         }
         return badge;
+      },
+    },
+    {
+      title: 'Đang chạy hôm nay',
+      key: 'availability',
+      render: (_: unknown, record: Driver) => {
+        if (record.driverStatus === 'INACTIVE') {
+          return <Text type="secondary">—</Text>;
+        }
+        const avail = availability[record.id];
+        if (!avail) {
+          return availabilityLoading ? <Text type="secondary">Đang tải...</Text> : <Text type="secondary">—</Text>;
+        }
+        if (avail.available) {
+          return <Tag color="success">Đang rảnh</Tag>;
+        }
+        const badge = <Tag color="error">Đang bận</Tag>;
+        return avail.busyReason ? <Tooltip title={avail.busyReason}>{badge}</Tooltip> : badge;
       },
     },
     {
@@ -200,12 +274,12 @@ const DriverManagementPage: React.FC = () => {
         <Row gutter={[16, 16]}>
           <Col xs={24} sm={8}>
             <Card size="small" bordered={false} style={{ boxShadow: '0 1px 2px 0 rgba(0, 0, 0, 0.03)' }}>
-              <Statistic title="Tổng kết quả" value={pageMeta.totalElements} suffix="tài xế" />
+              <Statistic title="Tổng kết quả" value={displayTotal} suffix="tài xế" />
             </Card>
           </Col>
           <Col xs={24} sm={8}>
             <Card size="small" bordered={false} style={{ boxShadow: '0 1px 2px 0 rgba(0, 0, 0, 0.03)' }}>
-              <Statistic title="Trang hiện tại" value={page + 1} suffix={`/ ${pageMeta.totalPages} trang`} />
+              <Statistic title="Trang hiện tại" value={page + 1} suffix={`/ ${displayTotalPages} trang`} />
             </Card>
           </Col>
           <Col xs={24} sm={8}>
@@ -237,9 +311,29 @@ const DriverManagementPage: React.FC = () => {
                   { value: 'INACTIVE', label: 'Ngừng hoạt động' },
                 ]}
               />
+              <Select
+                placeholder="Tất cả (rảnh/bận)"
+                value={availabilityFilter || undefined}
+                onChange={(val) =>
+                  resetToFirstPage(setAvailabilityFilter, (val || '') as '' | 'AVAILABLE' | 'BUSY')
+                }
+                style={{ width: 180 }}
+                allowClear
+                loading={availabilityLoading}
+                options={[
+                  { value: 'AVAILABLE', label: 'Đang rảnh' },
+                  { value: 'BUSY', label: 'Đang bận' },
+                ]}
+              />
             </Space>
 
-            <Button icon={<RefreshCw size={14} />} onClick={() => fetchDrivers()}>
+            <Button
+              icon={<RefreshCw size={14} />}
+              onClick={() => {
+                fetchDrivers();
+                fetchAvailability();
+              }}
+            >
               Tải lại
             </Button>
           </div>
@@ -248,15 +342,15 @@ const DriverManagementPage: React.FC = () => {
 
           <Table
             columns={columns}
-            dataSource={drivers}
+            dataSource={displayedDrivers}
             rowKey="id"
-            loading={loading}
+            loading={loading || (availabilityFilter ? availabilityLoading : false)}
             pagination={{
               current: page + 1,
               pageSize: size,
-              total: pageMeta.totalElements,
+              total: displayTotal,
               showSizeChanger: true,
-              pageSizeOptions: ['10', '20', '50'],
+              pageSizeOptions: ['5', '10', '20', '50'],
               onChange: (p, s) => {
                 setPage(p - 1);
                 if (s) setSize(s);

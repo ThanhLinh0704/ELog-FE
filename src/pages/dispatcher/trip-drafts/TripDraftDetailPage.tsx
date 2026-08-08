@@ -195,8 +195,14 @@ const TripDraftDetailPage: React.FC = () => {
   const getAssignUrlWithVehicle = () => {
     let assignUrl = `/dispatcher/trip-drafts/${draft?.id}/assign`;
     const selIdx = selectedRecIdx ?? 0;
-    const recommendedVehicle = recResult?.recommendations?.[selIdx]?.vehicles?.[0];
-    if (recommendedVehicle?.vehicleId) {
+    const selectedRec = recResult?.recommendations?.[selIdx];
+    const recommendedVehicle = selectedRec?.vehicles?.[0];
+    // TWO_VEHICLE plans carry their vehicle/stop split via navigation state instead
+    // (see getAssignNavigationState) — VehicleAssignmentPage's eligible-vehicles list
+    // is computed against the WHOLE route's load, so it can never show either vehicle
+    // of a plan that only works because it's split in two. Only forward query params
+    // for the SINGLE_VEHICLE case, which the assign page's single-mode picker can use.
+    if (selectedRec?.planType !== 'TWO_VEHICLE' && recommendedVehicle?.vehicleId) {
       const params = new URLSearchParams();
       params.set('vehicleId', String(recommendedVehicle.vehicleId));
       // Carry over the recommended driver pairing (may be a temporary driver,
@@ -208,6 +214,19 @@ const TripDraftDetailPage: React.FC = () => {
       assignUrl += `?${params.toString()}`;
     }
     return assignUrl;
+  };
+
+  // TWO_VEHICLE recommendations already contain a fully valid vehicle+driver+stop
+  // split (subTrips) computed server-side — hand the whole thing to the assign page
+  // via router state so it can prefill split mode instead of re-deriving eligibility
+  // from a per-vehicle-vs-whole-route check that can never pass for a split plan.
+  const getAssignNavigationState = (): { tripDraftId: number; recommendation: VehicleRecommendation } | undefined => {
+    const selIdx = selectedRecIdx ?? 0;
+    const selectedRec = recResult?.recommendations?.[selIdx];
+    if (!draft?.id || selectedRec?.planType !== 'TWO_VEHICLE' || !selectedRec.subTrips?.length) {
+      return undefined;
+    }
+    return { tripDraftId: draft.id, recommendation: selectedRec };
   };
 
   // ── Confirm TripDraft handler (US-14) ─────────────────────────────────
@@ -223,7 +242,7 @@ const TripDraftDetailPage: React.FC = () => {
       } else {
         const assignUrl = getAssignUrlWithVehicle();
         message.info('Kế hoạch chuyến đã xác nhận. Đang chuyển sang màn hình Phân xe & tài xế...');
-        navigate(assignUrl);
+        navigate(assignUrl, { state: getAssignNavigationState() });
       }
     } catch (err: any) {
       console.error(err);
@@ -611,7 +630,7 @@ const TripDraftDetailPage: React.FC = () => {
               type="primary"
               icon={<CarOutlined />}
               style={{ borderRadius: 6, fontWeight: 600, background: '#52c41a', borderColor: '#52c41a' }}
-              onClick={() => navigate(getAssignUrlWithVehicle())}
+              onClick={() => navigate(getAssignUrlWithVehicle(), { state: getAssignNavigationState() })}
             >
               Phân xe & tài xế
             </Button>

@@ -315,7 +315,7 @@ const VehicleFormModal: React.FC<VehicleFormModalProps> = ({
                   { value: null, label: '— Không gán tài xế cố định —' },
                   ...drivers.map(d => ({
                     value: d.id,
-                    label: `${d.fullName || d.username} (${d.phone || 'N/A'}) - Bằng ${d.licenseClass || 'N/A'}`,
+                    label: `${d.fullName || d.username} (${d.phoneNumber || 'N/A'}) - Bằng ${d.licenseClass || 'N/A'}`,
                   })),
                 ]}
               />

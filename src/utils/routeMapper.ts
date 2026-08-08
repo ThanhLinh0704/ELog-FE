@@ -27,13 +27,13 @@ export function normalizeRouteStop(apiStop: any): RouteStop {
   return {
     id: String(apiStop.id),
     routeId: String(apiStop.routeId),
-    storeId: String(store.id || ''),
-    storeCode: store.storeCode || '',
-    storeName: store.storeName || '',
-    address: store.address || '',
-    latitude: store.latitude != null ? Number(store.latitude) : null,
-    longitude: store.longitude != null ? Number(store.longitude) : null,
-    hasCoordinates: store.hasCoordinates === true,
+    storeId: String(store.id || apiStop.storeId || ''),
+    storeCode: store.storeCode || store.code || apiStop.storeCode || '',
+    storeName: store.storeName || store.name || apiStop.storeName || '',
+    address: store.addressDetail || store.address || apiStop.address || '',
+    latitude: store.latitude != null ? Number(store.latitude) : apiStop.latitude != null ? Number(apiStop.latitude) : null,
+    longitude: store.longitude != null ? Number(store.longitude) : apiStop.longitude != null ? Number(apiStop.longitude) : null,
+    hasCoordinates: store.hasCoordinates === true || store.latitude != null,
     sequenceOrder: apiStop.sequenceOrder != null ? Number(apiStop.sequenceOrder) : Number(apiStop.sequenceNo || 1),
   };
 }
@@ -41,14 +41,14 @@ export function normalizeRouteStop(apiStop: any): RouteStop {
 export function normalizeStoreSearchResult(apiStore: any): StoreSearchResult {
   return {
     id: String(apiStore.id),
-    code: apiStore.storeCode || '',
-    name: apiStore.storeName || '',
-    address: apiStore.address || '',
+    code: apiStore.storeCode || apiStore.code || '',
+    name: apiStore.storeName || apiStore.name || '',
+    address: apiStore.addressDetail || apiStore.address || '',
     latitude: apiStore.latitude != null ? Number(apiStore.latitude) : null,
     longitude: apiStore.longitude != null ? Number(apiStore.longitude) : null,
-    hasCoordinates: apiStore.hasCoordinates === true,
+    hasCoordinates: apiStore.hasCoordinates === true || apiStore.latitude != null,
     isActive: apiStore.isActive === true,
-    routeId: apiStore.assignedRoute ? String(apiStore.assignedRoute.id) : null,
+    routeId: apiStore.assignedRoute ? String(apiStore.assignedRoute.id) : apiStore.routeId ? String(apiStore.routeId) : null,
   };
 }
 

@@ -12,7 +12,7 @@ import {
   deleteStopMock,
   getAvailableStoresMock
 } from '../mocks/routeService';
-import type { DeliveryRoute, RouteStop, StoreSearchResult, RouteStatus } from '../types/route';
+import type { DeliveryRoute, RouteDirections, RouteStop, StoreSearchResult, RouteStatus } from '../types/route';
 import {
   normalizeRoute,
   normalizeRouteStop,
@@ -249,5 +249,35 @@ export const routeApi = {
 
     const rawStores = Array.isArray(data?.data) ? data.data : [];
     return rawStores.map(normalizeStoreSearchResult);
+  },
+
+  async getRouteDirections(routeId: string): Promise<RouteDirections> {
+    if (USE_MOCK_API) {
+      return {
+        routeId,
+        routeCode: 'RT-MOCK',
+        routeName: 'Tuyến Mẫu',
+        routePolyline: null,
+        totalDistanceKm: null,
+        totalDurationMin: null,
+        warehouseLat: 21.032612,
+        warehouseLng: 105.868367,
+      };
+    }
+
+    const data = await handleAxiosCall<any>(() =>
+      axiosInstance.get(`/api/v1/routes/${routeId}/directions`)
+    );
+    const raw = data?.data ?? data;
+    return {
+      routeId: String(raw.routeId),
+      routeCode: raw.routeCode || '',
+      routeName: raw.routeName || '',
+      routePolyline: raw.routePolyline ?? null,
+      totalDistanceKm: raw.totalDistanceKm ?? null,
+      totalDurationMin: raw.totalDurationMin ?? null,
+      warehouseLat: Number(raw.warehouseLat),
+      warehouseLng: Number(raw.warehouseLng),
+    };
   },
 };

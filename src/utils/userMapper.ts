@@ -6,6 +6,8 @@ export interface User {
   roles: string[];
   isActive: boolean;
   createdAt: string;
+  phoneNumber?: string;
+  licenseClass?: string;
 }
 
 export interface UserPage {
@@ -25,6 +27,8 @@ export function normalizeUser(apiUser: any): User {
     roles: Array.isArray(apiUser.roles) ? apiUser.roles : [],
     isActive: typeof apiUser.isActive === 'boolean' ? apiUser.isActive : Boolean(apiUser.is_active),
     createdAt: apiUser.createdAt || apiUser.created_at || '',
+    phoneNumber: apiUser.phoneNumber || apiUser.phone_number || undefined,
+    licenseClass: apiUser.licenseClass || apiUser.license_class || undefined,
   };
 }
 

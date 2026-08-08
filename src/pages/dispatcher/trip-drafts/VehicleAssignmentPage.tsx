@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { useParams, useNavigate, useSearchParams } from 'react-router-dom';
+import { useParams, useNavigate, useSearchParams, useLocation } from 'react-router-dom';
 import {
   Card,
   Button,
@@ -39,7 +39,7 @@ import {
 } from '@ant-design/icons';
 import { Truck, Users, ShieldCheck, ShieldAlert } from 'lucide-react';
 import AdminShell from '../../../components/AdminShell';
-import { tripDraftApi } from '../../../api/tripDraftApi';
+import { tripDraftApi, type VehicleRecommendation } from '../../../api/tripDraftApi';
 import {
   getEligibleVehicles,
   getAvailableDrivers,
@@ -150,6 +150,15 @@ const VehicleAssignmentPage: React.FC = () => {
   const { id } = useParams<{ id: string }>();
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
+  const location = useLocation();
+  // Carried over from TripDraftDetailPage when the dispatcher picked a TWO_VEHICLE
+  // recommendation — getEligibleVehicles() checks each vehicle against the WHOLE
+  // route's load, so it can never list either vehicle of a plan that only works
+  // split in two. Prefilling split mode straight from the already-validated plan
+  // sidesteps that instead of re-deriving eligibility per sub-trip client-side.
+  const incomingRecState = location.state as { tripDraftId?: number; recommendation?: VehicleRecommendation } | null;
+  const incomingRecommendation =
+    incomingRecState?.tripDraftId === Number(id) ? incomingRecState.recommendation : undefined;
   const currentUser = getCurrentUser();
   const { can } = usePermissions();
   const canCoordinateTrip = can(PERMISSIONS.TRIP_COORDINATE);
@@ -220,6 +229,24 @@ const VehicleAssignmentPage: React.FC = () => {
         const paramDriverId = searchParams.get('driverId');
         if (paramDriverId && driverData.some(d => d.userId === Number(paramDriverId))) {
           setSelectedDriverId(Number(paramDriverId));
+        }
+
+        if (incomingRecommendation?.subTrips?.length) {
+          const activeDraftStops = (draftData.stops ?? [])
+            .filter((s) => s.isActive)
+            .sort((a, b) => a.sequenceNo - b.sequenceNo);
+
+          const prefilledGroups: SplitGroup[] = incomingRecommendation.subTrips.map((sub, idx) => ({
+            groupId: `rec-${idx}`,
+            vehicleId: sub.vehicleId,
+            driverId: incomingRecommendation.vehicles.find((v) => v.vehicleId === sub.vehicleId)?.driverId ?? null,
+            stopIds: sub.stopSequenceNos
+              .map((seq) => activeDraftStops.find((s) => s.sequenceNo === seq)?.tripDraftStopId)
+              .filter((stopId): stopId is number => stopId != null),
+          }));
+
+          setSplitGroups(prefilledGroups);
+          setMode('split');
         }
       } else if (tripsData.length === 0 && draftData.status !== 'VALIDATED') {
         // Draft not ready for assignment — load fleet check anyway
@@ -422,6 +449,28 @@ const VehicleAssignmentPage: React.FC = () => {
 
   const usedDriverIds = new Set(splitGroups.map((g) => g.driverId).filter(Boolean));
   const usedVehicleIds = new Set(splitGroups.map((g) => g.vehicleId).filter(Boolean));
+
+  // Split mode's vehicle picker needs to show the two vehicles a prefilled
+  // TWO_VEHICLE recommendation selected — they fail the whole-route eligibility
+  // check by definition (that's why the plan is split in two), so they never
+  // appear in `eligibleVehicles`. Add them in without touching the general
+  // (still whole-route-based) eligibility list used elsewhere on this page.
+  const splitPickerVehicles: EligibleVehicle[] = incomingRecommendation
+    ? [
+        ...eligibleVehicles,
+        ...incomingRecommendation.vehicles
+          .filter((rv) => !eligibleVehicles.some((v) => v.vehicleId === rv.vehicleId))
+          .map((rv) => ({
+            vehicleId: rv.vehicleId,
+            plateNumber: rv.plateNumber,
+            vehicleType: rv.vehicleType,
+            maxVolumeM3: rv.maxVolumeM3,
+            payloadKg: rv.payloadKg,
+            remainingVolumeM3: 0,
+            remainingWeightKg: 0,
+          })),
+      ]
+    : eligibleVehicles;
 
   return (
     <AdminShell currentUser={currentUser}>
@@ -1137,7 +1186,7 @@ const VehicleAssignmentPage: React.FC = () => {
                         <Col xs={24} sm={12}>
                           <Text type="secondary" style={{ fontSize: 12, display: 'block', marginBottom: 4 }}>Chọn xe</Text>
                           <div style={{ display: 'flex', flexDirection: 'column', gap: 4, maxHeight: 200, overflowY: 'auto' }}>
-                            {eligibleVehicles.map((v) => {
+                            {splitPickerVehicles.map((v) => {
                               const takenByOther = usedVehicleIds.has(v.vehicleId) && group.vehicleId !== v.vehicleId;
                               return (
                                 <div
