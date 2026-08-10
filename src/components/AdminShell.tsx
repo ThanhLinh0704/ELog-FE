@@ -145,6 +145,14 @@ const AdminShell: React.FC<AdminShellProps> = ({ currentUser, children }) => {
           label: 'Tổng quan',
           onClick: () => navigate('/dashboard'),
         },
+        can(PERMISSIONS.ROLE_READ)
+          ? {
+              key: '/roles',
+              icon: <Settings size={ICON_SIZE} />,
+              label: 'Phân quyền',
+              onClick: () => navigate('/roles'),
+            }
+          : null,
         can(PERMISSIONS.USER_READ)
           ? {
               key: '/users',
@@ -210,14 +218,6 @@ const AdminShell: React.FC<AdminShellProps> = ({ currentUser, children }) => {
             }
           : null,
 
-        can(PERMISSIONS.ROLE_READ)
-          ? {
-              key: '/roles',
-              icon: <Settings size={ICON_SIZE} />,
-              label: 'Phân quyền',
-              onClick: () => navigate('/roles'),
-            }
-          : null,
         canViewMonitoring
           ? {
               key: '/dispatcher/monitoring',

@@ -16,6 +16,10 @@ export interface EligibleVehicle {
   payloadKg: number;
   remainingVolumeM3: number;
   remainingWeightKg: number;
+  assignedDriverId?: number | null;
+  assignedDriverName?: string | null;
+  assignedDriverAvailable?: boolean | null;
+  assignedDriverBusyReason?: string | null;
 }
 
 // Backend: IneligibleVehicleDto
@@ -140,10 +144,11 @@ export interface TripAssignRequest {
   driverId?: number | null;
 }
 
-// Backend: TripSplitAssignRequest.SplitAssignment
+// Backend: TripSplitAssignRequest.SplitAssignment — driverId is nullable server-side
+// (no @NotNull): omitting it makes the backend auto-assign the vehicle's fixed driver.
 export interface SplitAssignment {
   vehicleId: number;
-  driverId: number;
+  driverId?: number | null;
   stopIds: number[];
 }
 

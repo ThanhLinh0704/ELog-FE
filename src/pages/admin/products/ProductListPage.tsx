@@ -1,8 +1,8 @@
 import React, { useEffect, useState, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import {
-  Table, Card, Row, Col, Space, Button, Input, Select, Breadcrumb,
-  Statistic, message, Alert, Tooltip, Empty, Typography
+  Table, Card, Space, Button, Input, Select, Breadcrumb,
+  message, Alert, Tooltip, Empty, Typography
 } from 'antd';
 import { Edit3, Eye, Lock, Unlock, Package, Plus, RefreshCw, Search } from 'lucide-react';
 import AdminShell from '../../../components/AdminShell';
@@ -260,20 +260,6 @@ const ProductListPage: React.FC = () => {
             icon={<Package size={20} />}
           />
         </div>
-
-        {/* Statistic Cards */}
-        <Row gutter={[16, 16]}>
-          <Col xs={24} sm={12}>
-            <Card size="small" bordered={false} style={{ borderRadius: 14, boxShadow: palette.cardShadow }}>
-              <Statistic title="Tổng sản phẩm phù hợp" value={pageMeta.totalElements} suffix="sản phẩm" />
-            </Card>
-          </Col>
-          <Col xs={24} sm={12}>
-            <Card size="small" bordered={false} style={{ borderRadius: 14, boxShadow: palette.cardShadow }}>
-              <Statistic title="Trang hiện tại" value={page + 1} suffix={`/ ${pageMeta.totalPages} trang`} />
-            </Card>
-          </Col>
-        </Row>
 
         {/* Main List Card */}
         <Card bordered={false} style={{ borderRadius: 14, boxShadow: palette.cardShadow }}>

@@ -28,6 +28,9 @@ export interface Driver {
   statusUpdatedAt: string | null;
   statusUpdatedByName: string | null;
   activeTripsWarning: ActiveTripWarning[];
+  // BE chưa trả field này ở /api/v1/drivers (xem filemd/FEATURE-DRIVER-LICENSE-CLASS-IN-DRIVERS-API.md) —
+  // optional để không vỡ khi BE chưa kịp bổ sung, hiển thị "—" cho tới lúc đó.
+  licenseClass?: string | null;
 }
 
 export interface DriverStatusHistoryEntry {

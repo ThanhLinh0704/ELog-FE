@@ -1,8 +1,8 @@
 import React, { useEffect, useState, useMemo, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import {
-  Table, Card, Row, Col, Space, Button, Input, Select, Breadcrumb,
-  Statistic, message, Alert, Tooltip, Empty, Typography, Segmented, Badge, Popconfirm, Modal
+  Table, Card, Space, Button, Input, Select, Breadcrumb,
+  message, Alert, Tooltip, Empty, Typography, Segmented, Badge, Popconfirm, Modal
 } from 'antd';
 import {
   Edit3, Lock, Unlock, Plus, RefreshCw, Search, AlertTriangle,
@@ -117,10 +117,6 @@ const RouteListPage: React.FC = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
 
-  // Stats
-  const [activeCount, setActiveCount] = useState(0);
-  const [inactiveCount, setInactiveCount] = useState(0);
-
   // Selected Store to Add in Left Panel
   const [selectedStoreToAdd, setSelectedStoreToAdd] = useState<string | null>(null);
 
@@ -234,16 +230,6 @@ const RouteListPage: React.FC = () => {
 
       if (!selectedRouteId && response.content.length > 0) {
         setSelectedRouteId(String(response.content[0].id));
-      }
-
-      if (USE_MOCK_API) {
-        setActiveCount(mockRoutes.filter((r) => r.status === 'ACTIVE').length);
-        setInactiveCount(mockRoutes.filter((r) => r.status === 'INACTIVE').length);
-      } else {
-        const activeRes = await routeApi.getRoutes({ page: 0, size: 1, status: 'ACTIVE' });
-        const inactiveRes = await routeApi.getRoutes({ page: 0, size: 1, status: 'INACTIVE' });
-        setActiveCount(activeRes.totalElements);
-        setInactiveCount(inactiveRes.totalElements);
       }
     } catch (err: any) {
       setError(err.message || 'Không thể tải danh sách tuyến đường.');
@@ -608,60 +594,8 @@ const RouteListPage: React.FC = () => {
             title="Quản lý tuyến giao hàng"
             subtitle="Hiển thị bản đồ trực quan các tuyến giao hàng miền Bắc và cho phép tùy chỉnh tuyến trực tiếp."
             icon={<MapPin size={20} />}
-            actions={
-              <Space size="middle">
-                <Segmented
-                  value={viewMode}
-                  onChange={(val) => setViewMode(val as 'SPLIT_MAP' | 'TABLE')}
-                  options={[
-                    {
-                      label: (
-                        <div style={{ display: 'flex', alignItems: 'center', gap: 6, padding: '4px 8px' }}>
-                          <ListIcon size={16} />
-                          <span>Danh sách tuyến</span>
-                        </div>
-                      ),
-                      value: 'TABLE',
-                    },
-                    {
-                      label: (
-                        <div style={{ display: 'flex', alignItems: 'center', gap: 6, padding: '4px 8px' }}>
-                          <MapPin size={16} />
-                          <span>Bản đồ & Điều chỉnh tuyến</span>
-                        </div>
-                      ),
-                      value: 'SPLIT_MAP',
-                    },
-                  ]}
-                />
-                {canWriteRoute && (
-                  <Button type="primary" icon={<Plus size={14} />} onClick={() => navigate('/admin/routes/new')}>
-                    Tạo tuyến mới
-                  </Button>
-                )}
-              </Space>
-            }
           />
         </div>
-
-        {/* Statistic Cards */}
-        <Row gutter={[16, 16]}>
-          <Col xs={24} sm={8}>
-            <Card size="small" bordered={false} style={{ borderRadius: 14, boxShadow: palette.cardShadow }}>
-              <Statistic title="Tổng số tuyến" value={pageMeta.totalElements || routes.length} suffix="tuyến" />
-            </Card>
-          </Col>
-          <Col xs={24} sm={8}>
-            <Card size="small" bordered={false} style={{ borderRadius: 14, boxShadow: palette.cardShadow }}>
-              <Statistic title="Đang hoạt động" value={activeCount} valueStyle={{ color: palette.success }} suffix="tuyến" />
-            </Card>
-          </Col>
-          <Col xs={24} sm={8}>
-            <Card size="small" bordered={false} style={{ borderRadius: 14, boxShadow: palette.cardShadow }}>
-              <Statistic title="Không kích hoạt" value={inactiveCount} valueStyle={{ color: palette.textMuted }} suffix="tuyến" />
-            </Card>
-          </Col>
-        </Row>
 
         {error && <Alert message={error} type="error" showIcon style={{ marginBottom: 12 }} />}
 
@@ -955,11 +889,6 @@ const RouteListPage: React.FC = () => {
                 <Button icon={<RefreshCw size={14} />} onClick={() => fetchRoutes()}>
                   Tải lại
                 </Button>
-                {canWriteRoute && (
-                  <Button type="primary" icon={<Plus size={14} />} onClick={() => navigate('/admin/routes/new')}>
-                    Tạo tuyến
-                  </Button>
-                )}
               </Space>
             </div>
 

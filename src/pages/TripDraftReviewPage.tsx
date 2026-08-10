@@ -759,12 +759,6 @@ const TripDraftReviewPage: React.FC = () => {
                         Tính lại ETA
                       </Button>
                       <Button
-                        icon={<PackageCheck size={16} />}
-                        onClick={() => navigate(`/trip-drafts/${draft.id}/loading-manifest`)}
-                      >
-                        LIFO Manifest
-                      </Button>
-                      <Button
                         type="primary"
                         icon={<Navigation size={16} />}
                         loading={confirming}

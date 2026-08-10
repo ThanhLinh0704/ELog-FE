@@ -15,7 +15,7 @@ import {
   Modal,
   InputNumber
 } from 'antd';
-import { CalendarOutlined, PlayCircleOutlined, EyeOutlined } from '@ant-design/icons';
+import { CalendarOutlined, PlayCircleOutlined, EyeOutlined, SendOutlined } from '@ant-design/icons';
 import { Layers, AlertTriangle, ClipboardList, Search, PackageCheck } from 'lucide-react';
 import dayjs from 'dayjs';
 import AdminShell from '../../../components/AdminShell';
@@ -239,26 +239,34 @@ const TripDraftListPage: React.FC = () => {
     {
       title: 'Thao tác',
       key: 'actions',
-      render: (_: any, record: TripDraft) => (
-        <Space size="small">
-          <Button
-            type="link"
-            icon={<EyeOutlined />}
-            onClick={() => navigate(`/dispatcher/trip-drafts/${record.id}`)}
-          >
-            Xem chi tiết
-          </Button>
-          <Button
-            type="primary"
-            ghost
-            icon={<ClipboardList size={14} />}
-            style={{ borderRadius: 6, fontWeight: 500 }}
-            onClick={() => navigate(`/trip-drafts/${record.id}/review`)}
-          >
-            Mở bản nháp
-          </Button>
-        </Space>
-      ),
+      render: (_: any, record: TripDraft) => {
+        // Từ trạng thái "Đã lập chuyến" (PLANNED) trở đi, draft đã được xử lý xong —
+        // không còn sửa bản nháp được nữa, nên ẩn "Mở bản nháp" và đổi "Xem chi tiết"
+        // thành "Điều phối" vì lúc này màn chi tiết chủ yếu dùng để điều phối xe/tài xế.
+        const isDraft = record.status === 'DRAFT';
+        return (
+          <Space size="small">
+            <Button
+              type="link"
+              icon={isDraft ? <EyeOutlined /> : <SendOutlined />}
+              onClick={() => navigate(`/dispatcher/trip-drafts/${record.id}`)}
+            >
+              {isDraft ? 'Xem chi tiết' : 'Điều phối'}
+            </Button>
+            {isDraft && (
+              <Button
+                type="primary"
+                ghost
+                icon={<ClipboardList size={14} />}
+                style={{ borderRadius: 6, fontWeight: 500 }}
+                onClick={() => navigate(`/trip-drafts/${record.id}/review`)}
+              >
+                Mở bản nháp
+              </Button>
+            )}
+          </Space>
+        );
+      },
     },
   ];
 

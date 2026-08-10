@@ -23,7 +23,7 @@ import {
   Collapse,
 } from 'antd';
 import { ArrowLeftOutlined, CarOutlined, ClockCircleOutlined, UserOutlined } from '@ant-design/icons';
-import { MapPin, CheckCircle2, XCircle, Sparkles, Eye } from 'lucide-react';
+import { MapPin, CheckCircle2, XCircle, Sparkles, Eye, PackageCheck } from 'lucide-react';
 import dayjs from 'dayjs';
 import AdminShell from '../../../components/AdminShell';
 import StatusBadge, { type StatusBadgeColor } from '../../../components/StatusBadge';
@@ -599,19 +599,28 @@ const TripDraftDetailPage: React.FC = () => {
 
           {(draft.status === 'PLANNED' || draft.status === 'VALIDATED') && (
             <>
-              <Button
-                danger
-                style={{ fontWeight: 600 }}
-                loading={revertLoading}
-                onClick={() => setRevertModalOpen(true)}
-              >
-                Thu hồi gom đơn
-              </Button>
+              {existingTrips.length === 0 && (
+                <Button
+                  danger
+                  style={{ fontWeight: 600 }}
+                  loading={revertLoading}
+                  onClick={() => setRevertModalOpen(true)}
+                >
+                  Thu hồi gom đơn
+                </Button>
+              )}
               <Button
                 style={{ fontWeight: 600 }}
                 onClick={() => navigate(`/dispatcher/trip-drafts/${draft.id}/capacity`)}
               >
                 Xem kết quả tải trọng
+              </Button>
+              <Button
+                icon={<PackageCheck size={16} />}
+                style={{ fontWeight: 600 }}
+                onClick={() => navigate(`/trip-drafts/${draft.id}/loading-manifest`)}
+              >
+                LIFO Manifest
               </Button>
             </>
           )}

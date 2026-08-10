@@ -1333,7 +1333,16 @@ const VehicleAssignmentPage: React.FC = () => {
                               return (
                                 <div
                                   key={v.vehicleId}
-                                  onClick={() => !takenByOther && updateGroup(group.groupId, { vehicleId: v.vehicleId })}
+                                  onClick={() =>
+                                    !takenByOther &&
+                                    updateGroup(group.groupId, {
+                                      vehicleId: v.vehicleId,
+                                      // Auto-fill the vehicle's fixed driver when it's available; otherwise
+                                      // leave the driver picker empty so the dispatcher must pick manually
+                                      // (see filemd/FE_Split_Vehicle_Assignment_Guide.md).
+                                      driverId: v.assignedDriverId && v.assignedDriverAvailable ? v.assignedDriverId : null,
+                                    })
+                                  }
                                   style={{
                                     border: group.vehicleId === v.vehicleId ? '2px solid #2563eb' : '1px solid #d9d9d9',
                                     borderRadius: 6,
@@ -1354,6 +1363,16 @@ const VehicleAssignmentPage: React.FC = () => {
                         </Col>
                         <Col xs={24} sm={12}>
                           <Text type="secondary" style={{ fontSize: 12, display: 'block', marginBottom: 4 }}>Chọn tài xế</Text>
+                          {(() => {
+                            const selectedVehicle = getGroupVehicles(group).find((v) => v.vehicleId === group.vehicleId);
+                            if (!selectedVehicle?.assignedDriverId || selectedVehicle.assignedDriverAvailable !== false) return null;
+                            return (
+                              <Text type="warning" style={{ fontSize: 11, display: 'block', marginBottom: 4 }}>
+                                ⚠️ Tài xế cố định ({selectedVehicle.assignedDriverName}) không khả dụng
+                                {selectedVehicle.assignedDriverBusyReason ? `: ${selectedVehicle.assignedDriverBusyReason}` : ''}. Vui lòng chọn tài xế khác.
+                              </Text>
+                            );
+                          })()}
                           <div style={{ display: 'flex', flexDirection: 'column', gap: 4, maxHeight: 200, overflowY: 'auto' }}>
                             {drivers.filter((d) => d.available).map((d) => {
                               const takenByOther = usedDriverIds.has(d.userId) && group.driverId !== d.userId;

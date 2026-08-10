@@ -1,8 +1,8 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import dayjs from 'dayjs';
 import {
-  Table, Card, Row, Col, Space, Button, Input, Select, Breadcrumb,
-  Statistic, message, Alert, Tooltip, Typography,
+  Table, Card, Space, Button, Input, Select, Breadcrumb,
+  message, Alert, Tooltip, Typography,
 } from 'antd';
 import { History, RefreshCw, Search, Lock, Unlock, Users } from 'lucide-react';
 import { useDebounce } from '../../../hooks/useDebounce';
@@ -133,9 +133,6 @@ const DriverManagementPage: React.FC = () => {
   }, [filteredDrivers, availabilityFilter, page, size]);
 
   const displayTotal = availabilityFilter ? filteredDrivers.length : pageMeta.totalElements;
-  const displayTotalPages = availabilityFilter
-    ? Math.max(1, Math.ceil(displayTotal / size))
-    : pageMeta.totalPages;
 
   async function handleConfirmStatusChange(payload: DriverStatusUpdatePayload) {
     if (!statusModalDriver) return;
@@ -171,6 +168,12 @@ const DriverManagementPage: React.FC = () => {
           <Text type="secondary" style={{ fontSize: 12 }}>{record.email}</Text>
         </>
       ),
+    },
+    {
+      title: 'Bằng lái xe',
+      key: 'licenseClass',
+      render: (_: unknown, record: Driver) =>
+        record.licenseClass ? <StatusBadge color="blue">{`Hạng ${record.licenseClass}`}</StatusBadge> : <Text type="secondary">—</Text>,
     },
     {
       title: 'Trạng thái',
@@ -272,24 +275,6 @@ const DriverManagementPage: React.FC = () => {
             icon={<Users size={20} />}
           />
         </div>
-
-        <Row gutter={[16, 16]}>
-          <Col xs={24} sm={8}>
-            <Card size="small" bordered={false} style={{ borderRadius: 14, boxShadow: palette.cardShadow }}>
-              <Statistic title="Tổng kết quả" value={displayTotal} suffix="tài xế" />
-            </Card>
-          </Col>
-          <Col xs={24} sm={8}>
-            <Card size="small" bordered={false} style={{ borderRadius: 14, boxShadow: palette.cardShadow }}>
-              <Statistic title="Trang hiện tại" value={page + 1} suffix={`/ ${displayTotalPages} trang`} />
-            </Card>
-          </Col>
-          <Col xs={24} sm={8}>
-            <Card size="small" bordered={false} style={{ borderRadius: 14, boxShadow: palette.cardShadow }}>
-              <Statistic title="Quyền thao tác" value={canWrite ? 'Có thể chỉnh sửa' : 'Chỉ xem'} />
-            </Card>
-          </Col>
-        </Row>
 
         <Card bordered={false} style={{ borderRadius: 14, boxShadow: palette.cardShadow }}>
           <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 16, flexWrap: 'wrap', gap: 12 }}>

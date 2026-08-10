@@ -45,6 +45,7 @@ export interface StoreQueryParams {
   keyword?: string;
   isActive?: string | boolean;
   hasRoute?: string | boolean;
+  routeCode?: string;
   page?: number;
   size?: number;
   sort?: string;
@@ -265,6 +266,7 @@ export const storeApi = {
       keyword: params.keyword,
       isActive: params.isActive,
       hasRoute: params.hasRoute,
+      routeCode: params.routeCode,
       page,
       size,
       sort: params.sort ?? 'id,desc',

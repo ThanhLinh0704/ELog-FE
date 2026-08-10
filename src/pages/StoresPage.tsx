@@ -16,7 +16,6 @@ import {
   Row,
   Select,
   Space,
-  Statistic,
   Table,
   Tooltip,
   message,
@@ -40,6 +39,7 @@ import StatusBadge from '../components/StatusBadge';
 import { palette } from '../theme/tokens';
 import { useDebounce } from '../hooks/useDebounce';
 import { storeApi, type StoreItem, type StorePayload } from '../api/storeApi';
+import { routeApi } from '../api/routeApi';
 import { MapSelector } from '../components/MapSelector';
 import { usePermissions } from '../hooks/usePermissions';
 import { PERMISSIONS } from '../constants/permissions';
@@ -596,6 +596,8 @@ const StoresPage: React.FC = () => {
   const [keyword, setKeyword] = useState('');
   const [isActive, setIsActive] = useState('');
   const [hasRoute, setHasRoute] = useState('');
+  const [routeCode, setRouteCode] = useState('');
+  const [routeOptions, setRouteOptions] = useState<{ value: string; label: string }[]>([]);
   const [coordFilter, setCoordFilter] = useState<CoordinateFilter>('all');
   const [page, setPage] = useState(0);
   const [size, setSize] = useState(10);
@@ -617,9 +619,10 @@ const StoresPage: React.FC = () => {
       keyword: debouncedKeyword,
       isActive,
       hasRoute,
+      routeCode,
       sort: 'id,desc',
     }),
-    [debouncedKeyword, isActive, hasRoute]
+    [debouncedKeyword, isActive, hasRoute, routeCode]
   );
 
   const queryParams = useMemo(
@@ -698,6 +701,23 @@ const StoresPage: React.FC = () => {
     if (!canRead) return;
     fetchStoreStats();
   }, [canRead, baseParams]);
+
+  useEffect(() => {
+    if (!canRead) return;
+
+    async function loadRouteOptions() {
+      try {
+        const result = await routeApi.getRoutes({ keyword: '', status: 'ALL', page: 0, size: 500 });
+        setRouteOptions(
+          result.content.map((r) => ({ value: r.code, label: `${r.code} — ${r.name}` }))
+        );
+      } catch (err) {
+        console.error('Failed to load route options', err);
+      }
+    }
+
+    loadRouteOptions();
+  }, [canRead]);
 
   function resetToFirstPage(setter: (value: string) => void, value: string) {
     setter(value);
@@ -903,49 +923,19 @@ const StoresPage: React.FC = () => {
             ]}
             style={{ marginBottom: 12, fontSize: 13 }}
           />
-          <PageHeader
-            title="Quản lý cửa hàng"
-            subtitle="Quản lý cửa hàng điện máy, trạng thái tuyến và toạ độ GPS phục vụ tính ETA."
-            icon={<Store size={20} />}
-          />
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', flexWrap: 'wrap', gap: 12 }}>
+            <PageHeader
+              title="Quản lý cửa hàng"
+              subtitle="Quản lý cửa hàng điện máy, trạng thái tuyến và toạ độ GPS phục vụ tính ETA."
+              icon={<Store size={20} />}
+            />
+            {canWriteStore ? (
+              <Button type="primary" icon={<Plus size={14} />} onClick={openCreateModal}>
+                Thêm cửa hàng
+              </Button>
+            ) : null}
+          </div>
         </div>
-
-        <Row gutter={[16, 16]}>
-          <Col xs={24} sm={8}>
-            <Card
-              size="small"
-              bordered={false}
-              style={{ borderRadius: 14, boxShadow: palette.cardShadow }}
-            >
-              <Statistic title="Tổng kết quả" value={tableTotal} suffix="cửa hàng" />
-            </Card>
-          </Col>
-          <Col xs={24} sm={8}>
-            <Card
-              size="small"
-              bordered={false}
-              style={{ borderRadius: 14, boxShadow: palette.cardShadow }}
-            >
-              <Statistic
-                title="Thiếu toạ độ GPS"
-                value={missingCoordinateStores.length}
-                suffix="cửa hàng"
-              />
-            </Card>
-          </Col>
-          <Col xs={24} sm={8}>
-            <Card
-              size="small"
-              bordered={false}
-              style={{ borderRadius: 14, boxShadow: palette.cardShadow }}
-            >
-              <Statistic
-                title="Quyền truy cập"
-                value={canWriteStore ? 'Có thể chỉnh sửa' : 'Chỉ xem'}
-              />
-            </Card>
-          </Col>
-        </Row>
 
         {missingCoordinateStores.length > 0 ? (
           <Alert
@@ -968,33 +958,24 @@ const StoresPage: React.FC = () => {
         ) : null}
 
         <Card bordered={false} style={{ borderRadius: 14, boxShadow: palette.cardShadow }}>
-          <div
-            style={{
-              display: 'flex',
-              justifyContent: 'space-between',
-              marginBottom: 16,
-              flexWrap: 'wrap',
-              gap: 12,
-            }}
-          >
-            <Space size="middle" wrap>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 16, flexWrap: 'nowrap' }}>
               <Input
-                placeholder="Tìm theo mã hoặc tên cửa hàng..."
+                placeholder="Tìm mã hoặc tên cửa hàng..."
                 value={keyword}
                 onChange={(event) => {
                   setKeyword(event.target.value);
                   setPage(0);
                 }}
                 prefix={<Search size={16} style={{ color: palette.textFaint }} />}
-                style={{ width: 260 }}
+                style={{ width: 200, minWidth: 120, flex: '1 1 auto' }}
                 allowClear
               />
 
               <Select
-                placeholder="Tất cả trạng thái"
+                placeholder="Trạng thái"
                 value={isActive || undefined}
                 onChange={(value) => resetToFirstPage(setIsActive, value || '')}
-                style={{ width: 180 }}
+                style={{ width: 140, minWidth: 100, flex: '0 0 auto' }}
                 allowClear
                 options={[
                   { value: 'true', label: 'Hoạt động' },
@@ -1003,10 +984,10 @@ const StoresPage: React.FC = () => {
               />
 
               <Select
-                placeholder="Tất cả tuyến"
+                placeholder="Tuyến"
                 value={hasRoute || undefined}
                 onChange={(value) => resetToFirstPage(setHasRoute, value || '')}
-                style={{ width: 180 }}
+                style={{ width: 140, minWidth: 100, flex: '0 0 auto' }}
                 allowClear
                 options={[
                   { value: 'true', label: 'Đã gắn tuyến' },
@@ -1015,37 +996,40 @@ const StoresPage: React.FC = () => {
               />
 
               <Select
-                placeholder="Tất cả toạ độ"
+                placeholder="Mã tuyến"
+                value={routeCode || undefined}
+                onChange={(value) => resetToFirstPage(setRouteCode, value || '')}
+                style={{ width: 150, minWidth: 100, flex: '0 0 auto' }}
+                allowClear
+                showSearch
+                optionFilterProp="label"
+                options={routeOptions}
+              />
+
+              <Select
+                placeholder="Toạ độ"
                 value={coordFilter}
                 onChange={(value) => {
                   setCoordFilter(value);
                   setPage(0);
                 }}
-                style={{ width: 180 }}
+                style={{ width: 140, minWidth: 100, flex: '0 0 auto' }}
                 options={[
                   { value: 'all', label: 'Tất cả toạ độ' },
                   { value: 'missing', label: 'Chưa có toạ độ' },
                 ]}
               />
-            </Space>
 
-            <Space size="small">
               <Button
                 icon={<RefreshCw size={14} />}
                 onClick={() => {
                   fetchStores();
                   fetchStoreStats();
                 }}
+                style={{ flex: '0 0 auto' }}
               >
                 Tải lại
               </Button>
-
-              {canWriteStore ? (
-                <Button type="primary" icon={<Plus size={14} />} onClick={openCreateModal}>
-                  Thêm cửa hàng
-                </Button>
-              ) : null}
-            </Space>
           </div>
 
           {error ? (
