@@ -7,7 +7,6 @@ import {
   Typography,
   Row,
   Col,
-  Tag,
   Spin,
   message,
   Alert,
@@ -32,6 +31,8 @@ import {
 } from '@ant-design/icons';
 import { Truck, ShieldCheck, ShieldAlert, Scale } from 'lucide-react';
 import AdminShell from '../../../components/AdminShell';
+import StatusBadge from '../../../components/StatusBadge';
+import { palette } from '../../../theme/tokens';
 import {
   getTripById,
   getFleetCapacityCheck,
@@ -112,14 +113,14 @@ function getErrorMessage(err: unknown, fallback = 'Có lỗi xảy ra, vui lòng
 
 function renderTripStatusTag(status?: string | null) {
   if (!status) return null;
-  const map: Record<string, { color: string; text: string }> = {
+  const map: Record<string, { color: 'success' | 'purple' | 'blue' | 'cyan' | 'default'; text: string }> = {
     VALIDATED: { color: 'success', text: 'Sẵn sàng điều phối' },
     DISPATCHED: { color: 'purple', text: 'Đã điều phối' },
     IN_PROGRESS: { color: 'blue', text: 'Đang giao hàng' },
     COMPLETED: { color: 'cyan', text: 'Hoàn thành' },
   };
   const { color, text } = map[status] || { color: 'default', text: status };
-  return <Tag color={color} style={{ fontWeight: 500, fontSize: 13, padding: '2px 10px' }}>{text}</Tag>;
+  return <StatusBadge color={color}>{text}</StatusBadge>;
 }
 
 const DispatchPage: React.FC = () => {
@@ -341,7 +342,7 @@ const DispatchPage: React.FC = () => {
                 Xác nhận điều phối — Chuyến #{trip.tripId}
               </Title>
               {renderTripStatusTag(trip.status)}
-              {trip.lockedAt && <Tag icon={<LockOutlined />} color="red">Đã khóa</Tag>}
+              {trip.lockedAt && <StatusBadge color="error" icon={<LockOutlined />}>Đã khóa</StatusBadge>}
             </div>
             <Text type="secondary" style={{ fontSize: 13 }}>
               Tuyến: <strong>{trip.fixedRouteCode}</strong>
@@ -367,7 +368,6 @@ const DispatchPage: React.FC = () => {
               icon={<LockOutlined />}
               disabled={!canDispatch}
               onClick={() => setConfirmModalOpen(true)}
-              style={{ background: canDispatch ? '#722ed1' : undefined, borderColor: canDispatch ? '#722ed1' : undefined }}
             >
               Điều phối và khóa chuyến
             </Button>
@@ -430,11 +430,11 @@ const DispatchPage: React.FC = () => {
           <Card
             title={
               <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                <Truck size={18} style={{ color: '#722ed1' }} />
+                <Truck size={18} style={{ color: palette.primary }} />
                 <span>Thông tin chuyến</span>
               </div>
             }
-            style={{ borderRadius: 12, marginBottom: 16 }}
+            style={{ borderRadius: 14, marginBottom: 16 }}
           >
             <Row gutter={[24, 16]}>
               <Col xs={12} sm={8}>
@@ -484,10 +484,10 @@ const DispatchPage: React.FC = () => {
               <Col xs={24} sm={12}>
                 <Card
                   size="small"
-                  style={{ borderRadius: 8, background: '#f0f7ff', border: '1px solid #bae0ff' }}
+                  style={{ borderRadius: 10, background: palette.primaryBg, border: `1px solid ${palette.borderSoft}` }}
                 >
                   <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 8 }}>
-                    <CarOutlined style={{ color: '#1677ff', fontSize: 16 }} />
+                    <CarOutlined style={{ color: palette.primary, fontSize: 16 }} />
                     <Text strong>Xe</Text>
                   </div>
                   {trip.vehicle ? (
@@ -503,10 +503,10 @@ const DispatchPage: React.FC = () => {
               <Col xs={24} sm={12}>
                 <Card
                   size="small"
-                  style={{ borderRadius: 8, background: '#f6ffed', border: '1px solid #b7eb8f' }}
+                  style={{ borderRadius: 10, background: palette.successBg, border: `1px solid ${palette.borderSoft}` }}
                 >
                   <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 8 }}>
-                    <UserOutlined style={{ color: '#52c41a', fontSize: 16 }} />
+                    <UserOutlined style={{ color: palette.success, fontSize: 16 }} />
                     <Text strong>Tài xế</Text>
                   </div>
                   {trip.driver ? (
@@ -517,7 +517,7 @@ const DispatchPage: React.FC = () => {
                     <Text type="secondary">Chưa phân tài xế</Text>
                   )}
                   {trip.lockedBy && (
-                    <div style={{ marginTop: 8, paddingTop: 8, borderTop: '1px solid #d9f7be' }}>
+                    <div style={{ marginTop: 8, paddingTop: 8, borderTop: `1px solid ${palette.borderSoft}` }}>
                       <Text type="secondary" style={{ fontSize: 11 }}>Điều phối bởi: {trip.lockedBy.fullName}</Text>
                     </div>
                   )}
@@ -532,48 +532,48 @@ const DispatchPage: React.FC = () => {
           <Card
             title={
               <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                <Scale size={18} style={{ color: '#fa8c16' }} />
+                <Scale size={18} style={{ color: palette.gold }} />
                 <span>Thông số chuyến</span>
               </div>
             }
-            style={{ borderRadius: 12 }}
+            style={{ borderRadius: 14 }}
           >
             <Row gutter={[16, 16]}>
               <Col xs={12}>
-                <Card size="small" style={{ background: '#f0f7ff', borderRadius: 8, textAlign: 'center' }}>
+                <Card size="small" style={{ background: palette.primaryBg, borderRadius: 10, textAlign: 'center' }}>
                   <Statistic
                     title="Thể tích"
                     value={trip.totalVolumeM3 != null ? Number(trip.totalVolumeM3).toFixed(3) : '—'}
                     suffix="m³"
-                    valueStyle={{ color: '#096dd9', fontSize: 18 }}
+                    valueStyle={{ color: palette.primaryDark, fontSize: 18 }}
                   />
                 </Card>
               </Col>
               <Col xs={12}>
-                <Card size="small" style={{ background: '#fff7e6', borderRadius: 8, textAlign: 'center' }}>
+                <Card size="small" style={{ background: palette.goldBg, borderRadius: 10, textAlign: 'center' }}>
                   <Statistic
                     title="Tải trọng"
                     value={trip.totalWeightKg != null ? Number(trip.totalWeightKg).toFixed(3) : '—'}
                     suffix="kg"
-                    valueStyle={{ color: '#d46b08', fontSize: 18 }}
+                    valueStyle={{ color: palette.gold, fontSize: 18 }}
                   />
                 </Card>
               </Col>
               <Col xs={12}>
-                <Card size="small" style={{ background: '#f9f0ff', borderRadius: 8, textAlign: 'center' }}>
+                <Card size="small" style={{ background: palette.violetBg, borderRadius: 10, textAlign: 'center' }}>
                   <Statistic
                     title="Số điểm dừng"
                     value={trip.tripStopCount ?? '—'}
-                    valueStyle={{ color: '#722ed1', fontSize: 18 }}
+                    valueStyle={{ color: palette.violet, fontSize: 18 }}
                   />
                 </Card>
               </Col>
               <Col xs={12}>
-                <Card size="small" style={{ background: '#f6ffed', borderRadius: 8, textAlign: 'center' }}>
+                <Card size="small" style={{ background: palette.successBg, borderRadius: 10, textAlign: 'center' }}>
                   <Statistic
                     title="Trip ID"
                     value={`#${trip.tripId}`}
-                    valueStyle={{ color: '#389e0d', fontSize: 18 }}
+                    valueStyle={{ color: palette.success, fontSize: 18 }}
                   />
                 </Card>
               </Col>
@@ -589,11 +589,6 @@ const DispatchPage: React.FC = () => {
                   size="large"
                   disabled={!canDispatch}
                   onClick={() => setConfirmModalOpen(true)}
-                  style={{
-                    borderRadius: 8,
-                    background: canDispatch ? '#722ed1' : undefined,
-                    borderColor: canDispatch ? '#722ed1' : undefined,
-                  }}
                 >
                   Điều phối và khóa chuyến
                 </Button>
@@ -605,7 +600,6 @@ const DispatchPage: React.FC = () => {
                   size="large"
                   loading={handoverLoading}
                   onClick={handleOpenHandoverSlip}
-                  style={{ borderRadius: 8 }}
                 >
                   In phiếu bàn giao
                 </Button>
@@ -664,7 +658,7 @@ const DispatchPage: React.FC = () => {
                     title: 'Loại sự kiện',
                     dataIndex: 'eventType',
                     key: 'eventType',
-                    render: (t: TripOutcomeEvent['eventType']) => <Tag color="geekblue">{TRIP_OUTCOME_EVENT_TYPE_LABEL[t] ?? t}</Tag>,
+                    render: (t: TripOutcomeEvent['eventType']) => <StatusBadge color="blue">{TRIP_OUTCOME_EVENT_TYPE_LABEL[t] ?? t}</StatusBadge>,
                   },
                   {
                     title: 'Người thực hiện',
@@ -708,7 +702,7 @@ const DispatchPage: React.FC = () => {
         open={confirmModalOpen}
         title={
           <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-            <LockOutlined style={{ color: '#722ed1' }} />
+            <LockOutlined style={{ color: palette.primary }} />
             <span>Xác nhận điều phối và khóa chuyến</span>
           </div>
         }
@@ -736,7 +730,7 @@ const DispatchPage: React.FC = () => {
           description="Sau khi xác nhận, xe, tài xế và danh sách điểm giao không thể chỉnh sửa."
           style={{ marginBottom: 16 }}
         />
-        <div style={{ background: '#f5f5f5', borderRadius: 8, padding: '12px 16px' }}>
+        <div style={{ background: palette.bgLayout, borderRadius: 10, padding: '12px 16px' }}>
           <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
             <div><Text type="secondary">Trip ID:</Text> <Text strong>#{trip.tripId}</Text></div>
             <div><Text type="secondary">Tuyến:</Text> <Text strong>{trip.fixedRouteCode}</Text></div>

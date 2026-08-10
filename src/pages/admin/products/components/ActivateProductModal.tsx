@@ -1,6 +1,7 @@
 import React from 'react';
 import { Modal, Typography, Button } from 'antd';
 import { PlayCircle } from 'lucide-react';
+import { palette } from '../../../../theme/tokens';
 
 const { Paragraph } = Typography;
 
@@ -23,12 +24,13 @@ const ActivateProductModal: React.FC<ActivateProductModalProps> = ({
     <Modal
       title={
         <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-          <PlayCircle color="#52c41a" size={20} />
+          <PlayCircle color={palette.success} size={20} />
           <span>Kích hoạt lại sản phẩm "{productSku}"?</span>
         </div>
       }
       open={visible}
       onCancel={loading ? undefined : onCancel}
+      styles={{ root: { borderRadius: 14 } }}
       footer={[
         <Button key="cancel" onClick={onCancel} disabled={loading}>
           Huỷ
@@ -38,7 +40,7 @@ const ActivateProductModal: React.FC<ActivateProductModalProps> = ({
           type="primary"
           loading={loading}
           onClick={onConfirm}
-          style={{ backgroundColor: '#52c41a', borderColor: '#52c41a' }}
+          style={{ backgroundColor: palette.success, borderColor: palette.success }}
         >
           Xác nhận kích hoạt
         </Button>,

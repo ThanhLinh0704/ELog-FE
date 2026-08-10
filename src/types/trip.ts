@@ -133,10 +133,11 @@ export interface TripSplitResult {
 }
 
 // ── Request DTOs ────────────────────────────────────────────────────────────
-// Backend: TripAssignRequest
+// Backend: TripAssignRequest — driverId is nullable server-side (no @NotNull):
+// omitting it makes the backend auto-assign the vehicle's fixed driver.
 export interface TripAssignRequest {
   vehicleId: number;
-  driverId: number;
+  driverId?: number | null;
 }
 
 // Backend: TripSplitAssignRequest.SplitAssignment

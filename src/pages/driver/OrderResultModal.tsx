@@ -15,9 +15,10 @@ import {
   Typography,
   Alert,
   Divider,
-  Tag,
 } from 'antd';
 import { CheckCircle2, AlertTriangle, XCircle } from 'lucide-react';
+import StatusBadge from '../../components/StatusBadge';
+import { palette } from '../../theme/tokens';
 import type { OrderDeliveryStatus, UpdateOrderResultPayload } from '../../types/driverTrip';
 import { REASON_CODE_OPTIONS } from '../../types/driverTrip';
 
@@ -54,21 +55,21 @@ const RESULT_OPTIONS: ResultOption[] = [
   {
     status: 'DELIVERED',
     label: 'Đã giao thành công',
-    color: '#52c41a',
+    color: palette.success,
     icon: <CheckCircle2 size={16} />,
     needsReason: false,
   },
   {
     status: 'PARTIALLY_DELIVERED',
     label: 'Giao một phần',
-    color: '#fa8c16',
+    color: palette.gold,
     icon: <AlertTriangle size={16} />,
     needsReason: true,
   },
   {
     status: 'FAILED',
     label: 'Giao thất bại',
-    color: '#ff4d4f',
+    color: palette.danger,
     icon: <XCircle size={16} />,
     needsReason: true,
   },
@@ -133,7 +134,7 @@ const OrderResultModal: React.FC<OrderResultModalProps> = ({
       open={open}
       title={
         <Space>
-          <CheckCircle2 size={18} color="#1677ff" />
+          <CheckCircle2 size={18} color={palette.primary} />
           <span>Cập nhật kết quả giao hàng</span>
         </Space>
       }
@@ -164,7 +165,7 @@ const OrderResultModal: React.FC<OrderResultModalProps> = ({
           message={
             <Space>
               <Text type="secondary">Đơn hàng:</Text>
-              <Tag color="blue">{orderRef}</Tag>
+              <StatusBadge color="blue">{orderRef}</StatusBadge>
             </Space>
           }
           style={{ marginBottom: 16, borderRadius: 8 }}
@@ -173,7 +174,7 @@ const OrderResultModal: React.FC<OrderResultModalProps> = ({
         {/* Status selection */}
         <div style={{ marginBottom: 16 }}>
           <Text strong style={{ display: 'block', marginBottom: 8 }}>
-            Kết quả <span style={{ color: '#ff4d4f' }}>*</span>
+            Kết quả <span style={{ color: palette.danger }}>*</span>
           </Text>
           <Space direction="vertical" style={{ width: '100%' }} size={8}>
             {RESULT_OPTIONS.map(option => (
@@ -190,8 +191,8 @@ const OrderResultModal: React.FC<OrderResultModalProps> = ({
                   borderRadius: 10,
                   border: selectedStatus === option.status
                     ? `2px solid ${option.color}`
-                    : '1px solid #f0f0f0',
-                  background: selectedStatus === option.status ? `${option.color}15` : '#fff',
+                    : `1px solid ${palette.borderSoft}`,
+                  background: selectedStatus === option.status ? `${option.color}15` : palette.bgCard,
                   cursor: 'pointer',
                   display: 'flex',
                   alignItems: 'center',
@@ -214,7 +215,7 @@ const OrderResultModal: React.FC<OrderResultModalProps> = ({
             <Divider style={{ margin: '12px 0' }} />
             <div style={{ marginBottom: 12 }}>
               <Text strong style={{ display: 'block', marginBottom: 6 }}>
-                Lý do <span style={{ color: '#ff4d4f' }}>*</span>
+                Lý do <span style={{ color: palette.danger }}>*</span>
               </Text>
               <Select
                 style={{ width: '100%' }}

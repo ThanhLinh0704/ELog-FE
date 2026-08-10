@@ -51,6 +51,35 @@ export async function getEligibleVehicles(
 }
 
 /**
+ * GET /api/v1/trip-drafts/{id}/eligible-vehicles-for-stops?stopIds=1,2,3
+ * Same response shape as getEligibleVehicles, but capacity is computed only against
+ * the given subset of stops — used when Dispatcher manually builds a BR-07 split
+ * group from scratch (no recommendation prefill), where whole-route eligibility
+ * would never list a vehicle sized for just one sub-group.
+ * DISPATCHER only.
+ */
+export async function getEligibleVehiclesForStops(
+  tripDraftId: number | string,
+  stopIds: number[]
+): Promise<EligibleVehiclesResponse> {
+  const res = await axiosInstance.get<ApiResponseWrapper<EligibleVehiclesResponse>>(
+    `/api/v1/trip-drafts/${tripDraftId}/eligible-vehicles-for-stops`,
+    { params: { stopIds: stopIds.join(',') } }
+  );
+  const data = unwrap(res);
+  return {
+    eligibleVehicles: (data.eligibleVehicles || []).map((v: any) => ({
+      ...v,
+      payloadKg: Number(v.payloadKg ?? v.maxWeightKg ?? v.max_weight_kg ?? 0),
+    })),
+    ineligibleVehicles: (data.ineligibleVehicles || []).map((v: any) => ({
+      ...v,
+      payloadKg: Number(v.payloadKg ?? v.maxWeightKg ?? v.max_weight_kg ?? 0),
+    })),
+  };
+}
+
+/**
  * GET /api/v1/drivers/available?date=YYYY-MM-DD
  * Returns all drivers (available=true AND busy=false).
  * DISPATCHER only.

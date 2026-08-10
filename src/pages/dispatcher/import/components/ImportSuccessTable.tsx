@@ -3,6 +3,7 @@ import { Table, Card, Typography, Select, Space, Empty } from 'antd';
 import type { ColumnsType } from 'antd/es/table';
 import type { ImportResult, ImportedOrderDetail } from '../../../../types/import';
 import { importApi } from '../../../../api/importApi';
+import { palette } from '../../../../theme/tokens';
 
 const { Text } = Typography;
 
@@ -86,7 +87,7 @@ const ImportSuccessTable: React.FC<ImportSuccessTableProps> = ({ batch }) => {
       key: 'quantity',
       width: 90,
       align: 'right',
-      render: (val) => val != null ? <Text strong style={{ color: '#096dd9' }}>{val}</Text> : '—',
+      render: (val) => val != null ? <Text strong style={{ color: palette.primaryDark }}>{val}</Text> : '—',
     },
     {
       title: 'Trọng lượng',
@@ -138,11 +139,11 @@ const ImportSuccessTable: React.FC<ImportSuccessTableProps> = ({ batch }) => {
     <Card
       title={
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 12 }}>
-          <span style={{ fontWeight: 600, fontSize: 15, color: '#389e0d' }}>
+          <span style={{ fontWeight: 600, fontSize: 15, color: palette.success }}>
             Danh sách kiện hàng đã import thành công
           </span>
           <Space>
-            <span style={{ fontSize: 13, fontWeight: 500, color: '#595959' }}>Lọc theo ngày giao:</span>
+            <span style={{ fontSize: 13, fontWeight: 500, color: palette.textMuted }}>Lọc theo ngày giao:</span>
             <Select
               placeholder="Tất cả ngày"
               allowClear
@@ -158,10 +159,10 @@ const ImportSuccessTable: React.FC<ImportSuccessTableProps> = ({ batch }) => {
         </div>
       }
       style={{
-        borderRadius: 12,
-        boxShadow: '0 4px 12px rgba(0,0,0,0.05)',
+        borderRadius: 14,
+        boxShadow: palette.cardShadow,
         marginBottom: 24,
-        border: '1px solid #d9f7be',
+        border: `1px solid ${palette.borderSoft}`,
       }}
     >
       <Table

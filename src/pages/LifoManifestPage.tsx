@@ -12,11 +12,11 @@ import {
   Skeleton,
   Space,
   Tabs,
-  Tag,
   Typography,
 } from 'antd';
 import { ArrowLeft, RefreshCcw, Truck } from 'lucide-react';
 import AdminShell from '../components/AdminShell';
+import StatusBadge from '../components/StatusBadge';
 import {
   generateLoadingManifest,
   getLoadingManifest,
@@ -151,7 +151,7 @@ const LifoManifestPage = () => {
     });
   };
 
-  const statusTag = manifest ? <Tag color="processing">Đã tạo bảng xếp hàng</Tag> : <Tag>Chưa tạo</Tag>;
+  const statusTag = manifest ? <StatusBadge color="processing">Đã tạo bảng xếp hàng</StatusBadge> : <StatusBadge>Chưa tạo</StatusBadge>;
 
   const renderContent = () => {
     if (loading) {

@@ -13,7 +13,6 @@ import {
   Space,
   Statistic,
   Table,
-  Tag,
   Typography,
 } from 'antd';
 import {
@@ -38,6 +37,7 @@ import { useNavigate } from 'react-router-dom';
 import dayjs from 'dayjs';
 import type { ColumnsType } from 'antd/es/table';
 import AdminShell from '../../../components/AdminShell';
+import StatusBadge from '../../../components/StatusBadge';
 import { palette } from '../../../theme/tokens';
 import { getKpiByRoute, getKpiDailyTrend, getKpiSummary } from '../../../api/kpiApi';
 import type {
@@ -161,9 +161,9 @@ const KpiDashboardPage: React.FC = () => {
       sorter: (a, b) => (a.onTimeRatePct ?? -1) - (b.onTimeRatePct ?? -1),
       defaultSortOrder: 'ascend',
       render: (val: number | null) => (
-        <Tag color={val === null ? 'default' : val < 70 ? 'error' : val < 90 ? 'warning' : 'success'}>
+        <StatusBadge color={val === null ? 'default' : val < 70 ? 'error' : val < 90 ? 'warning' : 'success'}>
           {formatPct(val)}
-        </Tag>
+        </StatusBadge>
       ),
     },
     {

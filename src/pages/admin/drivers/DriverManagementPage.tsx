@@ -2,13 +2,16 @@ import React, { useEffect, useMemo, useState } from 'react';
 import dayjs from 'dayjs';
 import {
   Table, Card, Row, Col, Space, Button, Input, Select, Breadcrumb,
-  Statistic, Tag, Badge, message, Alert, Tooltip, Typography,
+  Statistic, message, Alert, Tooltip, Typography,
 } from 'antd';
-import { History, RefreshCw, Search, Lock, Unlock } from 'lucide-react';
+import { History, RefreshCw, Search, Lock, Unlock, Users } from 'lucide-react';
 import { useDebounce } from '../../../hooks/useDebounce';
 import { usePermissions } from '../../../hooks/usePermissions';
 import { PERMISSIONS } from '../../../constants/permissions';
 import AdminShell from '../../../components/AdminShell';
+import PageHeader from '../../../components/PageHeader';
+import StatusBadge from '../../../components/StatusBadge';
+import { palette } from '../../../theme/tokens';
 import { getDrivers, updateDriverStatus, type DriverStatusUpdatePayload } from '../../../api/driverApi';
 import { getAvailableDrivers } from '../../../api/tripApi';
 import type { AvailableDriver } from '../../../types/trip';
@@ -174,7 +177,7 @@ const DriverManagementPage: React.FC = () => {
       key: 'driverStatus',
       render: (_: unknown, record: Driver) => {
         const meta = DRIVER_STATUS_LABEL[record.driverStatus];
-        const badge = <Badge status={meta.color === 'success' ? 'success' : 'error'} text={meta.label} />;
+        const badge = <StatusBadge color={meta.color as any}>{meta.label}</StatusBadge>;
         if (record.driverStatus === 'INACTIVE' && record.reasonCode) {
           return (
             <Tooltip
@@ -204,9 +207,9 @@ const DriverManagementPage: React.FC = () => {
           return availabilityLoading ? <Text type="secondary">Đang tải...</Text> : <Text type="secondary">—</Text>;
         }
         if (avail.available) {
-          return <Tag color="success">Đang rảnh</Tag>;
+          return <StatusBadge color="success">Đang rảnh</StatusBadge>;
         }
-        const badge = <Tag color="error">Đang bận</Tag>;
+        const badge = <StatusBadge color="error">Đang bận</StatusBadge>;
         return avail.busyReason ? <Tooltip title={avail.busyReason}>{badge}</Tooltip> : badge;
       },
     },
@@ -227,7 +230,7 @@ const DriverManagementPage: React.FC = () => {
       key: 'activeTripsWarning',
       render: (_: unknown, record: Driver) =>
         record.activeTripsWarning?.length ? (
-          <Tag color="warning">{record.activeTripsWarning.length} chuyến</Tag>
+          <StatusBadge color="warning">{record.activeTripsWarning.length} chuyến</StatusBadge>
         ) : (
           '—'
         ),
@@ -247,7 +250,7 @@ const DriverManagementPage: React.FC = () => {
             <Button
               type="text"
               danger={record.driverStatus === 'ACTIVE'}
-              style={{ color: record.driverStatus === 'ACTIVE' ? undefined : '#52c41a' }}
+              style={{ color: record.driverStatus === 'ACTIVE' ? undefined : palette.success }}
               icon={record.driverStatus === 'ACTIVE' ? <Lock size={16} /> : <Unlock size={16} />}
               title={record.driverStatus === 'ACTIVE' ? 'Ngừng hoạt động' : 'Kích hoạt lại'}
               onClick={() => setStatusModalDriver(record)}
@@ -262,42 +265,41 @@ const DriverManagementPage: React.FC = () => {
     <AdminShell currentUser={currentUser}>
       <div style={{ display: 'flex', flexDirection: 'column', gap: 24 }}>
         <div>
-          <Breadcrumb items={[{ title: 'Admin' }, { title: 'Quản lý tài xế' }]} />
-          <h2 style={{ margin: '8px 0 0 0', fontSize: 24, fontWeight: 700, color: '#1f1f1f' }}>
-            Quản lý tài xế
-          </h2>
-          <p style={{ margin: '4px 0 0 0', color: '#8c8c8c' }}>
-            Bật/tắt trạng thái hoạt động của tài xế và xem lịch sử thay đổi.
-          </p>
+          <Breadcrumb items={[{ title: 'Admin' }, { title: 'Quản lý tài xế' }]} style={{ marginBottom: 12, fontSize: 13 }} />
+          <PageHeader
+            title="Quản lý tài xế"
+            subtitle="Bật/tắt trạng thái hoạt động của tài xế và xem lịch sử thay đổi."
+            icon={<Users size={20} />}
+          />
         </div>
 
         <Row gutter={[16, 16]}>
           <Col xs={24} sm={8}>
-            <Card size="small" bordered={false} style={{ boxShadow: '0 1px 2px 0 rgba(0, 0, 0, 0.03)' }}>
+            <Card size="small" bordered={false} style={{ borderRadius: 14, boxShadow: palette.cardShadow }}>
               <Statistic title="Tổng kết quả" value={displayTotal} suffix="tài xế" />
             </Card>
           </Col>
           <Col xs={24} sm={8}>
-            <Card size="small" bordered={false} style={{ boxShadow: '0 1px 2px 0 rgba(0, 0, 0, 0.03)' }}>
+            <Card size="small" bordered={false} style={{ borderRadius: 14, boxShadow: palette.cardShadow }}>
               <Statistic title="Trang hiện tại" value={page + 1} suffix={`/ ${displayTotalPages} trang`} />
             </Card>
           </Col>
           <Col xs={24} sm={8}>
-            <Card size="small" bordered={false} style={{ boxShadow: '0 1px 2px 0 rgba(0, 0, 0, 0.03)' }}>
+            <Card size="small" bordered={false} style={{ borderRadius: 14, boxShadow: palette.cardShadow }}>
               <Statistic title="Quyền thao tác" value={canWrite ? 'Có thể chỉnh sửa' : 'Chỉ xem'} />
             </Card>
           </Col>
         </Row>
 
-        <Card bordered={false} style={{ boxShadow: '0 1px 2px 0 rgba(0, 0, 0, 0.03)' }}>
+        <Card bordered={false} style={{ borderRadius: 14, boxShadow: palette.cardShadow }}>
           <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 16, flexWrap: 'wrap', gap: 12 }}>
             <Space size="middle" wrap>
               <Input
                 placeholder="Tìm theo họ tên..."
                 value={keyword}
                 onChange={(e) => resetToFirstPage(setKeyword, e.target.value)}
-                prefix={<Search size={16} style={{ color: '#bfbfbf' }} />}
-                style={{ width: 260, borderRadius: 6 }}
+                prefix={<Search size={16} style={{ color: palette.textFaint }} />}
+                style={{ width: 260 }}
                 allowClear
               />
               <Select

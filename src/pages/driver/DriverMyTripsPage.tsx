@@ -1,7 +1,6 @@
 import React, { useEffect, useState, useCallback } from 'react';
 import {
   Card,
-  Tag,
   Spin,
   Alert,
   Button,
@@ -29,6 +28,8 @@ import {
   AlertTriangle,
 } from 'lucide-react';
 import AdminShell from '../../components/AdminShell';
+import StatusBadge from '../../components/StatusBadge';
+import { palette } from '../../theme/tokens';
 import {
   getActiveTrip,
   startExecution,
@@ -248,15 +249,15 @@ const DriverMyTripsPage: React.FC = () => {
     return (
       <AdminShell currentUser={currentUser}>
         <Breadcrumb style={{ marginBottom: 12 }} items={[{ title: 'Trang chủ' }, { title: 'Chuyến giao hàng' }]} />
-        <Card style={{ borderRadius: 12, textAlign: 'center', padding: '40px 20px' }}>
-          <CheckCircle2 size={56} color="#52c41a" style={{ marginBottom: 16 }} />
-          <Title level={3} style={{ color: '#52c41a' }}>Chuyến hoàn thành!</Title>
+        <Card style={{ borderRadius: 14, textAlign: 'center', padding: '40px 20px' }}>
+          <CheckCircle2 size={56} color={palette.success} style={{ marginBottom: 16 }} />
+          <Title level={3} style={{ color: palette.success }}>Chuyến hoàn thành!</Title>
           <Text type="secondary">Kết quả đã được nộp cho Dispatcher nghiệm thu.</Text>
           <Divider />
           <Space direction="vertical" size={4}>
             <Text>Mã chuyến: <strong>{outcome.tripCode}</strong></Text>
-            <Text>Đã giao: <strong style={{ color: '#52c41a' }}>{outcome.deliveredCount}/{outcome.totalOrders}</strong></Text>
-            {outcome.failedCount > 0 && <Text>Thất bại: <strong style={{ color: '#ff4d4f' }}>{outcome.failedCount}</strong></Text>}
+            <Text>Đã giao: <strong style={{ color: palette.success }}>{outcome.deliveredCount}/{outcome.totalOrders}</strong></Text>
+            {outcome.failedCount > 0 && <Text>Thất bại: <strong style={{ color: palette.danger }}>{outcome.failedCount}</strong></Text>}
           </Space>
           <div style={{ marginTop: 24 }}>
             <Button onClick={() => { setOutcome(null); fetchActiveTrip(); }}>
@@ -275,9 +276,9 @@ const DriverMyTripsPage: React.FC = () => {
       <AdminShell currentUser={currentUser}>
         <Breadcrumb style={{ marginBottom: 12 }} items={[{ title: 'Trang chủ' }, { title: 'Chuyến giao hàng' }]} />
         <div style={{
-          background: 'linear-gradient(135deg, #1e293b 0%, #0f172a 100%)',
+          background: palette.bannerGradient,
           padding: '20px 24px',
-          borderRadius: 12,
+          borderRadius: 14,
           color: '#fff',
           marginBottom: 20,
         }}>
@@ -285,9 +286,9 @@ const DriverMyTripsPage: React.FC = () => {
             <Truck size={20} style={{ marginRight: 8, verticalAlign: 'middle' }} />
             Chuyến giao hàng của tôi
           </Title>
-          <Text style={{ color: '#94a3b8', fontSize: 13 }}>Xin chào {currentUser.username}!</Text>
+          <Text style={{ color: palette.textFaint, fontSize: 13 }}>Xin chào {currentUser.username}!</Text>
         </div>
-        <Card style={{ borderRadius: 12, textAlign: 'center', padding: '40px 0' }}>
+        <Card style={{ borderRadius: 14, textAlign: 'center', padding: '40px 0' }}>
           <Empty description="Bạn chưa có chuyến xe nào được phân công hôm nay." />
           <Button icon={<RefreshCw size={14} />} onClick={fetchActiveTrip} style={{ marginTop: 16 }}>
             Làm mới
@@ -313,7 +314,7 @@ const DriverMyTripsPage: React.FC = () => {
       dataIndex: 'loadingOrder',
       key: 'loadingOrder',
       width: 90,
-      render: (n: number) => <Badge count={n} style={{ backgroundColor: '#1677ff' }} />,
+      render: (n: number) => <Badge count={n} style={{ backgroundColor: palette.primary }} />,
     },
     {
       title: 'Điểm dừng',
@@ -328,7 +329,7 @@ const DriverMyTripsPage: React.FC = () => {
       title: 'Đơn hàng',
       dataIndex: 'orderRef',
       key: 'orderRef',
-      render: (ref: string) => <Tag color="blue">{ref}</Tag>,
+      render: (ref: string) => <StatusBadge color="blue">{ref}</StatusBadge>,
     },
     {
       title: 'SKU',
@@ -365,23 +366,23 @@ const DriverMyTripsPage: React.FC = () => {
         style={{
           borderRadius: 10,
           marginBottom: 12,
-          border: stop.aggregatedStatus === 'FAILED' ? '1px solid #ffa39e'
-            : stop.aggregatedStatus === 'DELIVERED' ? '1px solid #b7eb8f'
-            : stop.aggregatedStatus === 'PARTIAL' ? '1px solid #ffe58f'
-            : '1px solid #f0f0f0',
+          border: stop.aggregatedStatus === 'FAILED' ? `1px solid ${palette.danger}55`
+            : stop.aggregatedStatus === 'DELIVERED' ? `1px solid ${palette.success}55`
+            : stop.aggregatedStatus === 'PARTIAL' ? `1px solid ${palette.gold}55`
+            : `1px solid ${palette.borderSoft}`,
         }}
         bodyStyle={{ padding: 16 }}
       >
         {/* Stop header */}
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 8 }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-            <Badge count={stop.sequenceNo} style={{ backgroundColor: '#1677ff' }} />
+            <Badge count={stop.sequenceNo} style={{ backgroundColor: palette.primary }} />
             <div>
               <Text strong style={{ fontSize: 14 }}>{stop.storeCode}</Text>
-              <Text style={{ display: 'block', fontSize: 12, color: '#595959' }}>{stop.storeName}</Text>
+              <Text style={{ display: 'block', fontSize: 12, color: palette.textMuted }}>{stop.storeName}</Text>
             </div>
           </div>
-          <Tag color={stopInfo.color}>{stopInfo.label}</Tag>
+          <StatusBadge color={stopInfo.color as any}>{stopInfo.label}</StatusBadge>
         </div>
 
         {/* Time info */}
@@ -393,7 +394,7 @@ const DriverMyTripsPage: React.FC = () => {
             <span><Text type="secondary">Đóng cửa: </Text><Text strong>{formatTime(stop.closingTime)}</Text></span>
           )}
           {stop.address && (
-            <span><MapPin size={12} style={{ verticalAlign: 'middle', color: '#8c8c8c' }} /> <Text style={{ fontSize: 12 }}>{stop.address}</Text></span>
+            <span><MapPin size={12} style={{ verticalAlign: 'middle', color: palette.textFaint }} /> <Text style={{ fontSize: 12 }}>{stop.address}</Text></span>
           )}
         </div>
 
@@ -411,23 +412,23 @@ const DriverMyTripsPage: React.FC = () => {
                 padding: '10px 12px',
                 marginBottom: 8,
                 borderRadius: 8,
-                background: order.deliveryStatus === 'DELIVERED' ? '#f6ffed'
-                  : order.deliveryStatus === 'FAILED' ? '#fff1f0'
-                  : order.deliveryStatus === 'PARTIALLY_DELIVERED' ? '#fffbe6'
-                  : '#fafafa',
+                background: order.deliveryStatus === 'DELIVERED' ? palette.successBg
+                  : order.deliveryStatus === 'FAILED' ? palette.dangerBg
+                  : order.deliveryStatus === 'PARTIALLY_DELIVERED' ? palette.goldBg
+                  : palette.bgLayout,
                 border: '1px solid',
-                borderColor: order.deliveryStatus === 'DELIVERED' ? '#b7eb8f'
-                  : order.deliveryStatus === 'FAILED' ? '#ffa39e'
-                  : order.deliveryStatus === 'PARTIALLY_DELIVERED' ? '#ffe58f'
-                  : '#f0f0f0',
+                borderColor: order.deliveryStatus === 'DELIVERED' ? `${palette.success}55`
+                  : order.deliveryStatus === 'FAILED' ? `${palette.danger}55`
+                  : order.deliveryStatus === 'PARTIALLY_DELIVERED' ? `${palette.gold}55`
+                  : palette.borderSoft,
               }}
             >
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                 <div>
-                  <Tag color="blue">{order.orderRef}</Tag>
+                  <StatusBadge color="blue">{order.orderRef}</StatusBadge>
                   {order.recipientName && <Text style={{ fontSize: 12, marginLeft: 4 }}>{order.recipientName}</Text>}
                 </div>
-                <Tag color={orderInfo.color}>{orderInfo.label}</Tag>
+                <StatusBadge color={orderInfo.color as any}>{orderInfo.label}</StatusBadge>
               </div>
 
               {/* Reason for failed/partial */}
@@ -445,7 +446,7 @@ const DriverMyTripsPage: React.FC = () => {
 
               {/* Items summary */}
               {order.items.length > 0 && (
-                <div style={{ marginTop: 6, fontSize: 12, color: '#595959' }}>
+                <div style={{ marginTop: 6, fontSize: 12, color: palette.textMuted }}>
                   {order.items.slice(0, 2).map((item, i) => (
                     <span key={i} style={{ marginRight: 8 }}>
                       <Text code style={{ fontSize: 11 }}>{item.sku}</Text> × {item.quantity}
@@ -495,9 +496,9 @@ const DriverMyTripsPage: React.FC = () => {
 
         {/* Header */}
         <div style={{
-          background: 'linear-gradient(135deg, #1e293b 0%, #0f172a 100%)',
+          background: palette.bannerGradient,
           padding: '20px 24px',
-          borderRadius: 12,
+          borderRadius: 14,
           color: '#fff',
           marginBottom: 16,
         }}>
@@ -507,20 +508,20 @@ const DriverMyTripsPage: React.FC = () => {
                 <Truck size={20} style={{ marginRight: 8, verticalAlign: 'middle' }} />
                 {trip.tripCode}
               </Title>
-              <Text style={{ color: '#94a3b8', fontSize: 13 }}>
+              <Text style={{ color: palette.textFaint, fontSize: 13 }}>
                 {trip.plateNumber && `Xe: ${trip.plateNumber}`}
                 {trip.deliveryDate && ` · Ngày: ${trip.deliveryDate}`}
               </Text>
             </div>
             <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-              <Tag color={statusInfo.color} style={{ fontWeight: 600, fontSize: 13, padding: '4px 12px' }}>
+              <StatusBadge color={statusInfo.color as any}>
                 {statusInfo.label}
-              </Tag>
+              </StatusBadge>
               <Button
                 icon={<RefreshCw size={13} />}
                 size="small"
                 onClick={fetchActiveTrip}
-                style={{ color: '#94a3b8', borderColor: '#334155', background: 'transparent' }}
+                style={{ color: palette.textFaint, borderColor: '#334155', background: 'transparent' }}
               />
             </div>
           </div>
@@ -535,7 +536,7 @@ const DriverMyTripsPage: React.FC = () => {
           <Progress
             percent={progressPercent}
             status={progressPercent === 100 ? 'success' : 'active'}
-            strokeColor={{ '0%': '#1677ff', '100%': '#52c41a' }}
+            strokeColor={{ '0%': palette.primary, '100%': palette.success }}
           />
           {trip.pendingOrdersCount > 0 && (
             <Text type="secondary" style={{ fontSize: 12 }}>
@@ -565,7 +566,7 @@ const DriverMyTripsPage: React.FC = () => {
                 fontSize: 16,
                 fontWeight: 700,
                 borderRadius: 10,
-                background: '#1677ff',
+                background: palette.primary,
               }}
             >
               Bắt đầu chuyến
@@ -594,8 +595,8 @@ const DriverMyTripsPage: React.FC = () => {
                 fontSize: 16,
                 fontWeight: 700,
                 borderRadius: 10,
-                background: '#52c41a',
-                borderColor: '#52c41a',
+                background: palette.success,
+                borderColor: palette.success,
               }}
             >
               Hoàn thành chuyến
@@ -641,8 +642,8 @@ const DriverMyTripsPage: React.FC = () => {
                       fontSize: 16,
                       fontWeight: 700,
                       borderRadius: 10,
-                      background: '#fa8c16',
-                      borderColor: '#fa8c16',
+                      background: palette.gold,
+                      borderColor: palette.gold,
                     }}
                   >
                     Xác nhận xe đã về kho
@@ -673,7 +674,7 @@ const DriverMyTripsPage: React.FC = () => {
                     type="info"
                     showIcon
                     message="Xếp hàng theo thứ tự từ trên xuống (loadingOrder = 1 xếp vào đầu tiên — nằm sâu nhất trong xe, dỡ sau cùng)."
-                    style={{ borderRadius: '10px 10px 0 0', borderBottom: '1px solid #e8f4ff' }}
+                    style={{ borderRadius: '10px 10px 0 0', borderBottom: `1px solid ${palette.borderSoft}` }}
                   />
                   <Table
                     columns={lifoColumns}
@@ -692,7 +693,7 @@ const DriverMyTripsPage: React.FC = () => {
                 <Space>
                   <List size={14} />
                   Lịch giao hàng
-                  <Badge count={trip.pendingOrdersCount} style={{ backgroundColor: '#1677ff' }} />
+                  <Badge count={trip.pendingOrdersCount} style={{ backgroundColor: palette.primary }} />
                 </Space>
               ),
               children: sortedStops.length === 0 ? (

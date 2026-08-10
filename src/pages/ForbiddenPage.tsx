@@ -1,6 +1,7 @@
 import React from 'react';
 import { Button, Result } from 'antd';
 import { useNavigate } from 'react-router-dom';
+import { palette } from '../theme/tokens';
 
 const ForbiddenPage: React.FC = () => {
   const navigate = useNavigate();
@@ -11,7 +12,7 @@ const ForbiddenPage: React.FC = () => {
       display: 'flex',
       justifyContent: 'center',
       alignItems: 'center',
-      backgroundColor: '#f8fafc',
+      backgroundColor: palette.bgLayout,
       padding: '24px'
     }}>
       <Result

@@ -40,7 +40,7 @@ const StatCard: React.FC<StatCardProps> = ({
       onClick={onClick}
       styles={{ body: { padding: '18px 20px' } }}
       style={{
-        borderRadius: 12,
+        borderRadius: 14,
         border: `1px solid ${palette.borderSoft}`,
         boxShadow: palette.cardShadow,
         cursor: onClick ? 'pointer' : 'default',

@@ -54,8 +54,4 @@ export interface ImportFormValues {
   file: any; // We can use 'any' or 'UploadFile' from antd, but 'any' is safe for forms
 }
 
-export interface ImportMockOptions {
-  confirmReplace?: boolean;
-}
-
 export type { UserRole };

@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate, useParams, Link } from 'react-router-dom';
 import {
-  Card, Row, Col, Space, Button, Breadcrumb, Tag, Alert, Tooltip, Empty, Spin, message, Typography, Result
+  Card, Row, Col, Space, Button, Breadcrumb, Alert, Tooltip, Empty, Spin, message, Typography, Result
 } from 'antd';
 import { ArrowLeft, Edit3, Lock, Unlock, Plus } from 'lucide-react';
 import {
@@ -20,6 +20,7 @@ import {
   verticalListSortingStrategy
 } from '@dnd-kit/sortable';
 import AdminShell from '../../../components/AdminShell';
+import StatusBadge from '../../../components/StatusBadge';
 import type { DeliveryRoute, RouteStop, StoreSearchResult } from '../../../types/route';
 import { routeApi } from '../../../api/routeApi';
 import { USE_MOCK_API } from '../../../config';
@@ -397,9 +398,9 @@ const RouteDetailPage: React.FC = () => {
                     <div>
                       <Text type="secondary" style={{ fontSize: 12, display: 'block' }}>TRẠNG THÁI</Text>
                       <div style={{ marginTop: 4 }}>
-                        <Tag color={route.status === 'ACTIVE' ? 'success' : 'default'} style={{ borderRadius: 4, fontWeight: 500 }}>
+                        <StatusBadge color={route.status === 'ACTIVE' ? 'success' : 'default'}>
                           {route.status === 'ACTIVE' ? 'Đang hoạt động' : 'Chưa kích hoạt'}
-                        </Tag>
+                        </StatusBadge>
                       </div>
                     </div>
 
@@ -466,7 +467,7 @@ const RouteDetailPage: React.FC = () => {
                 title={
                   <Space style={{ width: '100%', justifyContent: 'space-between' }}>
                     <span style={{ fontSize: 16, fontWeight: 700 }}>Danh sách điểm dừng</span>
-                    <Tag color="blue" style={{ borderRadius: 4, fontWeight: 600 }}>{stops.length} điểm dừng</Tag>
+                    <StatusBadge color="blue">{stops.length} điểm dừng</StatusBadge>
                   </Space>
                 }
                 bordered={false}

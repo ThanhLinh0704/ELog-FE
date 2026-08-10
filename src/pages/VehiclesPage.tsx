@@ -3,7 +3,6 @@ import { useNavigate } from 'react-router-dom';
 import {
   Alert,
   Avatar,
-  Badge,
   Breadcrumb,
   Button,
   Card,
@@ -35,6 +34,9 @@ import {
   Unlock,
 } from 'lucide-react';
 import AdminShell from '../components/AdminShell';
+import PageHeader from '../components/PageHeader';
+import StatusBadge from '../components/StatusBadge';
+import { palette } from '../theme/tokens';
 import { useDebounce } from '../hooks/useDebounce';
 import { usePermissions } from '../hooks/usePermissions';
 import { PERMISSIONS } from '../constants/permissions';
@@ -140,10 +142,9 @@ function formatNumber(value?: number | null, fractionDigits = 0) {
 
 function VehicleStatusBadge({ active }: { active: boolean }) {
   return (
-    <Badge
-      status={active ? 'success' : 'error'}
-      text={active ? 'Hoạt động' : 'Đã vô hiệu hoá'}
-    />
+    <StatusBadge color={active ? 'success' : 'error'}>
+      {active ? 'Hoạt động' : 'Đã vô hiệu hoá'}
+    </StatusBadge>
   );
 }
 
@@ -753,8 +754,8 @@ const VehiclesPage: React.FC = () => {
       width: 220,
       render: (value: string) => (
         <Space>
-          <Avatar style={{ backgroundColor: '#1677ff' }} icon={<Truck size={17} />} />
-          <span style={{ fontWeight: 600, color: '#1f1f1f' }}>{value}</span>
+          <Avatar style={{ backgroundColor: palette.primary }} icon={<Truck size={17} />} />
+          <span style={{ fontWeight: 600, color: palette.textDark }}>{value}</span>
         </Space>
       ),
     },
@@ -843,7 +844,7 @@ const VehiclesPage: React.FC = () => {
                 type="text"
                 danger={record.isActive}
                 loading={statusSubmittingId === record.id}
-                style={{ color: record.isActive ? undefined : '#52c41a' }}
+                style={{ color: record.isActive ? undefined : palette.success }}
                 icon={record.isActive ? <Lock size={16} /> : <Unlock size={16} />}
                 title={record.isActive ? 'Vô hiệu hoá' : 'Kích hoạt'}
               />
@@ -863,13 +864,13 @@ const VehiclesPage: React.FC = () => {
               { title: 'Admin' },
               { title: 'Quản lý đội xe' },
             ]}
+            style={{ marginBottom: 12, fontSize: 13 }}
           />
-          <h2 style={{ margin: '8px 0 0 0', fontSize: 24, fontWeight: 700, color: '#1f1f1f' }}>
-            Quản lý đội xe
-          </h2>
-          <p style={{ margin: '4px 0 0 0', color: '#8c8c8c' }}>
-            Quản lý xe giao hàng, tải trọng, thể tích khoang hàng và trạng thái khai thác.
-          </p>
+          <PageHeader
+            title="Quản lý đội xe"
+            subtitle="Quản lý xe giao hàng, tải trọng, thể tích khoang hàng và trạng thái khai thác."
+            icon={<Truck size={20} />}
+          />
         </div>
 
         {blockedVehicleMessage ? (
@@ -889,7 +890,7 @@ const VehiclesPage: React.FC = () => {
               size="small"
               bordered={false}
               loading={capacityLoading}
-              style={{ boxShadow: '0 1px 2px 0 rgba(0, 0, 0, 0.03)' }}
+              style={{ borderRadius: 14, boxShadow: palette.cardShadow }}
             >
               <Statistic
                 title="Đội xe đang hoạt động"
@@ -903,7 +904,7 @@ const VehiclesPage: React.FC = () => {
               size="small"
               bordered={false}
               loading={capacityLoading}
-              style={{ boxShadow: '0 1px 2px 0 rgba(0, 0, 0, 0.03)' }}
+              style={{ borderRadius: 14, boxShadow: palette.cardShadow }}
             >
               <Statistic
                 title="Tổng tải trọng"
@@ -918,7 +919,7 @@ const VehiclesPage: React.FC = () => {
               size="small"
               bordered={false}
               loading={capacityLoading}
-              style={{ boxShadow: '0 1px 2px 0 rgba(0, 0, 0, 0.03)' }}
+              style={{ borderRadius: 14, boxShadow: palette.cardShadow }}
             >
               <Statistic
                 title="Tổng thể tích"
@@ -930,7 +931,7 @@ const VehiclesPage: React.FC = () => {
           </Col>
         </Row>
 
-        <Card bordered={false} style={{ boxShadow: '0 1px 2px 0 rgba(0, 0, 0, 0.03)' }}>
+        <Card bordered={false} style={{ borderRadius: 14, boxShadow: palette.cardShadow }}>
           <div
             style={{
               display: 'flex',
@@ -948,8 +949,8 @@ const VehiclesPage: React.FC = () => {
                   setKeyword(event.target.value);
                   setPage(0);
                 }}
-                prefix={<Search size={16} style={{ color: '#bfbfbf' }} />}
-                style={{ width: 280, borderRadius: 6 }}
+                prefix={<Search size={16} style={{ color: palette.textFaint }} />}
+                style={{ width: 280 }}
                 allowClear
               />
 
@@ -1069,7 +1070,7 @@ const VehiclesPage: React.FC = () => {
                       {detailVehicle.assignedDriverName} ({detailVehicle.assignedDriverPhone || 'N/A'}) - Bằng {detailVehicle.assignedDriverLicenseClass || 'N/A'}
                     </span>
                   ) : (
-                    <span style={{ fontStyle: 'italic', color: '#8c8c8c' }}>Chưa gán tài xế cố định</span>
+                    <span style={{ fontStyle: 'italic', color: palette.textMuted }}>Chưa gán tài xế cố định</span>
                   )}
                 </Descriptions.Item>
                 <Descriptions.Item label="Loại xe">

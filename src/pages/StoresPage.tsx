@@ -3,7 +3,6 @@ import { useNavigate } from 'react-router-dom';
 import {
   Alert,
   Avatar,
-  Badge,
   Breadcrumb,
   Button,
   Card,
@@ -19,7 +18,6 @@ import {
   Space,
   Statistic,
   Table,
-  Tag,
   Tooltip,
   message,
 } from 'antd';
@@ -33,9 +31,13 @@ import {
   Plus,
   RefreshCw,
   Search,
+  Store,
   Unlock,
 } from 'lucide-react';
 import AdminShell from '../components/AdminShell';
+import PageHeader from '../components/PageHeader';
+import StatusBadge from '../components/StatusBadge';
+import { palette } from '../theme/tokens';
 import { useDebounce } from '../hooks/useDebounce';
 import { storeApi, type StoreItem, type StorePayload } from '../api/storeApi';
 import { MapSelector } from '../components/MapSelector';
@@ -121,25 +123,24 @@ function hasStoreCoordinates(store: StoreItem) {
   );
 }
 
-function StatusBadge({ active }: { active: boolean }) {
+function ActiveStatusBadge({ active }: { active: boolean }) {
   return (
-    <Badge
-      status={active ? 'success' : 'error'}
-      text={active ? 'Hoạt động' : 'Đã vô hiệu hoá'}
-    />
+    <StatusBadge color={active ? 'success' : 'error'}>
+      {active ? 'Hoạt động' : 'Đã vô hiệu hoá'}
+    </StatusBadge>
   );
 }
 
 function RouteTag({ store }: { store: StoreItem }) {
   if (!store.assignedRoutes || store.assignedRoutes.length === 0) {
-    return <Tag color="default">Chưa gắn tuyến</Tag>;
+    return <StatusBadge color="default">Chưa gắn tuyến</StatusBadge>;
   }
 
   return (
     <Space size={[0, 4]} wrap>
       {store.assignedRoutes.map((r) => (
         <Tooltip key={r.id} title={r.name}>
-          <Tag color="blue">{r.code}</Tag>
+          <StatusBadge color="blue">{r.code}</StatusBadge>
         </Tooltip>
       ))}
     </Space>
@@ -150,18 +151,18 @@ function CoordinateTag({ store }: { store: StoreItem }) {
   if (hasStoreCoordinates(store)) {
     return (
       <Tooltip title="Đã có toạ độ GPS">
-        <Tag color="success" icon={<CheckCircle2 size={14} />}>
+        <StatusBadge color="success" icon={<CheckCircle2 size={14} />}>
           Đã có
-        </Tag>
+        </StatusBadge>
       </Tooltip>
     );
   }
 
   return (
     <Tooltip title="Chưa có lat/lng. ETA có thể không chính xác.">
-      <Tag color="warning" icon={<AlertTriangle size={14} />}>
+      <StatusBadge color="warning" icon={<AlertTriangle size={14} />}>
         Thiếu GPS
-      </Tag>
+      </StatusBadge>
     </Tooltip>
   );
 }
@@ -360,6 +361,7 @@ const StoreFormModal: React.FC<StoreFormModalProps> = ({
       footer={null}
       width={760}
       destroyOnHidden
+      styles={{ root: { borderRadius: 14 } }}
     >
       <Form form={form} layout="vertical" onFinish={handleFinish}>
         <Row gutter={16}>
@@ -811,10 +813,10 @@ const StoresPage: React.FC = () => {
       width: 210,
       render: (value: string) => (
         <Space>
-          <Avatar style={{ backgroundColor: '#1677ff' }}>
+          <Avatar style={{ backgroundColor: palette.primary }}>
             {value?.slice(0, 1)?.toUpperCase() || 'S'}
           </Avatar>
-          <span style={{ fontWeight: 600, color: '#1f1f1f' }}>{value}</span>
+          <span style={{ fontWeight: 600, color: palette.textDark }}>{value}</span>
         </Space>
       ),
     },
@@ -845,7 +847,7 @@ const StoresPage: React.FC = () => {
       title: 'Trạng thái',
       key: 'isActive',
       width: 150,
-      render: (_: any, record: StoreItem) => <StatusBadge active={record.isActive} />,
+      render: (_: any, record: StoreItem) => <ActiveStatusBadge active={record.isActive} />,
     },
     {
       title: 'Thao tác',
@@ -853,7 +855,7 @@ const StoresPage: React.FC = () => {
       width: 120,
       render: (_: any, record: StoreItem) => {
         if (!canWriteStore) {
-          return <span style={{ color: '#8c8c8c' }}>Chỉ xem</span>;
+          return <span style={{ color: palette.textMuted }}>Chỉ xem</span>;
         }
 
         return (
@@ -879,7 +881,7 @@ const StoresPage: React.FC = () => {
                 type="text"
                 danger={record.isActive}
                 loading={statusSubmittingId === record.id}
-                style={{ color: record.isActive ? undefined : '#52c41a' }}
+                style={{ color: record.isActive ? undefined : palette.success }}
                 icon={record.isActive ? <Lock size={16} /> : <Unlock size={16} />}
                 title={record.isActive ? 'Vô hiệu hoá' : 'Kích hoạt'}
               />
@@ -899,13 +901,13 @@ const StoresPage: React.FC = () => {
               { title: 'Admin' },
               { title: 'Quản lý cửa hàng' },
             ]}
+            style={{ marginBottom: 12, fontSize: 13 }}
           />
-          <h2 style={{ margin: '8px 0 0 0', fontSize: 24, fontWeight: 700, color: '#1f1f1f' }}>
-            Quản lý cửa hàng
-          </h2>
-          <p style={{ margin: '4px 0 0 0', color: '#8c8c8c' }}>
-            Quản lý cửa hàng điện máy, trạng thái tuyến và toạ độ GPS phục vụ tính ETA.
-          </p>
+          <PageHeader
+            title="Quản lý cửa hàng"
+            subtitle="Quản lý cửa hàng điện máy, trạng thái tuyến và toạ độ GPS phục vụ tính ETA."
+            icon={<Store size={20} />}
+          />
         </div>
 
         <Row gutter={[16, 16]}>
@@ -913,7 +915,7 @@ const StoresPage: React.FC = () => {
             <Card
               size="small"
               bordered={false}
-              style={{ boxShadow: '0 1px 2px 0 rgba(0, 0, 0, 0.03)' }}
+              style={{ borderRadius: 14, boxShadow: palette.cardShadow }}
             >
               <Statistic title="Tổng kết quả" value={tableTotal} suffix="cửa hàng" />
             </Card>
@@ -922,7 +924,7 @@ const StoresPage: React.FC = () => {
             <Card
               size="small"
               bordered={false}
-              style={{ boxShadow: '0 1px 2px 0 rgba(0, 0, 0, 0.03)' }}
+              style={{ borderRadius: 14, boxShadow: palette.cardShadow }}
             >
               <Statistic
                 title="Thiếu toạ độ GPS"
@@ -935,7 +937,7 @@ const StoresPage: React.FC = () => {
             <Card
               size="small"
               bordered={false}
-              style={{ boxShadow: '0 1px 2px 0 rgba(0, 0, 0, 0.03)' }}
+              style={{ borderRadius: 14, boxShadow: palette.cardShadow }}
             >
               <Statistic
                 title="Quyền truy cập"
@@ -965,7 +967,7 @@ const StoresPage: React.FC = () => {
           />
         ) : null}
 
-        <Card bordered={false} style={{ boxShadow: '0 1px 2px 0 rgba(0, 0, 0, 0.03)' }}>
+        <Card bordered={false} style={{ borderRadius: 14, boxShadow: palette.cardShadow }}>
           <div
             style={{
               display: 'flex',
@@ -983,8 +985,8 @@ const StoresPage: React.FC = () => {
                   setKeyword(event.target.value);
                   setPage(0);
                 }}
-                prefix={<Search size={16} style={{ color: '#bfbfbf' }} />}
-                style={{ width: 260, borderRadius: 6 }}
+                prefix={<Search size={16} style={{ color: palette.textFaint }} />}
+                style={{ width: 260 }}
                 allowClear
               />
 
@@ -1099,6 +1101,7 @@ const StoresPage: React.FC = () => {
             setBlockedStore(null);
             setBlockedStoreMessage('');
           }}
+          styles={{ root: { borderRadius: 14 } }}
           footer={
             <Space>
               <Button

@@ -2,7 +2,7 @@ import React, { useEffect, useState, useMemo, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import {
   Table, Card, Row, Col, Space, Button, Input, Select, Breadcrumb,
-  Statistic, Tag, message, Alert, Tooltip, Empty, Typography, Segmented, Badge, Popconfirm, Modal
+  Statistic, message, Alert, Tooltip, Empty, Typography, Segmented, Badge, Popconfirm, Modal
 } from 'antd';
 import {
   Edit3, Lock, Unlock, Plus, RefreshCw, Search, AlertTriangle,
@@ -10,6 +10,9 @@ import {
 } from 'lucide-react';
 import AdminShell from '../../../components/AdminShell';
 import RouteMapEditor from '../../../components/RouteMapEditor';
+import PageHeader from '../../../components/PageHeader';
+import StatusBadge from '../../../components/StatusBadge';
+import { palette } from '../../../theme/tokens';
 import type { DeliveryRoute, RouteStop, StoreSearchResult, RouteStatus } from '../../../types/route';
 import { routeApi } from '../../../api/routeApi';
 import { storeApi } from '../../../api/storeApi';
@@ -482,7 +485,7 @@ const RouteListPage: React.FC = () => {
             setSelectedRouteId(String(record.id));
             setViewMode('SPLIT_MAP');
           }}
-          style={{ fontWeight: 700, color: '#1677ff' }}
+          style={{ fontWeight: 700, color: palette.primary }}
         >
           {code}
         </a>
@@ -503,10 +506,9 @@ const RouteListPage: React.FC = () => {
           <span>{stopCount} điểm dừng</span>
           {record.coordinatesWarningCount > 0 && (
             <Tooltip title={`Có ${record.coordinatesWarningCount} điểm dừng chưa có toạ độ GPS`}>
-              <Tag color="warning" style={{ display: 'inline-flex', alignItems: 'center', gap: 4, borderRadius: 4, margin: 0 }}>
-                <AlertTriangle size={12} />
-                <span>{record.coordinatesWarningCount}</span>
-              </Tag>
+              <StatusBadge color="warning" icon={<AlertTriangle size={12} />}>
+                {record.coordinatesWarningCount}
+              </StatusBadge>
             </Tooltip>
           )}
         </Space>
@@ -519,9 +521,9 @@ const RouteListPage: React.FC = () => {
       render: (routeStatus: RouteStatus) => {
         const isActive = routeStatus === 'ACTIVE';
         return (
-          <Tag color={isActive ? 'success' : 'default'} style={{ borderRadius: 6, fontWeight: 500 }}>
+          <StatusBadge color={isActive ? 'success' : 'default'}>
             {isActive ? 'Đang hoạt động' : 'Chưa kích hoạt'}
-          </Tag>
+          </StatusBadge>
         );
       },
     },
@@ -575,7 +577,7 @@ const RouteListPage: React.FC = () => {
                   <Tooltip title={activationState.disabled ? activationState.tooltip : 'Kích hoạt'}>
                     <Button
                       type="text"
-                      style={{ color: activationState.disabled ? undefined : '#52c41a' }}
+                      style={{ color: activationState.disabled ? undefined : palette.success }}
                       disabled={activationState.disabled}
                       icon={<Unlock size={16} />}
                       onClick={() => handleOpenActivate(record)}
@@ -600,65 +602,63 @@ const RouteListPage: React.FC = () => {
     <AdminShell currentUser={currentUser}>
       <div style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
         {/* Header Breadcrumb, Title & View Switcher */}
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', flexWrap: 'wrap', gap: 16 }}>
-          <div>
-            <Breadcrumb items={[{ title: 'Admin' }, { title: 'Quản lý tuyến' }]} />
-            <h2 style={{ margin: '6px 0 0 0', fontSize: 24, fontWeight: 700, color: '#1f1f1f' }}>
-              Quản lý tuyến giao hàng
-            </h2>
-            <p style={{ margin: '4px 0 0 0', color: '#8c8c8c' }}>
-              Hiển thị bản đồ trực quan các tuyến giao hàng miền Bắc và cho phép tùy chỉnh tuyến trực tiếp.
-            </p>
-          </div>
-
-          <Space size="middle">
-            <Segmented
-              value={viewMode}
-              onChange={(val) => setViewMode(val as 'SPLIT_MAP' | 'TABLE')}
-              options={[
-                {
-                  label: (
-                    <div style={{ display: 'flex', alignItems: 'center', gap: 6, padding: '4px 8px' }}>
-                      <ListIcon size={16} />
-                      <span>Danh sách tuyến</span>
-                    </div>
-                  ),
-                  value: 'TABLE',
-                },
-                {
-                  label: (
-                    <div style={{ display: 'flex', alignItems: 'center', gap: 6, padding: '4px 8px' }}>
-                      <MapPin size={16} />
-                      <span>Bản đồ & Điều chỉnh tuyến</span>
-                    </div>
-                  ),
-                  value: 'SPLIT_MAP',
-                },
-              ]}
-            />
-            {canWriteRoute && (
-              <Button type="primary" icon={<Plus size={14} />} onClick={() => navigate('/admin/routes/new')}>
-                Tạo tuyến mới
-              </Button>
-            )}
-          </Space>
+        <div>
+          <Breadcrumb items={[{ title: 'Admin' }, { title: 'Quản lý tuyến' }]} style={{ marginBottom: 12, fontSize: 13 }} />
+          <PageHeader
+            title="Quản lý tuyến giao hàng"
+            subtitle="Hiển thị bản đồ trực quan các tuyến giao hàng miền Bắc và cho phép tùy chỉnh tuyến trực tiếp."
+            icon={<MapPin size={20} />}
+            actions={
+              <Space size="middle">
+                <Segmented
+                  value={viewMode}
+                  onChange={(val) => setViewMode(val as 'SPLIT_MAP' | 'TABLE')}
+                  options={[
+                    {
+                      label: (
+                        <div style={{ display: 'flex', alignItems: 'center', gap: 6, padding: '4px 8px' }}>
+                          <ListIcon size={16} />
+                          <span>Danh sách tuyến</span>
+                        </div>
+                      ),
+                      value: 'TABLE',
+                    },
+                    {
+                      label: (
+                        <div style={{ display: 'flex', alignItems: 'center', gap: 6, padding: '4px 8px' }}>
+                          <MapPin size={16} />
+                          <span>Bản đồ & Điều chỉnh tuyến</span>
+                        </div>
+                      ),
+                      value: 'SPLIT_MAP',
+                    },
+                  ]}
+                />
+                {canWriteRoute && (
+                  <Button type="primary" icon={<Plus size={14} />} onClick={() => navigate('/admin/routes/new')}>
+                    Tạo tuyến mới
+                  </Button>
+                )}
+              </Space>
+            }
+          />
         </div>
 
         {/* Statistic Cards */}
         <Row gutter={[16, 16]}>
           <Col xs={24} sm={8}>
-            <Card size="small" bordered={false} style={{ boxShadow: '0 1px 2px 0 rgba(0,0,0,0.03)' }}>
+            <Card size="small" bordered={false} style={{ borderRadius: 14, boxShadow: palette.cardShadow }}>
               <Statistic title="Tổng số tuyến" value={pageMeta.totalElements || routes.length} suffix="tuyến" />
             </Card>
           </Col>
           <Col xs={24} sm={8}>
-            <Card size="small" bordered={false} style={{ boxShadow: '0 1px 2px 0 rgba(0,0,0,0.03)' }}>
-              <Statistic title="Đang hoạt động" value={activeCount} valueStyle={{ color: '#52c41a' }} suffix="tuyến" />
+            <Card size="small" bordered={false} style={{ borderRadius: 14, boxShadow: palette.cardShadow }}>
+              <Statistic title="Đang hoạt động" value={activeCount} valueStyle={{ color: palette.success }} suffix="tuyến" />
             </Card>
           </Col>
           <Col xs={24} sm={8}>
-            <Card size="small" bordered={false} style={{ boxShadow: '0 1px 2px 0 rgba(0,0,0,0.03)' }}>
-              <Statistic title="Không kích hoạt" value={inactiveCount} valueStyle={{ color: '#8c8c8c' }} suffix="tuyến" />
+            <Card size="small" bordered={false} style={{ borderRadius: 14, boxShadow: palette.cardShadow }}>
+              <Statistic title="Không kích hoạt" value={inactiveCount} valueStyle={{ color: palette.textMuted }} suffix="tuyến" />
             </Card>
           </Col>
         </Row>
@@ -672,17 +672,17 @@ const RouteListPage: React.FC = () => {
             <div
               style={{
                 width: 440,
-                background: '#ffffff',
-                borderRadius: 8,
-                boxShadow: '0 1px 3px rgba(0,0,0,0.08)',
+                background: palette.bgCard,
+                borderRadius: 10,
+                boxShadow: palette.cardShadow,
                 display: 'flex',
                 flexDirection: 'column',
                 overflow: 'hidden',
-                border: '1px solid #f0f0f0',
+                border: `1px solid ${palette.borderSoft}`,
               }}
             >
               {/* Header: Select Active Route & Back to Table */}
-              <div style={{ padding: '12px 16px', background: '#fafafa', borderBottom: '1px solid #f0f0f0' }}>
+              <div style={{ padding: '12px 16px', background: palette.bgLayout, borderBottom: `1px solid ${palette.borderSoft}` }}>
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 8 }}>
                   <Text type="secondary" style={{ fontSize: 11, fontWeight: 700, textTransform: 'uppercase' }}>
                     Chọn tuyến để xem & điều chỉnh
@@ -792,7 +792,7 @@ const RouteListPage: React.FC = () => {
                         searchValue: `${st.code} ${st.name} ${st.address}`,
                         label: (
                           <div style={{ textOverflow: 'ellipsis', overflow: 'hidden', whiteSpace: 'nowrap' }}>
-                            <span style={{ fontWeight: 600, color: '#1677ff', marginRight: 4 }}>[{st.code}]</span>
+                            <span style={{ fontWeight: 600, color: '#2563eb', marginRight: 4 }}>[{st.code}]</span>
                             <span>{st.name}</span>
                           </div>
                         ),
@@ -837,7 +837,7 @@ const RouteListPage: React.FC = () => {
                           padding: '10px 12px',
                           marginBottom: 8,
                           background: isDragging ? '#e6f4ff' : isDragOver ? '#bae0ff' : '#ffffff',
-                          border: isDragOver ? '2px dashed #1677ff' : '1px solid #e8e8e8',
+                          border: isDragOver ? '2px dashed #2563eb' : '1px solid #e8e8e8',
                           borderRadius: 6,
                           boxShadow: isDragging ? '0 4px 12px rgba(22, 119, 255, 0.25)' : '0 1px 2px rgba(0,0,0,0.02)',
                           opacity: isDragging ? 0.6 : 1,
@@ -854,7 +854,7 @@ const RouteListPage: React.FC = () => {
                               width: 24,
                               height: 24,
                               borderRadius: '50%',
-                              background: '#1677ff',
+                              background: '#2563eb',
                               color: '#ffffff',
                               display: 'flex',
                               alignItems: 'center',
@@ -868,7 +868,7 @@ const RouteListPage: React.FC = () => {
                           </span>
                           <div style={{ overflow: 'hidden' }}>
                             <div style={{ fontWeight: 600, fontSize: 13, color: '#262626', textOverflow: 'ellipsis', overflow: 'hidden', whiteSpace: 'nowrap' }}>
-                              <span style={{ color: '#1677ff', marginRight: 4 }}>[{stop.storeCode}]</span>
+                              <span style={{ color: '#2563eb', marginRight: 4 }}>[{stop.storeCode}]</span>
                               {stop.storeName}
                             </div>
                             <div style={{ fontSize: 11, color: '#8c8c8c', textOverflow: 'ellipsis', overflow: 'hidden', whiteSpace: 'nowrap' }}>

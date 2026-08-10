@@ -42,11 +42,10 @@ async function handleAxiosCall<T>(call: () => Promise<any>): Promise<T> {
 export const importApi = {
   async uploadOrders(
     file: File,
-    deliveryDate?: string,
-    confirmReplace: boolean = false
+    deliveryDate?: string
   ): Promise<ImportResult> {
     if (USE_MOCK_API) {
-      return uploadOrdersMock(deliveryDate || '', file, { confirmReplace });
+      return uploadOrdersMock(deliveryDate || '', file);
     }
 
     const formData = new FormData();
@@ -54,13 +53,11 @@ export const importApi = {
     if (deliveryDate) {
       formData.append('deliveryDate', deliveryDate);
     }
-    formData.append('confirmReplace', String(confirmReplace));
 
     const queryParams = new URLSearchParams();
     if (deliveryDate) {
       queryParams.set('deliveryDate', deliveryDate);
     }
-    queryParams.set('confirmReplace', String(confirmReplace));
 
     const res = await handleAxiosCall<any>(() =>
       axiosInstance.post(`/api/v1/imports?${queryParams.toString()}`, formData, {

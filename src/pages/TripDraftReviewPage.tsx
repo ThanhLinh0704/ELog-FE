@@ -14,7 +14,6 @@ import {
   Spin,
   Statistic,
   Table,
-  Tag,
   Typography,
   message,
   TimePicker,
@@ -32,6 +31,7 @@ import {
   Eye,
 } from 'lucide-react';
 import AdminShell from '../components/AdminShell';
+import StatusBadge from '../components/StatusBadge';
 import {
   confirmTripDraft,
   getApiErrorMessage,
@@ -383,7 +383,7 @@ const TripDraftReviewPage: React.FC = () => {
       content: 'Thao tác này sẽ chuyển bản nháp đã kiểm tra thành chuyến đã lập kế hoạch.',
       okText: 'Xác nhận',
       cancelText: 'Huỷ',
-      icon: <CheckCircle2 size={20} color="#1677ff" />,
+      icon: <CheckCircle2 size={20} color="#2563eb" />,
       onOk: async () => {
         setConfirming(true);
 
@@ -480,7 +480,7 @@ const TripDraftReviewPage: React.FC = () => {
           <Space direction="vertical" size={0}>
             <Typography.Text>{formatDateTime(record.eta)}</Typography.Text>
             <Typography.Text type="secondary">
-              {record.estimatedTravelMin ?? 0} phút, {formatNumber(record.estimatedDistanceKm, 1)} km
+              {formatNumber(record.estimatedDistanceKm, 1)} km
             </Typography.Text>
           </Space>
         ),
@@ -491,9 +491,9 @@ const TripDraftReviewPage: React.FC = () => {
       width: 120,
       render: (_value, record) =>
         record.status === 'ACTIVE' ? (
-          <Tag color="green">{getStopStatusLabel(record.status)}</Tag>
+          <StatusBadge color="green">{getStopStatusLabel(record.status)}</StatusBadge>
         ) : (
-          <Tag color="default">{getStopStatusLabel(record.status)}</Tag>
+          <StatusBadge color="default">{getStopStatusLabel(record.status)}</StatusBadge>
         ),
     },
     {
@@ -700,10 +700,10 @@ const TripDraftReviewPage: React.FC = () => {
                 }
                 extra={
                   <Space wrap>
-                    <Tag color="green">{activeStops.length} hoạt động</Tag>
-                    <Tag color="default">
+                    <StatusBadge color="green">{activeStops.length} hoạt động</StatusBadge>
+                    <StatusBadge color="default">
                       {draft.stops.length - activeStops.length} bỏ qua
-                    </Tag>
+                    </StatusBadge>
                   </Space>
                 }
               >
@@ -796,7 +796,7 @@ const TripDraftReviewPage: React.FC = () => {
       <Modal
         title={
           <Space>
-            <PackageCheck size={20} style={{ color: '#1677ff' }} />
+            <PackageCheck size={20} style={{ color: '#2563eb' }} />
             <span>Chi tiết đơn hàng điểm dừng: {selectedStopForDetail?.storeName || selectedStopForDetail?.storeCode}</span>
           </Space>
         }

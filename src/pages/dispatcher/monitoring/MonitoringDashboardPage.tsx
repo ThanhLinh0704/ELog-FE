@@ -3,7 +3,6 @@ import {
   Card,
   Row,
   Col,
-  Tag,
   Progress,
   Badge,
   Spin,
@@ -33,6 +32,8 @@ import {
   User,
 } from 'lucide-react';
 import AdminShell from '../../../components/AdminShell';
+import StatusBadge, { type StatusBadgeColor } from '../../../components/StatusBadge';
+import { palette } from '../../../theme/tokens';
 import { TripRouteMap } from '../../../components/TripRouteMap';
 import { getActiveTrips, getTripProgress } from '../../../api/monitoringApi';
 import { getOperationalViolations, type OperationalViolation } from '../../../api/exceptionApi';
@@ -50,13 +51,13 @@ const DEFAULT_REFRESH_INTERVAL = 60; // seconds
 
 // ── Status helpers ──────────────────────────────────────────────────────────
 
-const TRIP_STATUS_MAP: Record<string, { color: string; label: string }> = {
+const TRIP_STATUS_MAP: Record<string, { color: StatusBadgeColor; label: string }> = {
   DISPATCHED: { color: 'default', label: 'Đã điều phối' },
   IN_PROGRESS: { color: 'processing', label: 'Đang giao' },
   COMPLETED: { color: 'success', label: 'Hoàn thành' },
 };
 
-const STOP_STATUS_MAP: Record<string, { color: string; label: string }> = {
+const STOP_STATUS_MAP: Record<string, { color: StatusBadgeColor; label: string }> = {
   PENDING: { color: 'default', label: 'Chờ đến' },
   IN_PROGRESS: { color: 'processing', label: 'Đang giao' },
   COMPLETED: { color: 'success', label: 'Đã hoàn thành' },
@@ -239,7 +240,7 @@ const MonitoringDashboardPage: React.FC = () => {
       key: 'sequenceIndex',
       width: 50,
       render: (_: unknown, __: unknown, index: number) => (
-        <Text strong style={{ color: '#1677ff' }}>#{index + 1}</Text>
+        <Text strong style={{ color: '#2563eb' }}>#{index + 1}</Text>
       ),
     },
     {
@@ -281,8 +282,8 @@ const MonitoringDashboardPage: React.FC = () => {
       key: 'status',
       width: 130,
       render: (v: string) => {
-        const m = STOP_STATUS_MAP[v] || { color: 'default', label: v };
-        return <Tag color={m.color}>{m.label}</Tag>;
+        const m = STOP_STATUS_MAP[v] || { color: 'default' as StatusBadgeColor, label: v };
+        return <StatusBadge color={m.color}>{m.label}</StatusBadge>;
       },
     },
     {
@@ -309,9 +310,9 @@ const MonitoringDashboardPage: React.FC = () => {
         if (!record.hasException) return <Text type="secondary">—</Text>;
         return (
           <Tooltip title={record.exceptions?.[0]?.description || 'Có ngoại lệ'}>
-            <Tag color="error" icon={<AlertTriangle size={12} />}>
+            <StatusBadge color="error" icon={<AlertTriangle size={12} />}>
               Ngoại lệ
-            </Tag>
+            </StatusBadge>
           </Tooltip>
         );
       },
@@ -472,29 +473,29 @@ const MonitoringDashboardPage: React.FC = () => {
                     </div>
                     <Space size={4}>
                       {trip.hasUnresolvedExceptions && (
-                        <Badge count={trip.exceptionStops} size="small" style={{ backgroundColor: '#ff4d4f' }}>
-                          <Tag color="error" icon={<AlertTriangle size={12} />}>
+                        <Badge count={trip.exceptionStops} size="small" style={{ backgroundColor: palette.danger }}>
+                          <StatusBadge color="error" icon={<AlertTriangle size={12} />}>
                             Ngoại lệ
-                          </Tag>
+                          </StatusBadge>
                         </Badge>
                       )}
-                      <Tag color={TRIP_STATUS_MAP[trip.status]?.color || 'default'}>
+                      <StatusBadge color={TRIP_STATUS_MAP[trip.status]?.color || 'default'}>
                         {TRIP_STATUS_MAP[trip.status]?.label || trip.status}
-                      </Tag>
+                      </StatusBadge>
                     </Space>
                   </div>
 
                   {/* Vehicle + Driver */}
                   <Space style={{ marginBottom: 12 }} wrap>
                     <Tooltip title="Xe">
-                      <Tag icon={<Truck size={12} />} style={{ fontSize: 12 }}>
+                      <StatusBadge icon={<Truck size={12} />}>
                         {trip.vehicleCode || '—'}
-                      </Tag>
+                      </StatusBadge>
                     </Tooltip>
                     <Tooltip title="Tài xế">
-                      <Tag icon={<User size={12} />} style={{ fontSize: 12 }}>
+                      <StatusBadge icon={<User size={12} />}>
                         {trip.driverName || '—'}
-                      </Tag>
+                      </StatusBadge>
                     </Tooltip>
                   </Space>
 
@@ -552,7 +553,7 @@ const MonitoringDashboardPage: React.FC = () => {
 
                   {/* Open detail hint */}
                   <div style={{ textAlign: 'right', marginTop: 8 }}>
-                    <Text style={{ fontSize: 12, color: '#1677ff' }}>
+                    <Text style={{ fontSize: 12, color: '#2563eb' }}>
                       Xem chi tiết <ChevronRight size={12} />
                     </Text>
                   </div>
@@ -599,9 +600,9 @@ const MonitoringDashboardPage: React.FC = () => {
                   <Col span={8}>
                     <Text type="secondary">Trạng thái</Text>
                     <br />
-                    <Tag color={TRIP_STATUS_MAP[tripProgress.status]?.color || 'default'}>
+                    <StatusBadge color={TRIP_STATUS_MAP[tripProgress.status]?.color || 'default'}>
                       {TRIP_STATUS_MAP[tripProgress.status]?.label || tripProgress.status}
-                    </Tag>
+                    </StatusBadge>
                   </Col>
                   <Col span={8}>
                     <Text type="secondary">Xe</Text>
@@ -643,9 +644,9 @@ const MonitoringDashboardPage: React.FC = () => {
                 size="small"
                 style={{ borderRadius: 8 }}
                 extra={
-                  <Tag color="blue" style={{ fontSize: 11 }}>
+                  <StatusBadge color="blue">
                     {tripProgress.stops.filter((s) => s.latitude != null && s.longitude != null).length} / {tripProgress.stops.length} điểm có tọa độ
-                  </Tag>
+                  </StatusBadge>
                 }
               >
                 <TripRouteMap

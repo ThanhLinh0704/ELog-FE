@@ -4,6 +4,7 @@ import { UploadOutlined, DownloadOutlined, FileExcelOutlined } from '@ant-design
 import type { UploadFile } from 'antd/es/upload/interface';
 import { downloadImportTemplate } from '../../../../utils/excelTemplate';
 import { validateExcelFile } from '../../../../utils/validateExcel';
+import { palette } from '../../../../theme/tokens';
 
 interface ImportUploadCardProps {
   loading: boolean;
@@ -45,8 +46,8 @@ const ImportUploadCard: React.FC<ImportUploadCardProps> = ({ loading, onUpload }
     <Card
       title={<span style={{ fontWeight: 600, fontSize: 16 }}>Nhập đơn hàng từ Excel</span>}
       style={{
-        borderRadius: 12,
-        boxShadow: '0 4px 12px rgba(0,0,0,0.05)',
+        borderRadius: 14,
+        boxShadow: palette.cardShadow,
         marginBottom: 24,
       }}
     >
@@ -74,7 +75,7 @@ const ImportUploadCard: React.FC<ImportUploadCardProps> = ({ loading, onUpload }
                   icon={<UploadOutlined />}
                   style={{
                     height: 40,
-                    borderRadius: 6,
+                    borderRadius: 8,
                     display: 'flex',
                     alignItems: 'center',
                   }}
@@ -86,7 +87,7 @@ const ImportUploadCard: React.FC<ImportUploadCardProps> = ({ loading, onUpload }
             </Upload>
 
             {fileList.length > 0 && (
-              <div style={{ display: 'flex', alignItems: 'center', gap: 8, color: '#1890ff' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 8, color: palette.primary }}>
                 <FileExcelOutlined style={{ fontSize: 16 }} />
                 <span style={{ fontSize: 13, wordBreak: 'break-all' }}>{fileList[0].name}</span>
               </div>
@@ -109,7 +110,7 @@ const ImportUploadCard: React.FC<ImportUploadCardProps> = ({ loading, onUpload }
             disabled={loading || fileList.length === 0}
             style={{
               height: 40,
-              borderRadius: 6,
+              borderRadius: 8,
               padding: '0 24px',
               fontWeight: 600,
             }}
@@ -118,7 +119,7 @@ const ImportUploadCard: React.FC<ImportUploadCardProps> = ({ loading, onUpload }
           </Button>
         </div>
         {fileError && (
-          <div style={{ color: '#ff4d4f', fontSize: 13, marginTop: 8 }}>{fileError}</div>
+          <div style={{ color: palette.danger, fontSize: 13, marginTop: 8 }}>{fileError}</div>
         )}
       </Spin>
     </Card>

@@ -4,6 +4,17 @@
  */
 export function decodePolyline(encoded: string): [number, number][] {
   if (!encoded) return [];
+
+  // BE ghép polyline nhiều chặng (leg-by-leg, do Goong Direction API không hỗ trợ
+  // waypoints) bằng dấu ';' — mỗi chặng là 1 chuỗi encode độc lập, phải decode riêng
+  // từng chặng rồi nối mảng toạ độ lại, không decode chung 1 mạch.
+  if (encoded.includes(';')) {
+    return encoded
+      .split(';')
+      .flatMap((part) => decodePolyline(part.trim()))
+      .filter((pt) => pt.length === 2);
+  }
+
   const points: [number, number][] = [];
   let index = 0;
   let lat = 0;

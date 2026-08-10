@@ -2,7 +2,7 @@ import React, { useEffect, useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import {
   Table, Card, Row, Col, Space, Button, Input, Select, Breadcrumb,
-  Statistic, Tag, Badge, Popconfirm, message, Alert, Avatar, Typography
+  Statistic, Badge, Popconfirm, message, Alert, Avatar, Typography
 } from 'antd';
 import { Edit3, Lock, Plus, RefreshCw, Search, Unlock } from 'lucide-react';
 import { USER_ROLES } from '../config';
@@ -11,6 +11,7 @@ import { userApi } from '../api/userApi';
 import { type User } from '../utils/userMapper';
 import UserFormModal from '../components/UserFormModal';
 import AdminShell from '../components/AdminShell';
+import StatusBadge from '../components/StatusBadge';
 import { usePermissions } from '../hooks/usePermissions';
 import { PERMISSIONS } from '../constants/permissions';
 
@@ -208,7 +209,7 @@ const UsersPage: React.FC = () => {
         const isCurrentUser = record.id === currentUser.id;
         return (
           <Space>
-            <Avatar style={{ backgroundColor: '#1677ff' }}>
+            <Avatar style={{ backgroundColor: '#2563eb' }}>
               {record.fullName.slice(0, 1).toUpperCase()}
             </Avatar>
             <div>
@@ -240,9 +241,9 @@ const UsersPage: React.FC = () => {
           {rolesList.map((roleVal) => {
             const matched = USER_ROLES.find((item) => item.value === roleVal);
             return (
-              <Tag color="blue" key={roleVal}>
+              <StatusBadge color="blue" key={roleVal}>
                 {matched ? matched.label : roleVal}
-              </Tag>
+              </StatusBadge>
             );
           })}
         </Space>

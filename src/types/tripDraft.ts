@@ -77,7 +77,7 @@ export interface CapacityValidationResult {
   weightCheckResult: ConstraintResult;
   eligibleVehicles: EligibleVehicle[];
   ineligibleVehicles: IneligibleVehicle[];
-  bindingConstraint?: 'VOLUME' | 'WEIGHT' | 'BOTH' | null;
+  bindingConstraint?: 'VOLUME' | 'WEIGHT' | 'BOTH' | 'TIME_WINDOW' | 'ROUTE_CONSTRAINT' | null;
   suggestion?: string | null;
   validatedAt?: string | null;
   validatedBy?: ConfirmedByDto | null;

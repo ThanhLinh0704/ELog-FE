@@ -9,7 +9,6 @@ import {
   Row,
   Col,
   Statistic,
-  Tag,
   Divider,
   Spin,
   message,
@@ -27,6 +26,8 @@ import { ArrowLeftOutlined, CarOutlined, ClockCircleOutlined, UserOutlined } fro
 import { MapPin, CheckCircle2, XCircle, Sparkles, Eye } from 'lucide-react';
 import dayjs from 'dayjs';
 import AdminShell from '../../../components/AdminShell';
+import StatusBadge, { type StatusBadgeColor } from '../../../components/StatusBadge';
+import { palette } from '../../../theme/tokens';
 import {
   tripDraftApi,
   adjustDepartureTime,
@@ -127,6 +128,18 @@ const TripDraftDetailPage: React.FC = () => {
   const hasFeasibleRecommendations = isFeasibleRecommendationPlan(recResult?.planType);
 
   const isOperableStatus = (draft?.status === 'DRAFT' || draft?.status === 'PLANNED' || draft?.status === 'VALIDATED') && existingTrips.length === 0;
+
+  // Manual assignment override (spec-manual-assignment-override.md, mirrors
+  // TripServiceImpl.validateAssignmentEligibility): unlocks "Phân xe & tài xế"
+  // not only when VALIDATED, but also when PLANNED and the automatic capacity
+  // check has actually run and failed (capacityFailInfo is only populated for
+  // that case — see fetchDraftDetail — but still needs the NOT_CHECKED guard so
+  // a draft that never ran the check at all stays locked).
+  const isManualAssignEligible =
+    draft?.status === 'VALIDATED' ||
+    (draft?.status === 'PLANNED' &&
+      capacityFailInfo != null &&
+      capacityFailInfo.volumeCheckResult !== 'NOT_CHECKED');
 
   const fetchDraftDetail = async () => {
     if (!id) return;
@@ -324,7 +337,7 @@ const TripDraftDetailPage: React.FC = () => {
   };
 
   const renderStatusTag = (status: string) => {
-    let color = 'default';
+    let color: StatusBadgeColor = 'default';
     let text = status;
 
     switch (status) {
@@ -354,7 +367,7 @@ const TripDraftDetailPage: React.FC = () => {
         break;
     }
 
-    return <Tag color={color} style={{ fontWeight: 500 }}>{text}</Tag>;
+    return <StatusBadge color={color}>{text}</StatusBadge>;
   };
 
   const stopsColumns = [
@@ -369,7 +382,7 @@ const TripDraftDetailPage: React.FC = () => {
       title: 'Mã cửa hàng',
       dataIndex: 'storeCode',
       key: 'storeCode',
-      render: (code: string) => <Tag color="blue">{code}</Tag>,
+      render: (code: string) => <StatusBadge color="blue">{code}</StatusBadge>,
     },
     {
       title: 'Tên cửa hàng',
@@ -383,15 +396,15 @@ const TripDraftDetailPage: React.FC = () => {
       key: 'isActive',
       render: (isActive: boolean) => (
         isActive
-          ? <Tag color="success">🟢 Hoạt động (Active)</Tag>
-          : <Tag color="default">⚪ Bỏ qua (Skipped)</Tag>
+          ? <StatusBadge color="success">Hoạt động (Active)</StatusBadge>
+          : <StatusBadge color="default">Bỏ qua (Skipped)</StatusBadge>
       ),
     },
     {
       title: 'ETA dự kiến',
       dataIndex: 'plannedEta',
       key: 'plannedEta',
-      render: (eta?: string | null) => (eta ? <Text strong style={{ color: '#1677ff' }}>{eta}</Text> : <Text type="secondary">—</Text>),
+      render: (eta?: string | null) => (eta ? <Text strong style={{ color: palette.primary }}>{eta}</Text> : <Text type="secondary">—</Text>),
     },
     {
       title: 'Số lượng đơn',
@@ -441,7 +454,7 @@ const TripDraftDetailPage: React.FC = () => {
       title: 'SKU',
       dataIndex: 'sku',
       key: 'sku',
-      render: (sku: string) => <Tag color="geekblue">{sku}</Tag>,
+      render: (sku: string) => <StatusBadge color="geekblue">{sku}</StatusBadge>,
     },
     {
       title: 'Tên sản phẩm',
@@ -493,8 +506,8 @@ const TripDraftDetailPage: React.FC = () => {
             ]}
           />
         </div>
-        <Card style={{ borderRadius: 12, textAlign: 'center', padding: '40px 0' }}>
-          <Empty description={<span style={{ color: '#8c8c8c' }}>Không tìm thấy Trip Draft hoặc xảy ra lỗi.</span>}>
+        <Card style={{ borderRadius: 14, textAlign: 'center', padding: '40px 0' }}>
+          <Empty description={<span style={{ color: palette.textMuted }}>Không tìm thấy Trip Draft hoặc xảy ra lỗi.</span>}>
             <Button
               type="primary"
               icon={<ArrowLeftOutlined />}
@@ -577,7 +590,7 @@ const TripDraftDetailPage: React.FC = () => {
           {isOperableStatus && (
             <Button
               icon={<ClockCircleOutlined />}
-              style={{ borderRadius: 6, fontWeight: 600, borderColor: '#1890ff', color: '#1890ff' }}
+              style={{ fontWeight: 600, borderColor: palette.primary, color: palette.primary }}
               onClick={() => setAdjustDepModalOpen(true)}
             >
               Điều chỉnh giờ xuất phát
@@ -588,14 +601,14 @@ const TripDraftDetailPage: React.FC = () => {
             <>
               <Button
                 danger
-                style={{ borderRadius: 6, fontWeight: 600 }}
+                style={{ fontWeight: 600 }}
                 loading={revertLoading}
                 onClick={() => setRevertModalOpen(true)}
               >
                 Thu hồi gom đơn
               </Button>
               <Button
-                style={{ borderRadius: 6, fontWeight: 600 }}
+                style={{ fontWeight: 600 }}
                 onClick={() => navigate(`/dispatcher/trip-drafts/${draft.id}/capacity`)}
               >
                 Xem kết quả tải trọng
@@ -606,7 +619,7 @@ const TripDraftDetailPage: React.FC = () => {
           {(draft.status === 'PLANNED' || draft.status === 'VALIDATED') && existingTrips.length === 0 && (
             <Button
               icon={<Sparkles size={16} />}
-              style={{ borderRadius: 6, fontWeight: 600, color: '#1677ff', borderColor: '#91caff', background: '#e6f4ff' }}
+              style={{ fontWeight: 600, color: palette.primary, borderColor: palette.primary, background: palette.primaryBg }}
               loading={recLoading}
               onClick={handleFetchRecommendations}
             >
@@ -618,18 +631,18 @@ const TripDraftDetailPage: React.FC = () => {
             <Button
               type="primary"
               icon={<CheckCircle2 size={16} />}
-              style={{ borderRadius: 6, fontWeight: 600, background: '#13c2c2', borderColor: '#13c2c2' }}
+              style={{ fontWeight: 600, background: palette.teal, borderColor: palette.teal }}
               loading={confirmLoading}
               onClick={handleConfirmTripDraft}
             >
               Xác nhận kế hoạch
             </Button>
           )}
-          {draft.status === 'VALIDATED' && existingTrips.length === 0 && (
+          {isManualAssignEligible && existingTrips.length === 0 && (
             <Button
               type="primary"
               icon={<CarOutlined />}
-              style={{ borderRadius: 6, fontWeight: 600, background: '#52c41a', borderColor: '#52c41a' }}
+              style={{ fontWeight: 600, background: palette.success, borderColor: palette.success }}
               onClick={() => navigate(getAssignUrlWithVehicle(), { state: getAssignNavigationState() })}
             >
               Phân xe & tài xế
@@ -639,7 +652,7 @@ const TripDraftDetailPage: React.FC = () => {
             <Button
               type="primary"
               icon={<CarOutlined />}
-              style={{ borderRadius: 6, fontWeight: 600 }}
+              style={{ fontWeight: 600 }}
               onClick={() => navigate(`/dispatcher/trip-drafts/${draft.id}/assign`)}
             >
               Xem chuyến đã tạo
@@ -651,13 +664,13 @@ const TripDraftDetailPage: React.FC = () => {
       {/* Overview Metrics Card */}
       <Card
         style={{
-          borderRadius: 12,
-          boxShadow: '0 4px 12px rgba(0,0,0,0.05)',
+          borderRadius: 14,
+          boxShadow: palette.cardShadow,
           marginBottom: 24,
         }}
         bodyStyle={{ padding: 24 }}
       >
-        <Title level={5} style={{ margin: '0 0 16px 0', color: '#262626', fontWeight: 600 }}>Thông tin tổng quan</Title>
+        <Title level={5} style={{ margin: '0 0 16px 0', color: palette.textDark, fontWeight: 600 }}>Thông tin tổng quan</Title>
         <Row gutter={[24, 16]}>
           <Col xs={12} sm={8} md={6}>
             <div style={{ display: 'flex', flexDirection: 'column' }}>
@@ -674,7 +687,7 @@ const TripDraftDetailPage: React.FC = () => {
           <Col xs={12} sm={8} md={6}>
             <div style={{ display: 'flex', flexDirection: 'column' }}>
               <Text type="secondary" style={{ fontSize: 13 }}>Giờ xuất phát dự kiến</Text>
-              <Text strong style={{ fontSize: 15, color: '#1890ff' }}>
+              <Text strong style={{ fontSize: 15, color: palette.primary }}>
                 {draft.plannedDepartureTime || 'Chưa thiết lập'}
               </Text>
             </div>
@@ -692,43 +705,43 @@ const TripDraftDetailPage: React.FC = () => {
         {/* Aggregate Stats */}
         <Row gutter={[16, 16]}>
           <Col xs={12} sm={6}>
-            <Card style={{ background: '#f5f5f5', borderRadius: 8, textAlign: 'center' }} bodyStyle={{ padding: '12px 16px' }}>
+            <Card style={{ background: palette.bgLayout, borderRadius: 10, textAlign: 'center' }} bodyStyle={{ padding: '12px 16px' }}>
               <Statistic
                 title="Stops hoạt động"
                 value={draft.activeStopCount}
-                valueStyle={{ color: '#262626', fontWeight: 700, fontSize: 20 }}
-                prefix={<CheckCircle2 size={16} style={{ marginRight: 4, verticalAlign: 'middle', color: '#52c41a' }} />}
+                valueStyle={{ color: palette.textDark, fontWeight: 700, fontSize: 20 }}
+                prefix={<CheckCircle2 size={16} style={{ marginRight: 4, verticalAlign: 'middle', color: palette.success }} />}
                 suffix={`/ ${draft.activeStopCount + draft.skippedStopCount}`}
               />
             </Card>
           </Col>
           <Col xs={12} sm={6}>
-            <Card style={{ background: '#f5f5f5', borderRadius: 8, textAlign: 'center' }} bodyStyle={{ padding: '12px 16px' }}>
+            <Card style={{ background: palette.bgLayout, borderRadius: 10, textAlign: 'center' }} bodyStyle={{ padding: '12px 16px' }}>
               <Statistic
                 title="Stops bỏ qua"
                 value={draft.skippedStopCount}
-                valueStyle={{ color: '#8c8c8c', fontWeight: 700, fontSize: 20 }}
-                prefix={<XCircle size={16} style={{ marginRight: 4, verticalAlign: 'middle', color: '#bfbfbf' }} />}
+                valueStyle={{ color: palette.textMuted, fontWeight: 700, fontSize: 20 }}
+                prefix={<XCircle size={16} style={{ marginRight: 4, verticalAlign: 'middle', color: palette.textFaint }} />}
               />
             </Card>
           </Col>
           <Col xs={12} sm={6}>
-            <Card style={{ background: '#f5f5f5', borderRadius: 8, textAlign: 'center' }} bodyStyle={{ padding: '12px 16px' }}>
+            <Card style={{ background: palette.bgLayout, borderRadius: 10, textAlign: 'center' }} bodyStyle={{ padding: '12px 16px' }}>
               <Statistic
                 title="Thể tích (m³)"
                 value={draft.totalVolumeM3}
                 precision={6}
-                valueStyle={{ color: '#096dd9', fontWeight: 700, fontSize: 20 }}
+                valueStyle={{ color: palette.primaryDark, fontWeight: 700, fontSize: 20 }}
               />
             </Card>
           </Col>
           <Col xs={12} sm={6}>
-            <Card style={{ background: '#f5f5f5', borderRadius: 8, textAlign: 'center' }} bodyStyle={{ padding: '12px 16px' }}>
+            <Card style={{ background: palette.bgLayout, borderRadius: 10, textAlign: 'center' }} bodyStyle={{ padding: '12px 16px' }}>
               <Statistic
                 title="Trọng lượng (kg)"
                 value={draft.totalWeightKg}
                 precision={3}
-                valueStyle={{ color: '#d46b08', fontWeight: 700, fontSize: 20 }}
+                valueStyle={{ color: palette.gold, fontWeight: 700, fontSize: 20 }}
               />
             </Card>
           </Col>
@@ -740,18 +753,18 @@ const TripDraftDetailPage: React.FC = () => {
         <Card
           title={
             <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-              <Sparkles size={18} style={{ color: '#1677ff' }} />
+              <Sparkles size={18} style={{ color: palette.primary }} />
               <span style={{ fontSize: 16, fontWeight: 600 }}>Gợi ý phân xe tự động</span>
-              <Tag color={hasFeasibleRecommendations ? 'success' : 'error'}>
+              <StatusBadge color={hasFeasibleRecommendations ? 'success' : 'error'}>
                 {hasFeasibleRecommendations ? 'Khả thi' : 'Cần xử lý thủ công'}
-              </Tag>
+              </StatusBadge>
             </div>
           }
           style={{
-            borderRadius: 12,
-            boxShadow: '0 4px 12px rgba(0,0,0,0.05)',
+            borderRadius: 14,
+            boxShadow: palette.cardShadow,
             marginBottom: 24,
-            border: hasFeasibleRecommendations ? '1px solid #91caff' : '1px solid #ffa39e',
+            border: hasFeasibleRecommendations ? `1px solid ${palette.primary}` : `1px solid ${palette.danger}`,
           }}
           bodyStyle={{ padding: 20 }}
         >
@@ -767,7 +780,7 @@ const TripDraftDetailPage: React.FC = () => {
               {recResult.message && <Alert type="warning" showIcon message={recResult.message} style={{ marginBottom: 12 }} />}
               {(recResult.violatedConstraints?.length ?? 0) > 0 && (
                 <div>
-                  <Text strong style={{ color: '#cf1322' }}>Chi tiết ràng buộc vi phạm:</Text>
+                  <Text strong style={{ color: palette.danger }}>Chi tiết ràng buộc vi phạm:</Text>
                   <ul style={{ margin: '8px 0', paddingLeft: 20 }}>
                     {recResult.violatedConstraints.map((c, i) => (
                       <li key={i}><Text type="danger">{c}</Text></li>
@@ -788,30 +801,30 @@ const TripDraftDetailPage: React.FC = () => {
                       onClick={() => setSelectedRecIdx(idx)}
                       style={{
                         borderRadius: 10,
-                        border: selectedRecIdx === idx ? '2px solid #1677ff' : '1px solid #f0f0f0',
+                        border: selectedRecIdx === idx ? `2px solid ${palette.primary}` : `1px solid ${palette.borderSoft}`,
                         cursor: 'pointer',
-                        background: selectedRecIdx === idx ? '#e6f4ff' : '#fff',
+                        background: selectedRecIdx === idx ? palette.primaryBg : palette.bgCard,
                       }}
                       bodyStyle={{ padding: 16 }}
                     >
                       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 8 }}>
                         <Text strong style={{ fontSize: 14 }}>Phương án {idx + 1}</Text>
-                        <Tag color={rec.planType === 'SINGLE_VEHICLE' ? 'blue' : 'purple'}>
+                        <StatusBadge color={rec.planType === 'SINGLE_VEHICLE' ? 'blue' : 'purple'}>
                           {rec.planType === 'SINGLE_VEHICLE' ? '1 xe' : 'Nhiều xe'}
-                        </Tag>
+                        </StatusBadge>
                       </div>
                       {(rec.warnings?.length ?? 0) > 0 && (
                         <div style={{ marginBottom: 8 }}>
                           {rec.warnings!.map((w, wi) => (
-                            <Tag key={wi} color="gold" style={{ fontSize: 11, marginBottom: 4, whiteSpace: 'normal' }}>
+                            <StatusBadge key={wi} color="gold">
                               ⚠ {w}
-                            </Tag>
+                            </StatusBadge>
                           ))}
                         </div>
                       )}
                       <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 8 }}>
                         <Text type="secondary" style={{ fontSize: 12 }}>Điểm khả thi</Text>
-                        <Text strong style={{ color: rec.totalScore >= 80 ? '#52c41a' : rec.totalScore >= 60 ? '#fa8c16' : '#ff4d4f', fontSize: 16 }}>
+                        <Text strong style={{ color: rec.totalScore >= 80 ? palette.success : rec.totalScore >= 60 ? palette.gold : palette.danger, fontSize: 16 }}>
                           {rec.totalScore}/100
                         </Text>
                       </div>
@@ -819,8 +832,8 @@ const TripDraftDetailPage: React.FC = () => {
                       {rec.vehicles.map((v, vi) => (
                         <div key={vi} style={{ marginBottom: 8 }}>
                           <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 2 }}>
-                            <Tag icon={<CarOutlined />}>{v.vehicleCode} · {v.plateNumber}</Tag>
-                            <Text style={{ fontSize: 12, color: '#595959' }}>
+                            <StatusBadge icon={<CarOutlined />}>{v.vehicleCode} · {v.plateNumber}</StatusBadge>
+                            <Text style={{ fontSize: 12, color: palette.textBody }}>
                               {v.payloadKg} kg / {v.maxVolumeM3} m³
                             </Text>
                           </div>
@@ -835,23 +848,23 @@ const TripDraftDetailPage: React.FC = () => {
                           <div style={{ paddingLeft: 4, fontSize: 12 }}>
                             {v.driverId != null ? (
                               <>
-                                <div style={{ color: '#262626' }}>
-                                  <UserOutlined style={{ marginRight: 4, color: '#1677ff' }} />
+                                <div style={{ color: palette.textDark }}>
+                                  <UserOutlined style={{ marginRight: 4, color: palette.primary }} />
                                   {v.driverName || '—'}
                                   {v.driverPhone && <Text type="secondary" style={{ marginLeft: 6, fontSize: 11 }}>({v.driverPhone})</Text>}
-                                  {v.driverLicenseClass && <Tag style={{ marginLeft: 6, fontSize: 10 }} color="default">Bằng {v.driverLicenseClass}</Tag>}
+                                  {v.driverLicenseClass && <StatusBadge color="default">Bằng {v.driverLicenseClass}</StatusBadge>}
                                 </div>
                                 <div style={{ marginTop: 2 }}>
                                   {v.isTemporaryDriver === false && (
-                                    <Tag color="green" style={{ fontSize: 10 }}>Tài xế cố định</Tag>
+                                    <StatusBadge color="green">Tài xế cố định</StatusBadge>
                                   )}
                                   {v.isTemporaryDriver === true && (
-                                    <Tag color="orange" style={{ fontSize: 10 }}>Tài xế thay thế</Tag>
+                                    <StatusBadge color="gold">Tài xế thay thế</StatusBadge>
                                   )}
                                 </div>
                               </>
                             ) : (
-                              <Tag color="red" style={{ fontSize: 10, marginTop: 2 }}>Chưa tìm được tài xế phù hợp</Tag>
+                              <StatusBadge color="red">Chưa tìm được tài xế phù hợp</StatusBadge>
                             )}
                           </div>
                         </div>
@@ -861,14 +874,14 @@ const TripDraftDetailPage: React.FC = () => {
                           <Divider style={{ margin: '8px 0' }} />
                           <Text type="secondary" style={{ fontSize: 11, fontWeight: 600 }}>Chia điểm dừng theo xe</Text>
                           {rec.subTrips!.map((st, si) => (
-                            <div key={si} style={{ marginTop: 8, padding: 8, background: '#fafafa', borderRadius: 6 }}>
+                            <div key={si} style={{ marginTop: 8, padding: 8, background: palette.bgLayout, borderRadius: 8 }}>
                               <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 4 }}>
                                 <Text strong style={{ fontSize: 12 }}>{st.label}</Text>
                                 <Text type="secondary" style={{ fontSize: 11 }}>{st.stopSequenceNos.length} điểm dừng</Text>
                               </div>
                               <div style={{ display: 'flex', gap: 12, marginBottom: st.warnings?.length ? 6 : 0 }}>
                                 <div style={{ flex: 1 }}>
-                                  <Text style={{ fontSize: 10, color: '#8c8c8c' }}>Thể tích</Text>
+                                  <Text style={{ fontSize: 10, color: palette.textMuted }}>Thể tích</Text>
                                   <Progress
                                     percent={st.volumeUtilizationPct}
                                     size="small"
@@ -877,7 +890,7 @@ const TripDraftDetailPage: React.FC = () => {
                                   />
                                 </div>
                                 <div style={{ flex: 1 }}>
-                                  <Text style={{ fontSize: 10, color: '#8c8c8c' }}>Khối lượng</Text>
+                                  <Text style={{ fontSize: 10, color: palette.textMuted }}>Khối lượng</Text>
                                   <Progress
                                     percent={st.weightUtilizationPct}
                                     size="small"
@@ -889,9 +902,9 @@ const TripDraftDetailPage: React.FC = () => {
                               {(st.warnings?.length ?? 0) > 0 && (
                                 <div>
                                   {st.warnings!.map((w, wi) => (
-                                    <Tag key={wi} color="orange" style={{ fontSize: 10, marginBottom: 2, whiteSpace: 'normal' }}>
+                                    <StatusBadge key={wi} color="gold">
                                       ⚠ {w}
-                                    </Tag>
+                                    </StatusBadge>
                                   ))}
                                 </div>
                               )}
@@ -915,7 +928,7 @@ const TripDraftDetailPage: React.FC = () => {
                   type="success"
                   showIcon
                   message={`Đã chọn Phương án ${selectedRecIdx + 1}. Nhấn "Xác nhận kế hoạch" để lưu và chuyển sang bước phân xe.`}
-                  style={{ marginTop: 12, borderRadius: 8 }}
+                  style={{ marginTop: 12, borderRadius: 10 }}
                 />
               )}
             </>
@@ -927,13 +940,13 @@ const TripDraftDetailPage: React.FC = () => {
       <Card
         title={
           <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-            <MapPin size={18} style={{ color: '#1677ff' }} />
+            <MapPin size={18} style={{ color: palette.primary }} />
             <span style={{ fontSize: 16, fontWeight: 600 }}>Thứ tự giao hàng tại các điểm dừng (Stops)</span>
           </div>
         }
         style={{
-          borderRadius: 12,
-          boxShadow: '0 4px 12px rgba(0,0,0,0.05)',
+          borderRadius: 14,
+          boxShadow: palette.cardShadow,
           marginBottom: 24,
         }}
         bodyStyle={{ padding: 0 }}
@@ -981,7 +994,7 @@ const TripDraftDetailPage: React.FC = () => {
                     title: 'Loại sự kiện',
                     dataIndex: 'eventType',
                     key: 'eventType',
-                    render: (t: PlanningEvent['eventType']) => <Tag color="blue">{PLANNING_EVENT_TYPE_LABEL[t] ?? t}</Tag>,
+                    render: (t: PlanningEvent['eventType']) => <StatusBadge color="blue">{PLANNING_EVENT_TYPE_LABEL[t] ?? t}</StatusBadge>,
                   },
                   {
                     title: 'Người thực hiện',
@@ -1062,7 +1075,7 @@ const TripDraftDetailPage: React.FC = () => {
         open={orderItemsModalOpen}
         title={
           <Space>
-            <Eye size={18} color="#1677ff" />
+            <Eye size={18} color="#2563eb" />
             <span>Chi tiết các mặt hàng tại {selectedStop?.storeName} ({selectedStop?.storeCode})</span>
           </Space>
         }

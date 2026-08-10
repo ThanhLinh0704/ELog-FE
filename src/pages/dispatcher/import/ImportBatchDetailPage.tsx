@@ -12,6 +12,7 @@ import { importApi } from '../../../api/importApi';
 import type { ImportResult } from '../../../types/import';
 import { downloadErrorReport } from '../../../utils/errorReport';
 import { USE_MOCK_API } from '../../../config';
+import { palette } from '../../../theme/tokens';
 
 const { Title, Text } = Typography;
 
@@ -145,10 +146,10 @@ const ImportBatchDetailPage: React.FC = () => {
             ]}
           />
         </div>
-        <Card style={{ borderRadius: 12, textAlign: 'center', padding: '40px 0' }}>
+        <Card style={{ borderRadius: 14, textAlign: 'center', padding: '40px 0', boxShadow: palette.cardShadow }}>
           <Empty
             description={
-              <span style={{ fontSize: 16, fontWeight: 500, color: '#8c8c8c' }}>
+              <span style={{ fontSize: 16, fontWeight: 500, color: palette.textMuted }}>
                 404 - Không tìm thấy batch import
               </span>
             }
@@ -157,7 +158,7 @@ const ImportBatchDetailPage: React.FC = () => {
               type="primary"
               icon={<ArrowLeftOutlined />}
               onClick={() => navigate('/dispatcher/import')}
-              style={{ borderRadius: 6, marginTop: 12 }}
+              style={{ borderRadius: 8, marginTop: 12 }}
             >
               Quay lại danh sách
             </Button>
@@ -187,7 +188,7 @@ const ImportBatchDetailPage: React.FC = () => {
           <Button
             icon={<ArrowLeftOutlined />}
             onClick={() => navigate('/dispatcher/import')}
-            style={{ borderRadius: 6, marginBottom: 8 }}
+            style={{ borderRadius: 8, marginBottom: 8 }}
           >
             Quay lại
           </Button>
@@ -204,7 +205,7 @@ const ImportBatchDetailPage: React.FC = () => {
             <Button
               type="primary"
               onClick={() => navigate(batch.deliveryDate ? `/dispatcher/trip-drafts?deliveryDate=${batch.deliveryDate}` : '/dispatcher/trip-drafts')}
-              style={{ borderRadius: 6, height: 40, fontWeight: 600, background: '#52c41a', borderColor: '#52c41a' }}
+              style={{ borderRadius: 8, height: 40, fontWeight: 600, background: palette.success, borderColor: palette.success }}
             >
               Đi đến Gom đơn
             </Button>
@@ -218,7 +219,7 @@ const ImportBatchDetailPage: React.FC = () => {
               loading={exportLoading}
               disabled={exportLoading}
               onClick={handleExport}
-              style={{ borderRadius: 6, height: 40, fontWeight: 600 }}
+              style={{ borderRadius: 8, height: 40, fontWeight: 600 }}
             >
               Tải báo cáo lỗi (.xlsx)
             </Button>
@@ -229,13 +230,13 @@ const ImportBatchDetailPage: React.FC = () => {
       {/* Metadata Overview Card */}
       <Card
         style={{
-          borderRadius: 12,
-          boxShadow: '0 4px 12px rgba(0,0,0,0.05)',
+          borderRadius: 14,
+          boxShadow: palette.cardShadow,
           marginBottom: 24,
         }}
         bodyStyle={{ padding: 24 }}
       >
-        <Title level={5} style={{ margin: '0 0 16px 0', color: '#262626', fontWeight: 600 }}>Thông tin tổng quan</Title>
+        <Title level={5} style={{ margin: '0 0 16px 0', color: palette.textDark, fontWeight: 600 }}>Thông tin tổng quan</Title>
         <Row gutter={[24, 16]}>
           <Col xs={24} sm={12} md={8}>
             <div style={{ display: 'flex', flexDirection: 'column' }}>
@@ -276,42 +277,42 @@ const ImportBatchDetailPage: React.FC = () => {
         {/* Statistic Metrics */}
         <Row gutter={[16, 16]}>
           <Col xs={12} sm={6}>
-            <Card style={{ background: '#f5f5f5', borderRadius: 8, textAlign: 'center' }} bodyStyle={{ padding: '12px 16px' }}>
+            <Card style={{ background: palette.bgLayout, borderRadius: 10, textAlign: 'center' }} bodyStyle={{ padding: '12px 16px' }}>
               <Statistic
                 title="Tổng dòng"
                 value={totalRows}
-                valueStyle={{ color: '#262626', fontWeight: 700, fontSize: 20 }}
-                prefix={<FileSpreadsheet size={16} style={{ marginRight: 4, verticalAlign: 'middle', color: '#8c8c8c' }} />}
+                valueStyle={{ color: palette.textDark, fontWeight: 700, fontSize: 20 }}
+                prefix={<FileSpreadsheet size={16} style={{ marginRight: 4, verticalAlign: 'middle', color: palette.textMuted }} />}
               />
             </Card>
           </Col>
           <Col xs={12} sm={6}>
-            <Card style={{ background: '#f6ffed', borderRadius: 8, textAlign: 'center', border: '1px solid #d9f7be' }} bodyStyle={{ padding: '12px 16px' }}>
+            <Card style={{ background: palette.successBg, borderRadius: 10, textAlign: 'center' }} bodyStyle={{ padding: '12px 16px' }}>
               <Statistic
                 title="Thành công"
                 value={acceptedRows}
-                valueStyle={{ color: '#389e0d', fontWeight: 700, fontSize: 20 }}
-                prefix={<CheckCircle2 size={16} style={{ marginRight: 4, verticalAlign: 'middle', color: '#52c41a' }} />}
+                valueStyle={{ color: palette.success, fontWeight: 700, fontSize: 20 }}
+                prefix={<CheckCircle2 size={16} style={{ marginRight: 4, verticalAlign: 'middle', color: palette.success }} />}
               />
             </Card>
           </Col>
           <Col xs={12} sm={6}>
-            <Card style={{ background: rejectedRows > 0 ? '#fff1f0' : '#f5f5f5', borderRadius: 8, textAlign: 'center', border: rejectedRows > 0 ? '1px solid #ffccc7' : 'none' }} bodyStyle={{ padding: '12px 16px' }}>
+            <Card style={{ background: rejectedRows > 0 ? palette.dangerBg : palette.bgLayout, borderRadius: 10, textAlign: 'center' }} bodyStyle={{ padding: '12px 16px' }}>
               <Statistic
                 title="Lỗi"
                 value={rejectedRows}
-                valueStyle={{ color: rejectedRows > 0 ? '#cf1322' : '#8c8c8c', fontWeight: 700, fontSize: 20 }}
-                prefix={<XCircle size={16} style={{ marginRight: 4, verticalAlign: 'middle', color: rejectedRows > 0 ? '#ff4d4f' : '#8c8c8c' }} />}
+                valueStyle={{ color: rejectedRows > 0 ? palette.danger : palette.textMuted, fontWeight: 700, fontSize: 20 }}
+                prefix={<XCircle size={16} style={{ marginRight: 4, verticalAlign: 'middle', color: rejectedRows > 0 ? palette.danger : palette.textMuted }} />}
               />
             </Card>
           </Col>
           <Col xs={12} sm={6}>
-            <Card style={{ background: '#e6f7ff', borderRadius: 8, textAlign: 'center', border: '1px solid #bae7ff' }} bodyStyle={{ padding: '12px 16px' }}>
+            <Card style={{ background: palette.primaryBg, borderRadius: 10, textAlign: 'center' }} bodyStyle={{ padding: '12px 16px' }}>
               <Statistic
                 title="Đơn hàng tạo"
                 value={ordersCreated}
-                valueStyle={{ color: '#096dd9', fontWeight: 700, fontSize: 20 }}
-                prefix={<Package size={16} style={{ marginRight: 4, verticalAlign: 'middle', color: '#1890ff' }} />}
+                valueStyle={{ color: palette.primaryDark, fontWeight: 700, fontSize: 20 }}
+                prefix={<Package size={16} style={{ marginRight: 4, verticalAlign: 'middle', color: palette.primary }} />}
               />
             </Card>
           </Col>
@@ -325,7 +326,7 @@ const ImportBatchDetailPage: React.FC = () => {
           description="Tất cả các dòng dữ liệu trong file import đều bị lỗi. Vui lòng kiểm tra danh sách dòng lỗi bên dưới."
           type="error"
           showIcon
-          style={{ marginBottom: 24, borderRadius: 8 }}
+          style={{ marginBottom: 24, borderRadius: 10 }}
         />
       )}
 
@@ -336,8 +337,8 @@ const ImportBatchDetailPage: React.FC = () => {
       {rejectedRows > 0 ? (
         <ImportErrorsTable batchId={Number(batchId)} />
       ) : (
-        <Card style={{ borderRadius: 12, textAlign: 'center', padding: '24px 0', border: '1px solid #d9d9d9', boxShadow: '0 4px 12px rgba(0,0,0,0.05)', marginBottom: 24 }}>
-          <Empty description={<span style={{ color: '#8c8c8c' }}>Batch này không có dòng lỗi. Tất cả dữ liệu đã được import thành công.</span>} />
+        <Card style={{ borderRadius: 14, textAlign: 'center', padding: '24px 0', border: `1px solid ${palette.borderSoft}`, boxShadow: palette.cardShadow, marginBottom: 24 }}>
+          <Empty description={<span style={{ color: palette.textMuted }}>Batch này không có dòng lỗi. Tất cả dữ liệu đã được import thành công.</span>} />
         </Card>
       )}
     </AdminShell>

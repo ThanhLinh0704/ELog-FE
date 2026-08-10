@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
-import { Drawer, Table, Tag, Typography, message } from 'antd';
+import { Drawer, Table, Typography, message } from 'antd';
+import StatusBadge from '../../../../components/StatusBadge';
 import { getDriverStatusHistory } from '../../../../api/driverApi';
 import { DRIVER_STATUS_LABEL, REASON_CODE_LABEL, type DriverStatusHistoryEntry } from '../../../../types/driver';
 
@@ -62,13 +63,13 @@ const DriverStatusHistoryDrawer: React.FC<DriverStatusHistoryDrawerProps> = ({
       key: 'change',
       render: (_: unknown, record: DriverStatusHistoryEntry) => (
         <>
-          <Tag color={DRIVER_STATUS_LABEL[record.statusBefore].color}>
+          <StatusBadge color={DRIVER_STATUS_LABEL[record.statusBefore].color as any}>
             {DRIVER_STATUS_LABEL[record.statusBefore].label}
-          </Tag>
+          </StatusBadge>
           {' → '}
-          <Tag color={DRIVER_STATUS_LABEL[record.statusAfter].color}>
+          <StatusBadge color={DRIVER_STATUS_LABEL[record.statusAfter].color as any}>
             {DRIVER_STATUS_LABEL[record.statusAfter].label}
-          </Tag>
+          </StatusBadge>
         </>
       ),
     },
@@ -100,6 +101,7 @@ const DriverStatusHistoryDrawer: React.FC<DriverStatusHistoryDrawerProps> = ({
       open={visible}
       onClose={onClose}
       width={640}
+      styles={{ body: { padding: 20 } }}
     >
       <Table
         columns={columns}

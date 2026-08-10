@@ -1,6 +1,7 @@
 import React, { useEffect, useMemo, useState } from 'react';
-import { Alert, Button, Card, Checkbox, Col, List, Row, Space, Spin, Tag, Typography, message } from 'antd';
+import { Alert, Button, Card, Checkbox, Col, List, Row, Space, Spin, Typography, message } from 'antd';
 import AdminShell from '../components/AdminShell';
+import StatusBadge from '../components/StatusBadge';
 import { getPermissions, getRoleById, getRoles, updateRolePermissions, type PermissionItem, type RoleItem } from '../api/roleApi';
 import { usePermissions } from '../hooks/usePermissions';
 import { PERMISSIONS } from '../constants/permissions';
@@ -191,7 +192,7 @@ const RoleManagementPage: React.FC = () => {
                       Lưu thay đổi
                     </Button>
                   ) : (
-                    <Tag>Chỉ xem</Tag>
+                    <StatusBadge>Chỉ xem</StatusBadge>
                   )
                 }
               >

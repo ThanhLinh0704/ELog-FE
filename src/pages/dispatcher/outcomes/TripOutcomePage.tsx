@@ -3,7 +3,6 @@ import {
   Card,
   Table,
   Button,
-  Tag,
   Typography,
   Breadcrumb,
   Spin,
@@ -26,6 +25,7 @@ import {
 } from '@ant-design/icons';
 import { CheckCircle2, XCircle, Package, Truck } from 'lucide-react';
 import AdminShell from '../../../components/AdminShell';
+import StatusBadge, { type StatusBadgeColor } from '../../../components/StatusBadge';
 import { getTripOutcomes, validateOutcome, amendOutcome } from '../../../api/tripOutcomeApi';
 import type { TripOutcome } from '../../../types/tripOutcome';
 import { OUTCOME_STATUS_LABEL } from '../../../types/tripOutcome';
@@ -131,7 +131,7 @@ const TripOutcomePage: React.FC = () => {
       title: 'Mã chuyến',
       dataIndex: 'tripCode',
       key: 'tripCode',
-      render: (code: string) => <Text strong style={{ color: '#1677ff' }}>{code}</Text>,
+      render: (code: string) => <Text strong style={{ color: '#2563eb' }}>{code}</Text>,
     },
     {
       title: 'Tài xế',
@@ -143,7 +143,7 @@ const TripOutcomePage: React.FC = () => {
       title: 'Biển số xe',
       dataIndex: 'vehiclePlate',
       key: 'vehiclePlate',
-      render: (plate: string | null) => plate ? <Tag icon={<Truck size={12} />}>{plate}</Tag> : '—',
+      render: (plate: string | null) => plate ? <StatusBadge icon={<Truck size={12} />}>{plate}</StatusBadge> : '—',
     },
     {
       title: 'Tổng đơn',
@@ -185,7 +185,7 @@ const TripOutcomePage: React.FC = () => {
       render: (status: string) => {
         const info = OUTCOME_STATUS_LABEL[status as keyof typeof OUTCOME_STATUS_LABEL]
           || { color: 'default', label: status };
-        return <Tag color={info.color}>{info.label}</Tag>;
+        return <StatusBadge color={info.color as StatusBadgeColor}>{info.label}</StatusBadge>;
       },
     },
     {
@@ -221,11 +221,11 @@ const TripOutcomePage: React.FC = () => {
             </>
           )}
           {record.status === 'VALIDATED' && (
-            <Tag color="success" icon={<CheckCircle2 size={12} />}>Đã nghiệm thu</Tag>
+            <StatusBadge color="success" icon={<CheckCircle2 size={12} />}>Đã nghiệm thu</StatusBadge>
           )}
           {record.status === 'NEEDS_CORRECTION' && (
             <Tooltip title={`Lý do: ${record.amendmentReason || '—'}`}>
-              <Tag color="warning" icon={<XCircle size={12} />}>Chờ sửa</Tag>
+              <StatusBadge color="warning" icon={<XCircle size={12} />}>Chờ sửa</StatusBadge>
             </Tooltip>
           )}
         </Space>
@@ -271,7 +271,7 @@ const TripOutcomePage: React.FC = () => {
         <Row gutter={[16, 16]} style={{ marginBottom: 20 }}>
           <Col xs={8}>
             <Card style={{ borderRadius: 10, textAlign: 'center', border: '1px solid #91caff' }} bodyStyle={{ padding: '12px 16px' }}>
-              <Statistic title="Chờ nghiệm thu" value={submittedCount} valueStyle={{ color: '#1677ff', fontWeight: 700 }} />
+              <Statistic title="Chờ nghiệm thu" value={submittedCount} valueStyle={{ color: '#2563eb', fontWeight: 700 }} />
             </Card>
           </Col>
           <Col xs={8}>

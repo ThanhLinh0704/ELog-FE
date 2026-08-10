@@ -3,6 +3,7 @@ import { Modal, Button, Typography, Form, Select, Input, Alert } from 'antd';
 import type { Driver, DriverInactiveReasonCode } from '../../../../types/driver';
 import { REASON_CODE_LABEL } from '../../../../types/driver';
 import type { DriverStatusUpdatePayload } from '../../../../api/driverApi';
+import { palette } from '../../../../theme/tokens';
 
 const { Paragraph, Text } = Typography;
 
@@ -51,7 +52,7 @@ const DriverStatusModal: React.FC<DriverStatusModalProps> = ({ visible, driver, 
   return (
     <Modal
       title={
-        <span style={{ fontSize: 16, fontWeight: 700, color: willBeInactive ? '#ef4444' : '#52c41a' }}>
+        <span style={{ fontSize: 16, fontWeight: 700, color: willBeInactive ? palette.danger : palette.success }}>
           {willBeInactive ? 'Chuyển tài xế sang Ngừng hoạt động?' : 'Kích hoạt lại tài xế?'}
         </span>
       }
@@ -67,6 +68,7 @@ const DriverStatusModal: React.FC<DriverStatusModalProps> = ({ visible, driver, 
       ]}
       centered
       width={460}
+      styles={{ root: { borderRadius: 14 } }}
     >
       <div style={{ padding: '8px 0' }}>
         <Paragraph>

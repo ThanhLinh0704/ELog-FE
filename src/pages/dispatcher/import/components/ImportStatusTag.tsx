@@ -1,5 +1,5 @@
 import React from 'react';
-import { Tag } from 'antd';
+import StatusBadge from '../../../../components/StatusBadge';
 
 interface ImportStatusTagProps {
   isActive: boolean;
@@ -7,13 +7,9 @@ interface ImportStatusTagProps {
 
 const ImportStatusTag: React.FC<ImportStatusTagProps> = ({ isActive }) => {
   return isActive ? (
-    <Tag color="success" style={{ borderRadius: 4, fontWeight: 500 }}>
-      Hiện hành
-    </Tag>
+    <StatusBadge color="success">Hiện hành</StatusBadge>
   ) : (
-    <Tag color="default" style={{ borderRadius: 4, fontWeight: 500, color: '#8c8c8c' }}>
-      Đã thay thế
-    </Tag>
+    <StatusBadge color="default">Đã thay thế</StatusBadge>
   );
 };
 

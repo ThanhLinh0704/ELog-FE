@@ -1,11 +1,13 @@
 import React, { useState, useEffect } from 'react';
-import { Table, Card, Space, Select, Button, Tag, Tooltip, Alert, message, Badge } from 'antd';
+import { Table, Card, Space, Select, Button, Tooltip, Alert, message, Badge } from 'antd';
 import { ExclamationCircleOutlined, DownloadOutlined } from '@ant-design/icons';
 import type { ColumnsType } from 'antd/es/table';
 import type { ImportErrorRow } from '../../../../types/import';
 import { importApi } from '../../../../api/importApi';
 import { USE_MOCK_API } from '../../../../config';
 import { downloadErrorReport } from '../../../../utils/errorReport';
+import StatusBadge from '../../../../components/StatusBadge';
+import { palette } from '../../../../theme/tokens';
 
 interface ImportErrorsTableProps {
   batchId: number;
@@ -165,7 +167,7 @@ const ImportErrorsTable: React.FC<ImportErrorsTableProps> = ({ batchId }) => {
       key: 'rowNumber',
       width: 85,
       align: 'center',
-      render: (text) => <strong style={{ color: '#ff4d4f' }}>{text}</strong>,
+      render: (text) => <strong style={{ color: palette.danger }}>{text}</strong>,
     },
     {
       title: 'Loại lỗi',
@@ -201,7 +203,7 @@ const ImportErrorsTable: React.FC<ImportErrorsTableProps> = ({ batchId }) => {
       dataIndex: 'fieldName',
       key: 'fieldName',
       width: 140,
-      render: (text) => text ? <Tag color="blue">{text}</Tag> : <Tag color="default">N/A</Tag>,
+      render: (text) => text ? <StatusBadge color="blue">{text}</StatusBadge> : <StatusBadge color="default">N/A</StatusBadge>,
     },
     {
       title: 'Dữ liệu gốc',
@@ -212,10 +214,10 @@ const ImportErrorsTable: React.FC<ImportErrorsTableProps> = ({ batchId }) => {
           style={{
             fontFamily: 'SFMono-Regular, Consolas, "Liberation Mono", Menlo, monospace',
             fontSize: '12px',
-            backgroundColor: '#fafafa',
+            backgroundColor: palette.bgLayout,
             padding: '2px 6px',
-            borderRadius: 4,
-            border: '1px solid #f0f0f0',
+            borderRadius: 6,
+            border: `1px solid ${palette.borderSoft}`,
             wordBreak: 'break-all',
             display: 'inline-block',
             maxWidth: '300px',
@@ -230,7 +232,7 @@ const ImportErrorsTable: React.FC<ImportErrorsTableProps> = ({ batchId }) => {
       dataIndex: 'errorReason',
       key: 'errorReason',
       render: (text) => (
-        <Space style={{ color: '#d9363e', alignItems: 'flex-start' }}>
+        <Space style={{ color: palette.danger, alignItems: 'flex-start' }}>
           <ExclamationCircleOutlined style={{ marginTop: 4 }} />
           <span style={{ fontWeight: 500, wordBreak: 'break-word' }}>{text}</span>
         </Space>
@@ -245,7 +247,7 @@ const ImportErrorsTable: React.FC<ImportErrorsTableProps> = ({ batchId }) => {
         description="Tài khoản Quản trị viên hệ thống (Admin) chỉ được xem lịch sử tổng quan, không có quyền xem chi tiết lỗi của lô import này."
         type="warning"
         showIcon
-        style={{ borderRadius: 12, marginBottom: 24 }}
+        style={{ borderRadius: 10, marginBottom: 24 }}
       />
     );
   }
@@ -254,7 +256,7 @@ const ImportErrorsTable: React.FC<ImportErrorsTableProps> = ({ batchId }) => {
     <Card
       title={
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 12 }}>
-          <span style={{ fontWeight: 600, fontSize: 15, color: '#cf1322' }}>Danh sách chi tiết các dòng lỗi</span>
+          <span style={{ fontWeight: 600, fontSize: 15, color: palette.danger }}>Danh sách chi tiết các dòng lỗi</span>
           <div style={{ display: 'flex', gap: 12, alignItems: 'center', flexWrap: 'wrap' }}>
             <span>Lọc theo loại lỗi:</span>
             <Select
@@ -282,7 +284,7 @@ const ImportErrorsTable: React.FC<ImportErrorsTableProps> = ({ batchId }) => {
               onClick={handleExport}
               loading={exportLoading}
               disabled={exportLoading}
-              style={{ borderRadius: 6, display: 'flex', alignItems: 'center', gap: 6 }}
+              style={{ borderRadius: 8, display: 'flex', alignItems: 'center', gap: 6 }}
             >
               Tải báo cáo
             </Button>
@@ -290,10 +292,10 @@ const ImportErrorsTable: React.FC<ImportErrorsTableProps> = ({ batchId }) => {
         </div>
       }
       style={{
-        borderRadius: 12,
-        boxShadow: '0 4px 12px rgba(0,0,0,0.05)',
+        borderRadius: 14,
+        boxShadow: palette.cardShadow,
         marginBottom: 24,
-        border: '1px solid #ffccc7',
+        border: `1px solid ${palette.borderSoft}`,
       }}
     >
       <Table

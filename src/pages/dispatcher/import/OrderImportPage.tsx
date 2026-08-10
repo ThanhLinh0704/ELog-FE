@@ -1,16 +1,15 @@
 import React, { useState, useEffect } from 'react';
-import { Typography, Breadcrumb, message, Divider } from 'antd';
+import { Breadcrumb, message, Divider } from 'antd';
 import { useNavigate } from 'react-router-dom';
+import { FileSpreadsheet } from 'lucide-react';
 import AdminShell from '../../../components/AdminShell';
+import PageHeader from '../../../components/PageHeader';
 import ImportUploadCard from './components/ImportUploadCard';
 import ImportReadOnlyBanner from './components/ImportReadOnlyBanner';
 import ImportHistoryTable from './components/ImportHistoryTable';
-import ReplaceBatchModal from './components/ReplaceBatchModal';
 import { canUploadOrders } from '../../../utils/importPermissions';
-import { importApi, ApiError } from '../../../api/importApi';
+import { importApi } from '../../../api/importApi';
 import type { ImportBatchHistory } from '../../../types/import';
-
-const { Title, Paragraph } = Typography;
 
 function getCurrentUser() {
   const username = localStorage.getItem('username') || '';
@@ -40,12 +39,6 @@ const OrderImportPage: React.FC = () => {
   // Loading states
   const [uploadLoading, setUploadLoading] = useState(false);
   const [historyLoading, setHistoryLoading] = useState(false);
-
-  // Duplicate delivery-date conflict (HTTP 409) awaiting confirmReplace
-  const [replaceModalOpen, setReplaceModalOpen] = useState(false);
-  const [replaceLoading, setReplaceLoading] = useState(false);
-  const [pendingUpload, setPendingUpload] = useState<{ file: File; deliveryDate?: string } | null>(null);
-  const [conflictDeliveryDate, setConflictDeliveryDate] = useState<string | undefined>(undefined);
 
   // History table pagination and data state
   const [historyData, setHistoryData] = useState<ImportBatchHistory[]>([]);
@@ -82,56 +75,24 @@ const OrderImportPage: React.FC = () => {
 
   // Perform the actual upload. Backend parses the Excel file and is the sole
   // source of truth for order data — the FE does not re-parse the file.
-  const executeUpload = async (file: File, deliveryDate?: string, confirmReplace: boolean = false) => {
+  // Duplicate-date imports are no longer rejected batch-level (ImportServiceImpl
+  // dropped the confirmReplace/existingActiveBatches mechanism — protection now
+  // lives only at the row level), so every upload just creates a new batch.
+  const handleUploadInitiated = async (file: File, deliveryDate?: string) => {
     setUploadLoading(true);
     try {
-      const result = await importApi.uploadOrders(file, deliveryDate, confirmReplace);
+      const result = await importApi.uploadOrders(file, deliveryDate);
 
       message.success(`Tải lên file thành công. Tạo Batch #${result.batchId}`);
-      setReplaceModalOpen(false);
-      setPendingUpload(null);
 
       // Redirect to detail page directly
       navigate(`/dispatcher/import/history/${result.batchId}`);
-
     } catch (error: any) {
-      if (!confirmReplace && error instanceof ApiError && error.status === 409) {
-        // First attempt hit a duplicate-date conflict — ask the dispatcher to
-        // confirm replacing it (confirmReplace=true).
-        setConflictDeliveryDate(deliveryDate);
-        setPendingUpload({ file, deliveryDate });
-        setReplaceModalOpen(true);
-      } else {
-        // Either a non-conflict error, or the confirmReplace retry itself
-        // failed (backend could not resolve the conflict, e.g. for a
-        // multi-date batch with no explicit deliveryDate). Surface the real
-        // backend message instead of silently reopening the same modal —
-        // retrying again would not help.
-        console.error('Upload failed', error);
-        message.error(error?.message || 'Không thể xử lý file. Vui lòng thử lại.');
-        setReplaceModalOpen(false);
-        setPendingUpload(null);
-      }
+      console.error('Upload failed', error);
+      message.error(error?.message || 'Không thể xử lý file. Vui lòng thử lại.');
     } finally {
       setUploadLoading(false);
-      setReplaceLoading(false);
     }
-  };
-
-  // Pre-upload checks
-  const handleUploadInitiated = async (file: File, deliveryDate?: string) => {
-    await executeUpload(file, deliveryDate, false);
-  };
-
-  const handleConfirmReplace = async () => {
-    if (!pendingUpload) return;
-    setReplaceLoading(true);
-    await executeUpload(pendingUpload.file, pendingUpload.deliveryDate, true);
-  };
-
-  const handleCancelReplace = () => {
-    setReplaceModalOpen(false);
-    setPendingUpload(null);
   };
 
   return (
@@ -145,14 +106,11 @@ const OrderImportPage: React.FC = () => {
         />
       </div>
 
-      <div style={{ marginBottom: 24 }}>
-        <Title level={3} style={{ marginTop: 8, marginBottom: 8, fontWeight: 700 }}>
-          Nhập đơn hàng từ Excel
-        </Title>
-        <Paragraph style={{ color: '#595959', fontSize: 14 }}>
-          Chọn ngày giao hàng và tải file đơn hàng theo đúng định dạng mẫu để tạo đơn hàng nhanh vào hệ thống.
-        </Paragraph>
-      </div>
+      <PageHeader
+        title="Nhập đơn hàng từ Excel"
+        subtitle="Chọn ngày giao hàng và tải file đơn hàng theo đúng định dạng mẫu để tạo đơn hàng nhanh vào hệ thống."
+        icon={<FileSpreadsheet size={20} />}
+      />
 
       {/* Upload Card for Dispatcher, ReadOnly Banner for managers */}
       {canImportOrders ? (
@@ -171,14 +129,6 @@ const OrderImportPage: React.FC = () => {
         currentPage={currentPage}
         pageSize={pageSize}
         onPageChange={handlePageChange}
-      />
-
-      <ReplaceBatchModal
-        open={replaceModalOpen}
-        deliveryDateStr={conflictDeliveryDate}
-        confirmLoading={replaceLoading}
-        onCancel={handleCancelReplace}
-        onConfirm={handleConfirmReplace}
       />
     </AdminShell>
   );

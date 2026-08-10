@@ -133,7 +133,7 @@ const AdminShell: React.FC<AdminShellProps> = ({ currentUser, children }) => {
     {
       key: 'grp-main',
       label: (
-        <span style={{ fontSize: 10, fontWeight: 700, letterSpacing: 0.8, color: '#64748b' }}>
+        <span style={{ fontSize: 10, fontWeight: 700, letterSpacing: 0.8, color: palette.sidebarTextMuted }}>
           QUẢN TRỊ CHÍNH
         </span>
       ),
@@ -269,10 +269,10 @@ const AdminShell: React.FC<AdminShellProps> = ({ currentUser, children }) => {
           <div onClick={() => navigate('/dashboard')} className="elog-sidebar-logo">
             <div className="elog-logo-badge">E</div>
             <div style={{ lineHeight: 1.2 }}>
-              <h1 style={{ margin: 0, fontSize: 15, fontWeight: 700, color: '#ffffff', letterSpacing: 0.4 }}>
+              <h1 style={{ margin: 0, fontSize: 15, fontWeight: 700, color: palette.sidebarTextActive, letterSpacing: 0.4 }}>
                 ELog Quản trị
               </h1>
-              <p style={{ margin: 0, fontSize: 10, color: '#64748b', fontWeight: 500 }}>
+              <p style={{ margin: 0, fontSize: 10, color: palette.sidebarTextMuted, fontWeight: 500 }}>
                 Bảng điều khiển hệ thống
               </p>
             </div>
@@ -305,7 +305,7 @@ const AdminShell: React.FC<AdminShellProps> = ({ currentUser, children }) => {
                   <div className="elog-profile-name">
                     {currentUser.fullName || currentUser.username}
                   </div>
-                  <div style={{ fontSize: 11, color: '#64748b' }}>{roleLabel}</div>
+                  <div style={{ fontSize: 11, color: palette.sidebarTextMuted }}>{roleLabel}</div>
                 </div>
               </div>
               <Button

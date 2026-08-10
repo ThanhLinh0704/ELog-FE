@@ -14,7 +14,6 @@ import {
   Space,
   Table,
   Tabs,
-  Tag,
   Timeline,
   Typography,
 } from 'antd';
@@ -22,6 +21,7 @@ import { AlertTriangle, Eye, Filter, History, RefreshCw, Truck } from 'lucide-re
 import type { ColumnsType } from 'antd/es/table';
 import dayjs from 'dayjs';
 import AdminShell from '../../../components/AdminShell';
+import StatusBadge from '../../../components/StatusBadge';
 import {
   searchPlanningEvents,
   type PlanningEventSearchFilters,
@@ -120,7 +120,7 @@ const OutcomeAuditTab: React.FC = () => {
       dataIndex: 'eventType',
       key: 'eventType',
       width: 190,
-      render: (type: TripOutcomeEventType) => <Tag color="blue">{TRIP_OUTCOME_EVENT_TYPE_LABEL[type] || type}</Tag>,
+      render: (type: TripOutcomeEventType) => <StatusBadge color="blue">{TRIP_OUTCOME_EVENT_TYPE_LABEL[type] || type}</StatusBadge>,
     },
     { title: 'Chuyến', dataIndex: 'tripId', key: 'tripId', width: 80, render: (id: number | null) => id ?? '—' },
     { title: 'Tuyến', dataIndex: 'routeCode', key: 'routeCode', width: 100, render: (v: string | null) => v ?? '—' },
@@ -307,7 +307,7 @@ const PlanningAuditTab: React.FC = () => {
       dataIndex: 'eventType',
       key: 'eventType',
       width: 210,
-      render: (type: PlanningEventType) => <Tag color="purple">{PLANNING_EVENT_TYPE_LABEL[type] || type}</Tag>,
+      render: (type: PlanningEventType) => <StatusBadge color="purple">{PLANNING_EVENT_TYPE_LABEL[type] || type}</StatusBadge>,
     },
     { title: 'Draft', dataIndex: 'tripDraftId', key: 'tripDraftId', width: 80, render: (v: number | null) => v ?? '—' },
     { title: 'Chuyến', dataIndex: 'tripId', key: 'tripId', width: 80, render: (v: number | null) => v ?? '—' },

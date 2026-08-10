@@ -8,7 +8,6 @@ import {
   Row,
   Col,
   Statistic,
-  Tag,
   Divider,
   Spin,
   message,
@@ -20,6 +19,8 @@ import {
 import { ArrowLeftOutlined, LoadingOutlined, CheckCircleOutlined, CloseCircleOutlined, InfoCircleOutlined, WarningOutlined, DownOutlined, UpOutlined } from '@ant-design/icons';
 import { ShieldAlert, Scale } from 'lucide-react';
 import AdminShell from '../../../components/AdminShell';
+import StatusBadge from '../../../components/StatusBadge';
+import { palette } from '../../../theme/tokens';
 import { tripDraftApi } from '../../../api/tripDraftApi';
 import type { CapacityValidationResult, IneligibleVehicle } from '../../../types/tripDraft';
 import { usePermissions } from '../../../hooks/usePermissions';
@@ -128,7 +129,7 @@ const CapacityValidationPage: React.FC = () => {
 
   const renderStatusTag = (status?: string) => {
     if (!status) return null;
-    let color = 'default';
+    let color: 'default' | 'warning' | 'processing' | 'success' | 'purple' | 'blue' | 'cyan' = 'default';
     let text = status;
 
     switch (status) {
@@ -158,17 +159,17 @@ const CapacityValidationPage: React.FC = () => {
         break;
     }
 
-    return <Tag color={color} style={{ fontWeight: 500 }}>{text}</Tag>;
+    return <StatusBadge color={color}>{text}</StatusBadge>;
   };
 
   const renderConstraintIcon = (result?: string) => {
     if (result === 'PASS') {
-      return <Tag color="success" icon={<CheckCircleOutlined />}>Đạt</Tag>;
+      return <StatusBadge color="success" icon={<CheckCircleOutlined />}>Đạt</StatusBadge>;
     }
     if (result === 'FAIL') {
-      return <Tag color="error" icon={<CloseCircleOutlined />}>Không đạt</Tag>;
+      return <StatusBadge color="error" icon={<CloseCircleOutlined />}>Không đạt</StatusBadge>;
     }
-    return <Tag color="default" icon={<InfoCircleOutlined />}>Chưa kiểm tra</Tag>;
+    return <StatusBadge color="default" icon={<InfoCircleOutlined />}>Chưa kiểm tra</StatusBadge>;
   };
 
   const formatVolume = (val?: number) => {
@@ -314,20 +315,20 @@ const CapacityValidationPage: React.FC = () => {
           <Card
             title={
               <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                <Scale size={18} style={{ color: '#1677ff' }} />
+                <Scale size={18} style={{ color: palette.primary }} />
                 <span style={{ fontSize: 16, fontWeight: 600 }}>Tải trọng chuyến gom đơn</span>
               </div>
             }
-            style={{ borderRadius: 12, boxShadow: '0 4px 12px rgba(0,0,0,0.05)' }}
+            style={{ borderRadius: 14, boxShadow: palette.cardShadow }}
           >
             <Row gutter={[16, 16]}>
               <Col span={12}>
-                <Card style={{ background: '#f9fafb', border: '1px solid #f3f4f6', borderRadius: 8, textAlign: 'center' }} bodyStyle={{ padding: '16px 12px' }}>
+                <Card style={{ background: palette.bgLayout, border: `1px solid ${palette.borderSoft}`, borderRadius: 10, textAlign: 'center' }} bodyStyle={{ padding: '16px 12px' }}>
                   <Statistic
                     title="Tổng thể tích (m³)"
                     value={result?.totalVolumeM3}
                     precision={3}
-                    valueStyle={{ color: '#096dd9', fontWeight: 700, fontSize: 20 }}
+                    valueStyle={{ color: palette.primaryDark, fontWeight: 700, fontSize: 20 }}
                   />
                   <div style={{ marginTop: 8 }}>
                     {renderConstraintIcon(result?.volumeCheckResult)}
@@ -335,12 +336,12 @@ const CapacityValidationPage: React.FC = () => {
                 </Card>
               </Col>
               <Col span={12}>
-                <Card style={{ background: '#f9fafb', border: '1px solid #f3f4f6', borderRadius: 8, textAlign: 'center' }} bodyStyle={{ padding: '16px 12px' }}>
+                <Card style={{ background: palette.bgLayout, border: `1px solid ${palette.borderSoft}`, borderRadius: 10, textAlign: 'center' }} bodyStyle={{ padding: '16px 12px' }}>
                   <Statistic
                     title="Tổng trọng lượng (kg)"
                     value={result?.totalWeightKg}
                     precision={3}
-                    valueStyle={{ color: '#d46b08', fontWeight: 700, fontSize: 20 }}
+                    valueStyle={{ color: palette.gold, fontWeight: 700, fontSize: 20 }}
                   />
                   <div style={{ marginTop: 8 }}>
                     {renderConstraintIcon(result?.weightCheckResult)}
@@ -460,8 +461,8 @@ const CapacityValidationPage: React.FC = () => {
                                 <div>
                                   <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
                                     <Text strong style={{ fontSize: 16 }}>{vehicle.plateNumber}</Text>
-                                    <Tag color="blue">{vehicle.vehicleType}</Tag>
-                                    {idx === 0 && <Tag color="success" style={{ fontWeight: 600 }}>Xe nhỏ nhất đủ tải</Tag>}
+                                    <StatusBadge color="blue">{vehicle.vehicleType}</StatusBadge>
+                                    {idx === 0 && <StatusBadge color="success">Xe nhỏ nhất đủ tải</StatusBadge>}
                                   </div>
                                   <div style={{ marginTop: 8, fontSize: 13, color: '#52525b' }}>
                                     <div>Giới hạn: <Text strong>{formatVolume(vehicle.maxVolumeM3)} m³</Text> / <Text strong>{formatWeight(vehicle.maxWeightKg)} kg</Text></div>
@@ -532,7 +533,7 @@ const CapacityValidationPage: React.FC = () => {
                                 dataIndex: 'vehicleType',
                                 key: 'vehicleType',
                                 width: 120,
-                                render: (val: string) => <Tag>{val}</Tag>
+                                render: (val: string) => <StatusBadge>{val}</StatusBadge>
                               },
                               {
                                 title: 'Lý do không đạt',
@@ -593,6 +594,8 @@ const CapacityValidationPage: React.FC = () => {
                           {result.bindingConstraint === 'VOLUME' && 'Vượt giới hạn thể tích'}
                           {result.bindingConstraint === 'WEIGHT' && 'Vượt giới hạn tải trọng'}
                           {result.bindingConstraint === 'BOTH' && 'Vượt cả giới hạn thể tích và tải trọng'}
+                          {result.bindingConstraint === 'TIME_WINDOW' && 'Vi phạm khung giờ giao hàng (không liên quan tải trọng)'}
+                          {result.bindingConstraint === 'ROUTE_CONSTRAINT' && 'Vi phạm ràng buộc tuyến/cửa hàng (không liên quan tải trọng)'}
                           {!result.bindingConstraint && 'Vượt giới hạn tải trọng'}
                         </Text>
                       </div>
