@@ -1,10 +1,12 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate, useParams, Link } from 'react-router-dom';
 import {
-  Card, Button, Space, Breadcrumb, Row, Col, Descriptions, Tag, Result, Spin, message, Badge, Typography
+  Card, Button, Space, Breadcrumb, Row, Col, Descriptions, Result, Spin, message, Typography
 } from 'antd';
 import { ArrowLeft, Edit3, Lock, Unlock, Package, Calendar, BarChart2 } from 'lucide-react';
 import AdminShell from '../../../components/AdminShell';
+import StatusBadge from '../../../components/StatusBadge';
+import { palette } from '../../../theme/tokens';
 import type { Product } from '../../../types/product';
 import { productApi } from '../../../api/productApi';
 import { formatVolume, formatWeight } from '../../../utils/numberFormat';
@@ -153,13 +155,13 @@ const ProductDetailPage: React.FC = () => {
           />
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: 8, flexWrap: 'wrap', gap: 12 }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
-              <h2 style={{ margin: 0, fontSize: 24, fontWeight: 700, color: '#1f1f1f' }}>
+              <h2 style={{ margin: 0, fontSize: 24, fontWeight: 700, color: palette.textDark }}>
                 {product?.productName || 'Chi tiết sản phẩm'}
               </h2>
               {product && (
-                <Tag color={product.status === 'ACTIVE' ? 'success' : 'default'} style={{ borderRadius: 6, fontWeight: 500, margin: 0 }}>
+                <StatusBadge color={product.status === 'ACTIVE' ? 'success' : 'default'}>
                   {product.status === 'ACTIVE' ? 'Đang kinh doanh' : 'Ngừng kinh doanh'}
-                </Tag>
+                </StatusBadge>
               )}
             </div>
 
@@ -182,7 +184,7 @@ const ProductDetailPage: React.FC = () => {
                   </Button>
                 ) : (
                   <Button
-                    style={{ color: '#52c41a', borderColor: '#52c41a' }}
+                    style={{ color: palette.success, borderColor: palette.success }}
                     icon={<Unlock size={16} />}
                     onClick={() => setActivateVisible(true)}
                   >
@@ -207,7 +209,7 @@ const ProductDetailPage: React.FC = () => {
         </div>
 
         {loading || !product ? (
-          <Card bordered={false} style={{ textAlign: 'center', padding: '60px 0' }}>
+          <Card bordered={false} style={{ textAlign: 'center', padding: '60px 0', borderRadius: 14 }}>
             <Spin size="large" />
             <Paragraph style={{ marginTop: 16 }}>Đang tải thông tin chi tiết...</Paragraph>
           </Card>
@@ -218,16 +220,16 @@ const ProductDetailPage: React.FC = () => {
               <Card
                 title={
                   <span style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                    <Package size={18} style={{ color: '#1677ff' }} />
+                    <Package size={18} style={{ color: palette.primary }} />
                     <span>Thông tin sản phẩm</span>
                   </span>
                 }
                 bordered={false}
-                style={{ height: '100%', boxShadow: '0 1px 2px 0 rgba(0, 0, 0, 0.03)' }}
+                style={{ height: '100%', borderRadius: 14, boxShadow: palette.cardShadow }}
               >
                 <Descriptions column={1} bordered size="small">
                   <Descriptions.Item label={<span style={{ fontWeight: 600 }}>Mã SKU</span>}>
-                    <strong style={{ color: '#0f172a' }}>{product.sku}</strong>
+                    <strong style={{ color: palette.textDark }}>{product.sku}</strong>
                   </Descriptions.Item>
                   <Descriptions.Item label={<span style={{ fontWeight: 600 }}>Tên sản phẩm</span>}>
                     {product.productName}
@@ -236,13 +238,12 @@ const ProductDetailPage: React.FC = () => {
                     {product.shape || '—'}
                   </Descriptions.Item>
                   <Descriptions.Item label={<span style={{ fontWeight: 600 }}>Tính chất</span>}>
-                    {product.isFragile ? <Tag color="warning">Dễ vỡ (Fragile)</Tag> : <Tag color="default">Thông thường</Tag>}
+                    {product.isFragile ? <StatusBadge color="warning">Dễ vỡ (Fragile)</StatusBadge> : <StatusBadge color="default">Thông thường</StatusBadge>}
                   </Descriptions.Item>
                   <Descriptions.Item label={<span style={{ fontWeight: 600 }}>Trạng thái</span>}>
-                    <Badge
-                      status={product.status === 'ACTIVE' ? 'success' : 'error'}
-                      text={product.status === 'ACTIVE' ? 'Đang kinh doanh' : 'Ngừng kinh doanh'}
-                    />
+                    <StatusBadge color={product.status === 'ACTIVE' ? 'success' : 'error'}>
+                      {product.status === 'ACTIVE' ? 'Đang kinh doanh' : 'Ngừng kinh doanh'}
+                    </StatusBadge>
                   </Descriptions.Item>
                   <Descriptions.Item label={<span style={{ fontWeight: 600 }}>Ảnh đóng gói (URL)</span>}>
                     {product.packageImageUrl || '—'}
@@ -265,19 +266,19 @@ const ProductDetailPage: React.FC = () => {
               <Card
                 title={
                   <span style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                    <BarChart2 size={18} style={{ color: '#1677ff' }} />
+                    <BarChart2 size={18} style={{ color: palette.primary }} />
                     <span>Thông số vật lý (per unit)</span>
                   </span>
                 }
                 bordered={false}
-                style={{ height: '100%', boxShadow: '0 1px 2px 0 rgba(0, 0, 0, 0.03)' }}
+                style={{ height: '100%', borderRadius: 14, boxShadow: palette.cardShadow }}
               >
                 <Descriptions column={1} bordered size="small" style={{ marginBottom: 20 }}>
                   <Descriptions.Item label={<span style={{ fontWeight: 600 }}>Kích thước</span>}>
                     {product.lengthM} × {product.widthM} × {product.heightM} m
                   </Descriptions.Item>
                   <Descriptions.Item label={<span style={{ fontWeight: 600 }}>Thể tích</span>}>
-                    <strong style={{ color: '#1677ff' }}>{formatVolume(product.volumeM3)}</strong>
+                    <strong style={{ color: palette.primary }}>{formatVolume(product.volumeM3)}</strong>
                   </Descriptions.Item>
                   <Descriptions.Item label={<span style={{ fontWeight: 600 }}>Trọng lượng</span>}>
                     <strong>{formatWeight(product.weightKg)}</strong>
@@ -288,29 +289,29 @@ const ProductDetailPage: React.FC = () => {
                 {accum10 && accum20 && (
                   <Card
                     type="inner"
-                    title={<span style={{ fontSize: 13, color: '#475569', fontWeight: 700 }}>Ví dụ tích luỹ</span>}
-                    style={{ backgroundColor: '#f8fafc', borderRadius: 8, border: '1px solid #e2e8f0' }}
+                    title={<span style={{ fontSize: 13, color: palette.textBody, fontWeight: 700 }}>Ví dụ tích luỹ</span>}
+                    style={{ backgroundColor: palette.bgLayout, borderRadius: 10, border: `1px solid ${palette.borderSoft}` }}
                   >
                     <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
                       <div>
-                        <Text strong style={{ color: '#475569' }}>10 cái</Text>
-                        <span style={{ margin: '0 8px', color: '#cbd5e1' }}>→</span>
-                        <Text style={{ fontWeight: 600, color: '#0f172a' }}>
+                        <Text strong style={{ color: palette.textBody }}>10 cái</Text>
+                        <span style={{ margin: '0 8px', color: palette.border }}>→</span>
+                        <Text style={{ fontWeight: 600, color: palette.textDark }}>
                           {accum10.volumeM3.toFixed(3)} m³
                         </Text>
-                        <span style={{ margin: '0 6px', color: '#94a3b8' }}>·</span>
-                        <Text style={{ fontWeight: 600, color: '#0f172a' }}>
+                        <span style={{ margin: '0 6px', color: palette.textFaint }}>·</span>
+                        <Text style={{ fontWeight: 600, color: palette.textDark }}>
                           {accum10.weightKg.toFixed(3)} kg
                         </Text>
                       </div>
                       <div>
-                        <Text strong style={{ color: '#475569' }}>20 cái</Text>
-                        <span style={{ margin: '0 8px', color: '#cbd5e1' }}>→</span>
-                        <Text style={{ fontWeight: 600, color: '#0f172a' }}>
+                        <Text strong style={{ color: palette.textBody }}>20 cái</Text>
+                        <span style={{ margin: '0 8px', color: palette.border }}>→</span>
+                        <Text style={{ fontWeight: 600, color: palette.textDark }}>
                           {accum20.volumeM3.toFixed(3)} m³
                         </Text>
-                        <span style={{ margin: '0 6px', color: '#94a3b8' }}>·</span>
-                        <Text style={{ fontWeight: 600, color: '#0f172a' }}>
+                        <span style={{ margin: '0 6px', color: palette.textFaint }}>·</span>
+                        <Text style={{ fontWeight: 600, color: palette.textDark }}>
                           {accum20.weightKg.toFixed(3)} kg
                         </Text>
                       </div>

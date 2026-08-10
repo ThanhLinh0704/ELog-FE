@@ -121,7 +121,7 @@ const ROUTE_DETAIL_THREE_STOPS = {
 };
 
 function interceptRouteList() {
-  cy.intercept('GET', '**/api/routes*', (req) => {
+  cy.intercept('GET', '**/api/v1/routes*', (req) => {
     const isActive = String(req.query.isActive ?? '');
     const data =
       isActive === 'true'
@@ -142,7 +142,7 @@ function interceptRouteList() {
 }
 
 function interceptRouteDetail(route = ROUTE_DETAIL) {
-  cy.intercept('GET', '**/api/routes/3', apiSuccess(route)).as('getRouteDetail');
+  cy.intercept('GET', '**/api/v1/routes/3', apiSuccess(route)).as('getRouteDetail');
 }
 
 describe('US-05 — Route Management', () => {
@@ -178,7 +178,7 @@ describe('US-05 — Route Management', () => {
   });
 
   it('TC-03: tạo route mới thành công và điều hướng sang trang chi tiết', () => {
-    cy.intercept('POST', '**/api/routes', (req) => {
+    cy.intercept('POST', '**/api/v1/routes', (req) => {
       expect(req.body).to.deep.eq({
         code: 'RT-TD-01',
         name: 'Tuyến Thủ Đức 01',
@@ -199,7 +199,7 @@ describe('US-05 — Route Management', () => {
     }).as('createRoute');
     cy.intercept(
       'GET',
-      '**/api/routes/10',
+      '**/api/v1/routes/10',
       apiSuccess({
         id: 10,
         code: 'RT-TD-01',
@@ -228,7 +228,7 @@ describe('US-05 — Route Management', () => {
   it('TC-04: route code trùng được hiển thị lỗi tại field Mã tuyến', () => {
     cy.intercept(
       'POST',
-      '**/api/routes',
+      '**/api/v1/routes',
       apiError(409, 'ROUTE_CODE_DUPLICATE', 'Mã tuyến này đã tồn tại', 'code')
     ).as('createDuplicateRoute');
 
@@ -254,8 +254,8 @@ describe('US-05 — Route Management', () => {
 
   it('TC-06: thêm điểm dừng từ danh sách store khả dụng', () => {
     interceptRouteDetail();
-    cy.intercept('GET', '**/api/stores*', apiSuccess(AVAILABLE_STORES)).as('getAvailableStores');
-    cy.intercept('POST', '**/api/routes/3/stops', (req) => {
+    cy.intercept('GET', '**/api/v1/stores*', apiSuccess(AVAILABLE_STORES)).as('getAvailableStores');
+    cy.intercept('POST', '**/api/v1/routes/3/stops', (req) => {
       expect(req.body).to.deep.eq({ storeId: 8 });
       req.reply(
         apiSuccess({
@@ -287,7 +287,7 @@ describe('US-05 — Route Management', () => {
   });
 
   it('TC-08: tạo route thiếu mã và tên thì hiển thị validation errors', () => {
-    cy.intercept('POST', '**/api/routes').as('createRouteShouldNotRun');
+    cy.intercept('POST', '**/api/v1/routes').as('createRouteShouldNotRun');
 
     visitAs('/admin/routes/new');
     cy.contains('button', 'Tạo tuyến').click();
@@ -298,7 +298,7 @@ describe('US-05 — Route Management', () => {
   });
 
   it('TC-09: mã route chứa ký tự không hợp lệ thì frontend không gọi API', () => {
-    cy.intercept('POST', '**/api/routes').as('createRouteShouldNotRun');
+    cy.intercept('POST', '**/api/v1/routes').as('createRouteShouldNotRun');
 
     visitAs('/admin/routes/new');
     cy.get('input[placeholder="Ví dụ: RT-BT-01"]').type('RT BT 01!');
@@ -313,10 +313,10 @@ describe('US-05 — Route Management', () => {
 
   it('TC-10: thêm stop bị backend báo store trùng thì hiển thị lỗi và không thêm vào danh sách', () => {
     interceptRouteDetail();
-    cy.intercept('GET', '**/api/stores*', apiSuccess(AVAILABLE_STORES)).as('getAvailableStores');
+    cy.intercept('GET', '**/api/v1/stores*', apiSuccess(AVAILABLE_STORES)).as('getAvailableStores');
     cy.intercept(
       'POST',
-      '**/api/routes/3/stops',
+      '**/api/v1/routes/3/stops',
       apiError(409, 'ROUTE_STOP_DUPLICATE', 'Cửa hàng đã tồn tại trong tuyến.')
     ).as('addDuplicateStop');
 
@@ -334,7 +334,7 @@ describe('US-05 — Route Management', () => {
 
   it('TC-11: drawer chỉ yêu cầu store active chưa thuộc tuyến và không hiện store đã gắn', () => {
     interceptRouteDetail();
-    cy.intercept('GET', '**/api/stores*', (req) => {
+    cy.intercept('GET', '**/api/v1/stores*', (req) => {
       expect(String(req.query.isActive ?? '')).to.eq('true');
       expect(String(req.query.hasRoute ?? '')).to.eq('false');
       req.reply(apiSuccess(AVAILABLE_STORES));
@@ -359,8 +359,8 @@ describe('US-05 — Route Management', () => {
   });
 
   it('TC-13: form chỉnh sửa giữ mã tuyến readonly và chỉ gửi tên, mô tả', () => {
-    cy.intercept('GET', '**/api/routes/3', apiSuccess(ROUTE_DETAIL_THREE_STOPS)).as('getRouteForEdit');
-    cy.intercept('PUT', '**/api/routes/3', (req) => {
+    cy.intercept('GET', '**/api/v1/routes/3', apiSuccess(ROUTE_DETAIL_THREE_STOPS)).as('getRouteForEdit');
+    cy.intercept('PUT', '**/api/v1/routes/3', (req) => {
       expect(req.body).to.deep.eq({
         name: 'Tuyến Bình Thạnh cập nhật',
         description: 'Mô tả đã cập nhật',
@@ -382,8 +382,8 @@ describe('US-05 — Route Management', () => {
   });
 
   it('TC-14: xoá stop ở giữa loại khỏi danh sách và đánh lại thứ tự liên tục', () => {
-    cy.intercept('GET', '**/api/routes/3', apiSuccess(ROUTE_DETAIL_THREE_STOPS)).as('getRouteForDelete');
-    cy.intercept('DELETE', '**/api/routes/3/stops/32', { statusCode: 200, body: { success: true } }).as(
+    cy.intercept('GET', '**/api/v1/routes/3', apiSuccess(ROUTE_DETAIL_THREE_STOPS)).as('getRouteForDelete');
+    cy.intercept('DELETE', '**/api/v1/routes/3/stops/32', { statusCode: 200, body: { success: true } }).as(
       'deleteMiddleStop'
     );
 
@@ -402,8 +402,8 @@ describe('US-05 — Route Management', () => {
   });
 
   it('TC-15: reorder bằng bàn phím gửi đủ orderedStopIds theo thứ tự mới', () => {
-    cy.intercept('GET', '**/api/routes/3', apiSuccess(ROUTE_DETAIL_THREE_STOPS)).as('getRouteForReorder');
-    cy.intercept('PUT', '**/api/routes/3/stops/reorder', (req) => {
+    cy.intercept('GET', '**/api/v1/routes/3', apiSuccess(ROUTE_DETAIL_THREE_STOPS)).as('getRouteForReorder');
+    cy.intercept('PUT', '**/api/v1/routes/3/stops/reorder', (req) => {
       expect(req.body.orderedStopIds).to.deep.eq([32, 31, 33]);
       req.reply(
         apiSuccess([
@@ -423,8 +423,8 @@ describe('US-05 — Route Management', () => {
   });
 
   it('TC-16: kích hoạt route đủ stops cập nhật trạng thái ngay trên detail', () => {
-    cy.intercept('GET', '**/api/routes/3', apiSuccess(ROUTE_DETAIL_THREE_STOPS)).as('getActivatableRoute');
-    cy.intercept('PATCH', '**/api/routes/3/status', (req) => {
+    cy.intercept('GET', '**/api/v1/routes/3', apiSuccess(ROUTE_DETAIL_THREE_STOPS)).as('getActivatableRoute');
+    cy.intercept('PATCH', '**/api/v1/routes/3/status', (req) => {
       expect(req.body).to.deep.eq({ isActive: true });
       req.reply(apiSuccess({ ...ROUTE_DETAIL_THREE_STOPS, isActive: true }));
     }).as('activateRoute');
@@ -442,8 +442,8 @@ describe('US-05 — Route Management', () => {
 
   it('TC-17: vô hiệu hoá route active cập nhật trạng thái ngay trên detail', () => {
     const activeRoute = { ...ROUTE_DETAIL_THREE_STOPS, isActive: true };
-    cy.intercept('GET', '**/api/routes/3', apiSuccess(activeRoute)).as('getActiveRoute');
-    cy.intercept('PATCH', '**/api/routes/3/status', (req) => {
+    cy.intercept('GET', '**/api/v1/routes/3', apiSuccess(activeRoute)).as('getActiveRoute');
+    cy.intercept('PATCH', '**/api/v1/routes/3/status', (req) => {
       expect(req.body).to.deep.eq({ isActive: false });
       req.reply(apiSuccess({ ...activeRoute, isActive: false }));
     }).as('deactivateRoute');
@@ -463,7 +463,7 @@ describe('US-05 — Route Management', () => {
     interceptRouteList();
     visitAs('/admin/routes');
     cy.wait('@getRoutes');
-    cy.intercept('GET', '**/api/routes?*keyword=khong-ton-tai*', (req) => {
+    cy.intercept('GET', '**/api/v1/routes?*keyword=khong-ton-tai*', (req) => {
       expect(String(req.query.keyword ?? '')).to.eq('khong-ton-tai');
       req.reply(apiSuccess([], { page: 0, size: 10, totalElements: 0, totalPages: 1 }));
     }).as('searchRoutesEmpty');

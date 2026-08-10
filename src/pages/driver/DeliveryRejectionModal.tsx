@@ -15,6 +15,7 @@ import {
 import { AlertTriangle } from 'lucide-react';
 import { rejectDelivery } from '../../api/exceptionApi';
 import type { RejectionType } from '../../types/exception';
+import { palette } from '../../theme/tokens';
 
 const { Text } = Typography;
 const { TextArea } = Input;
@@ -160,7 +161,7 @@ const DeliveryRejectionModal: React.FC<DeliveryRejectionModalProps> = ({
       onCancel={handleClose}
       title={
         <Space>
-          <AlertTriangle size={18} style={{ color: '#fa8c16' }} />
+          <AlertTriangle size={18} style={{ color: palette.gold }} />
           <span>Báo Lỗi Giao Hàng</span>
         </Space>
       }
@@ -181,7 +182,7 @@ const DeliveryRejectionModal: React.FC<DeliveryRejectionModalProps> = ({
               {storeName && <Text type="secondary">{storeName}</Text>}
             </Space>
           }
-          style={{ borderRadius: 8, background: '#f0f5ff', border: '1px solid #adc6ff' }}
+          style={{ borderRadius: 8, background: palette.primaryBg, border: `1px solid ${palette.primary}40` }}
         />
 
         {/* Rejection type */}
@@ -200,14 +201,14 @@ const DeliveryRejectionModal: React.FC<DeliveryRejectionModalProps> = ({
                 value={opt.value}
                 style={{
                   padding: '10px 12px',
-                  border: '1px solid #d9d9d9',
+                  border: `1px solid ${palette.border}`,
                   borderRadius: 8,
                   // min 44px touch target
                   minHeight: 44,
                   display: 'flex',
                   alignItems: 'center',
                   ...(rejectionType === opt.value
-                    ? { borderColor: '#1677ff', background: '#e6f4ff' }
+                    ? { borderColor: palette.primary, background: palette.primaryBg }
                     : {}),
                 }}
               >

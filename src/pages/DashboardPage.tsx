@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Card, Row, Col, Statistic, Space, Typography, Tag, Badge, Spin, Descriptions, Table, DatePicker, Button, Alert, Empty } from 'antd';
+import { Card, Row, Col, Space, Typography, Badge, Spin, Descriptions, Table, DatePicker, Button, Alert, Empty } from 'antd';
 import { 
   Users, 
   Store, 
@@ -13,6 +13,10 @@ import {
   ShieldAlert
 } from 'lucide-react';
 import AdminShell from '../components/AdminShell';
+import StatCard from '../components/StatCard';
+import PageHeader from '../components/PageHeader';
+import StatusBadge from '../components/StatusBadge';
+import { palette } from '../theme/tokens';
 import { userApi } from '../api/userApi';
 import { storeApi } from '../api/storeApi';
 import { vehicleApi } from '../api/vehicleApi';
@@ -159,46 +163,46 @@ const DashboardPage: React.FC = () => {
     {
       title: 'Quản lý người dùng',
       desc: 'Quản lý tài khoản, phân chia vai trò và trạng thái hoạt động của nhân viên.',
-      icon: <Users size={24} style={{ color: '#1677ff' }} />,
+      icon: <Users size={24} style={{ color: palette.primary }} />,
       path: '/users',
-      bgColor: '#e6f7ff',
-      borderColor: '#91d5ff',
+      bgColor: palette.primaryBg,
+      borderColor: palette.border,
       visible: canReadUsers,
     },
     {
       title: 'Quản lý cửa hàng',
       desc: 'Quản lý danh sách đại lý, địa chỉ liên hệ và cấu hình tọa độ GPS.',
-      icon: <Store size={24} style={{ color: '#52c41a' }} />,
+      icon: <Store size={24} style={{ color: palette.success }} />,
       path: '/stores',
-      bgColor: '#f6ffed',
-      borderColor: '#b7eb8f',
+      bgColor: palette.successBg,
+      borderColor: palette.border,
       visible: canReadStores,
     },
     {
       title: 'Quản lý xe',
       desc: 'Quản lý đội xe vận chuyển, tải trọng (kg) và thể tích khoang hàng (m³).',
-      icon: <Truck size={24} style={{ color: '#faad14' }} />,
+      icon: <Truck size={24} style={{ color: palette.gold }} />,
       path: '/vehicles',
-      bgColor: '#fffbe6',
-      borderColor: '#ffe58f',
+      bgColor: palette.goldBg,
+      borderColor: palette.border,
       visible: canReadVehicles,
     },
     {
       title: 'Quản lý sản phẩm',
       desc: 'Danh mục sản phẩm kinh doanh cùng trọng lượng, kích thước vật lý.',
-      icon: <Package size={24} style={{ color: '#13c2c2' }} />,
+      icon: <Package size={24} style={{ color: palette.teal }} />,
       path: '/admin/products',
-      bgColor: '#e6fffb',
-      borderColor: '#87e8de',
+      bgColor: palette.tealBg,
+      borderColor: palette.border,
       visible: true,
     },
     {
       title: 'Quản lý tuyến đường',
       desc: 'Tối ưu lộ trình, gán cửa hàng dừng chân và phân bổ xe giao hàng.',
-      icon: <Map size={24} style={{ color: '#722ed1' }} />,
+      icon: <Map size={24} style={{ color: palette.violet }} />,
       path: '/admin/routes',
-      bgColor: '#f9f0ff',
-      borderColor: '#d3adf7',
+      bgColor: palette.violetBg,
+      borderColor: palette.border,
       visible: canReadRoutes,
     },
   ].filter((action) => action.visible);
@@ -206,22 +210,12 @@ const DashboardPage: React.FC = () => {
   if (showDriverTripsDashboard) {
     return (
       <AdminShell currentUser={currentUser}>
-        <div style={{ display: 'flex', flexDirection: 'column', gap: 24 }}>
-          {/* Welcome Section */}
-          <div style={{ 
-            background: 'linear-gradient(135deg, #1e293b 0%, #0f172a 100%)', 
-            padding: '24px 32px', 
-            borderRadius: 12, 
-            boxShadow: '0 4px 12px rgba(15, 23, 42, 0.05)',
-            color: '#ffffff'
-          }}>
-            <h2 style={{ margin: 0, fontSize: 22, fontWeight: 700, color: '#ffffff' }}>
-              Xin chào Tài xế, {username}!
-            </h2>
-            <p style={{ margin: '8px 0 0 0', color: '#94a3b8', fontSize: 14 }}>
-              Chào mừng bạn đến với Cổng thông tin Tài xế ELog. Dưới đây là danh sách chuyến giao hàng đã được gán cho bạn.
-            </p>
-          </div>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
+          <PageHeader
+            title={`Xin chào, ${username}`}
+            subtitle="Danh sách chuyến giao hàng đã được gán cho bạn."
+            icon={<Truck size={20} />}
+          />
 
           {/* Date Picker Filter */}
           <Card style={{ borderRadius: 10 }}>
@@ -240,7 +234,7 @@ const DashboardPage: React.FC = () => {
           <Card 
             title={
               <Space>
-                <Truck size={18} style={{ color: '#1677ff' }} />
+                <Truck size={18} style={{ color: '#2563eb' }} />
                 <span>Chuyến đi được gán ngày {selectedDate.format('DD/MM/YYYY')}</span>
               </Space>
             }
@@ -269,18 +263,18 @@ const DashboardPage: React.FC = () => {
                         pagination={false}
                         size="small"
                         columns={[
-                          { title: 'Thứ tự', dataIndex: 'sequenceOrder', key: 'sequenceOrder', width: 80, align: 'center', render: (v) => <strong style={{ color: '#1677ff' }}>#{v}</strong> },
+                          { title: 'Thứ tự', dataIndex: 'sequenceOrder', key: 'sequenceOrder', width: 80, align: 'center', render: (v) => <strong style={{ color: '#2563eb' }}>#{v}</strong> },
                           { title: 'Tên cửa hàng', dataIndex: 'storeName', key: 'storeName' },
                           { title: 'Giờ ETA dự kiến', dataIndex: 'plannedEta', key: 'plannedEta', render: (v) => v ? new Date(v).toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit' }) : '—' },
                           { title: 'Tải trọng', key: 'load', render: (_, stop) => `${stop.stopVolumeM3 != null ? stop.stopVolumeM3.toFixed(3) : '—'} m³ / ${stop.stopWeightKg != null ? stop.stopWeightKg.toFixed(3) : '—'} kg` },
-                          { title: 'Trạng thái', dataIndex: 'status', key: 'status', render: (v) => <Tag color={v === 'COMPLETED' ? 'success' : v === 'IN_PROGRESS' ? 'blue' : 'default'}>{v}</Tag> }
+                          { title: 'Trạng thái', dataIndex: 'status', key: 'status', render: (v) => <StatusBadge color={v === 'COMPLETED' ? 'success' : v === 'IN_PROGRESS' ? 'blue' : 'default'}>{v}</StatusBadge> }
                         ]}
                       />
                     </div>
                   )
                 }}
                 columns={[
-                  { title: 'Trip ID', dataIndex: 'tripId', key: 'tripId', render: (v) => <Tag color="blue">#{v}</Tag> },
+                  { title: 'Trip ID', dataIndex: 'tripId', key: 'tripId', render: (v) => <StatusBadge color="blue">#{v}</StatusBadge> },
                   { title: 'Tuyến đường', dataIndex: 'fixedRouteCode', key: 'fixedRouteCode' },
                   {
                     title: 'Phương tiện',
@@ -301,13 +295,13 @@ const DashboardPage: React.FC = () => {
                     dataIndex: 'status', 
                     key: 'status', 
                     render: (v) => {
-                      const colors: Record<string, string> = {
+                      const colors: Record<string, 'success' | 'purple' | 'blue' | 'cyan' | 'default'> = {
                         VALIDATED: 'success',
                         DISPATCHED: 'purple',
                         IN_PROGRESS: 'blue',
                         COMPLETED: 'cyan'
                       };
-                      return <Tag color={colors[v] || 'default'} style={{ fontWeight: 500 }}>{v}</Tag>;
+                      return <StatusBadge color={colors[v] || 'default'}>{v}</StatusBadge>;
                     }
                   },
                   {
@@ -334,23 +328,12 @@ const DashboardPage: React.FC = () => {
   return (
 
     <AdminShell currentUser={currentUser}>
-      <div style={{ display: 'flex', flexDirection: 'column', gap: 24 }}>
-        
-        {/* Welcome Section */}
-        <div style={{ 
-          background: 'linear-gradient(135deg, #1e293b 0%, #0f172a 100%)', 
-          padding: '24px 32px', 
-          borderRadius: 12, 
-          boxShadow: '0 4px 12px rgba(15, 23, 42, 0.05)',
-          color: '#ffffff'
-        }}>
-          <h2 style={{ margin: 0, fontSize: 22, fontWeight: 700, color: '#ffffff' }}>
-            Xin chào quay trở lại, {username}!
-          </h2>
-          <p style={{ margin: '8px 0 0 0', color: '#94a3b8', fontSize: 14 }}>
-            Chào mừng bạn đến với Hệ thống Quản trị ELog. Dưới đây là tóm tắt trạng thái vận hành hiện tại của đội xe, địa điểm cửa hàng và tuyến vận tải giao hàng.
-          </p>
-        </div>
+      <div style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
+
+        <PageHeader
+          title={`Xin chào quay trở lại, ${username}`}
+          subtitle="Tóm tắt trạng thái vận hành hiện tại của đội xe, địa điểm cửa hàng và tuyến vận tải giao hàng."
+        />
 
         {/* Stats Grid */}
         {loading ? (
@@ -360,9 +343,9 @@ const DashboardPage: React.FC = () => {
         ) : (
           <div>
             {error && (
-              <Card style={{ marginBottom: 16, borderColor: '#ffccc7', backgroundColor: '#fff2f0' }} size="small">
+              <Card style={{ marginBottom: 16, borderColor: palette.statusDangerBg, backgroundColor: palette.statusDangerBg }} size="small">
                 <Space>
-                  <ShieldAlert style={{ color: '#ff4d4f' }} size={16} />
+                  <ShieldAlert style={{ color: palette.statusDanger }} size={16} />
                   <Text type="danger">{error} Vui lòng kiểm tra lại server backend.</Text>
                 </Space>
               </Card>
@@ -373,78 +356,42 @@ const DashboardPage: React.FC = () => {
               gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))',
               gap: 16
             }}>
-              {/* Card 1: Người dùng */}
-              <Card bordered={false} style={{ boxShadow: '0 1px 2px 0 rgba(0, 0, 0, 0.03)' }}>
-                <Statistic
-                  title={
-                    <Space size={8}>
-                      <Users size={16} style={{ color: '#8c8c8c' }} />
-                      <span>Người dùng</span>
-                    </Space>
-                  }
-                  value={stats.usersCount}
-                  suffix="tài khoản"
-                />
-              </Card>
-
-              {/* Card 2: Cửa hàng */}
-              <Card bordered={false} style={{ boxShadow: '0 1px 2px 0 rgba(0, 0, 0, 0.03)' }}>
-                <Statistic
-                  title={
-                    <Space size={8}>
-                      <Store size={16} style={{ color: '#8c8c8c' }} />
-                      <span>Cửa hàng</span>
-                    </Space>
-                  }
-                  value={stats.storesCount}
-                  suffix="đại lý"
-                />
-              </Card>
-
-              {/* Card 3: Đội xe */}
-              <Card bordered={false} style={{ boxShadow: '0 1px 2px 0 rgba(0, 0, 0, 0.03)' }}>
-                <Statistic
-                  title={
-                    <Space size={8}>
-                      <Truck size={16} style={{ color: '#8c8c8c' }} />
-                      <span>Đội xe</span>
-                    </Space>
-                  }
-                  value={stats.vehiclesCount}
-                  suffix={`xe (${stats.activeVehicles} active)`}
-                />
-              </Card>
-
-              {/* Card 4: Sản phẩm */}
-              <Card bordered={false} style={{ boxShadow: '0 1px 2px 0 rgba(0, 0, 0, 0.03)' }}>
-                <Statistic
-                  title={
-                    <Space size={8}>
-                      <Package size={16} style={{ color: '#8c8c8c' }} />
-                      <span>Sản phẩm</span>
-                    </Space>
-                  }
-                  value={stats.productsCount}
-                  suffix="mặt hàng"
-                />
-              </Card>
-
-              {/* Card 5: Tuyến đường */}
-              <Card bordered={false} style={{ boxShadow: '0 1px 2px 0 rgba(0, 0, 0, 0.03)' }}>
-                <Statistic
-                  title={
-                    <Space size={8}>
-                      <Map size={16} style={{ color: '#8c8c8c' }} />
-                      <span>Tuyến đường</span>
-                    </Space>
-                  }
-                  value={stats.routesCount}
-                  suffix="hành trình"
-                />
-              </Card>
+              <StatCard
+                accent="primary"
+                icon={<Users size={18} />}
+                label="Người dùng"
+                value={stats.usersCount}
+                caption="tài khoản"
+              />
+              <StatCard
+                accent="success"
+                icon={<Store size={18} />}
+                label="Cửa hàng"
+                value={stats.storesCount}
+                caption="đại lý"
+              />
+              <StatCard
+                accent="gold"
+                icon={<Truck size={18} />}
+                label="Đội xe"
+                value={stats.vehiclesCount}
+                caption={`${stats.activeVehicles} xe đang hoạt động`}
+              />
+              <StatCard
+                accent="teal"
+                icon={<Package size={18} />}
+                label="Sản phẩm"
+                value={stats.productsCount}
+                caption="mặt hàng"
+              />
+              <StatCard
+                accent="violet"
+                icon={<Map size={18} />}
+                label="Tuyến đường"
+                value={stats.routesCount}
+                caption="hành trình"
+              />
             </div>
-
-
           </div>
         )}
 
@@ -465,14 +412,14 @@ const DashboardPage: React.FC = () => {
           gap: 16
         }}>
           {quickActions.map((action, idx) => (
-            <Card 
+            <Card
               key={idx}
               hoverable
               bordered
               onClick={() => navigate(action.path)}
-              style={{ 
-                height: '100%', 
-                borderRadius: 10,
+              style={{
+                height: '100%',
+                borderRadius: 14,
                 display: 'flex',
                 flexDirection: 'column',
                 justifyContent: 'space-between',
@@ -500,17 +447,17 @@ const DashboardPage: React.FC = () => {
                 }}>
                   {action.icon}
                 </div>
-                <h4 style={{ margin: '0 0 8px 0', fontSize: 14, fontWeight: 600, color: '#0f172a' }}>
+                <h4 style={{ margin: '0 0 8px 0', fontSize: 14, fontWeight: 600, color: palette.textDark }}>
                   {action.title}
                 </h4>
-                <p style={{ margin: 0, fontSize: 11.5, color: '#64748b', lineHeight: 1.5 }}>
+                <p style={{ margin: 0, fontSize: 11.5, color: palette.textMuted, lineHeight: 1.5 }}>
                   {action.desc}
                 </p>
               </div>
 
               <div style={{ marginTop: 16, display: 'flex', alignItems: 'center', gap: 6 }}>
-                <Text style={{ fontSize: 12, fontWeight: 600, color: '#1677ff' }}>Mở quản lý</Text>
-                <ArrowRight size={13} style={{ color: '#1677ff' }} />
+                <Text style={{ fontSize: 12, fontWeight: 600, color: palette.primary }}>Mở quản lý</Text>
+                <ArrowRight size={13} style={{ color: palette.primary }} />
               </div>
             </Card>
           ))}
@@ -521,10 +468,10 @@ const DashboardPage: React.FC = () => {
           <Col xs={24} md={12}>
             <Card title={
               <Space>
-                <Activity size={16} style={{ color: '#1677ff' }} />
+                <Activity size={16} style={{ color: palette.primary }} />
                 <span>Trạng thái tài khoản đang đăng nhập</span>
               </Space>
-            } bordered={false} style={{ boxShadow: '0 1px 2px 0 rgba(0, 0, 0, 0.03)' }}>
+            } bordered={false} style={{ boxShadow: palette.cardShadow }}>
               <Descriptions column={1} size="small" bordered>
                 <Descriptions.Item label="Mã User (User ID)">
                   <Text copyable>{userId}</Text>
@@ -535,9 +482,9 @@ const DashboardPage: React.FC = () => {
                 <Descriptions.Item label="Quyền hạn truy cập">
                   <Space size={[0, 4]} wrap>
                     {roles.map((role, rIdx) => (
-                      <Tag color="geekblue" key={rIdx} style={{ fontWeight: 500 }}>
+                      <StatusBadge color="blue" key={rIdx}>
                         {role}
-                      </Tag>
+                      </StatusBadge>
                     ))}
                   </Space>
                 </Descriptions.Item>
@@ -548,24 +495,24 @@ const DashboardPage: React.FC = () => {
           <Col xs={24} md={12}>
             <Card title={
               <Space>
-                <Database size={16} style={{ color: '#52c41a' }} />
+                <Database size={16} style={{ color: palette.success }} />
                 <span>Môi trường kết nối & API</span>
               </Space>
-            } bordered={false} style={{ boxShadow: '0 1px 2px 0 rgba(0, 0, 0, 0.03)' }}>
+            } bordered={false} style={{ boxShadow: palette.cardShadow }}>
               <Descriptions column={1} size="small" bordered>
                 <Descriptions.Item label="Chế độ dữ liệu (Data Mode)">
-                  <Badge 
-                    status={USE_MOCK_API ? 'warning' : 'success'} 
-                    text={USE_MOCK_API ? 'Mock API (Offline)' : 'Cơ sở dữ liệu thật (Online)'} 
+                  <Badge
+                    status={USE_MOCK_API ? 'warning' : 'success'}
+                    text={USE_MOCK_API ? 'Mock API (Offline)' : 'Cơ sở dữ liệu thật (Online)'}
                   />
                 </Descriptions.Item>
                 <Descriptions.Item label="Địa chỉ API Endpoint">
                   <Text code>{import.meta.env.VITE_API_BASE_URL ?? 'http://localhost:8080'}</Text>
                 </Descriptions.Item>
                 <Descriptions.Item label="Trạng thái dịch vụ">
-                  <Tag color="success" style={{ borderRadius: 6, fontWeight: 500 }}>
+                  <StatusBadge color="success">
                     Đang hoạt động ổn định
-                  </Tag>
+                  </StatusBadge>
                 </Descriptions.Item>
               </Descriptions>
             </Card>

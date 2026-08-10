@@ -1,11 +1,14 @@
 import React, { useEffect, useState, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import {
-  Table, Card, Row, Col, Space, Button, Input, Select, Breadcrumb,
-  Statistic, Tag, message, Alert, Tooltip, Empty, Typography
+  Table, Card, Space, Button, Input, Select, Breadcrumb,
+  message, Alert, Tooltip, Empty, Typography
 } from 'antd';
-import { Edit3, Eye, Lock, Unlock, Plus, RefreshCw, Search } from 'lucide-react';
+import { Edit3, Eye, Lock, Unlock, Package, Plus, RefreshCw, Search } from 'lucide-react';
 import AdminShell from '../../../components/AdminShell';
+import PageHeader from '../../../components/PageHeader';
+import StatusBadge from '../../../components/StatusBadge';
+import { palette } from '../../../theme/tokens';
 import type { Product, ProductStatus } from '../../../types/product';
 import { productApi } from '../../../api/productApi';
 import { formatVolume, formatWeight } from '../../../utils/numberFormat';
@@ -155,7 +158,7 @@ const ProductListPage: React.FC = () => {
       title: 'SKU',
       dataIndex: 'sku',
       key: 'sku',
-      render: (sku: string) => <strong style={{ color: '#0f172a' }}>{sku}</strong>,
+      render: (sku: string) => <strong style={{ color: palette.textDark }}>{sku}</strong>,
     },
     {
       title: 'Tên sản phẩm',
@@ -182,9 +185,9 @@ const ProductListPage: React.FC = () => {
       render: (prodStatus: ProductStatus) => {
         const isActive = prodStatus === 'ACTIVE';
         return (
-          <Tag color={isActive ? 'success' : 'default'} style={{ borderRadius: 6, fontWeight: 500 }}>
+          <StatusBadge color={isActive ? 'success' : 'default'}>
             {isActive ? 'Đang kinh doanh' : 'Ngừng kinh doanh'}
-          </Tag>
+          </StatusBadge>
         );
       },
     },
@@ -224,7 +227,7 @@ const ProductListPage: React.FC = () => {
                 <Tooltip title="Kích hoạt">
                   <Button
                     type="text"
-                    style={{ color: '#52c41a' }}
+                    style={{ color: palette.success }}
                     icon={<Unlock size={16} />}
                     onClick={() => handleOpenActivate(record)}
                   />
@@ -242,39 +245,24 @@ const ProductListPage: React.FC = () => {
 
   return (
     <AdminShell currentUser={currentUser}>
-      <div style={{ display: 'flex', flexDirection: 'column', gap: 24 }}>
-        {/* Header Breadcrumb & Title */}
+      <div style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
         <div>
           <Breadcrumb
             items={[
               { title: 'Admin' },
               { title: 'Quản lý sản phẩm' }
             ]}
+            style={{ marginBottom: 12, fontSize: 13 }}
           />
-          <h2 style={{ margin: '8px 0 0 0', fontSize: 24, fontWeight: 700, color: '#1f1f1f' }}>
-            Danh mục sản phẩm
-          </h2>
-          <p style={{ margin: '4px 0 0 0', color: '#8c8c8c' }}>
-            Quản lý thông tin và thông số vật lý của các sản phẩm giao vận.
-          </p>
+          <PageHeader
+            title="Danh mục sản phẩm"
+            subtitle="Quản lý thông tin và thông số vật lý của các sản phẩm giao vận."
+            icon={<Package size={20} />}
+          />
         </div>
 
-        {/* Statistic Cards */}
-        <Row gutter={[16, 16]}>
-          <Col xs={24} sm={12}>
-            <Card size="small" bordered={false} style={{ boxShadow: '0 1px 2px 0 rgba(0, 0, 0, 0.03)' }}>
-              <Statistic title="Tổng sản phẩm phù hợp" value={pageMeta.totalElements} suffix="sản phẩm" />
-            </Card>
-          </Col>
-          <Col xs={24} sm={12}>
-            <Card size="small" bordered={false} style={{ boxShadow: '0 1px 2px 0 rgba(0, 0, 0, 0.03)' }}>
-              <Statistic title="Trang hiện tại" value={page + 1} suffix={`/ ${pageMeta.totalPages} trang`} />
-            </Card>
-          </Col>
-        </Row>
-
         {/* Main List Card */}
-        <Card bordered={false} style={{ boxShadow: '0 1px 2px 0 rgba(0, 0, 0, 0.03)' }}>
+        <Card bordered={false} style={{ borderRadius: 14, boxShadow: palette.cardShadow }}>
           {/* Filters and Toolbar */}
           <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 16, flexWrap: 'wrap', gap: 12 }}>
             <Space size="middle" wrap style={{ flex: 1 }}>
@@ -284,8 +272,8 @@ const ProductListPage: React.FC = () => {
                 onChange={(e) => {
                   setSearchKeyword(e.target.value);
                 }}
-                prefix={<Search size={16} style={{ color: '#bfbfbf' }} />}
-                style={{ width: 280, borderRadius: 6 }}
+                prefix={<Search size={16} style={{ color: palette.textFaint }} />}
+                style={{ width: 280 }}
                 allowClear
               />
               <Select
@@ -334,7 +322,7 @@ const ProductListPage: React.FC = () => {
                   canWriteProduct ? (
                     <div>
                       <Paragraph strong style={{ fontSize: 16, margin: 0 }}>Danh mục chưa có sản phẩm.</Paragraph>
-                      <Paragraph style={{ color: '#8c8c8c' }}>Hãy thêm sản phẩm đầu tiên để bắt đầu quản lý.</Paragraph>
+                      <Paragraph style={{ color: palette.textMuted }}>Hãy thêm sản phẩm đầu tiên để bắt đầu quản lý.</Paragraph>
                     </div>
                   ) : (
                     <Paragraph strong style={{ fontSize: 16 }}>Danh mục chưa có sản phẩm.</Paragraph>

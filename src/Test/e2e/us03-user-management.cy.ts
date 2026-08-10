@@ -55,7 +55,7 @@ function userPage(data = USERS) {
 }
 
 function interceptUserList(data = USERS) {
-  cy.intercept('GET', '**/api/users*', userPage(data)).as('getUsers');
+  cy.intercept('GET', '**/api/v1/users*', userPage(data)).as('getUsers');
 }
 
 describe('US-03 — User Management', () => {
@@ -82,7 +82,7 @@ describe('US-03 — User Management', () => {
 
   it('TC-02: tạo user nội bộ thành công và gửi đúng payload', () => {
     interceptUserList();
-    cy.intercept('POST', '**/api/users', (req) => {
+    cy.intercept('POST', '**/api/v1/users', (req) => {
       expect(req.body).to.deep.include({
         username: 'dispatcher02',
         fullName: 'Điều phối Bình',
@@ -127,7 +127,7 @@ describe('US-03 — User Management', () => {
     interceptUserList();
     cy.intercept(
       'POST',
-      '**/api/users',
+      '**/api/v1/users',
       apiError(409, 'USERNAME_DUPLICATE', 'Username đã tồn tại', 'username')
     ).as('createDuplicateUser');
 
@@ -153,7 +153,7 @@ describe('US-03 — User Management', () => {
 
   it('TC-04: cập nhật profile và role user qua PUT + PATCH roles', () => {
     interceptUserList();
-    cy.intercept('PUT', '**/api/users/2', (req) => {
+    cy.intercept('PUT', '**/api/v1/users/2', (req) => {
       expect(req.body).to.deep.eq({
         fullName: 'Điều phối Lan Updated',
         email: 'dispatcher01.updated@elog.vn',
@@ -166,7 +166,7 @@ describe('US-03 — User Management', () => {
         })
       );
     }).as('updateUser');
-    cy.intercept('PATCH', '**/api/users/2/roles', (req) => {
+    cy.intercept('PATCH', '**/api/v1/users/2/roles', (req) => {
       expect(req.body.roles).to.deep.eq(['DISPATCHER']);
       req.reply(apiSuccess(USERS[1]));
     }).as('updateRoles');
@@ -192,7 +192,7 @@ describe('US-03 — User Management', () => {
 
   it('TC-05: khoá user khác chính mình qua PATCH status', () => {
     interceptUserList();
-    cy.intercept('PATCH', '**/api/users/2/status', (req) => {
+    cy.intercept('PATCH', '**/api/v1/users/2/status', (req) => {
       expect(req.body).to.deep.eq({ isActive: false });
       req.reply(apiSuccess({ ...USERS[1], isActive: false }));
     }).as('lockUser');
@@ -209,7 +209,7 @@ describe('US-03 — User Management', () => {
   it('TC-06: role không đủ quyền đọc API thì bị đưa về dashboard', () => {
     cy.intercept(
       'GET',
-      '**/api/users*',
+      '**/api/v1/users*',
       apiError(403, 'ACCESS_DENIED', 'You do not have permission to access this resource.')
     ).as('getUsersDenied');
 
@@ -240,7 +240,7 @@ describe('US-03 — User Management', () => {
 
   it('TC-08: tạo user với email sai format và confirm password không khớp thì bị chặn', () => {
     interceptUserList();
-    cy.intercept('POST', '**/api/users').as('createUserShouldNotRun');
+    cy.intercept('POST', '**/api/v1/users').as('createUserShouldNotRun');
 
     visitAs('/users');
     cy.wait('@getUsers');
@@ -267,7 +267,7 @@ describe('US-03 — User Management', () => {
     interceptUserList();
     visitAs('/users');
     cy.wait('@getUsers');
-    cy.intercept('GET', '**/api/users*', (req) => {
+    cy.intercept('GET', '**/api/v1/users*', (req) => {
       expect(String(req.query.keyword ?? '')).to.eq('dispatcher01');
       req.reply(userPage([USERS[1]]));
     }).as('searchUsers');
@@ -279,7 +279,7 @@ describe('US-03 — User Management', () => {
   });
 
   it('TC-10: tìm kiếm không có kết quả hiển thị empty state', () => {
-    cy.intercept('GET', '**/api/users*', (req) => {
+    cy.intercept('GET', '**/api/v1/users*', (req) => {
       const keyword = String(req.query.keyword ?? '');
       req.reply(userPage(keyword ? [] : USERS));
     }).as('searchUsersEmpty');
@@ -296,7 +296,7 @@ describe('US-03 — User Management', () => {
     interceptUserList();
     visitAs('/users');
     cy.wait('@getUsers');
-    cy.intercept('GET', '**/api/users*', (req) => {
+    cy.intercept('GET', '**/api/v1/users*', (req) => {
       expect(String(req.query.role ?? '')).to.eq('DISPATCHER');
       req.reply(userPage([USERS[1]]));
     }).as('filterByRole');
@@ -304,7 +304,7 @@ describe('US-03 — User Management', () => {
     selectAntOption('Điều phối viên');
     cy.wait('@filterByRole');
 
-    cy.intercept('GET', '**/api/users*', (req) => {
+    cy.intercept('GET', '**/api/v1/users*', (req) => {
       expect(String(req.query.role ?? '')).to.eq('DISPATCHER');
       expect(String(req.query.isActive ?? '')).to.eq('false');
       req.reply(userPage([]));
@@ -318,7 +318,7 @@ describe('US-03 — User Management', () => {
     interceptUserList();
     cy.intercept(
       'POST',
-      '**/api/users',
+      '**/api/v1/users',
       apiError(409, 'EMAIL_DUPLICATE', 'Email đã tồn tại', 'email')
     ).as('createDuplicateEmail');
 
@@ -340,7 +340,7 @@ describe('US-03 — User Management', () => {
 
   it('TC-13: mật khẩu dưới 8 ký tự bị chặn và không gọi API', () => {
     interceptUserList();
-    cy.intercept('POST', '**/api/users').as('weakPasswordShouldNotRun');
+    cy.intercept('POST', '**/api/v1/users').as('weakPasswordShouldNotRun');
 
     visitAs('/users');
     cy.wait('@getUsers');
@@ -360,7 +360,7 @@ describe('US-03 — User Management', () => {
 
   it('TC-14: khoá user thành công cập nhật chip trạng thái không cần refresh trình duyệt', () => {
     interceptUserList();
-    cy.intercept('PATCH', '**/api/users/2/status', apiSuccess({ ...USERS[1], isActive: false })).as(
+    cy.intercept('PATCH', '**/api/v1/users/2/status', apiSuccess({ ...USERS[1], isActive: false })).as(
       'lockUserAndRefresh'
     );
 

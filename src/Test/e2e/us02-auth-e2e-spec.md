@@ -10,10 +10,10 @@
 | Item | Giá trị |
 |------|---------|
 | Base URL | `http://localhost:8080` |
-| Login endpoint | `POST /api/auth/login` |
-| Refresh endpoint | `POST /api/auth/refresh` |
-| Logout endpoint | `POST /api/auth/logout` |
-| Protected endpoint (admin) | `GET /api/users` |
+| Login endpoint | `POST /api/v1/auth/login` |
+| Refresh endpoint | `POST /api/v1/auth/refresh` |
+| Logout endpoint | `POST /api/v1/auth/logout` |
+| Protected endpoint (admin) | `GET /api/v1/users` |
 
 ### Response envelope chuẩn
 
@@ -79,7 +79,7 @@ Frontend cần lưu token theo quy ước sau (để test có thể kiểm tra):
 4. Click nút "Đăng nhập"
 
 **Expected:**
-- HTTP response: `POST /api/auth/login` → `200 OK`
+- HTTP response: `POST /api/v1/auth/login` → `200 OK`
 - Response body:
   ```json
   {
@@ -113,7 +113,7 @@ Frontend cần lưu token theo quy ước sau (để test có thể kiểm tra):
 4. Click nút "Đăng nhập"
 
 **Expected:**
-- HTTP response: `POST /api/auth/login` → `401 Unauthorized`
+- HTTP response: `POST /api/v1/auth/login` → `401 Unauthorized`
 - Response body:
   ```json
   {
@@ -143,7 +143,7 @@ Frontend cần lưu token theo quy ước sau (để test có thể kiểm tra):
 4. Click nút "Đăng nhập"
 
 **Expected:**
-- HTTP response: `POST /api/auth/login` → `403 Forbidden`
+- HTTP response: `POST /api/v1/auth/login` → `403 Forbidden`
 - Response body:
   ```json
   {
@@ -171,7 +171,7 @@ Frontend cần lưu token theo quy ước sau (để test có thể kiểm tra):
 2. Điều hướng đến `/users` (trang quản lý user — chỉ SYSTEM_ADMIN xem được)
 
 **Expected:**
-- HTTP request: `GET /api/users` với header `Authorization: Bearer <token>` → `200 OK`
+- HTTP request: `GET /api/v1/users` với header `Authorization: Bearer <token>` → `200 OK`
 - Trang `/users` hiển thị danh sách user
 - Không bị redirect về `/login`
 - Không hiển thị thông báo lỗi
@@ -189,7 +189,7 @@ Frontend cần lưu token theo quy ước sau (để test có thể kiểm tra):
 2. Điều hướng trực tiếp đến `/users`
 
 **Expected:**
-- HTTP request: `GET /api/users` → `401 Unauthorized` (hoặc frontend redirect TRƯỚC khi gọi API)
+- HTTP request: `GET /api/v1/users` → `401 Unauthorized` (hoặc frontend redirect TRƯỚC khi gọi API)
 - Trang tự động redirect về `/login`
 - Không hiển thị nội dung của `/users`
 
@@ -206,7 +206,7 @@ Frontend cần lưu token theo quy ước sau (để test có thể kiểm tra):
 2. Điều hướng đến `/users`
 
 **Expected:**
-- HTTP request: `GET /api/users` với DRIVER token → `403 Forbidden`
+- HTTP request: `GET /api/v1/users` với DRIVER token → `403 Forbidden`
 - Response body:
   ```json
   {
@@ -231,7 +231,7 @@ Frontend cần lưu token theo quy ước sau (để test có thể kiểm tra):
 **Steps:**
 1. Đăng nhập với `admin / Admin@2025`
 2. Lấy `refreshToken` từ `localStorage`
-3. Gọi `POST /api/auth/refresh` với body `{ "refreshToken": "<token>" }`
+3. Gọi `POST /api/v1/auth/refresh` với body `{ "refreshToken": "<token>" }`
 
 **Expected:**
 - HTTP response: `200 OK`
@@ -260,8 +260,8 @@ Frontend cần lưu token theo quy ước sau (để test có thể kiểm tra):
 
 **Steps:**
 1. Đăng nhập với `admin / Admin@2025`, lưu lại `refreshToken`
-2. Logout (`POST /api/auth/logout`)
-3. Gọi lại `POST /api/auth/refresh` với `refreshToken` vừa lưu
+2. Logout (`POST /api/v1/auth/logout`)
+3. Gọi lại `POST /api/v1/auth/refresh` với `refreshToken` vừa lưu
 
 **Expected:**
 - HTTP response: `401 Unauthorized`
@@ -294,7 +294,7 @@ Frontend cần lưu token theo quy ước sau (để test có thể kiểm tra):
 6. Điều hướng đến `/users`
 
 **Expected:**
-- HTTP request: `GET /api/users` với tampered token → `401 Unauthorized`
+- HTTP request: `GET /api/v1/users` với tampered token → `401 Unauthorized`
 - Response body:
   ```json
   {

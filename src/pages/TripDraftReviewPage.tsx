@@ -14,8 +14,6 @@ import {
   Spin,
   Statistic,
   Table,
-  Tag,
-  Tooltip,
   Typography,
   message,
   TimePicker,
@@ -33,6 +31,7 @@ import {
   Eye,
 } from 'lucide-react';
 import AdminShell from '../components/AdminShell';
+import StatusBadge from '../components/StatusBadge';
 import {
   confirmTripDraft,
   getApiErrorMessage,
@@ -41,10 +40,13 @@ import {
   recalculateEta,
   updateStopStatus,
   getStopOrderItems,
+  tripDraftApi,
   type TripDraftDetail,
   type TripDraftStop,
   type TripDraftStopStatus,
 } from '../api/tripDraftApi';
+import { getTripsByTripDraftId } from '../api/tripApi';
+import type { Trip } from '../types/trip';
 import { storeApi } from '../api/storeApi';
 import { usePermissions } from '../hooks/usePermissions';
 import { PERMISSIONS } from '../constants/permissions';
@@ -106,10 +108,6 @@ function getDraftStatusLabel(status?: string | null) {
   return statusMap[normalizedStatus] || normalizedStatus || '-';
 }
 
-function hasGps(stop: TripDraftStop) {
-  return stop.latitude !== null && stop.longitude !== null;
-}
-
 function mergeRecalculatedDraft(
   draft: TripDraftDetail,
   recalculated: Pick<TripDraftDetail, 'estimatedDistanceKm' | 'estimatedDurationMin' | 'stops'>
@@ -127,6 +125,8 @@ function mergeRecalculatedDraft(
           return {
             ...stop,
             eta: recalculatedStop.eta,
+            estimatedTravelMin: recalculatedStop.estimatedTravelMin,
+            estimatedDistanceKm: recalculatedStop.estimatedDistanceKm,
           };
         }
         return stop;
@@ -144,6 +144,7 @@ const TripDraftReviewPage: React.FC = () => {
   const canConfirmTrip = can(PERMISSIONS.TRIP_CONFIRM);
 
   const [draft, setDraft] = useState<TripDraftDetail | null>(null);
+  const [assignedTrips, setAssignedTrips] = useState<Trip[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [forbiddenMessage, setForbiddenMessage] = useState('');
@@ -222,8 +223,35 @@ const TripDraftReviewPage: React.FC = () => {
     () => draft?.stops.filter((stop) => stop.status === 'ACTIVE') ?? [],
     [draft]
   );
-  const isDraftEditable = draft?.status === 'DRAFT';
+
+  // BE không trả tổng thời lượng dự kiến (không có field nào ở TripDraftResponse/RecalculateEtaResponse),
+  // và tổng quãng đường trả về sau "Tính lại ETA" cũng không có — tự cộng dồn từ từng điểm dừng
+  // (estimatedDistanceKm/estimatedTravelMin) để luôn đúng cả lúc tải trang lẫn sau khi tính lại ETA.
+  const estimatedTotals = useMemo(
+    () =>
+      activeStops.reduce(
+        (acc, stop) => ({
+          distanceKm: acc.distanceKm + (stop.estimatedDistanceKm ?? 0),
+          durationMin: acc.durationMin + (stop.estimatedTravelMin ?? 0),
+        }),
+        { distanceKm: 0, durationMin: 0 }
+      ),
+    [activeStops]
+  );
+  const isDraftEditable = draft?.status === 'DRAFT' || draft?.status === 'PLANNED' || draft?.status === 'VALIDATED';
   const actionDisabled = !canEditTrip || !isDraftEditable || recalculating || confirming;
+
+  const vehicleDisplay = useMemo(() => {
+    const withVehicle = assignedTrips.filter((t) => t.vehicle);
+    if (withVehicle.length === 0) return { value: 'Chưa phân xe', suffix: '' };
+    if (withVehicle.length === 1) {
+      return {
+        value: withVehicle[0].vehicle!.plateNumber,
+        suffix: withVehicle[0].vehicle!.vehicleType ? ` / ${withVehicle[0].vehicle!.vehicleType}` : '',
+      };
+    }
+    return { value: `${withVehicle.length} xe (tách chuyến)`, suffix: '' };
+  }, [assignedTrips]);
 
   async function fetchDraft() {
     if (!draftId) return;
@@ -257,6 +285,16 @@ const TripDraftReviewPage: React.FC = () => {
       }
       
       setDraft(result);
+
+      // TripDraft itself never carries a vehicle — assignment lives on the
+      // Trip(s) created from it (possibly split into multiple, per BR-07).
+      try {
+        const trips = await getTripsByTripDraftId(draftId);
+        setAssignedTrips(trips);
+      } catch (tripErr) {
+        console.error('Failed to load assigned trips for draft', tripErr);
+        setAssignedTrips([]);
+      }
     } catch (err) {
       if (getTripDraftApiStatus(err) === 403) {
         setForbiddenMessage(
@@ -345,15 +383,29 @@ const TripDraftReviewPage: React.FC = () => {
       content: 'Thao tác này sẽ chuyển bản nháp đã kiểm tra thành chuyến đã lập kế hoạch.',
       okText: 'Xác nhận',
       cancelText: 'Huỷ',
-      icon: <CheckCircle2 size={20} color="#1677ff" />,
+      icon: <CheckCircle2 size={20} color="#2563eb" />,
       onOk: async () => {
         setConfirming(true);
 
         try {
-          await confirmTripDraft(draftId, {
-            confirmNote: 'Đã kiểm tra và xác nhận bởi điều phối viên',
-          });
-          message.success('Đã xác nhận bản nháp chuyến thành công.');
+          await confirmTripDraft(draftId);
+
+          // Auto-run capacity validation right after confirm (existing endpoint —
+          // no manual "Kiểm tra tải trọng" click needed anymore).
+          try {
+            const capacityRes = await tripDraftApi.validateTripDraftCapacity(draftId);
+            if (capacityRes.validationPassed) {
+              message.success('Đã xác nhận kế hoạch và kiểm tra tải trọng thành công.');
+            } else {
+              message.warning(
+                `Đã xác nhận kế hoạch nhưng chưa có xe nào đủ tải.${capacityRes.suggestion ? ' ' + capacityRes.suggestion : ''}`
+              );
+            }
+          } catch (capacityErr) {
+            console.error('Auto capacity validation failed after confirm', capacityErr);
+            message.info('Đã xác nhận kế hoạch. Chưa thể tự động kiểm tra tải trọng, vui lòng kiểm tra thủ công.');
+          }
+
           navigate(`/dispatcher/trip-drafts/${draftId}`);
         } catch (err) {
           const apiMessage = getApiErrorMessage(err, 'Không xác nhận được bản nháp chuyến.');
@@ -402,18 +454,7 @@ const TripDraftReviewPage: React.FC = () => {
       key: 'orderCount',
       width: 100,
       align: 'right' as const,
-      render: (count: number, record: TripDraftStop) => {
-        if (count === 0) return '0';
-        return (
-          <Button 
-            type="link" 
-            onClick={() => showOrderDetails(record)}
-            style={{ padding: 0, fontWeight: 'bold' }}
-          >
-            {count}
-          </Button>
-        );
-      }
+      render: (count: number) => count,
     },
     {
       title: 'Khối lượng / Thể tích',
@@ -429,19 +470,6 @@ const TripDraftReviewPage: React.FC = () => {
       ),
     },
     {
-      title: 'GPS',
-      key: 'gps',
-      width: 120,
-      render: (_value, record) =>
-        hasGps(record) ? (
-          <Tooltip title={`${record.latitude}, ${record.longitude}`}>
-            <Tag color="blue">Đã có GPS</Tag>
-          </Tooltip>
-        ) : (
-          <Tag color="orange">Thiếu GPS</Tag>
-        ),
-    },
-    {
       title: 'ETA',
       key: 'eta',
       width: 190,
@@ -452,7 +480,7 @@ const TripDraftReviewPage: React.FC = () => {
           <Space direction="vertical" size={0}>
             <Typography.Text>{formatDateTime(record.eta)}</Typography.Text>
             <Typography.Text type="secondary">
-              {record.estimatedTravelMin ?? 0} phút, {formatNumber(record.estimatedDistanceKm, 1)} km
+              {formatNumber(record.estimatedDistanceKm, 1)} km
             </Typography.Text>
           </Space>
         ),
@@ -463,9 +491,9 @@ const TripDraftReviewPage: React.FC = () => {
       width: 120,
       render: (_value, record) =>
         record.status === 'ACTIVE' ? (
-          <Tag color="green">{getStopStatusLabel(record.status)}</Tag>
+          <StatusBadge color="green">{getStopStatusLabel(record.status)}</StatusBadge>
         ) : (
-          <Tag color="default">{getStopStatusLabel(record.status)}</Tag>
+          <StatusBadge color="default">{getStopStatusLabel(record.status)}</StatusBadge>
         ),
     },
     {
@@ -606,8 +634,8 @@ const TripDraftReviewPage: React.FC = () => {
                   <Card size="small" bordered={false}>
                     <Statistic
                       title="Xe giao hàng"
-                      value={draft.vehicle?.plateNumber || '-'}
-                      suffix={draft.vehicle?.vehicleType ? ` / ${draft.vehicle.vehicleType}` : ''}
+                      value={vehicleDisplay.value}
+                      suffix={vehicleDisplay.suffix}
                     />
                   </Card>
                 </Col>
@@ -645,7 +673,7 @@ const TripDraftReviewPage: React.FC = () => {
                   <Card size="small" bordered={false}>
                     <Statistic
                       title="Quãng đường dự kiến"
-                      value={draft.estimatedDistanceKm}
+                      value={estimatedTotals.distanceKm}
                       suffix="km"
                       precision={1}
                     />
@@ -655,7 +683,7 @@ const TripDraftReviewPage: React.FC = () => {
                   <Card size="small" bordered={false}>
                     <Statistic
                       title="Thời lượng dự kiến"
-                      value={draft.estimatedDurationMin}
+                      value={estimatedTotals.durationMin}
                       suffix="phút"
                     />
                   </Card>
@@ -672,10 +700,10 @@ const TripDraftReviewPage: React.FC = () => {
                 }
                 extra={
                   <Space wrap>
-                    <Tag color="green">{activeStops.length} hoạt động</Tag>
-                    <Tag color="default">
+                    <StatusBadge color="green">{activeStops.length} hoạt động</StatusBadge>
+                    <StatusBadge color="default">
                       {draft.stops.length - activeStops.length} bỏ qua
-                    </Tag>
+                    </StatusBadge>
                   </Space>
                 }
               >
@@ -731,12 +759,6 @@ const TripDraftReviewPage: React.FC = () => {
                         Tính lại ETA
                       </Button>
                       <Button
-                        icon={<PackageCheck size={16} />}
-                        onClick={() => navigate(`/trip-drafts/${draft.id}/loading-manifest`)}
-                      >
-                        LIFO Manifest
-                      </Button>
-                      <Button
                         type="primary"
                         icon={<Navigation size={16} />}
                         loading={confirming}
@@ -768,7 +790,7 @@ const TripDraftReviewPage: React.FC = () => {
       <Modal
         title={
           <Space>
-            <PackageCheck size={20} style={{ color: '#1677ff' }} />
+            <PackageCheck size={20} style={{ color: '#2563eb' }} />
             <span>Chi tiết đơn hàng điểm dừng: {selectedStopForDetail?.storeName || selectedStopForDetail?.storeCode}</span>
           </Space>
         }

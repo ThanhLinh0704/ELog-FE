@@ -18,10 +18,10 @@ export type RejectionType =
   | 'NO_SPACE'
   | 'OTHER';
 
-/** Filter values for GET /api/exceptions?resolved= */
+/** Filter values for GET /api/v1/exceptions?resolved= */
 export type ExceptionResolvedFilter = 'all' | 'true' | 'false';
 
-/** Filter values for GET /api/exceptions?type= */
+/** Filter values for GET /api/v1/exceptions?type= */
 export type ExceptionTypeFilter = 'ALL' | ExceptionType;
 
 // ── Response DTOs ────────────────────────────────────────────────────────────
@@ -37,8 +37,8 @@ export interface ExceptionReporterInfo {
 
 /**
  * Backend: DeliveryExceptionResponse
- * Returned by POST /api/trip-stops/{id}/reject, GET /api/exceptions/{id},
- * and PATCH /api/exceptions/{id}/resolve.
+ * Returned by POST /api/v1/trip-stops/{id}/reject, GET /api/v1/exceptions/{id},
+ * and PATCH /api/v1/exceptions/{id}/resolve.
  */
 export interface DeliveryExceptionResponse {
   exceptionId: number;
@@ -113,7 +113,7 @@ export interface ExceptionListItem {
 
 /**
  * Backend: ExceptionListResponse
- * Returned by GET /api/exceptions.
+ * Returned by GET /api/v1/exceptions.
  */
 export interface ExceptionListResponse {
   date: string;
@@ -126,7 +126,7 @@ export interface ExceptionListResponse {
 
 /**
  * Backend: RejectStopRequest
- * POST /api/trip-stops/{id}/reject
+ * POST /api/v1/trip-stops/{id}/reject
  */
 export interface RejectStopRequest {
   rejectionType: string;
@@ -135,7 +135,7 @@ export interface RejectStopRequest {
 
 /**
  * Backend: ResolveExceptionRequest
- * PATCH /api/exceptions/{id}/resolve
+ * PATCH /api/v1/exceptions/{id}/resolve
  */
 export interface ResolveExceptionRequest {
   resolutionNotes: string;

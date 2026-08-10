@@ -2,6 +2,9 @@ export const PERMISSIONS = {
   USER_READ: 'user:read',
   USER_WRITE: 'user:write',
 
+  DRIVER_READ: 'driver:read',
+  DRIVER_WRITE: 'driver:write',
+
   ROLE_READ: 'role:read',
   ROLE_WRITE: 'role:write',
 
@@ -24,6 +27,10 @@ export const PERMISSIONS = {
   TRIP_CONFIRM: 'trip:confirm',
   TRIP_COORDINATE: 'trip:coordinate',
   TRIP_EXECUTE: 'trip:execute',
+
+  PLANNING_HISTORY_READ: 'planning-history:read',
+
+  KPI_READ: 'kpi:read',
 } as const;
 
 export type Permission = (typeof PERMISSIONS)[keyof typeof PERMISSIONS];

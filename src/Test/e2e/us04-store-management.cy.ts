@@ -55,7 +55,7 @@ function storePage(data = STORES) {
 }
 
 function interceptStoreList(data = STORES) {
-  cy.intercept('GET', '**/api/stores*', storePage(data)).as('getStores');
+  cy.intercept('GET', '**/api/v1/stores*', storePage(data)).as('getStores');
 }
 
 function fillRequiredStoreFields(code: string, name: string, address: string) {
@@ -84,7 +84,7 @@ describe('US-04 — Store Management', () => {
 
   it('TC-02: tạo store mới thành công, payload được trim và uppercase code', () => {
     interceptStoreList();
-    cy.intercept('POST', '**/api/stores', (req) => {
+    cy.intercept('POST', '**/api/v1/stores', (req) => {
       expect(req.body).to.deep.include({
         storeCode: 'ST-GV-006',
         storeName: 'Điện Máy Gia Phát',
@@ -154,7 +154,7 @@ describe('US-04 — Store Management', () => {
     interceptStoreList();
     cy.intercept(
       'POST',
-      '**/api/stores',
+      '**/api/v1/stores',
       apiError(409, 'STORE_CODE_DUPLICATE', 'Mã cửa hàng đã tồn tại.', 'storeCode')
     ).as('createDuplicateStore');
 
@@ -193,7 +193,7 @@ describe('US-04 — Store Management', () => {
     interceptStoreList();
     cy.intercept(
       'PATCH',
-      '**/api/stores/1/status',
+      '**/api/v1/stores/1/status',
       apiError(409, 'STORE_IN_ACTIVE_ROUTE', 'Cửa hàng này đang là điểm dừng của tuyến RT-BT-01.')
     ).as('deactivateBlockedStore');
 
@@ -211,7 +211,7 @@ describe('US-04 — Store Management', () => {
 
   it('TC-07: tạo store thiếu field bắt buộc thì hiển thị validation errors', () => {
     interceptStoreList();
-    cy.intercept('POST', '**/api/stores').as('createStoreShouldNotRun');
+    cy.intercept('POST', '**/api/v1/stores').as('createStoreShouldNotRun');
 
     visitAs('/stores');
     cy.wait('@getStores');
@@ -229,7 +229,7 @@ describe('US-04 — Store Management', () => {
 
   it('TC-08: số điện thoại sai format thì frontend không gọi API', () => {
     interceptStoreList();
-    cy.intercept('POST', '**/api/stores').as('createStoreShouldNotRun');
+    cy.intercept('POST', '**/api/v1/stores').as('createStoreShouldNotRun');
 
     visitAs('/stores');
     cy.wait('@getStores');
@@ -253,7 +253,7 @@ describe('US-04 — Store Management', () => {
   });
 
   it('TC-09: DRIVER không có quyền đọc Store Management thì bị đưa về dashboard', () => {
-    cy.intercept('GET', '**/api/stores*').as('getStoresShouldNotRun');
+    cy.intercept('GET', '**/api/v1/stores*').as('getStoresShouldNotRun');
 
     visitAs('/stores', ['DRIVER'], 'driver01');
 
@@ -263,7 +263,7 @@ describe('US-04 — Store Management', () => {
 
   it('TC-10: tạo store không có GPS vẫn thành công và hiện cảnh báo inline', () => {
     interceptStoreList();
-    cy.intercept('POST', '**/api/stores', (req) => {
+    cy.intercept('POST', '**/api/v1/stores', (req) => {
       expect(req.body.latitude).to.eq(null);
       expect(req.body.longitude).to.eq(null);
       req.reply(apiSuccess({ id: 10, ...req.body, isActive: true, hasCoordinates: false }));
@@ -281,7 +281,7 @@ describe('US-04 — Store Management', () => {
 
   it('TC-11: nhập longitude nhưng thiếu latitude bị chặn inline', () => {
     interceptStoreList();
-    cy.intercept('POST', '**/api/stores').as('storeLongitudeOnlyShouldNotRun');
+    cy.intercept('POST', '**/api/v1/stores').as('storeLongitudeOnlyShouldNotRun');
 
     visitAs('/stores');
     cy.wait('@getStores');
@@ -300,7 +300,7 @@ describe('US-04 — Store Management', () => {
     interceptStoreList();
     cy.intercept(
       'POST',
-      '**/api/stores',
+      '**/api/v1/stores',
       apiError(400, 'INVALID_LATITUDE', 'Vĩ độ phải nằm trong khoảng -90 đến 90.', 'latitude')
     ).as('invalidLatitude');
 
@@ -322,7 +322,7 @@ describe('US-04 — Store Management', () => {
     interceptStoreList();
     cy.intercept(
       'POST',
-      '**/api/stores',
+      '**/api/v1/stores',
       apiError(400, 'INVALID_LONGITUDE', 'Kinh độ phải nằm trong khoảng -180 đến 180.', 'longitude')
     ).as('invalidLongitude');
 
@@ -342,8 +342,8 @@ describe('US-04 — Store Management', () => {
 
   it('TC-14: form chỉnh sửa giữ storeCode readonly và chỉ gửi field được phép sửa', () => {
     interceptStoreList();
-    cy.intercept('GET', '**/api/stores/2', apiSuccess(STORES[1])).as('getStoreDetail');
-    cy.intercept('PUT', '**/api/stores/2', (req) => {
+    cy.intercept('GET', '**/api/v1/stores/2', apiSuccess(STORES[1])).as('getStoreDetail');
+    cy.intercept('PUT', '**/api/v1/stores/2', (req) => {
       expect(req.body).not.to.have.property('storeCode');
       expect(req.body.address).to.eq('220 Nguyễn Oanh, Gò Vấp');
       req.reply(apiSuccess({ ...STORES[1], ...req.body }));
@@ -364,10 +364,10 @@ describe('US-04 — Store Management', () => {
 
   it('TC-15: vô hiệu hoá store chưa gắn tuyến cập nhật trạng thái trên bảng', () => {
     let inactive = false;
-    cy.intercept('GET', '**/api/stores*', (req) => {
+    cy.intercept('GET', '**/api/v1/stores*', (req) => {
       req.reply(storePage(STORES.map((s) => (s.id === 2 ? { ...s, isActive: !inactive } : s))));
     }).as('getStoresLifecycle');
-    cy.intercept('PATCH', '**/api/stores/2/status', (req) => {
+    cy.intercept('PATCH', '**/api/v1/stores/2/status', (req) => {
       expect(req.body).to.deep.eq({ isActive: false });
       inactive = true;
       req.reply(apiSuccess({ ...STORES[1], isActive: false }));
@@ -384,10 +384,10 @@ describe('US-04 — Store Management', () => {
   it('TC-16: kích hoạt lại store inactive cập nhật trạng thái trên bảng', () => {
     let active = false;
     const inactiveStores = STORES.map((s) => (s.id === 2 ? { ...s, isActive: false } : s));
-    cy.intercept('GET', '**/api/stores*', (req) => {
+    cy.intercept('GET', '**/api/v1/stores*', (req) => {
       req.reply(storePage(inactiveStores.map((s) => (s.id === 2 ? { ...s, isActive: active } : s))));
     }).as('getInactiveStores');
-    cy.intercept('PATCH', '**/api/stores/2/status', (req) => {
+    cy.intercept('PATCH', '**/api/v1/stores/2/status', (req) => {
       expect(req.body).to.deep.eq({ isActive: true });
       active = true;
       req.reply(apiSuccess({ ...STORES[1], isActive: true }));
@@ -405,7 +405,7 @@ describe('US-04 — Store Management', () => {
     interceptStoreList();
     visitAs('/stores');
     cy.wait('@getStores');
-    cy.intercept('GET', '**/api/stores*', (req) => {
+    cy.intercept('GET', '**/api/v1/stores*', (req) => {
       expect(String(req.query.keyword ?? '')).to.eq('khong-ton-tai');
       req.reply(storePage([]));
     }).as('searchStoresEmpty');
@@ -419,7 +419,7 @@ describe('US-04 — Store Management', () => {
     interceptStoreList();
     visitAs('/stores');
     cy.wait('@getStores');
-    cy.intercept('GET', '**/api/stores*', (req) => {
+    cy.intercept('GET', '**/api/v1/stores*', (req) => {
       expect(String(req.query.isActive ?? '')).to.eq('false');
       req.reply(storePage([]));
     }).as('filterInactiveStores');
@@ -427,7 +427,7 @@ describe('US-04 — Store Management', () => {
     cy.contains('[role="option"], .ant-select-item-option-content', 'Đã vô hiệu hoá').click({ force: true });
     cy.wait('@filterInactiveStores');
 
-    cy.intercept('GET', '**/api/stores*', (req) => {
+    cy.intercept('GET', '**/api/v1/stores*', (req) => {
       expect(String(req.query.isActive ?? '')).to.eq('false');
       expect(String(req.query.hasRoute ?? '')).to.eq('false');
       req.reply(storePage([]));

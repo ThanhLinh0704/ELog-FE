@@ -45,7 +45,7 @@ export const addressApi = {
       return mockProvinces;
     }
     const response = await handleAxiosCall<any>(() =>
-      axiosInstance.get('/api/addresses/provinces')
+      axiosInstance.get('/api/v1/addresses/provinces')
     );
     return response?.data || [];
   },
@@ -55,7 +55,7 @@ export const addressApi = {
       return mockDistricts.filter(d => d.provinceCode === provinceCode);
     }
     const response = await handleAxiosCall<any>(() =>
-      axiosInstance.get(`/api/addresses/provinces/${provinceCode}/districts`)
+      axiosInstance.get(`/api/v1/addresses/provinces/${provinceCode}/districts`)
     );
     return response?.data || [];
   },
@@ -65,7 +65,7 @@ export const addressApi = {
       return mockWards.filter(w => w.districtCode === districtCode);
     }
     const response = await handleAxiosCall<any>(() =>
-      axiosInstance.get(`/api/addresses/districts/${districtCode}/wards`)
+      axiosInstance.get(`/api/v1/addresses/districts/${districtCode}/wards`)
     );
     return response?.data || [];
   },

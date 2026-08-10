@@ -4,9 +4,11 @@ import { Avatar, Badge, Button, ConfigProvider, Dropdown, Input, Layout, Menu, S
 import {
   Activity,
   AlertTriangle,
+  BarChart3,
   Bell,
   ChevronDown,
   FileSpreadsheet,
+  History,
   Home,
   Layers,
   LayoutGrid,
@@ -17,11 +19,13 @@ import {
   Search,
   Settings,
   Truck,
+  UserCog,
   Users,
 } from 'lucide-react';
 import axiosInstance from '../api/axiosInstance';
 import { PERMISSIONS } from '../constants/permissions';
 import { usePermissions } from '../hooks/usePermissions';
+import { antdTheme, palette } from '../theme/tokens';
 
 const { Header, Sider, Content } = Layout;
 
@@ -56,7 +60,7 @@ const AdminShell: React.FC<AdminShellProps> = ({ currentUser, children }) => {
     const refreshToken = localStorage.getItem('refreshToken');
     if (refreshToken) {
       try {
-        await axiosInstance.post('/api/auth/logout', { refreshToken });
+        await axiosInstance.post('/api/v1/auth/logout', { refreshToken });
       } catch (err) {
         console.error('Failed to logout in backend', err);
       }
@@ -101,11 +105,19 @@ const AdminShell: React.FC<AdminShellProps> = ({ currentUser, children }) => {
                 ? '/exceptions'
                 : location.pathname.startsWith('/manager/exceptions')
                   ? '/exceptions'
-                  : location.pathname.startsWith('/driver/my-trips')
-                    ? '/driver/my-trips'
-                    : location.pathname.startsWith('/trip-drafts')
-                      ? '/trip-drafts'
-                      : location.pathname;
+                  : location.pathname.startsWith('/dispatcher/kpi')
+                    ? '/kpi'
+                    : location.pathname.startsWith('/manager/kpi')
+                      ? '/kpi'
+                      : location.pathname.startsWith('/dispatcher/activity-history')
+                        ? '/activity-history'
+                        : location.pathname.startsWith('/manager/activity-history')
+                          ? '/activity-history'
+                          : location.pathname.startsWith('/driver/my-trips')
+                            ? '/driver/my-trips'
+                            : location.pathname.startsWith('/trip-drafts')
+                              ? '/trip-drafts'
+                              : location.pathname;
 
   const roles = currentUser.roles || [];
   const roleLabel = roles.map((role) => ROLE_LABELS[role] || role).join(', ') || 'User';
@@ -113,13 +125,15 @@ const AdminShell: React.FC<AdminShellProps> = ({ currentUser, children }) => {
   const canViewTripDraftsMenu = can(PERMISSIONS.TRIP_READ);
   const canViewMonitoring = can(PERMISSIONS.TRIP_READ);
   const canViewExceptions = can(PERMISSIONS.TRIP_READ);
+  const canViewKpi = can(PERMISSIONS.KPI_READ);
+  const canViewActivityHistory = can(PERMISSIONS.TRIP_READ) || can(PERMISSIONS.PLANNING_HISTORY_READ);
   const canViewDriverTrips = can(PERMISSIONS.TRIP_EXECUTE);
 
   const sidebarMenuItems = [
     {
       key: 'grp-main',
       label: (
-        <span style={{ fontSize: 10, fontWeight: 700, letterSpacing: 0.8, color: '#64748b' }}>
+        <span style={{ fontSize: 10, fontWeight: 700, letterSpacing: 0.8, color: palette.sidebarTextMuted }}>
           QUẢN TRỊ CHÍNH
         </span>
       ),
@@ -131,12 +145,28 @@ const AdminShell: React.FC<AdminShellProps> = ({ currentUser, children }) => {
           label: 'Tổng quan',
           onClick: () => navigate('/dashboard'),
         },
+        can(PERMISSIONS.ROLE_READ)
+          ? {
+              key: '/roles',
+              icon: <Settings size={ICON_SIZE} />,
+              label: 'Phân quyền',
+              onClick: () => navigate('/roles'),
+            }
+          : null,
         can(PERMISSIONS.USER_READ)
           ? {
               key: '/users',
               icon: <Users size={ICON_SIZE} />,
               label: 'Quản lý người dùng',
               onClick: () => navigate('/users'),
+            }
+          : null,
+        can(PERMISSIONS.DRIVER_READ)
+          ? {
+              key: '/admin/drivers',
+              icon: <UserCog size={ICON_SIZE} />,
+              label: 'Quản lý tài xế',
+              onClick: () => navigate('/admin/drivers'),
             }
           : null,
         can(PERMISSIONS.STORE_READ)
@@ -188,14 +218,6 @@ const AdminShell: React.FC<AdminShellProps> = ({ currentUser, children }) => {
             }
           : null,
 
-        can(PERMISSIONS.ROLE_READ)
-          ? {
-              key: '/roles',
-              icon: <Settings size={ICON_SIZE} />,
-              label: 'Phân quyền',
-              onClick: () => navigate('/roles'),
-            }
-          : null,
         canViewMonitoring
           ? {
               key: '/dispatcher/monitoring',
@@ -212,6 +234,22 @@ const AdminShell: React.FC<AdminShellProps> = ({ currentUser, children }) => {
               onClick: () => navigate('/dispatcher/exceptions'),
             }
           : null,
+        canViewKpi
+          ? {
+              key: '/kpi',
+              icon: <BarChart3 size={ICON_SIZE} />,
+              label: 'KPI vận hành',
+              onClick: () => navigate('/dispatcher/kpi'),
+            }
+          : null,
+        canViewActivityHistory
+          ? {
+              key: '/activity-history',
+              icon: <History size={ICON_SIZE} />,
+              label: 'Nhật ký hoạt động',
+              onClick: () => navigate('/dispatcher/activity-history'),
+            }
+          : null,
         canViewDriverTrips
           ? {
               key: '/driver/my-trips',
@@ -225,33 +263,16 @@ const AdminShell: React.FC<AdminShellProps> = ({ currentUser, children }) => {
   ];
 
   return (
-    <ConfigProvider
-      theme={{
-        components: {
-          Layout: {
-            siderBg: '#0d1727',
-          },
-          Menu: {
-            darkItemBg: '#0d1727',
-            darkItemColor: '#a6b0cf',
-            darkItemHoverBg: 'rgba(255, 255, 255, 0.05)',
-            darkItemSelectedBg: 'rgba(255, 255, 255, 0.08)',
-            darkItemSelectedColor: '#ffffff',
-            darkSubMenuItemBg: '#0d1727',
-            darkGroupTitleColor: '#64748b',
-          },
-        },
-      }}
-    >
+    <ConfigProvider theme={antdTheme}>
       <Layout style={{ minHeight: '100vh' }}>
         <Sider theme="dark" width={260} className="elog-admin-sider">
           <div onClick={() => navigate('/dashboard')} className="elog-sidebar-logo">
             <div className="elog-logo-badge">E</div>
             <div style={{ lineHeight: 1.2 }}>
-              <h1 style={{ margin: 0, fontSize: 15, fontWeight: 700, color: '#ffffff' }}>
+              <h1 style={{ margin: 0, fontSize: 15, fontWeight: 700, color: palette.sidebarTextActive, letterSpacing: 0.4 }}>
                 ELog Quản trị
               </h1>
-              <p style={{ margin: 0, fontSize: 10, color: '#64748b', fontWeight: 500 }}>
+              <p style={{ margin: 0, fontSize: 10, color: palette.sidebarTextMuted, fontWeight: 500 }}>
                 Bảng điều khiển hệ thống
               </p>
             </div>
@@ -264,7 +285,7 @@ const AdminShell: React.FC<AdminShellProps> = ({ currentUser, children }) => {
                 theme="dark"
                 selectedKeys={[selectedKey]}
                 items={sidebarMenuItems}
-                style={{ borderRight: 0, padding: '16px 0', background: '#0d1727' }}
+                style={{ borderRight: 0, padding: '16px 0', background: palette.navySider }}
               />
             </div>
 
@@ -272,8 +293,8 @@ const AdminShell: React.FC<AdminShellProps> = ({ currentUser, children }) => {
               <div className="elog-profile-info">
                 <Avatar
                   style={{
-                    backgroundColor: '#e6f7ff',
-                    color: '#1677ff',
+                    backgroundColor: palette.primaryBg,
+                    color: palette.primary,
                     fontWeight: 600,
                     marginRight: 12,
                   }}
@@ -284,7 +305,7 @@ const AdminShell: React.FC<AdminShellProps> = ({ currentUser, children }) => {
                   <div className="elog-profile-name">
                     {currentUser.fullName || currentUser.username}
                   </div>
-                  <div style={{ fontSize: 11, color: '#64748b' }}>{roleLabel}</div>
+                  <div style={{ fontSize: 11, color: palette.sidebarTextMuted }}>{roleLabel}</div>
                 </div>
               </div>
               <Button
@@ -303,30 +324,31 @@ const AdminShell: React.FC<AdminShellProps> = ({ currentUser, children }) => {
         <Layout style={{ marginLeft: 260 }}>
           <Header className="elog-admin-header">
             <Input
-              prefix={<Search size={ICON_SIZE - 2} style={{ color: '#bfbfbf' }} />}
+              prefix={<Search size={ICON_SIZE - 2} style={{ color: palette.textFaint }} />}
               placeholder="Tìm kiếm nhanh..."
-              style={{ width: 250, borderRadius: 6 }}
+              style={{ width: 260 }}
             />
-            <Space size={16}>
+            <Space size={12}>
               <Button
                 type="text"
                 shape="circle"
+                className="elog-header-icon-btn"
                 icon={
-                  <Badge dot color="#ff4d4f" offset={[-2, 2]}>
-                    <Bell size={ICON_SIZE} style={{ color: '#595959' }} />
+                  <Badge dot color={palette.danger} offset={[-2, 2]}>
+                    <Bell size={ICON_SIZE} style={{ color: palette.textBody }} />
                   </Badge>
                 }
               />
               <Dropdown menu={userMenuItems} placement="bottomRight" trigger={['click']}>
-                <Button type="text" style={{ height: 40, padding: '0 8px' }}>
+                <Button type="text" style={{ height: 40, padding: '0 8px', borderRadius: 10 }}>
                   <Space>
-                    <Avatar size="small" style={{ backgroundColor: '#1677ff' }}>
+                    <Avatar size="small" style={{ backgroundColor: palette.primary }}>
                       {(currentUser.fullName || currentUser.username).slice(0, 1).toUpperCase()}
                     </Avatar>
-                    <span style={{ color: '#595959', fontWeight: 500 }}>
+                    <span style={{ color: palette.textBody, fontWeight: 500 }}>
                       {currentUser.fullName || currentUser.username}
                     </span>
-                    <ChevronDown size={CHEVRON_ICON_SIZE} style={{ color: '#8c8c8c' }} />
+                    <ChevronDown size={CHEVRON_ICON_SIZE} style={{ color: palette.textFaint }} />
                   </Space>
                 </Button>
               </Dropdown>

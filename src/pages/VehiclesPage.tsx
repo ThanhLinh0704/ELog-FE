@@ -3,7 +3,6 @@ import { useNavigate } from 'react-router-dom';
 import {
   Alert,
   Avatar,
-  Badge,
   Breadcrumb,
   Button,
   Card,
@@ -18,7 +17,6 @@ import {
   Row,
   Select,
   Space,
-  Statistic,
   Table,
   Typography,
   message,
@@ -35,6 +33,9 @@ import {
   Unlock,
 } from 'lucide-react';
 import AdminShell from '../components/AdminShell';
+import PageHeader from '../components/PageHeader';
+import StatusBadge from '../components/StatusBadge';
+import { palette } from '../theme/tokens';
 import { useDebounce } from '../hooks/useDebounce';
 import { usePermissions } from '../hooks/usePermissions';
 import { PERMISSIONS } from '../constants/permissions';
@@ -42,10 +43,11 @@ import {
   getVehicleApiErrorMessage,
   getVehicleApiStatus,
   vehicleApi,
-  type FleetCapacity,
   type VehicleItem,
   type VehiclePayload,
 } from '../api/vehicleApi';
+import { userApi } from '../api/userApi';
+import type { User } from '../utils/userMapper';
 
 type FormMode = 'create' | 'edit';
 
@@ -138,10 +140,9 @@ function formatNumber(value?: number | null, fractionDigits = 0) {
 
 function VehicleStatusBadge({ active }: { active: boolean }) {
   return (
-    <Badge
-      status={active ? 'success' : 'error'}
-      text={active ? 'Hoạt động' : 'Đã vô hiệu hoá'}
-    />
+    <StatusBadge color={active ? 'success' : 'error'}>
+      {active ? 'Hoạt động' : 'Đã vô hiệu hoá'}
+    </StatusBadge>
   );
 }
 
@@ -164,6 +165,15 @@ const VehicleFormModal: React.FC<VehicleFormModalProps> = ({
 }) => {
   const [form] = Form.useForm();
   const isEdit = mode === 'edit';
+  const [drivers, setDrivers] = useState<User[]>([]);
+
+  useEffect(() => {
+    if (open) {
+      userApi.getUsers({ role: 'DRIVER', size: 100 })
+        .then(res => setDrivers(res.content || []))
+        .catch(err => console.error('Failed to load drivers for vehicle assignment', err));
+    }
+  }, [open]);
 
   useEffect(() => {
     if (!open) return;
@@ -184,15 +194,29 @@ const VehicleFormModal: React.FC<VehicleFormModalProps> = ({
         averageSpeedKmh: vehicle.averageSpeedKmh,
         costPerKm: vehicle.costPerKm,
         status: vehicle.status,
+        assignedDriverId: vehicle.assignedDriverId || null,
         imageUrl: vehicle.imageUrl,
         permitInfo: vehicle.permitInfo ? (typeof vehicle.permitInfo === 'object' ? JSON.stringify(vehicle.permitInfo) : vehicle.permitInfo) : null,
         description: vehicle.description,
       });
     } else {
       form.resetFields();
-      form.setFieldsValue({ status: 'AVAILABLE', requiredLicense: 'B' });
+      form.setFieldsValue({ status: 'AVAILABLE', requiredLicense: 'B', assignedDriverId: null });
     }
   }, [open, isEdit, vehicle, form]);
+
+  const selectedDriverId = Form.useWatch('assignedDriverId', form);
+  const selectedRequiredLicense = Form.useWatch('requiredLicense', form);
+
+  const selectedDriverObj = drivers.find(d => d.id === selectedDriverId);
+  const driverLicenseClass = selectedDriverObj?.licenseClass;
+
+  const LICENSE_RANK: Record<string, number> = { B: 1, C1: 2, C: 3 };
+  const isLicenseLower =
+    selectedDriverId &&
+    driverLicenseClass &&
+    selectedRequiredLicense &&
+    (LICENSE_RANK[driverLicenseClass] || 0) < (LICENSE_RANK[selectedRequiredLicense] || 0);
 
   async function handleFinish(values: any) {
     const payload: VehiclePayload = {
@@ -208,6 +232,7 @@ const VehicleFormModal: React.FC<VehicleFormModalProps> = ({
       averageSpeedKmh: values.averageSpeedKmh != null ? Number(values.averageSpeedKmh) : null,
       costPerKm: values.costPerKm != null ? Number(values.costPerKm) : null,
       status: values.status,
+      assignedDriverId: values.assignedDriverId || null,
       imageUrl: values.imageUrl?.trim() || null,
       permitInfo: values.permitInfo?.trim() || null,
       description: values.description?.trim() || null,
@@ -267,8 +292,35 @@ const VehicleFormModal: React.FC<VehicleFormModalProps> = ({
       destroyOnHidden
     >
       <Form form={form} layout="vertical" onFinish={handleFinish}>
+        {isLicenseLower ? (
+          <Alert
+            type="warning"
+            showIcon
+            message={`Cảnh báo: Hạng bằng lái của tài xế (${driverLicenseClass}) thấp hơn yêu cầu của xe (${selectedRequiredLicense}). Có thể không đủ điều kiện vận hành.`}
+            style={{ marginBottom: 16 }}
+          />
+        ) : null}
+
         <Row gutter={16}>
           <Col xs={24} md={12}>
+            <Form.Item
+              label="Tài xế cố định (Tùy chọn)"
+              name="assignedDriverId"
+            >
+              <Select
+                placeholder="Chọn tài xế cố định phụ trách xe"
+                allowClear
+                options={[
+                  { value: null, label: '— Không gán tài xế cố định —' },
+                  ...drivers.map(d => ({
+                    value: d.id,
+                    label: `${d.fullName || d.username} - Hạng ${d.licenseClass || 'N/A'}`,
+                  })),
+                ]}
+              />
+            </Form.Item>
+          </Col>
+          <Col xs={24} md={6}>
             <Form.Item
               label="Mã xe"
               name="vehicleCode"
@@ -280,7 +332,7 @@ const VehicleFormModal: React.FC<VehicleFormModalProps> = ({
               <Input placeholder="VD: XE001" disabled={isEdit} />
             </Form.Item>
           </Col>
-          <Col xs={24} md={12}>
+          <Col xs={24} md={6}>
             <Form.Item
               label="Biển số"
               name="plateNumber"
@@ -347,11 +399,11 @@ const VehicleFormModal: React.FC<VehicleFormModalProps> = ({
           </Col>
           <Col xs={24} md={8}>
             <Form.Item
-              label="Hạng bằng yêu cầu"
+              label="Giấy phép lái xe yêu cầu"
               name="requiredLicense"
-              rules={[{ required: true, message: 'Vui lòng chọn hạng bằng.' }]}
+              rules={[{ required: true, message: 'Vui lòng chọn giấy phép lái xe.' }]}
             >
-              <Select placeholder="Chọn hạng bằng">
+              <Select placeholder="Chọn giấy phép lái xe">
                 <Select.Option value="B">Hạng B</Select.Option>
                 <Select.Option value="C1">Hạng C1</Select.Option>
                 <Select.Option value="C">Hạng C</Select.Option>
@@ -437,25 +489,7 @@ const VehicleFormModal: React.FC<VehicleFormModalProps> = ({
           </Col>
         </Row>
 
-        <Row gutter={16}>
-          <Col xs={24} md={12}>
-            <Form.Item
-              label="Đường dẫn ảnh xe (URL)"
-              name="imageUrl"
-              rules={[{ max: 512, message: 'Đường dẫn ảnh không quá 512 ký tự.' }]}
-            >
-              <Input placeholder="VD: /images/vehicles/truck.png" />
-            </Form.Item>
-          </Col>
-          <Col xs={24} md={12}>
-            <Form.Item
-              label="Thông tin giấy phép (JSON)"
-              name="permitInfo"
-            >
-              <Input placeholder='VD: {"insuranceExpiry":"2027-01-18"}' />
-            </Form.Item>
-          </Col>
-        </Row>
+
 
         <Form.Item
           label="Mô tả chi tiết"
@@ -484,18 +518,12 @@ const VehiclesPage: React.FC = () => {
   const canWriteVehicle = can(PERMISSIONS.VEHICLE_WRITE);
 
   const [vehicles, setVehicles] = useState<VehicleItem[]>([]);
-  const [fleetCapacity, setFleetCapacity] = useState<FleetCapacity>({
-    activeVehicleCount: 0,
-    totalMaxWeightKg: 0,
-    totalMaxVolumeM3: 0,
-  });
   const [keyword, setKeyword] = useState('');
   const [isActive, setIsActive] = useState('');
   const [page, setPage] = useState(0);
   const [size, setSize] = useState(10);
   const [pageMeta, setPageMeta] = useState({ totalElements: 0, totalPages: 1 });
   const [loading, setLoading] = useState(true);
-  const [capacityLoading, setCapacityLoading] = useState(false);
   const [error, setError] = useState('');
   const [formMode, setFormMode] = useState<FormMode>('create');
   const [formOpen, setFormOpen] = useState(false);
@@ -540,19 +568,6 @@ const VehiclesPage: React.FC = () => {
     }
   }
 
-  async function fetchFleetCapacity() {
-    setCapacityLoading(true);
-
-    try {
-      const result = await vehicleApi.getFleetCapacity();
-      setFleetCapacity(result);
-    } catch (err: any) {
-      setError(getVehicleApiErrorMessage(err, 'Không tải được tổng hợp đội xe.'));
-    } finally {
-      setCapacityLoading(false);
-    }
-  }
-
   useEffect(() => {
     if (!canReadVehicle) {
       navigate('/dashboard');
@@ -561,11 +576,6 @@ const VehiclesPage: React.FC = () => {
 
     fetchVehicles(queryParams);
   }, [canReadVehicle, navigate, queryParams]);
-
-  useEffect(() => {
-    if (!canReadVehicle) return;
-    fetchFleetCapacity();
-  }, [canReadVehicle]);
 
   function resetToFirstPage(setter: (value: string) => void, value: string) {
     setter(value);
@@ -629,14 +639,12 @@ const VehiclesPage: React.FC = () => {
         setFormOpen(false);
         setPage(0);
         await fetchVehicles({ ...queryParams, page: 0 });
-        await fetchFleetCapacity();
       } else if (editingVehicle) {
         await vehicleApi.updateVehicle(editingVehicle.id, payload);
         message.success('Thông tin xe đã được lưu.');
         setFormOpen(false);
         setEditingVehicle(null);
         await fetchVehicles();
-        await fetchFleetCapacity();
       }
     } finally {
       setSubmitting(false);
@@ -663,7 +671,6 @@ const VehiclesPage: React.FC = () => {
       );
 
       await fetchVehicles();
-      await fetchFleetCapacity();
     } catch (err: any) {
       const apiMessage = getVehicleApiErrorMessage(
         err,
@@ -700,8 +707,8 @@ const VehiclesPage: React.FC = () => {
       width: 220,
       render: (value: string) => (
         <Space>
-          <Avatar style={{ backgroundColor: '#1677ff' }} icon={<Truck size={17} />} />
-          <span style={{ fontWeight: 600, color: '#1f1f1f' }}>{value}</span>
+          <Avatar style={{ backgroundColor: palette.primary }} icon={<Truck size={17} />} />
+          <span style={{ fontWeight: 600, color: palette.textDark }}>{value}</span>
         </Space>
       ),
     },
@@ -718,6 +725,23 @@ const VehiclesPage: React.FC = () => {
       key: 'maxVolumeM3',
       width: 170,
       render: (value: number) => `${formatNumber(value, 2)} m³`,
+    },
+    {
+      title: 'Tài xế cố định',
+      key: 'assignedDriver',
+      width: 200,
+      render: (_: any, record) => (
+        record.assignedDriverName ? (
+          <div>
+            <div style={{ fontWeight: 500 }}>{record.assignedDriverName}</div>
+            <Typography.Text type="secondary" style={{ fontSize: 12 }}>
+              {record.assignedDriverPhone || ''} {record.assignedDriverLicenseClass ? `(Bằng ${record.assignedDriverLicenseClass})` : ''}
+            </Typography.Text>
+          </div>
+        ) : (
+          <Typography.Text type="secondary" style={{ fontStyle: 'italic' }}>Chưa gán</Typography.Text>
+        )
+      ),
     },
     {
       title: 'Trạng thái',
@@ -773,7 +797,7 @@ const VehiclesPage: React.FC = () => {
                 type="text"
                 danger={record.isActive}
                 loading={statusSubmittingId === record.id}
-                style={{ color: record.isActive ? undefined : '#52c41a' }}
+                style={{ color: record.isActive ? undefined : palette.success }}
                 icon={record.isActive ? <Lock size={16} /> : <Unlock size={16} />}
                 title={record.isActive ? 'Vô hiệu hoá' : 'Kích hoạt'}
               />
@@ -793,13 +817,13 @@ const VehiclesPage: React.FC = () => {
               { title: 'Admin' },
               { title: 'Quản lý đội xe' },
             ]}
+            style={{ marginBottom: 12, fontSize: 13 }}
           />
-          <h2 style={{ margin: '8px 0 0 0', fontSize: 24, fontWeight: 700, color: '#1f1f1f' }}>
-            Quản lý đội xe
-          </h2>
-          <p style={{ margin: '4px 0 0 0', color: '#8c8c8c' }}>
-            Quản lý xe giao hàng, tải trọng, thể tích khoang hàng và trạng thái khai thác.
-          </p>
+          <PageHeader
+            title="Quản lý đội xe"
+            subtitle="Quản lý xe giao hàng, tải trọng, thể tích khoang hàng và trạng thái khai thác."
+            icon={<Truck size={20} />}
+          />
         </div>
 
         {blockedVehicleMessage ? (
@@ -813,54 +837,7 @@ const VehiclesPage: React.FC = () => {
           />
         ) : null}
 
-        <Row gutter={[16, 16]}>
-          <Col xs={24} sm={8}>
-            <Card
-              size="small"
-              bordered={false}
-              loading={capacityLoading}
-              style={{ boxShadow: '0 1px 2px 0 rgba(0, 0, 0, 0.03)' }}
-            >
-              <Statistic
-                title="Đội xe đang hoạt động"
-                value={fleetCapacity.activeVehicleCount}
-                suffix="xe"
-              />
-            </Card>
-          </Col>
-          <Col xs={24} sm={8}>
-            <Card
-              size="small"
-              bordered={false}
-              loading={capacityLoading}
-              style={{ boxShadow: '0 1px 2px 0 rgba(0, 0, 0, 0.03)' }}
-            >
-              <Statistic
-                title="Tổng tải trọng"
-                value={fleetCapacity.totalMaxWeightKg}
-                suffix="kg"
-                formatter={(value) => formatNumber(Number(value))}
-              />
-            </Card>
-          </Col>
-          <Col xs={24} sm={8}>
-            <Card
-              size="small"
-              bordered={false}
-              loading={capacityLoading}
-              style={{ boxShadow: '0 1px 2px 0 rgba(0, 0, 0, 0.03)' }}
-            >
-              <Statistic
-                title="Tổng thể tích"
-                value={fleetCapacity.totalMaxVolumeM3}
-                suffix="m³"
-                precision={2}
-              />
-            </Card>
-          </Col>
-        </Row>
-
-        <Card bordered={false} style={{ boxShadow: '0 1px 2px 0 rgba(0, 0, 0, 0.03)' }}>
+        <Card bordered={false} style={{ borderRadius: 14, boxShadow: palette.cardShadow }}>
           <div
             style={{
               display: 'flex',
@@ -878,8 +855,8 @@ const VehiclesPage: React.FC = () => {
                   setKeyword(event.target.value);
                   setPage(0);
                 }}
-                prefix={<Search size={16} style={{ color: '#bfbfbf' }} />}
-                style={{ width: 280, borderRadius: 6 }}
+                prefix={<Search size={16} style={{ color: palette.textFaint }} />}
+                style={{ width: 280 }}
                 allowClear
               />
 
@@ -901,7 +878,6 @@ const VehiclesPage: React.FC = () => {
                 icon={<RefreshCw size={14} />}
                 onClick={() => {
                   fetchVehicles();
-                  fetchFleetCapacity();
                 }}
               >
                 Tải lại
@@ -993,6 +969,15 @@ const VehiclesPage: React.FC = () => {
                 <Descriptions.Item label="Biển số">
                   <Typography.Text strong>{detailVehicle.plateNumber}</Typography.Text>
                 </Descriptions.Item>
+                <Descriptions.Item label="Tài xế cố định" span={2}>
+                  {detailVehicle.assignedDriverName ? (
+                    <span style={{ fontWeight: 600 }}>
+                      {detailVehicle.assignedDriverName} - Hạng {detailVehicle.assignedDriverLicenseClass || 'N/A'}
+                    </span>
+                  ) : (
+                    <span style={{ fontStyle: 'italic', color: palette.textMuted }}>Chưa gán tài xế cố định</span>
+                  )}
+                </Descriptions.Item>
                 <Descriptions.Item label="Loại xe">
                   {detailVehicle.vehicleType}
                 </Descriptions.Item>
@@ -1008,7 +993,7 @@ const VehiclesPage: React.FC = () => {
                 <Descriptions.Item label="Thể tích tối đa">
                   {formatNumber(detailVehicle.maxVolumeM3, 2)} m³
                 </Descriptions.Item>
-                <Descriptions.Item label="Hạng bằng yêu cầu">
+                <Descriptions.Item label="Giấy phép lái xe yêu cầu">
                   Hạng {detailVehicle.requiredLicense}
                 </Descriptions.Item>
                 <Descriptions.Item label="Kích thước thùng xe (dài × rộng × cao)">
@@ -1028,12 +1013,7 @@ const VehiclesPage: React.FC = () => {
                 <Descriptions.Item label="Hoạt động hệ thống">
                   <VehicleStatusBadge active={detailVehicle.isActive} />
                 </Descriptions.Item>
-                <Descriptions.Item label="Ảnh xe (URL)">
-                  {detailVehicle.imageUrl || '—'}
-                </Descriptions.Item>
-                <Descriptions.Item label="Giấy phép (JSON)" span={2}>
-                  {detailVehicle.permitInfo || '—'}
-                </Descriptions.Item>
+
                 <Descriptions.Item label="Mô tả chi tiết" span={2}>
                   {detailVehicle.description || '—'}
                 </Descriptions.Item>

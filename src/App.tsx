@@ -7,6 +7,7 @@ import PublicRoute from './components/PublicRoute';
 import ProtectedPermissionRoute from './components/auth/ProtectedPermissionRoute';
 import { PERMISSIONS } from './constants/permissions';
 import UsersPage from './pages/UsersPage';
+import DriverManagementPage from './pages/admin/drivers/DriverManagementPage';
 import ProductListPage from './pages/admin/products/ProductListPage';
 import ProductFormPage from './pages/admin/products/ProductFormPage';
 import ProductDetailPage from './pages/admin/products/ProductDetailPage';
@@ -39,6 +40,10 @@ import DriverGuard from './guards/DriverGuard';
 
 import ExceptionManagementPage from './pages/dispatcher/exceptions/ExceptionManagementPage';
 import ExceptionGuard from './guards/ExceptionGuard';
+import TripOutcomePage from './pages/dispatcher/outcomes/TripOutcomePage';
+
+import KpiDashboardPage from './pages/dispatcher/kpi/KpiDashboardPage';
+import ActivityHistoryPage from './pages/dispatcher/activity-history/ActivityHistoryPage';
 
 
 function App() {
@@ -70,6 +75,15 @@ function App() {
           element={
             <ProtectedPermissionRoute permission={PERMISSIONS.USER_READ}>
               <UsersPage />
+            </ProtectedPermissionRoute>
+          }
+        />
+
+        <Route
+          path="/admin/drivers"
+          element={
+            <ProtectedPermissionRoute permission={PERMISSIONS.DRIVER_READ}>
+              <DriverManagementPage />
             </ProtectedPermissionRoute>
           }
         />
@@ -294,6 +308,60 @@ function App() {
             <ExceptionGuard>
               <ExceptionManagementPage />
             </ExceptionGuard>
+          }
+        />
+
+        {/* Trip Outcomes — Dispatcher / Manager review */}
+        <Route
+          path="/dispatcher/trip-outcomes"
+          element={
+            <ProtectedPermissionRoute permission={PERMISSIONS.TRIP_READ}>
+              <TripOutcomePage />
+            </ProtectedPermissionRoute>
+          }
+        />
+        <Route
+          path="/manager/trip-outcomes"
+          element={
+            <ProtectedPermissionRoute permission={PERMISSIONS.TRIP_READ}>
+              <TripOutcomePage />
+            </ProtectedPermissionRoute>
+          }
+        />
+
+        {/* US-19 KPI Dashboard */}
+        <Route
+          path="/dispatcher/kpi"
+          element={
+            <ProtectedPermissionRoute permission={PERMISSIONS.KPI_READ}>
+              <KpiDashboardPage />
+            </ProtectedPermissionRoute>
+          }
+        />
+        <Route
+          path="/manager/kpi"
+          element={
+            <ProtectedPermissionRoute permission={PERMISSIONS.KPI_READ}>
+              <KpiDashboardPage />
+            </ProtectedPermissionRoute>
+          }
+        />
+
+        {/* Activity History — Planning + Trip Outcome audit log */}
+        <Route
+          path="/dispatcher/activity-history"
+          element={
+            <ProtectedPermissionRoute anyOf={[PERMISSIONS.TRIP_READ, PERMISSIONS.PLANNING_HISTORY_READ]}>
+              <ActivityHistoryPage />
+            </ProtectedPermissionRoute>
+          }
+        />
+        <Route
+          path="/manager/activity-history"
+          element={
+            <ProtectedPermissionRoute anyOf={[PERMISSIONS.TRIP_READ, PERMISSIONS.PLANNING_HISTORY_READ]}>
+              <ActivityHistoryPage />
+            </ProtectedPermissionRoute>
           }
         />
 

@@ -43,10 +43,10 @@ function vehiclePage(data = VEHICLES) {
 }
 
 function interceptVehicleList(data = VEHICLES) {
-  cy.intercept('GET', '**/api/vehicles*', vehiclePage(data)).as('getVehicles');
+  cy.intercept('GET', '**/api/v1/vehicles*', vehiclePage(data)).as('getVehicles');
   cy.intercept(
     'GET',
-    '**/api/vehicles/fleet-capacity',
+    '**/api/v1/vehicles/fleet-capacity',
     apiSuccess({
       activeVehicleCount: data.filter((vehicle) => vehicle.isActive).length,
       totalMaxWeightKg: data
@@ -80,7 +80,7 @@ describe('US-06 — Vehicle Management', () => {
 
   it('TC-02: đăng ký xe mới thành công và gửi đúng payload', () => {
     interceptVehicleList();
-    cy.intercept('POST', '**/api/vehicles', (req) => {
+    cy.intercept('POST', '**/api/v1/vehicles', (req) => {
       expect(req.body).to.deep.eq({
         plateNumber: '51D-88888',
         vehicleType: 'Xe tải lớn',
@@ -136,8 +136,8 @@ describe('US-06 — Vehicle Management', () => {
 
   it('TC-04: chỉnh sửa xe không gửi plateNumber vì biển số là immutable', () => {
     interceptVehicleList();
-    cy.intercept('GET', '**/api/vehicles/1', apiSuccess(VEHICLES[0])).as('getVehicleDetail');
-    cy.intercept('PUT', '**/api/vehicles/1', (req) => {
+    cy.intercept('GET', '**/api/v1/vehicles/1', apiSuccess(VEHICLES[0])).as('getVehicleDetail');
+    cy.intercept('PUT', '**/api/v1/vehicles/1', (req) => {
       expect(req.body).to.deep.eq({
         vehicleType: 'Xe tải nhỏ - cập nhật',
         maxWeightKg: 2600,
@@ -191,7 +191,7 @@ describe('US-06 — Vehicle Management', () => {
     interceptVehicleList();
     cy.intercept(
       'PATCH',
-      '**/api/vehicles/1/status',
+      '**/api/v1/vehicles/1/status',
       apiError(409, 'VEHICLE_IN_ACTIVE_TRIP', 'Xe 51B-67890 đang được gắn với chuyến đang vận hành.')
     ).as('deactivateBlockedVehicle');
 
@@ -207,7 +207,7 @@ describe('US-06 — Vehicle Management', () => {
 
   it('TC-07: đăng ký xe thiếu field bắt buộc thì hiển thị validation errors', () => {
     interceptVehicleList();
-    cy.intercept('POST', '**/api/vehicles').as('createVehicleShouldNotRun');
+    cy.intercept('POST', '**/api/v1/vehicles').as('createVehicleShouldNotRun');
 
     visitAs('/vehicles');
     cy.wait('@getVehicles');
@@ -226,7 +226,7 @@ describe('US-06 — Vehicle Management', () => {
 
   it('TC-08: tải trọng bằng 0 bị chặn, thể tích bằng 0 được clamp về min trước khi gọi API', () => {
     interceptVehicleList();
-    cy.intercept('POST', '**/api/vehicles').as('createVehicleShouldNotRun');
+    cy.intercept('POST', '**/api/v1/vehicles').as('createVehicleShouldNotRun');
 
     visitAs('/vehicles');
     cy.wait('@getVehicles');
@@ -250,7 +250,7 @@ describe('US-06 — Vehicle Management', () => {
     interceptVehicleList();
     cy.intercept(
       'POST',
-      '**/api/vehicles',
+      '**/api/v1/vehicles',
       apiError(409, 'VEHICLE_PLATE_DUPLICATE', 'Biển số xe đã tồn tại.', 'plateNumber')
     ).as('createDuplicateVehicle');
 
@@ -272,7 +272,7 @@ describe('US-06 — Vehicle Management', () => {
   });
 
   it('TC-10: DRIVER không có quyền đọc Vehicle Management thì bị đưa về dashboard', () => {
-    cy.intercept('GET', '**/api/vehicles*').as('getVehiclesShouldNotRun');
+    cy.intercept('GET', '**/api/v1/vehicles*').as('getVehiclesShouldNotRun');
 
     visitAs('/vehicles', ['DRIVER'], 'driver01');
 
@@ -292,10 +292,10 @@ describe('US-06 — Vehicle Management', () => {
       createdAt: '2026-06-08T08:00:00',
       updatedAt: '2026-06-08T08:00:00',
     };
-    cy.intercept('GET', '**/api/vehicles*', (req) => {
+    cy.intercept('GET', '**/api/v1/vehicles*', (req) => {
       req.reply(vehiclePage(created ? [...VEHICLES, newVehicle] : VEHICLES));
     }).as('getVehiclesAfterCreate');
-    cy.intercept('GET', '**/api/vehicles/fleet-capacity', (req) => {
+    cy.intercept('GET', '**/api/v1/vehicles/fleet-capacity', (req) => {
       req.reply(
         apiSuccess(
           created
@@ -304,7 +304,7 @@ describe('US-06 — Vehicle Management', () => {
         )
       );
     }).as('getCapacityAfterCreate');
-    cy.intercept('POST', '**/api/vehicles', (req) => {
+    cy.intercept('POST', '**/api/v1/vehicles', (req) => {
       created = true;
       req.reply(apiSuccess(newVehicle));
     }).as('createVehicleForCapacity');
@@ -329,10 +329,10 @@ describe('US-06 — Vehicle Management', () => {
 
   it('TC-12: Fleet Capacity Card giảm ngay sau khi vô hiệu hoá xe', () => {
     let deactivated = false;
-    cy.intercept('GET', '**/api/vehicles*', (req) => {
+    cy.intercept('GET', '**/api/v1/vehicles*', (req) => {
       req.reply(vehiclePage(VEHICLES.map((v) => (v.id === 1 ? { ...v, isActive: !deactivated } : v))));
     }).as('getVehiclesAfterDeactivate');
-    cy.intercept('GET', '**/api/vehicles/fleet-capacity', (req) => {
+    cy.intercept('GET', '**/api/v1/vehicles/fleet-capacity', (req) => {
       req.reply(
         apiSuccess(
           deactivated
@@ -341,7 +341,7 @@ describe('US-06 — Vehicle Management', () => {
         )
       );
     }).as('getCapacityAfterDeactivate');
-    cy.intercept('PATCH', '**/api/vehicles/1/status', (req) => {
+    cy.intercept('PATCH', '**/api/v1/vehicles/1/status', (req) => {
       expect(req.body).to.deep.eq({ isActive: false });
       deactivated = true;
       req.reply(apiSuccess({ ...VEHICLES[0], isActive: false }));
@@ -363,15 +363,15 @@ describe('US-06 — Vehicle Management', () => {
 
   it('TC-13: kích hoạt lại vehicle inactive cập nhật trạng thái trên bảng', () => {
     let activated = false;
-    cy.intercept('GET', '**/api/vehicles*', (req) => {
+    cy.intercept('GET', '**/api/v1/vehicles*', (req) => {
       req.reply(vehiclePage(VEHICLES.map((v) => (v.id === 2 ? { ...v, isActive: activated } : v))));
     }).as('getVehiclesForReactivate');
     cy.intercept(
       'GET',
-      '**/api/vehicles/fleet-capacity',
+      '**/api/v1/vehicles/fleet-capacity',
       apiSuccess({ activeVehicleCount: 1, totalMaxWeightKg: 2500, totalMaxVolumeM3: 12.5 })
     ).as('getCapacityForReactivate');
-    cy.intercept('PATCH', '**/api/vehicles/2/status', (req) => {
+    cy.intercept('PATCH', '**/api/v1/vehicles/2/status', (req) => {
       expect(req.body).to.deep.eq({ isActive: true });
       activated = true;
       req.reply(apiSuccess({ ...VEHICLES[1], isActive: true }));
@@ -390,7 +390,7 @@ describe('US-06 — Vehicle Management', () => {
     interceptVehicleList();
     visitAs('/vehicles');
     cy.wait('@getVehicles');
-    cy.intercept('GET', '**/api/vehicles*', (req) => {
+    cy.intercept('GET', '**/api/v1/vehicles*', (req) => {
       expect(String(req.query.keyword ?? '')).to.eq('khong-ton-tai');
       req.reply(vehiclePage([]));
     }).as('searchVehiclesEmpty');
@@ -398,7 +398,7 @@ describe('US-06 — Vehicle Management', () => {
     cy.wait('@searchVehiclesEmpty');
     cy.contains('Không tìm thấy xe phù hợp').should('be.visible');
 
-    cy.intercept('GET', '**/api/vehicles*', (req) => {
+    cy.intercept('GET', '**/api/v1/vehicles*', (req) => {
       expect(String(req.query.keyword ?? '')).to.eq('khong-ton-tai');
       expect(String(req.query.isActive ?? '')).to.eq('false');
       req.reply(vehiclePage([]));
@@ -422,7 +422,7 @@ describe('US-06 — Vehicle Management', () => {
 
   it('TC-16: capacity thập phân hợp lệ được gửi không mất độ chính xác', () => {
     interceptVehicleList();
-    cy.intercept('POST', '**/api/vehicles', (req) => {
+    cy.intercept('POST', '**/api/v1/vehicles', (req) => {
       expect(req.body.maxWeightKg).to.eq(3490.5);
       expect(req.body.maxVolumeM3).to.eq(16.25);
       req.reply(apiSuccess({ id: 9, ...req.body, isActive: true }));

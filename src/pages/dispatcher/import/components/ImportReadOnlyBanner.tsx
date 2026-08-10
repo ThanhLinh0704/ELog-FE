@@ -1,5 +1,6 @@
 import React from 'react';
 import { Alert } from 'antd';
+import { palette } from '../../../../theme/tokens';
 
 const ImportReadOnlyBanner: React.FC = () => {
   return (
@@ -10,9 +11,9 @@ const ImportReadOnlyBanner: React.FC = () => {
       showIcon
       style={{
         marginBottom: 24,
-        borderRadius: 8,
-        border: '1px solid #bae7ff',
-        backgroundColor: '#e6f7ff',
+        borderRadius: 10,
+        border: `1px solid ${palette.border}`,
+        backgroundColor: palette.primaryBg,
       }}
     />
   );
