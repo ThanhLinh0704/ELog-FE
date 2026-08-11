@@ -805,3 +805,22 @@
     padding: 28px 20px;
   }
 }
+
+/* --- Disable Chrome/Edge Autofill Gray/Blue Highlight Background --- */
+.elog-login-card input:-webkit-autofill,
+.elog-login-card input:-webkit-autofill:hover,
+.elog-login-card input:-webkit-autofill:focus,
+.elog-login-card input:-webkit-autofill:active,
+.ant-input:-webkit-autofill,
+.ant-input:-webkit-autofill:hover,
+.ant-input:-webkit-autofill:focus,
+.ant-input:-webkit-autofill:active,
+input:-webkit-autofill,
+input:-webkit-autofill:hover,
+input:-webkit-autofill:focus,
+input:-webkit-autofill:active {
+  -webkit-box-shadow: 0 0 0 1000px #f8fafc inset !important;
+  box-shadow: 0 0 0 1000px #f8fafc inset !important;
+  -webkit-text-fill-color: #1e293b !important;
+  transition: background-color 5000s ease-in-out 0s !important;
+}

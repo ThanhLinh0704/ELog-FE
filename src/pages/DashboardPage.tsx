@@ -1,14 +1,14 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Card, Row, Col, Space, Typography, Badge, Spin, Descriptions, Table, DatePicker, Button, Alert, Empty } from 'antd';
-import { 
-  Users, 
-  Store, 
-  Truck, 
-  Package, 
-  Map, 
-  ArrowRight, 
-  Activity, 
+import {
+  Users,
+  Store,
+  Truck,
+  Package,
+  Map,
+  ArrowRight,
+  Activity,
   Database,
   ShieldAlert
 } from 'lucide-react';
@@ -46,7 +46,7 @@ const DashboardPage: React.FC = () => {
   const navigate = useNavigate();
   const username = localStorage.getItem('username') || '';
   const userId = localStorage.getItem('userId') || '';
-  
+
   let roles: string[] = [];
   try {
     const rolesStr = localStorage.getItem('roles');
@@ -87,7 +87,7 @@ const DashboardPage: React.FC = () => {
 
   const [loading, setLoading] = useState<boolean>(!showDriverTripsDashboard);
   const [error, setError] = useState<string>('');
-  
+
   const [driverTrips, setDriverTrips] = useState<Trip[]>([]);
   const [selectedDate, setSelectedDate] = useState<dayjs.Dayjs>(dayjs());
   const [driverLoading, setDriverLoading] = useState<boolean>(false);
@@ -221,9 +221,9 @@ const DashboardPage: React.FC = () => {
           <Card style={{ borderRadius: 10 }}>
             <Space direction="horizontal" align="center" size={12}>
               <Text strong>Chọn ngày giao hàng:</Text>
-              <DatePicker 
-                value={selectedDate} 
-                onChange={(date) => date && setSelectedDate(date)} 
+              <DatePicker
+                value={selectedDate}
+                onChange={(date) => date && setSelectedDate(date)}
                 format="DD/MM/YYYY"
                 allowClear={false}
               />
@@ -231,7 +231,7 @@ const DashboardPage: React.FC = () => {
           </Card>
 
           {/* Driver trips section */}
-          <Card 
+          <Card
             title={
               <Space>
                 <Truck size={18} style={{ color: '#2563eb' }} />
@@ -290,10 +290,10 @@ const DashboardPage: React.FC = () => {
                   { title: 'Số điểm giao', dataIndex: 'tripStopCount', key: 'tripStopCount' },
                   { title: 'Tổng thể tích', key: 'vol', render: (_, r) => `${r.totalVolumeM3.toFixed(3)} m³` },
                   { title: 'Tổng trọng lượng', key: 'wt', render: (_, r) => `${r.totalWeightKg.toFixed(3)} kg` },
-                  { 
-                    title: 'Trạng thái', 
-                    dataIndex: 'status', 
-                    key: 'status', 
+                  {
+                    title: 'Trạng thái',
+                    dataIndex: 'status',
+                    key: 'status',
                     render: (v) => {
                       const colors: Record<string, 'success' | 'purple' | 'blue' | 'cyan' | 'default'> = {
                         VALIDATED: 'success',
@@ -425,7 +425,7 @@ const DashboardPage: React.FC = () => {
                 justifyContent: 'space-between',
                 border: `1px solid ${action.borderColor}`,
               }}
-              bodyStyle={{ 
+              bodyStyle={{
                 padding: '20px 16px',
                 display: 'flex',
                 flexDirection: 'column',
@@ -435,10 +435,10 @@ const DashboardPage: React.FC = () => {
               }}
             >
               <div>
-                <div style={{ 
-                  width: 44, 
-                  height: 44, 
-                  borderRadius: 8, 
+                <div style={{
+                  width: 44,
+                  height: 44,
+                  borderRadius: 8,
                   backgroundColor: action.bgColor,
                   display: 'flex',
                   alignItems: 'center',

@@ -71,6 +71,24 @@ export interface KpiByRouteResponse {
   routes: KpiRouteBreakdown[];
 }
 
+// Backend: KpiByDriverResponse.DriverKpi (KpiController — /api/v1/kpi/by-driver)
+export interface KpiDriverBreakdown {
+  driverId: number;
+  driverCode: string | null;
+  fullName: string;
+  phoneNumber: string | null;
+  totalTrips: number;
+  totalDistanceKm: number | null;
+  onTimeRatePct: number | null;
+  totalExceptions: number;
+}
+
+// Backend: KpiByDriverResponse — no `totalDrivers` field, derive the count from `drivers.length`.
+export interface KpiByDriverResponse {
+  period: KpiPeriodInfo;
+  drivers: KpiDriverBreakdown[];
+}
+
 export interface KpiQueryParams {
   startDate?: string;
   endDate?: string;

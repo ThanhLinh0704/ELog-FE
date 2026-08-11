@@ -251,7 +251,7 @@ export const routeApi = {
     return rawStores.map(normalizeStoreSearchResult);
   },
 
-  async getRouteDirections(routeId: string): Promise<RouteDirections> {
+  async getRouteDirections(routeId: string, forceRefresh: boolean = false): Promise<RouteDirections> {
     if (USE_MOCK_API) {
       return {
         routeId,
@@ -265,8 +265,9 @@ export const routeApi = {
       };
     }
 
+    const url = `/api/v1/routes/${routeId}/directions${forceRefresh ? '?forceRefresh=true' : ''}`;
     const data = await handleAxiosCall<any>(() =>
-      axiosInstance.get(`/api/v1/routes/${routeId}/directions`)
+      axiosInstance.get(url)
     );
     const raw = data?.data ?? data;
     return {

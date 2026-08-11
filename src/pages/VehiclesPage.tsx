@@ -559,7 +559,7 @@ const VehiclesPage: React.FC = () => {
       });
     } catch (err: any) {
       if (getVehicleApiStatus(err) === 403) {
-        navigate('/dashboard');
+        setError('Bạn không có quyền xem thông tin xe.');
       } else {
         setError(getVehicleApiErrorMessage(err, 'Không tải được danh sách xe.'));
       }
@@ -570,12 +570,13 @@ const VehiclesPage: React.FC = () => {
 
   useEffect(() => {
     if (!canReadVehicle) {
-      navigate('/dashboard');
+      setError('Bạn không có quyền xem thông tin xe.');
+      setLoading(false);
       return;
     }
 
     fetchVehicles(queryParams);
-  }, [canReadVehicle, navigate, queryParams]);
+  }, [canReadVehicle, queryParams]);
 
   function resetToFirstPage(setter: (value: string) => void, value: string) {
     setter(value);

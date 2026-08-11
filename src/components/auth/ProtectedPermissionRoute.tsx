@@ -1,6 +1,7 @@
 import React from 'react';
 import { Navigate } from 'react-router-dom';
 import { hasAllPermissions, hasAnyPermission, hasPermission } from '../../utils/permissionChecker';
+import ForbiddenPage from '../../pages/ForbiddenPage';
 
 interface ProtectedPermissionRouteProps {
   permission?: string;
@@ -27,7 +28,7 @@ const ProtectedPermissionRoute: React.FC<ProtectedPermissionRouteProps> = ({
     (!allOf || hasAllPermissions(allOf));
 
   if (!hasAccess) {
-    return <Navigate to="/403" replace />;
+    return <ForbiddenPage />;
   }
 
   return <>{children}</>;
