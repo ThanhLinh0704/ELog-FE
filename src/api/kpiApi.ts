@@ -6,6 +6,7 @@ import axiosInstance from './axiosInstance';
 import type {
   KpiByDriverResponse,
   KpiByRouteResponse,
+  KpiByVehicleResponse,
   KpiDailyTrendResponse,
   KpiQueryParams,
   KpiSummaryResponse,
@@ -55,6 +56,13 @@ export async function getKpiByRoute(query?: KpiQueryParams): Promise<KpiByRouteR
 
 export async function getKpiByDriver(query?: KpiQueryParams): Promise<KpiByDriverResponse> {
   const res = await axiosInstance.get<ApiResponseWrapper<KpiByDriverResponse>>('/api/v1/kpi/by-driver', {
+    params: toParams(query),
+  });
+  return unwrap(res);
+}
+
+export async function getKpiByVehicle(query?: KpiQueryParams): Promise<KpiByVehicleResponse> {
+  const res = await axiosInstance.get<ApiResponseWrapper<KpiByVehicleResponse>>('/api/v1/kpi/by-vehicle', {
     params: toParams(query),
   });
   return unwrap(res);

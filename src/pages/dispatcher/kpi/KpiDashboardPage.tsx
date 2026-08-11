@@ -8,19 +8,23 @@ import {
   Col,
   DatePicker,
   Empty,
+  Progress,
   Row,
   Select,
   Space,
   Statistic,
   Table,
+  Tabs,
   Typography,
 } from 'antd';
 import {
   AlertTriangle,
   CheckCircle2,
   Clock,
+  MapPin,
   Package,
   RefreshCw,
+  Truck,
   User,
   Weight,
 } from 'lucide-react';
@@ -40,16 +44,24 @@ import type { ColumnsType } from 'antd/es/table';
 import AdminShell from '../../../components/AdminShell';
 import StatusBadge from '../../../components/StatusBadge';
 import { palette } from '../../../theme/tokens';
-import { getKpiByDriver, getKpiByRoute, getKpiDailyTrend, getKpiSummary } from '../../../api/kpiApi';
+import {
+  getKpiByDriver,
+  getKpiByRoute,
+  getKpiByVehicle,
+  getKpiDailyTrend,
+  getKpiSummary,
+} from '../../../api/kpiApi';
 import type {
   KpiByDriverResponse,
   KpiByRouteResponse,
+  KpiByVehicleResponse,
   KpiDailyTrendResponse,
   KpiDriverBreakdown,
   KpiPreset,
   KpiQueryParams,
   KpiRouteBreakdown,
   KpiSummaryResponse,
+  KpiVehicleBreakdown,
 } from '../../../types/kpi';
 
 const { Text, Title } = Typography;
@@ -84,6 +96,30 @@ function utilColor(value: number | null): string {
   return palette.gold;
 }
 
+function renderRateProgress(val: number | null) {
+  if (val === null) return <Text type="secondary">—</Text>;
+  const pct = Math.min(100, Math.max(0, Math.round(val * 10) / 10));
+  let strokeColor: string = palette.gold;
+  if (pct >= 90) strokeColor = palette.success;
+  else if (pct >= 70) strokeColor = palette.primary;
+  else if (pct < 60) strokeColor = palette.danger;
+
+  return (
+    <div style={{ display: 'flex', alignItems: 'center', gap: 8, minWidth: 120 }}>
+      <Progress
+        percent={pct}
+        size="small"
+        strokeColor={strokeColor}
+        showInfo={false}
+        style={{ flex: 1, margin: 0 }}
+      />
+      <Text strong style={{ fontSize: 12, minWidth: 44, textAlign: 'right', color: strokeColor }}>
+        {pct.toFixed(1)}%
+      </Text>
+    </div>
+  );
+}
+
 // ── Component ────────────────────────────────────────────────────────────────
 
 const KpiDashboardPage: React.FC = () => {
@@ -108,6 +144,7 @@ const KpiDashboardPage: React.FC = () => {
   const [trend, setTrend] = useState<KpiDailyTrendResponse | null>(null);
   const [byRoute, setByRoute] = useState<KpiByRouteResponse | null>(null);
   const [byDriver, setByDriver] = useState<KpiByDriverResponse | null>(null);
+  const [byVehicle, setByVehicle] = useState<KpiByVehicleResponse | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -128,16 +165,21 @@ const KpiDashboardPage: React.FC = () => {
     setLoading(true);
     setError(null);
     try {
-      const [summaryRes, trendRes, byRouteRes, byDriverRes] = await Promise.all([
+      const [summaryRes, trendRes, byRouteRes, byDriverRes, byVehicleRes] = await Promise.all([
         getKpiSummary(query),
         getKpiDailyTrend(query),
         getKpiByRoute(query),
         getKpiByDriver(query),
+        getKpiByVehicle(query).catch((err) => {
+          console.warn('Failed to load vehicle KPI breakdown:', err);
+          return null;
+        }),
       ]);
       setSummary(summaryRes);
       setTrend(trendRes);
       setByRoute(byRouteRes);
       setByDriver(byDriverRes);
+      setByVehicle(byVehicleRes);
     } catch (err: unknown) {
       setError(getErrorMessage(err, 'Không tải được dữ liệu KPI.'));
     } finally {
@@ -156,36 +198,34 @@ const KpiDashboardPage: React.FC = () => {
   }));
 
   const routeColumns: ColumnsType<KpiRouteBreakdown> = [
-    { title: 'Mã tuyến', dataIndex: 'routeCode', key: 'routeCode', width: 110 },
+    { title: 'Mã tuyến', dataIndex: 'routeCode', key: 'routeCode', width: 110, render: (code: string) => <Text strong style={{ color: palette.primary }}>{code}</Text> },
     { title: 'Tên tuyến', dataIndex: 'routeName', key: 'routeName' },
     { title: 'Số chuyến', dataIndex: 'totalTrips', key: 'totalTrips', width: 100, align: 'right' },
     {
       title: 'Tỷ lệ đúng giờ',
       dataIndex: 'onTimeRatePct',
       key: 'onTimeRatePct',
-      width: 150,
+      width: 170,
       sorter: (a, b) => (a.onTimeRatePct ?? -1) - (b.onTimeRatePct ?? -1),
       defaultSortOrder: 'ascend',
-      render: (val: number | null) => (
-        <StatusBadge color={val === null ? 'default' : val < 70 ? 'error' : val < 90 ? 'warning' : 'success'}>
-          {formatPct(val)}
-        </StatusBadge>
-      ),
+      render: (val: number | null) => renderRateProgress(val),
     },
     {
-      title: 'Tỷ lệ lấp đầy',
+      title: 'Tỷ lệ lấp đầy thể tích',
       dataIndex: 'avgVolumeUtilPct',
       key: 'avgVolumeUtilPct',
-      width: 130,
-      render: (val: number | null) => formatPct(val),
+      width: 170,
+      sorter: (a, b) => (a.avgVolumeUtilPct ?? -1) - (b.avgVolumeUtilPct ?? -1),
+      render: (val: number | null) => renderRateProgress(val),
     },
     {
       title: 'Sự cố',
       key: 'exceptions',
       width: 140,
+      align: 'right',
       render: (_, record) => (
         <Space size={4}>
-          <Text>{record.totalExceptions}</Text>
+          <Text strong style={{ color: record.totalExceptions > 0 ? palette.danger : undefined }}>{record.totalExceptions}</Text>
           {record.totalRejections > 0 && (
             <Text type="secondary" style={{ fontSize: 12 }}>
               ({record.totalRejections} từ chối)
@@ -224,13 +264,9 @@ const KpiDashboardPage: React.FC = () => {
       title: 'Tỷ lệ đúng giờ',
       dataIndex: 'onTimeRatePct',
       key: 'onTimeRatePct',
-      width: 150,
+      width: 170,
       sorter: (a, b) => (a.onTimeRatePct ?? -1) - (b.onTimeRatePct ?? -1),
-      render: (val: number | null) => (
-        <StatusBadge color={val === null ? 'default' : val < 70 ? 'error' : val < 90 ? 'warning' : 'success'}>
-          {formatPct(val)}
-        </StatusBadge>
-      ),
+      render: (val: number | null) => renderRateProgress(val),
     },
     {
       title: 'Sự cố',
@@ -238,6 +274,75 @@ const KpiDashboardPage: React.FC = () => {
       key: 'totalExceptions',
       width: 100,
       align: 'right',
+      render: (val: number) => <Text strong style={{ color: val > 0 ? palette.danger : undefined }}>{val}</Text>,
+    },
+  ];
+
+  const vehicleColumns: ColumnsType<KpiVehicleBreakdown> = [
+    {
+      title: 'Biển số xe',
+      dataIndex: 'licensePlate',
+      key: 'licensePlate',
+      width: 130,
+      render: (plate: string) => <StatusBadge icon={<Truck size={12} />}>{plate}</StatusBadge>,
+    },
+    {
+      title: 'Loại xe',
+      dataIndex: 'vehicleType',
+      key: 'vehicleType',
+      width: 130,
+      render: (t: string | null) => t || '—',
+    },
+    {
+      title: 'Tải trọng / Thể tích',
+      key: 'capacity',
+      width: 150,
+      render: (_, r) => (
+        <Text style={{ fontSize: 12 }}>
+          {r.payloadKg ? `${r.payloadKg} kg` : '—'} / {r.maxVolumeM3 ? `${r.maxVolumeM3} m³` : '—'}
+        </Text>
+      ),
+    },
+    { title: 'Số chuyến', dataIndex: 'totalTrips', key: 'totalTrips', width: 90, align: 'right' },
+    {
+      title: 'Quãng đường',
+      dataIndex: 'totalDistanceKm',
+      key: 'totalDistanceKm',
+      width: 120,
+      align: 'right',
+      render: (val: number | null) => (val === null ? '—' : `${val.toFixed(1)} km`),
+    },
+    {
+      title: 'Lấp đầy thể tích',
+      dataIndex: 'avgVolumeUtilPct',
+      key: 'avgVolumeUtilPct',
+      width: 170,
+      sorter: (a, b) => (a.avgVolumeUtilPct ?? -1) - (b.avgVolumeUtilPct ?? -1),
+      render: (val: number | null) => renderRateProgress(val),
+    },
+    {
+      title: 'Lấp đầy tải trọng',
+      dataIndex: 'avgWeightUtilPct',
+      key: 'avgWeightUtilPct',
+      width: 170,
+      sorter: (a, b) => (a.avgWeightUtilPct ?? -1) - (b.avgWeightUtilPct ?? -1),
+      render: (val: number | null) => renderRateProgress(val),
+    },
+    {
+      title: 'Tỷ lệ đúng giờ',
+      dataIndex: 'onTimeRatePct',
+      key: 'onTimeRatePct',
+      width: 170,
+      sorter: (a, b) => (a.onTimeRatePct ?? -1) - (b.onTimeRatePct ?? -1),
+      render: (val: number | null) => renderRateProgress(val),
+    },
+    {
+      title: 'Sự cố',
+      dataIndex: 'totalExceptions',
+      key: 'totalExceptions',
+      width: 90,
+      align: 'right',
+      render: (val: number) => <Text strong style={{ color: val > 0 ? palette.danger : undefined }}>{val}</Text>,
     },
   ];
 
@@ -248,7 +353,7 @@ const KpiDashboardPage: React.FC = () => {
 
         <div
           style={{
-            background: palette.bannerGradient,
+            background: 'linear-gradient(135deg, #1e293b 0%, #0f172a 100%)',
             padding: '20px 24px',
             borderRadius: 12,
             boxShadow: '0 8px 20px rgba(13, 23, 42, 0.18)',
@@ -258,7 +363,7 @@ const KpiDashboardPage: React.FC = () => {
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 12 }}>
             <div>
               <Title level={4} style={{ margin: 0, color: '#ffffff' }}>
-                KPI vận hành
+                Báo cáo KPI & Hiệu suất vận hành
               </Title>
               <Text style={{ color: '#94a3b8', fontSize: 13 }}>
                 {summary
@@ -299,13 +404,13 @@ const KpiDashboardPage: React.FC = () => {
           />
         )}
 
-        <Row gutter={16}>
-          <Col xs={24} sm={12} lg={4} style={{ marginBottom: 16 }}>
+        <Row gutter={[16, 16]}>
+          <Col xs={24} sm={12} md={8} lg={4} style={{ flex: '1 1 180px' }}>
             <Card size="small" style={{ borderRadius: 12, height: '100%', boxShadow: palette.cardShadow, border: `1px solid ${palette.borderSoft}` }} loading={loading && !summary}>
               <Statistic
-                title={<Space size={6}><Clock size={14} /> Tỷ lệ đúng giờ</Space>}
+                title={<Space size={6}><Clock size={14} style={{ color: palette.primary }} /> Tỷ lệ đúng giờ</Space>}
                 value={summary ? formatPct(summary.onTimeDelivery.rate) : '—'}
-                valueStyle={{ color: utilColor(summary?.onTimeDelivery.rate ?? null) }}
+                valueStyle={{ color: utilColor(summary?.onTimeDelivery.rate ?? null), fontWeight: 700 }}
               />
               {summary && (
                 <Text type="secondary" style={{ fontSize: 12 }}>
@@ -314,30 +419,30 @@ const KpiDashboardPage: React.FC = () => {
               )}
             </Card>
           </Col>
-          <Col xs={24} sm={12} lg={5} style={{ marginBottom: 16 }}>
+          <Col xs={24} sm={12} md={8} lg={4} style={{ flex: '1 1 180px' }}>
             <Card size="small" style={{ borderRadius: 12, height: '100%', boxShadow: palette.cardShadow, border: `1px solid ${palette.borderSoft}` }} loading={loading && !summary}>
               <Statistic
-                title={<Space size={6}><Package size={14} /> Lấp đầy thể tích</Space>}
+                title={<Space size={6}><Package size={14} style={{ color: palette.success }} /> Lấp đầy thể tích</Space>}
                 value={summary ? formatPct(summary.fleetUtilization.avgVolumeUtilizationPct) : '—'}
-                valueStyle={{ color: utilColor(summary?.fleetUtilization.avgVolumeUtilizationPct ?? null) }}
+                valueStyle={{ color: utilColor(summary?.fleetUtilization.avgVolumeUtilizationPct ?? null), fontWeight: 700 }}
               />
             </Card>
           </Col>
-          <Col xs={24} sm={12} lg={5} style={{ marginBottom: 16 }}>
+          <Col xs={24} sm={12} md={8} lg={4} style={{ flex: '1 1 180px' }}>
             <Card size="small" style={{ borderRadius: 12, height: '100%', boxShadow: palette.cardShadow, border: `1px solid ${palette.borderSoft}` }} loading={loading && !summary}>
               <Statistic
-                title={<Space size={6}><Weight size={14} /> Lấp đầy tải trọng</Space>}
+                title={<Space size={6}><Weight size={14} style={{ color: '#8b5cf6' }} /> Lấp đầy tải trọng</Space>}
                 value={summary ? formatPct(summary.fleetUtilization.avgWeightUtilizationPct) : '—'}
-                valueStyle={{ color: utilColor(summary?.fleetUtilization.avgWeightUtilizationPct ?? null) }}
+                valueStyle={{ color: utilColor(summary?.fleetUtilization.avgWeightUtilizationPct ?? null), fontWeight: 700 }}
               />
             </Card>
           </Col>
-          <Col xs={24} sm={12} lg={5} style={{ marginBottom: 16 }}>
+          <Col xs={24} sm={12} md={8} lg={4} style={{ flex: '1 1 180px' }}>
             <Card size="small" style={{ borderRadius: 12, height: '100%', boxShadow: palette.cardShadow, border: `1px solid ${palette.borderSoft}` }} loading={loading && !summary}>
               <Statistic
-                title={<Space size={6}><CheckCircle2 size={14} /> Chuyến hoàn thành</Space>}
+                title={<Space size={6}><CheckCircle2 size={14} style={{ color: '#06b6d4' }} /> Chuyến hoàn thành</Space>}
                 value={summary ? formatPct(summary.tripCompletion.rate) : '—'}
-                valueStyle={{ color: utilColor(summary?.tripCompletion.rate ?? null) }}
+                valueStyle={{ color: utilColor(summary?.tripCompletion.rate ?? null), fontWeight: 700 }}
               />
               {summary && (
                 <Text type="secondary" style={{ fontSize: 12 }}>
@@ -346,30 +451,25 @@ const KpiDashboardPage: React.FC = () => {
               )}
             </Card>
           </Col>
-          <Col xs={24} sm={12} lg={5} style={{ marginBottom: 16 }}>
+          <Col xs={24} sm={12} md={8} lg={4} style={{ flex: '1 1 180px' }}>
             <Card size="small" style={{ borderRadius: 12, height: '100%', boxShadow: palette.cardShadow, border: `1px solid ${palette.borderSoft}` }} loading={loading && !summary}>
               <Statistic
-                title={<Space size={6}><AlertTriangle size={14} /> Tỷ lệ sự cố</Space>}
+                title={<Space size={6}><AlertTriangle size={14} style={{ color: palette.danger }} /> Tỷ lệ sự cố</Space>}
                 value={summary ? formatPct(summary.exceptions.exceptionRate) : '—'}
-                valueStyle={{ color: summary && summary.exceptions.exceptionRate !== null && summary.exceptions.exceptionRate > 15 ? '#ff4d4f' : undefined }}
+                valueStyle={{ color: summary && summary.exceptions.exceptionRate !== null && summary.exceptions.exceptionRate > 15 ? '#ff4d4f' : undefined, fontWeight: 700 }}
               />
               {summary && (
                 <Text type="secondary" style={{ fontSize: 12 }}>
                   {summary.exceptions.totalTimeExceptions} trễ giờ · {summary.exceptions.totalRejections} từ chối
-                  {summary.exceptions.unresolvedCount > 0 && (
-                    <>
-                      {' · '}
-                      <Text type="danger">{summary.exceptions.unresolvedCount} chưa xử lý</Text>
-                    </>
-                  )}
                 </Text>
               )}
             </Card>
           </Col>
         </Row>
 
+        {/* Daily Trend Chart */}
         <Card
-          title="Xu hướng: Tỷ lệ đúng giờ & Tỷ lệ lấp đầy thể tích"
+          title="Xu hướng vận hành: Tỷ lệ đúng giờ & Tỷ lệ lấp đầy thể tích"
           size="small"
           style={{ borderRadius: 12, boxShadow: palette.cardShadow, border: `1px solid ${palette.borderSoft}` }}
           loading={loading && !trend}
@@ -377,7 +477,7 @@ const KpiDashboardPage: React.FC = () => {
           {chartData.length === 0 ? (
             <Empty description="Không có dữ liệu trong khoảng thời gian này." />
           ) : (
-            <ResponsiveContainer width="100%" height={300}>
+            <ResponsiveContainer width="100%" height={280}>
               <LineChart data={chartData} margin={{ top: 8, right: 16, left: 0, bottom: 0 }}>
                 <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" />
                 <XAxis dataKey="date" tick={{ fontSize: 12 }} />
@@ -389,53 +489,94 @@ const KpiDashboardPage: React.FC = () => {
                   dataKey="onTimeRatePct"
                   name="Tỷ lệ đúng giờ"
                   stroke={palette.primary}
+                  strokeWidth={2.5}
                   connectNulls={false}
-                  dot={{ r: 3 }}
+                  dot={{ r: 4 }}
                 />
                 <Line
                   type="monotone"
                   dataKey="volumeUtilPct"
                   name="Tỷ lệ lấp đầy thể tích"
                   stroke={palette.success}
+                  strokeWidth={2.5}
                   connectNulls={false}
-                  dot={{ r: 3 }}
+                  dot={{ r: 4 }}
                 />
               </LineChart>
             </ResponsiveContainer>
           )}
         </Card>
 
+        {/* Unified Breakdown Section using Tabs */}
         <Card
-          title="Hiệu suất theo tuyến"
           size="small"
           style={{ borderRadius: 12, boxShadow: palette.cardShadow, border: `1px solid ${palette.borderSoft}` }}
-          styles={{ body: { padding: 0 } }}
-          loading={loading && !byRoute}
+          styles={{ body: { padding: '0 16px 16px 16px' } }}
         >
-          <Table<KpiRouteBreakdown>
-            columns={routeColumns}
-            dataSource={byRoute?.routes ?? []}
-            rowKey="routeCode"
-            pagination={false}
-            locale={{ emptyText: <Empty description="Không có tuyến nào có chuyến trong kỳ." /> }}
-            scroll={{ x: 760 }}
-          />
-        </Card>
-
-        <Card
-          title={<Space size={6}><User size={16} /> Hiệu suất theo tài xế</Space>}
-          size="small"
-          style={{ borderRadius: 12, boxShadow: palette.cardShadow, border: `1px solid ${palette.borderSoft}` }}
-          styles={{ body: { padding: 0 } }}
-          loading={loading && !byDriver}
-        >
-          <Table<KpiDriverBreakdown>
-            columns={driverColumns}
-            dataSource={byDriver?.drivers ?? []}
-            rowKey="driverId"
-            pagination={false}
-            locale={{ emptyText: <Empty description="Không có tài xế nào có chuyến trong kỳ." /> }}
-            scroll={{ x: 760 }}
+          <Tabs
+            defaultActiveKey="by-route"
+            items={[
+              {
+                key: 'by-route',
+                label: (
+                  <Space size={6}>
+                    <MapPin size={16} />
+                    <span>Hiệu suất theo Tuyến ({byRoute?.routes.length ?? 0})</span>
+                  </Space>
+                ),
+                children: (
+                  <Table<KpiRouteBreakdown>
+                    columns={routeColumns}
+                    dataSource={byRoute?.routes ?? []}
+                    rowKey="routeCode"
+                    pagination={{ defaultPageSize: 5, pageSizeOptions: ['5', '10', '20', '50', '100'], showSizeChanger: true }}
+                    loading={loading && !byRoute}
+                    locale={{ emptyText: <Empty description="Không có tuyến nào có chuyến trong kỳ." /> }}
+                    scroll={{ x: 800 }}
+                  />
+                ),
+              },
+              {
+                key: 'by-driver',
+                label: (
+                  <Space size={6}>
+                    <User size={16} />
+                    <span>Hiệu suất theo Tài xế ({byDriver?.drivers.length ?? 0})</span>
+                  </Space>
+                ),
+                children: (
+                  <Table<KpiDriverBreakdown>
+                    columns={driverColumns}
+                    dataSource={byDriver?.drivers ?? []}
+                    rowKey="driverId"
+                    pagination={{ defaultPageSize: 5, pageSizeOptions: ['5', '10', '20', '50', '100'], showSizeChanger: true }}
+                    loading={loading && !byDriver}
+                    locale={{ emptyText: <Empty description="Không có tài xế nào có chuyến trong kỳ." /> }}
+                    scroll={{ x: 800 }}
+                  />
+                ),
+              },
+              {
+                key: 'by-vehicle',
+                label: (
+                  <Space size={6}>
+                    <Truck size={16} />
+                    <span>Hiệu suất theo Phương tiện / Xe ({byVehicle?.vehicles.length ?? 0})</span>
+                  </Space>
+                ),
+                children: (
+                  <Table<KpiVehicleBreakdown>
+                    columns={vehicleColumns}
+                    dataSource={byVehicle?.vehicles ?? []}
+                    rowKey="vehicleId"
+                    pagination={{ defaultPageSize: 5, pageSizeOptions: ['5', '10', '20', '50', '100'], showSizeChanger: true }}
+                    loading={loading && !byVehicle}
+                    locale={{ emptyText: <Empty description="Không có xe nào có chuyến trong kỳ." /> }}
+                    scroll={{ x: 1050 }}
+                  />
+                ),
+              },
+            ]}
           />
         </Card>
 
