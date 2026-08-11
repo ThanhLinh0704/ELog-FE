@@ -1,11 +1,10 @@
 import React from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
-import { Avatar, Badge, Button, ConfigProvider, Dropdown, Input, Layout, Menu, Space } from 'antd';
+import { Avatar, Button, ConfigProvider, Dropdown, Layout, Menu, Space } from 'antd';
 import {
   Activity,
   AlertTriangle,
   BarChart3,
-  Bell,
   ChevronDown,
   ClipboardCheck,
   FileSpreadsheet,
@@ -17,7 +16,6 @@ import {
   Map,
   Navigation,
   Package,
-  Search,
   Settings,
   Truck,
   UserCog,
@@ -325,23 +323,8 @@ const AdminShell: React.FC<AdminShellProps> = ({ currentUser, children }) => {
         </Sider>
 
         <Layout style={{ marginLeft: 260 }}>
-          <Header className="elog-admin-header">
-            <Input
-              prefix={<Search size={ICON_SIZE - 2} style={{ color: palette.textFaint }} />}
-              placeholder="Tìm kiếm nhanh..."
-              style={{ width: 260 }}
-            />
+          <Header className="elog-admin-header" style={{ display: 'flex', justifyContent: 'flex-end', alignItems: 'center' }}>
             <Space size={12}>
-              <Button
-                type="text"
-                shape="circle"
-                className="elog-header-icon-btn"
-                icon={
-                  <Badge dot color={palette.danger} offset={[-2, 2]}>
-                    <Bell size={ICON_SIZE} style={{ color: palette.textBody }} />
-                  </Badge>
-                }
-              />
               <Dropdown menu={userMenuItems} placement="bottomRight" trigger={['click']}>
                 <Button type="text" style={{ height: 40, padding: '0 8px', borderRadius: 10 }}>
                   <Space>
