@@ -640,16 +640,56 @@ const StoresPage: React.FC = () => {
   );
 
   const tableData = useMemo(() => {
-    if (coordFilter === 'missing') {
-      const start = page * size;
-      return missingCoordinateStores.slice(start, start + size);
+    let filtered = stores;
+
+    // Fallback client-side filter for hasRoute when Backend bypasses hasRoute=false
+    if (hasRoute === 'true') {
+      filtered = filtered.filter(
+        (item) => item.assignedRoutes && item.assignedRoutes.length > 0
+      );
+    } else if (hasRoute === 'false') {
+      filtered = filtered.filter(
+        (item) => !item.assignedRoutes || item.assignedRoutes.length === 0
+      );
     }
 
-    return stores;
-  }, [coordFilter, missingCoordinateStores, page, size, stores]);
+    if (coordFilter === 'missing') {
+      let missingFiltered = missingCoordinateStores;
+      if (hasRoute === 'true') {
+        missingFiltered = missingFiltered.filter(
+          (item) => item.assignedRoutes && item.assignedRoutes.length > 0
+        );
+      } else if (hasRoute === 'false') {
+        missingFiltered = missingFiltered.filter(
+          (item) => !item.assignedRoutes || item.assignedRoutes.length === 0
+        );
+      }
+      const start = page * size;
+      return missingFiltered.slice(start, start + size);
+    }
 
-  const tableTotal =
-    coordFilter === 'missing' ? missingCoordinateStores.length : pageMeta.totalElements;
+    return filtered;
+  }, [coordFilter, hasRoute, missingCoordinateStores, page, size, stores]);
+
+  const tableTotal = useMemo(() => {
+    if (coordFilter === 'missing') {
+      let missingFiltered = missingCoordinateStores;
+      if (hasRoute === 'true') {
+        missingFiltered = missingFiltered.filter(
+          (item) => item.assignedRoutes && item.assignedRoutes.length > 0
+        );
+      } else if (hasRoute === 'false') {
+        missingFiltered = missingFiltered.filter(
+          (item) => !item.assignedRoutes || item.assignedRoutes.length === 0
+        );
+      }
+      return missingFiltered.length;
+    }
+    if (hasRoute === 'true' || hasRoute === 'false') {
+      return tableData.length;
+    }
+    return pageMeta.totalElements;
+  }, [coordFilter, hasRoute, missingCoordinateStores, tableData.length, pageMeta.totalElements]);
 
   async function fetchStores(params = queryParams) {
     setLoading(true);

@@ -89,6 +89,26 @@ export interface KpiByDriverResponse {
   drivers: KpiDriverBreakdown[];
 }
 
+// Backend: KpiByVehicleResponse.VehicleKpi (KpiController — /api/v1/kpi/by-vehicle)
+export interface KpiVehicleBreakdown {
+  vehicleId: number;
+  licensePlate: string;
+  vehicleType: string | null;
+  payloadKg: number | null;
+  maxVolumeM3: number | null;
+  totalTrips: number;
+  totalDistanceKm: number | null;
+  avgVolumeUtilPct: number | null;
+  avgWeightUtilPct: number | null;
+  onTimeRatePct: number | null;
+  totalExceptions: number;
+}
+
+export interface KpiByVehicleResponse {
+  period: KpiPeriodInfo;
+  vehicles: KpiVehicleBreakdown[];
+}
+
 export interface KpiQueryParams {
   startDate?: string;
   endDate?: string;

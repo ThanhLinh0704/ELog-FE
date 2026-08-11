@@ -7,6 +7,7 @@ import {
   BarChart3,
   Bell,
   ChevronDown,
+  ClipboardCheck,
   FileSpreadsheet,
   History,
   Home,
@@ -112,17 +113,20 @@ const AdminShell: React.FC<AdminShellProps> = ({ currentUser, children }) => {
                         ? '/activity-history'
                         : location.pathname.startsWith('/manager/activity-history')
                           ? '/activity-history'
-                          : location.pathname.startsWith('/driver/my-trips')
-                            ? '/driver/my-trips'
-                            : location.pathname.startsWith('/trip-drafts')
-                              ? '/trip-drafts'
-                              : location.pathname;
+                          : location.pathname.startsWith('/dispatcher/trip-outcomes') || location.pathname.startsWith('/manager/trip-outcomes')
+                            ? '/dispatcher/trip-outcomes'
+                            : location.pathname.startsWith('/driver/my-trips')
+                              ? '/driver/my-trips'
+                              : location.pathname.startsWith('/trip-drafts')
+                                ? '/trip-drafts'
+                                : location.pathname;
 
   const roles = currentUser.roles || [];
   const roleLabel = roles.map((role) => ROLE_LABELS[role] || role).join(', ') || 'User';
   const canViewImport = can(PERMISSIONS.ORDER_IMPORT) || can(PERMISSIONS.TRIP_READ);
   const canViewTripDraftsMenu = can(PERMISSIONS.TRIP_READ);
   const canViewMonitoring = can(PERMISSIONS.TRIP_READ);
+  const canViewTripOutcomes = can(PERMISSIONS.TRIP_READ);
   const canViewExceptions = can(PERMISSIONS.TRIP_READ);
   const canViewKpi = can(PERMISSIONS.KPI_READ);
   const canViewActivityHistory = can(PERMISSIONS.TRIP_READ) || can(PERMISSIONS.PLANNING_HISTORY_READ);
@@ -223,6 +227,14 @@ const AdminShell: React.FC<AdminShellProps> = ({ currentUser, children }) => {
               icon: <Activity size={ICON_SIZE} />,
               label: 'Theo dõi chuyến hàng',
               onClick: () => navigate('/dispatcher/monitoring'),
+            }
+          : null,
+        canViewTripOutcomes
+          ? {
+              key: '/dispatcher/trip-outcomes',
+              icon: <ClipboardCheck size={ICON_SIZE} />,
+              label: 'Nghiệm thu chuyến hàng',
+              onClick: () => navigate('/dispatcher/trip-outcomes'),
             }
           : null,
         canViewExceptions

@@ -22,13 +22,16 @@ import {
   CloseCircleOutlined,
   ReloadOutlined,
   ExclamationCircleOutlined,
+  HistoryOutlined,
 } from '@ant-design/icons';
-import { CheckCircle2, XCircle, Package, Truck } from 'lucide-react';
+import { CheckCircle2, XCircle, Package, Truck, History } from 'lucide-react';
 import AdminShell from '../../../components/AdminShell';
 import StatusBadge, { type StatusBadgeColor } from '../../../components/StatusBadge';
 import { getTripOutcomes, validateOutcome, amendOutcome } from '../../../api/tripOutcomeApi';
+import { getTripOutcomeHistory } from '../../../api/tripOutcomeEventApi';
 import type { TripOutcome } from '../../../types/tripOutcome';
 import { OUTCOME_STATUS_LABEL } from '../../../types/tripOutcome';
+import { TRIP_OUTCOME_EVENT_TYPE_LABEL, type TripOutcomeEvent } from '../../../types/tripOutcomeEvent';
 
 const { Title, Text } = Typography;
 const { TextArea } = Input;
@@ -71,6 +74,11 @@ const TripOutcomePage: React.FC = () => {
   const [amendReason, setAmendReason] = useState('');
   const [amendLoading, setAmendLoading] = useState(false);
 
+  // History modal
+  const [historyTarget, setHistoryTarget] = useState<TripOutcome | null>(null);
+  const [historyEvents, setHistoryEvents] = useState<TripOutcomeEvent[]>([]);
+  const [historyLoading, setHistoryLoading] = useState(false);
+
   const fetchOutcomes = useCallback(async () => {
     setLoading(true);
     setError(null);
@@ -87,6 +95,21 @@ const TripOutcomePage: React.FC = () => {
   }, []);
 
   useEffect(() => { fetchOutcomes(); }, [fetchOutcomes]);
+
+  const handleOpenHistory = async (target: TripOutcome) => {
+    setHistoryTarget(target);
+    setHistoryLoading(true);
+    setHistoryEvents([]);
+    try {
+      const result = await getTripOutcomeHistory(target.tripId);
+      setHistoryEvents(result.items);
+    } catch (err: unknown) {
+      const msg = (err as { message?: string })?.message || 'Không thể tải lịch sử sự kiện chuyến hàng.';
+      message.error(msg);
+    } finally {
+      setHistoryLoading(false);
+    }
+  };
 
   const handleValidate = async () => {
     if (!validateTarget) return;
@@ -131,7 +154,14 @@ const TripOutcomePage: React.FC = () => {
       title: 'Mã chuyến',
       dataIndex: 'tripCode',
       key: 'tripCode',
-      render: (code: string) => <Text strong style={{ color: '#2563eb' }}>{code}</Text>,
+      render: (code: string, record: TripOutcome) => (
+        <Space direction="vertical" size={2}>
+          <Text strong style={{ color: '#2563eb' }}>{code}</Text>
+          {record.version > 1 && (
+            <Text type="secondary" style={{ fontSize: 11 }}>v{record.version}</Text>
+          )}
+        </Space>
+      ),
     },
     {
       title: 'Tài xế',
@@ -182,18 +212,29 @@ const TripOutcomePage: React.FC = () => {
       title: 'Trạng thái',
       dataIndex: 'status',
       key: 'status',
-      render: (status: string) => {
+      render: (status: string, record: TripOutcome) => {
         const info = OUTCOME_STATUS_LABEL[status as keyof typeof OUTCOME_STATUS_LABEL]
           || { color: 'default', label: status };
-        return <StatusBadge color={info.color as StatusBadgeColor}>{info.label}</StatusBadge>;
+        const tooltipText = status === 'VALIDATED'
+          ? `Nghiệm thu bởi: ${record.validatedBy || 'Hệ thống'} lúc ${formatDateTime(record.validatedAt)} (v${record.version})`
+          : status === 'NEEDS_CORRECTION'
+            ? `Lý do yêu cầu sửa: ${record.amendmentReason || '—'} (v${record.version})`
+            : `Chờ nghiệm thu (v${record.version})`;
+        return (
+          <Tooltip title={tooltipText}>
+            <span>
+              <StatusBadge color={info.color as StatusBadgeColor}>{info.label}</StatusBadge>
+            </span>
+          </Tooltip>
+        );
       },
     },
     {
       title: 'Thao tác',
       key: 'action',
-      width: 220,
+      width: 280,
       render: (_: unknown, record: TripOutcome) => (
-        <Space>
+        <Space wrap>
           {record.status === 'SUBMITTED' && (
             <>
               <Tooltip title="Xác nhận kết quả chuyến xe">
@@ -221,13 +262,29 @@ const TripOutcomePage: React.FC = () => {
             </>
           )}
           {record.status === 'VALIDATED' && (
-            <StatusBadge color="success" icon={<CheckCircle2 size={12} />}>Đã nghiệm thu</StatusBadge>
+            <Tooltip title={`Nghiệm thu bởi: ${record.validatedBy || 'Hệ thống'} lúc ${formatDateTime(record.validatedAt)}`}>
+              <span>
+                <StatusBadge color="success" icon={<CheckCircle2 size={12} />}>Đã nghiệm thu</StatusBadge>
+              </span>
+            </Tooltip>
           )}
           {record.status === 'NEEDS_CORRECTION' && (
             <Tooltip title={`Lý do: ${record.amendmentReason || '—'}`}>
-              <StatusBadge color="warning" icon={<XCircle size={12} />}>Chờ sửa</StatusBadge>
+              <span>
+                <StatusBadge color="warning" icon={<XCircle size={12} />}>Chờ sửa</StatusBadge>
+              </span>
             </Tooltip>
           )}
+          <Tooltip title="Xem lịch sử sự kiện nghiệm thu (Audit Trail)">
+            <Button
+              size="small"
+              icon={<HistoryOutlined />}
+              style={{ borderRadius: 6 }}
+              onClick={() => handleOpenHistory(record)}
+            >
+              Lịch sử
+            </Button>
+          </Tooltip>
         </Space>
       ),
     },
@@ -410,6 +467,83 @@ const TripOutcomePage: React.FC = () => {
               style={{ borderRadius: 8 }}
             />
           </div>
+        )}
+      </Modal>
+
+      {/* History Audit Trail Modal */}
+      <Modal
+        open={!!historyTarget}
+        title={
+          <Space>
+            <HistoryOutlined style={{ color: '#2563eb' }} />
+            <span>Lịch sử thực thi & nghiệm thu chuyến {historyTarget?.tripCode}</span>
+          </Space>
+        }
+        onCancel={() => { setHistoryTarget(null); setHistoryEvents([]); }}
+        footer={[
+          <Button key="close" onClick={() => { setHistoryTarget(null); setHistoryEvents([]); }}>
+            Đóng
+          </Button>,
+        ]}
+        width={720}
+      >
+        {historyLoading ? (
+          <div style={{ textAlign: 'center', padding: '40px 0' }}>
+            <Spin tip="Đang tải lịch sử sự kiện chuyến..." />
+          </div>
+        ) : historyEvents.length === 0 ? (
+          <Empty description="Chưa có lịch sử sự kiện nào được ghi nhận." style={{ padding: '20px 0' }} />
+        ) : (
+          <Table<TripOutcomeEvent>
+            dataSource={historyEvents}
+            rowKey="id"
+            pagination={false}
+            size="small"
+            scroll={{ y: 360 }}
+            columns={[
+              {
+                title: 'Thời gian',
+                dataIndex: 'occurredAt',
+                key: 'occurredAt',
+                width: 140,
+                render: (v: string) => <Text style={{ fontSize: 12 }}>{formatDateTime(v)}</Text>,
+              },
+              {
+                title: 'Sự kiện',
+                dataIndex: 'eventType',
+                key: 'eventType',
+                width: 180,
+                render: (type: TripOutcomeEvent['eventType']) => (
+                  <StatusBadge color="blue">
+                    {TRIP_OUTCOME_EVENT_TYPE_LABEL[type] || type}
+                  </StatusBadge>
+                ),
+              },
+              {
+                title: 'Người thực hiện',
+                dataIndex: 'actorUsername',
+                key: 'actorUsername',
+                width: 130,
+                render: (uname: string | null, r) => (
+                  <Text style={{ fontSize: 12 }}>
+                    {uname || 'Hệ thống'} {r.actorRole ? `(${r.actorRole})` : ''}
+                  </Text>
+                ),
+              },
+              {
+                title: 'Ghi chú / Chi tiết',
+                key: 'details',
+                render: (_: unknown, r: TripOutcomeEvent) => {
+                  const note = r.validationNote || r.exceptionText || r.reasonCode || r.deliveryResult;
+                  return (
+                    <Text type="secondary" style={{ fontSize: 12 }}>
+                      {note || (r.statusBefore && r.statusAfter ? `${r.statusBefore} → ${r.statusAfter}` : '—')}
+                    </Text>
+                  );
+                },
+              },
+            ]}
+          />
         )}
       </Modal>
     </AdminShell>
