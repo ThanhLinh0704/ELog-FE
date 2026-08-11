@@ -21,6 +21,7 @@ import {
   Clock,
   Package,
   RefreshCw,
+  User,
   Weight,
 } from 'lucide-react';
 import {
@@ -39,10 +40,12 @@ import type { ColumnsType } from 'antd/es/table';
 import AdminShell from '../../../components/AdminShell';
 import StatusBadge from '../../../components/StatusBadge';
 import { palette } from '../../../theme/tokens';
-import { getKpiByRoute, getKpiDailyTrend, getKpiSummary } from '../../../api/kpiApi';
+import { getKpiByDriver, getKpiByRoute, getKpiDailyTrend, getKpiSummary } from '../../../api/kpiApi';
 import type {
+  KpiByDriverResponse,
   KpiByRouteResponse,
   KpiDailyTrendResponse,
+  KpiDriverBreakdown,
   KpiPreset,
   KpiQueryParams,
   KpiRouteBreakdown,
@@ -104,6 +107,7 @@ const KpiDashboardPage: React.FC = () => {
   const [summary, setSummary] = useState<KpiSummaryResponse | null>(null);
   const [trend, setTrend] = useState<KpiDailyTrendResponse | null>(null);
   const [byRoute, setByRoute] = useState<KpiByRouteResponse | null>(null);
+  const [byDriver, setByDriver] = useState<KpiByDriverResponse | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -124,14 +128,16 @@ const KpiDashboardPage: React.FC = () => {
     setLoading(true);
     setError(null);
     try {
-      const [summaryRes, trendRes, byRouteRes] = await Promise.all([
+      const [summaryRes, trendRes, byRouteRes, byDriverRes] = await Promise.all([
         getKpiSummary(query),
         getKpiDailyTrend(query),
         getKpiByRoute(query),
+        getKpiByDriver(query),
       ]);
       setSummary(summaryRes);
       setTrend(trendRes);
       setByRoute(byRouteRes);
+      setByDriver(byDriverRes);
     } catch (err: unknown) {
       setError(getErrorMessage(err, 'Không tải được dữ liệu KPI.'));
     } finally {
@@ -187,6 +193,51 @@ const KpiDashboardPage: React.FC = () => {
           )}
         </Space>
       ),
+    },
+  ];
+
+  const driverColumns: ColumnsType<KpiDriverBreakdown> = [
+    {
+      title: 'Tài xế',
+      key: 'driver',
+      render: (_, record) => (
+        <div>
+          <Text strong>{record.fullName}</Text>
+          <div>
+            <Text type="secondary" style={{ fontSize: 12 }}>
+              {[record.driverCode, record.phoneNumber].filter(Boolean).join(' · ') || '—'}
+            </Text>
+          </div>
+        </div>
+      ),
+    },
+    { title: 'Số chuyến', dataIndex: 'totalTrips', key: 'totalTrips', width: 100, align: 'right' },
+    {
+      title: 'Quãng đường',
+      dataIndex: 'totalDistanceKm',
+      key: 'totalDistanceKm',
+      width: 130,
+      align: 'right',
+      render: (val: number | null) => (val === null ? '—' : `${val.toFixed(1)} km`),
+    },
+    {
+      title: 'Tỷ lệ đúng giờ',
+      dataIndex: 'onTimeRatePct',
+      key: 'onTimeRatePct',
+      width: 150,
+      sorter: (a, b) => (a.onTimeRatePct ?? -1) - (b.onTimeRatePct ?? -1),
+      render: (val: number | null) => (
+        <StatusBadge color={val === null ? 'default' : val < 70 ? 'error' : val < 90 ? 'warning' : 'success'}>
+          {formatPct(val)}
+        </StatusBadge>
+      ),
+    },
+    {
+      title: 'Sự cố',
+      dataIndex: 'totalExceptions',
+      key: 'totalExceptions',
+      width: 100,
+      align: 'right',
     },
   ];
 
@@ -367,6 +418,23 @@ const KpiDashboardPage: React.FC = () => {
             rowKey="routeCode"
             pagination={false}
             locale={{ emptyText: <Empty description="Không có tuyến nào có chuyến trong kỳ." /> }}
+            scroll={{ x: 760 }}
+          />
+        </Card>
+
+        <Card
+          title={<Space size={6}><User size={16} /> Hiệu suất theo tài xế</Space>}
+          size="small"
+          style={{ borderRadius: 12, boxShadow: palette.cardShadow, border: `1px solid ${palette.borderSoft}` }}
+          styles={{ body: { padding: 0 } }}
+          loading={loading && !byDriver}
+        >
+          <Table<KpiDriverBreakdown>
+            columns={driverColumns}
+            dataSource={byDriver?.drivers ?? []}
+            rowKey="driverId"
+            pagination={false}
+            locale={{ emptyText: <Empty description="Không có tài xế nào có chuyến trong kỳ." /> }}
             scroll={{ x: 760 }}
           />
         </Card>

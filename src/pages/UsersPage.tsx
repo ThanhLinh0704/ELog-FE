@@ -69,7 +69,7 @@ const UsersPage: React.FC = () => {
       setPageMeta({ totalElements: result.totalElements, totalPages: result.totalPages });
     } catch (err: any) {
       if (err.status === 403 || err.response?.status === 403) {
-        navigate('/dashboard');
+        setError('Bạn không có quyền quản lý người dùng.');
       } else {
         setError(err.message || 'Không tải được danh sách người dùng.');
       }

@@ -664,7 +664,7 @@ const StoresPage: React.FC = () => {
       });
     } catch (err: any) {
       if (getStatus(err) === 403) {
-        navigate('/dashboard');
+        setError('Bạn không có quyền quản lý cửa hàng.');
       } else {
         setError(getApiMessage(err, 'Không tải được danh sách cửa hàng.'));
       }

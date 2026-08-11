@@ -63,6 +63,11 @@ const RouteListPage: React.FC = () => {
   const [draftStops, setDraftStops] = useState<RouteStop[]>([]);
   const [saving, setSaving] = useState(false);
 
+  // Bumped by the map view's "Tải lại" button to force RouteMapEditor to refetch
+  // directions with forceRefresh=true (xem filemd/FE_Route_Directions_Force_Refresh_Guide.md)
+  const [mapRefreshKey, setMapRefreshKey] = useState(0);
+  const [reloadingMap, setReloadingMap] = useState(false);
+
   // Drag and drop state for stop reordering
   const [draggedIdx, setDraggedIdx] = useState<number | null>(null);
   const [dragOverIdx, setDragOverIdx] = useState<number | null>(null);
@@ -249,6 +254,32 @@ const RouteListPage: React.FC = () => {
       console.error('Failed to fetch route stops', err);
     }
   }, []);
+
+  // Map view "Tải lại": reloads the route list, re-fetches the active route's stops
+  // from the server (discarding any unsaved local reorder/add/remove), and forces
+  // RouteMapEditor to re-fetch directions with forceRefresh=true so a stale/wrong
+  // cached polyline (route_polyline) is cleared and recomputed via Goong.
+  const handleReloadMap = async () => {
+    if (hasUnsavedChanges) {
+      if (!window.confirm('Bạn có thay đổi chưa lưu trên tuyến hiện tại. Tải lại sẽ bỏ các thay đổi này. Tiếp tục?')) {
+        return;
+      }
+    }
+    setReloadingMap(true);
+    try {
+      await Promise.all([
+        fetchRoutes(),
+        fetchAllRoutes(),
+        activeRoute ? fetchRouteStops(String(activeRoute.id)) : Promise.resolve(),
+      ]);
+      setMapRefreshKey(Date.now());
+      if (activeRoute) {
+        message.success(`Đã tải lại tuyến ${activeRoute.code} và tính lại đường đi.`);
+      }
+    } finally {
+      setReloadingMap(false);
+    }
+  };
 
   useEffect(() => {
     fetchRoutes(queryParams);
@@ -650,7 +681,14 @@ const RouteListPage: React.FC = () => {
                       </Button>
                     </Tooltip>
                   )}
-                  <Button icon={<RefreshCw size={14} />} onClick={() => fetchRoutes()} title="Tải lại" />
+                  <Tooltip title="Tải lại tuyến: lấy lại điểm dừng mới nhất & tính lại đường đi">
+                    <Button
+                      icon={<RefreshCw size={14} />}
+                      onClick={handleReloadMap}
+                      loading={reloadingMap}
+                      title="Tải lại"
+                    />
+                  </Tooltip>
                 </div>
               </div>
 
@@ -851,6 +889,7 @@ const RouteListPage: React.FC = () => {
                 onAddStoreToRoute={handleAddStoreToDraft}
                 onRemoveStop={handleRemoveDraftStop}
                 height="100%"
+                refreshKey={mapRefreshKey}
               />
             </div>
           </div>

@@ -7,19 +7,9 @@ interface DriverGuardProps {
   children: React.ReactNode;
 }
 
-const DriverGuard: React.FC<DriverGuardProps> = ({ children }) => {
-  const token = localStorage.getItem('accessToken') || localStorage.getItem('token');
-  if (!token) {
-    return <Navigate to="/login" replace />;
-  }
-
-  const hasAccess = hasPermission(PERMISSIONS.TRIP_EXECUTE);
-
-  if (!hasAccess) {
-    return <Navigate to="/403" replace />;
-  }
-
-  return <>{children}</>;
+const DriverGuard: React.FC<DriverGuardProps> = () => {
+  // Giao diện Driver không dùng trên Web mà chỉ chạy trên App Flutter
+  return <Navigate to="/403" replace />;
 };
 
 export default DriverGuard;

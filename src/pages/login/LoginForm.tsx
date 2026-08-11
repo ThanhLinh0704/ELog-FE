@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 // Import các component cần thiết từ thư viện Ant Design
-import { Form, Input, Button, Checkbox, Alert, message } from 'antd';
+import { Form, Input, Button, Alert, message } from 'antd';
 import axiosInstance from '../../api/axiosInstance';
 
 const LoginForm: React.FC = () => {
@@ -24,6 +24,24 @@ const LoginForm: React.FC = () => {
       const tokenData = response.data.data;
       const userData = tokenData.user ?? tokenData;
       const accessToken = tokenData.accessToken ?? userData.accessToken;
+
+      const rawRoles: string[] = userData.roles || [];
+      const normalizedRoles = rawRoles.map((r: string) => r.replace(/^ROLE_/, ''));
+      const hasManagementRole = normalizedRoles.some((r: string) =>
+        ['SYSTEM_ADMIN', 'DISPATCHER', 'LOGISTICS_MANAGER', 'ADMIN'].includes(r)
+      );
+
+      if (!hasManagementRole) {
+        localStorage.clear();
+        if (normalizedRoles.includes('DRIVER')) {
+          setApiError('Tài khoản Tài xế chỉ hỗ trợ đăng nhập trên Ứng dụng di động (App Flutter). Vui lòng sử dụng App di động.');
+        } else if (normalizedRoles.includes('WAREHOUSE_STAFF')) {
+          setApiError('Tài khoản Nhân viên kho không được phép đăng nhập trên ứng dụng Web.');
+        } else {
+          setApiError('Tài khoản của bạn không có quyền đăng nhập ứng dụng Web.');
+        }
+        return;
+      }
 
       // Lưu trữ Access Token, Refresh Token và thông tin user vào localStorage
       localStorage.setItem('remember', values.remember ? 'true' : 'false');
@@ -179,17 +197,7 @@ const LoginForm: React.FC = () => {
             />
           </Form.Item>
 
-          {/* Tùy chọn nhớ mật khẩu và quên mật khẩu */}
-          <div className="elog-form-options">
-            <Form.Item name="remember" valuePropName="checked" noStyle>
-              <Checkbox disabled={isLoading} className="elog-checkbox-label">
-                Ghi nhớ đăng nhập
-              </Checkbox>
-            </Form.Item>
-            <a href="#forgot" className="elog-forgot-link" onClick={(e) => e.preventDefault()}>
-              Quên mật khẩu?
-            </a>
-          </div>
+
 
           {/* Nút gửi thông tin Đăng nhập */}
           <Button

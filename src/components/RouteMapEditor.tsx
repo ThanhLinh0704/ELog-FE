@@ -13,6 +13,10 @@ interface RouteMapEditorProps {
   onAddStoreToRoute: (store: StoreSearchResult) => void;
   onRemoveStop: (stopIdOrStoreId: string) => void;
   height?: string | number;
+  // Bump this (e.g. Date.now()) to force-refetch directions with forceRefresh=true —
+  // BE clears the cached route_polyline and recomputes via Goong (xem
+  // filemd/FE_Route_Directions_Force_Refresh_Guide.md).
+  refreshKey?: number;
 }
 
 // Kho tổng — dùng tạm cho tới khi GET /routes/{id}/directions trả về toạ độ thật
@@ -109,6 +113,7 @@ const RouteMapEditor: React.FC<RouteMapEditorProps> = ({
   onAddStoreToRoute,
   onRemoveStop,
   height = '100%',
+  refreshKey,
 }) => {
   const containerRef = useRef<HTMLDivElement>(null);
   const mapRef = useRef<L.Map | null>(null);
@@ -125,7 +130,8 @@ const RouteMapEditor: React.FC<RouteMapEditorProps> = ({
       return;
     }
     let cancelled = false;
-    routeApi.getRouteDirections(String(activeRoute.id))
+    const force = Boolean(refreshKey && refreshKey > 0);
+    routeApi.getRouteDirections(String(activeRoute.id), force)
       .then((res) => {
         if (cancelled) return;
         setWarehousePosition([res.warehouseLat, res.warehouseLng]);
@@ -138,7 +144,7 @@ const RouteMapEditor: React.FC<RouteMapEditorProps> = ({
     return () => {
       cancelled = true;
     };
-  }, [activeRoute?.id]);
+  }, [activeRoute?.id, refreshKey]);
 
   const sortedStops = [...stops].sort((a, b) => a.sequenceOrder - b.sequenceOrder);
   const stopsKey = sortedStops.map((s) => `${s.id}-${s.storeId}-${s.sequenceOrder}`).join('|');

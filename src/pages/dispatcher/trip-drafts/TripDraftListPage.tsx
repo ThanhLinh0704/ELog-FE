@@ -65,6 +65,7 @@ const TripDraftListPage: React.FC = () => {
   const [consolidating, setConsolidating] = useState(false);
   const [drafts, setDrafts] = useState<TripDraft[]>([]);
   const [skippedRoutes, setSkippedRoutes] = useState<any[]>([]);
+  const [error, setError] = useState<string | null>(null);
 
   // Pagination state
   const [page, setPage] = useState(0);
@@ -77,6 +78,7 @@ const TripDraftListPage: React.FC = () => {
 
   const fetchDrafts = async (dateStr: string, pageNum: number, sizeNum: number) => {
     setLoading(true);
+    setError(null);
     try {
       const response = await tripDraftApi.getTripDrafts({
         deliveryDate: dateStr,
@@ -88,10 +90,10 @@ const TripDraftListPage: React.FC = () => {
     } catch (e: any) {
       console.error(e);
       if (e?.status === 403 || e?.response?.status === 403) {
-        navigate('/403');
+        setError("Bạn không có quyền xem danh sách đợt gom đơn.");
         return;
       }
-      message.error("Không thể tải danh sách đợt gom đơn.");
+      setError("Không thể tải danh sách đợt gom đơn.");
     } finally {
       setLoading(false);
     }
@@ -314,6 +316,17 @@ const TripDraftListPage: React.FC = () => {
           </Space>
         }
       />
+
+      {/* Permission / Fetch Error Alert */}
+      {error && (
+        <Alert
+          message="Lỗi tải dữ liệu"
+          description={error}
+          type="error"
+          showIcon
+          style={{ marginBottom: 20, borderRadius: 10 }}
+        />
+      )}
 
       {/* Warning Alert if skippedRoutes list is not empty */}
       {skippedRoutes.length > 0 && (

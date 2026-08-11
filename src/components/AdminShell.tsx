@@ -47,7 +47,6 @@ const ROLE_LABELS: Record<string, string> = {
   SYSTEM_ADMIN: 'System Admin',
   DISPATCHER: 'Điều phối viên',
   LOGISTICS_MANAGER: 'Quản lý Logistics',
-  WAREHOUSE_STAFF: 'Nhân viên kho',
   DRIVER: 'Tài xế',
 };
 
@@ -248,14 +247,6 @@ const AdminShell: React.FC<AdminShellProps> = ({ currentUser, children }) => {
               icon: <History size={ICON_SIZE} />,
               label: 'Nhật ký hoạt động',
               onClick: () => navigate('/dispatcher/activity-history'),
-            }
-          : null,
-        canViewDriverTrips
-          ? {
-              key: '/driver/my-trips',
-              icon: <Navigation size={ICON_SIZE} />,
-              label: 'Chuyến của tôi',
-              onClick: () => navigate('/driver/my-trips'),
             }
           : null,
       ].filter((item): item is Exclude<typeof item, null> => item !== null),
