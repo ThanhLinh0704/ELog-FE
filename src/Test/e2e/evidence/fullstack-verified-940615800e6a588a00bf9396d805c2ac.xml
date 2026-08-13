@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuites name="Mocha Tests" time="6.316" tests="1" failures="0">
+  <testsuite name="Root Suite" timestamp="2026-08-13T11:14:21" tests="0" file="e2e\fullstack\us03-users.fullstack.cy.ts" time="0.000" failures="0">
+  </testsuite>
+  <testsuite name="FULLSTACK US-03 — User Management" timestamp="2026-08-13T11:14:21" tests="1" time="6.314" failures="0">
+    <testcase name="FULLSTACK US-03 — User Management FS-03-01: admin thật tải được danh sách user từ backend" time="6.045" classname="FS-03-01: admin thật tải được danh sách user từ backend">
+    </testcase>
+  </testsuite>
+</testsuites>

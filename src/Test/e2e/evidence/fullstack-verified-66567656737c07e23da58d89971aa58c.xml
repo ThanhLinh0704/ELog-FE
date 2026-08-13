@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuites name="Mocha Tests" time="6.778" tests="1" failures="0">
+  <testsuite name="Root Suite" timestamp="2026-08-13T11:14:28" tests="0" file="e2e\fullstack\us04-stores.fullstack.cy.ts" time="0.000" failures="0">
+  </testsuite>
+  <testsuite name="FULLSTACK US-04 — Store Management" timestamp="2026-08-13T11:14:28" tests="1" time="6.776" failures="0">
+    <testcase name="FULLSTACK US-04 — Store Management FS-04-01: admin thật tải được Store Management và dữ liệu GPS" time="6.484" classname="FS-04-01: admin thật tải được Store Management và dữ liệu GPS">
+    </testcase>
+  </testsuite>
+</testsuites>

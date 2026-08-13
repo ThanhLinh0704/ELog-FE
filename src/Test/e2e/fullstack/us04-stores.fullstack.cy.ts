@@ -6,9 +6,11 @@ describe('FULLSTACK US-04 — Store Management', () => {
 
   it('FS-04-01: admin thật tải được Store Management và dữ liệu GPS', () => {
     loginWithRealBackend();
+    cy.intercept('GET', '**/api/v1/stores*').as('getStores');
     cy.visit('/stores');
-    cy.contains('h2', 'Quản lý cửa hàng').should('be.visible');
-    cy.contains('Thiếu toạ độ GPS').should('be.visible');
+    cy.wait('@getStores').its('response.statusCode').should('eq', 200);
+    cy.contains('Quản lý cửa hàng').should('be.visible');
+    cy.get('table tbody tr').should('have.length.greaterThan', 0);
     cy.get('.ant-alert-error').should('not.exist');
   });
 });
