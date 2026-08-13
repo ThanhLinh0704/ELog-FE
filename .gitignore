@@ -1,0 +1,69 @@
+# ─── Java / Maven ───────────────────────────────────────────
+target/
+*.class
+*.jar
+*.war
+*.ear
+*.nar
+hs_err_pid*
+.mvn/wrapper/maven-wrapper.jar
+
+# ─── Spring Boot / application secrets ──────────────────────
+application-local.yml
+application-local.properties
+*.env
+
+# ─── Node / npm ─────────────────────────────────────────────
+node_modules/
+dist/
+dist-ssr/
+*.local
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+*.tsbuildinfo
+.eslintcache
+coverage/
+
+
+# ─── IDE ────────────────────────────────────────────────────
+.idea/
+*.iml
+.vscode/
+!.vscode/extensions.json
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?
+
+# ─── OS ─────────────────────────────────────────────────────
+.DS_Store
+Thumbs.db
+
+# ─── Misc ───────────────────────────────────────────────────
+*.log
+logs/
+
+# Local documentation artifacts (Markdown remains trackable)
+*.doc
+*.docx
+*.pdf
+*.xls
+*.xlsx
+*.ppt
+*.pptx
+*.odt
+*.ods
+*.rtf
+*.txt
+*.docm
+*.xlsm
+*.pptm
+*.drawio
+*.puml
+*.vsdx
+~$*
+!*.md
+!**/*.md

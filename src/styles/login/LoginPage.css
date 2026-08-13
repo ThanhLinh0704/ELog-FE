@@ -1,0 +1,826 @@
+@import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800;900&display=swap');
+
+/* Override #root constraints globally when ELog Login Page is active */
+#root:has(.elog-login-page) {
+  width: 100% !important;
+  max-width: 100% !important;
+  margin: 0 !important;
+  border-inline: none !important;
+  display: flex !important;
+  flex-direction: column !important;
+  min-height: 100vh !important;
+  text-align: left !important;
+}
+
+/* Base class scope to keep styles encapsulated */
+.elog-login-page {
+  font-family: 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif;
+  background-color: #f8fafc;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  position: relative;
+  overflow: hidden;
+  box-sizing: border-box;
+  color: #0f172a;
+}
+
+.elog-login-page * {
+  box-sizing: border-box;
+}
+
+/* --- Design Tokens --- */
+:root {
+  --color-primary: #2563eb;
+  --color-primary-hover: #1d4ed8;
+  --color-primary-light: rgba(37, 99, 235, 0.1);
+  --color-dark: #0f172a;
+  --color-dark-hover: #1e293b;
+  --color-slate-gray: #64748b;
+  --color-slate-dark: #475569;
+  --color-slate-light: #94a3b8;
+  --color-border: #e2e8f0;
+  --color-border-light: #f1f5f9;
+  --color-bg-light: #f8fafc;
+  --color-purple: #8b5cf6;
+  --color-pink: #ec4899;
+}
+
+/* --- Background Grid and Blobs --- */
+.elog-bg-grid {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-image:
+    linear-gradient(to right, rgba(226, 232, 240, 0.28) 1px, transparent 1px),
+    linear-gradient(to bottom, rgba(226, 232, 240, 0.28) 1px, transparent 1px);
+  background-size: 40px 40px;
+  pointer-events: none;
+  z-index: 1;
+}
+
+.elog-blob {
+  position: absolute;
+  width: 360px;
+  height: 360px;
+  border-radius: 50%;
+  filter: blur(80px);
+  pointer-events: none;
+  z-index: 1;
+  opacity: 0.7;
+}
+
+.elog-blob-top {
+  top: -130px;
+  right: -130px;
+  background: radial-gradient(circle, rgba(59, 130, 246, 0.12) 0%, rgba(59, 130, 246, 0) 70%);
+}
+
+.elog-blob-bottom {
+  bottom: -130px;
+  left: -130px;
+  background: radial-gradient(circle, rgba(6, 182, 212, 0.12) 0%, rgba(6, 182, 212, 0) 70%);
+}
+
+/* --- Content Wrapper --- */
+.elog-content-wrapper {
+  position: relative;
+  z-index: 2;
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+}
+
+/* --- Navbar Styles --- */
+.elog-navbar {
+  height: 68px;
+  padding: 0 36px;
+  background-color: #ffffff;
+  border-bottom: 1px solid var(--color-border);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.elog-logo-container {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  text-decoration: none;
+}
+
+.elog-logo-icon {
+  background-color: var(--color-dark);
+  color: #ffffff;
+  padding: 7px;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 34px;
+  height: 34px;
+  transition: transform 0.2s ease;
+}
+
+.elog-logo-container:hover .elog-logo-icon {
+  transform: scale(1.05);
+}
+
+.elog-logo-text {
+  display: flex;
+  flex-direction: column;
+}
+
+.elog-logo-title {
+  color: var(--color-dark);
+  font-weight: 800;
+  font-size: 15.5px;
+  line-height: 1.1;
+  margin: 0;
+}
+
+.elog-logo-subtitle {
+  color: var(--color-slate-light);
+  font-weight: 700;
+  font-size: 8px;
+  letter-spacing: 0.6px;
+  margin: 0;
+}
+
+.elog-nav-links {
+  display: flex;
+  gap: 26px;
+}
+
+.elog-nav-link {
+  color: var(--color-slate-gray);
+  font-size: 13.5px;
+  font-weight: 600;
+  text-decoration: none;
+  cursor: pointer;
+  transition: color 0.2s ease;
+}
+
+.elog-nav-link:hover {
+  color: var(--color-primary);
+}
+
+.elog-btn-admin {
+  background-color: var(--color-primary);
+  color: #ffffff;
+  border: none;
+  border-radius: 10px;
+  padding: 12px 18px;
+  font-size: 13px;
+  font-weight: 700;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  box-shadow: 0 4px 12px rgba(37, 99, 235, 0.15);
+}
+
+.elog-btn-admin:hover {
+  background-color: var(--color-primary-hover);
+  transform: translateY(-1px);
+  box-shadow: 0 6px 16px rgba(37, 99, 235, 0.25);
+}
+
+.elog-btn-admin svg {
+  transition: transform 0.2s ease;
+}
+
+.elog-btn-admin:hover svg {
+  transform: translateX(3px);
+}
+
+/* --- Main Layout --- */
+.elog-main-body {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 36px;
+}
+
+.elog-container {
+  width: 100%;
+  max-width: 1200px;
+  margin: 0 auto;
+  display: flex;
+  gap: 60px;
+}
+
+/* --- Left Column --- */
+.elog-left-column {
+  flex: 12;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-start;
+  padding-top: 16px;
+}
+
+.elog-headline {
+  font-size: 44px;
+  font-weight: 900;
+  line-height: 1.08;
+  letter-spacing: -1px;
+  margin: 0;
+  color: var(--color-dark);
+}
+
+.elog-headline-highlight {
+  color: var(--color-primary);
+}
+
+.elog-description {
+  color: var(--color-slate-gray);
+  font-size: 14.5px;
+  line-height: 1.6;
+  margin: 16px 0 32px 0;
+  max-width: 500px;
+}
+
+/* --- Feature Grid --- */
+.elog-feature-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 14px;
+  margin-bottom: 32px;
+}
+
+.elog-feature-card {
+  background-color: #ffffff;
+  border: 1px solid var(--color-border-light);
+  border-radius: 14px;
+  padding: 14px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  box-shadow: 0 4px 14px rgba(15, 23, 42, 0.03);
+  transition: all 0.25s ease;
+}
+
+.elog-feature-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 20px rgba(15, 23, 42, 0.06);
+  border-color: var(--color-border);
+}
+
+.elog-feature-icon-wrapper {
+  width: 40px;
+  height: 40px;
+  background-color: var(--color-primary);
+  color: #ffffff;
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.elog-feature-text {
+  color: var(--color-dark);
+  font-size: 12.5px;
+  font-weight: 700;
+  line-height: 1.35;
+  margin: 0;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* --- Mockup Route Map Styles --- */
+.elog-map-wrapper { position: relative; }
+
+/* Browser chrome */
+.elog-map-browser {
+  background: #ffffff;
+  border-radius: 14px;
+  border: 1px solid #F1F5F9;
+  overflow: hidden;
+  box-shadow: 0 4px 20px rgba(15,23,42,0.07);
+}
+.elog-map-bar {
+  background: #F8FAFC;
+  border-bottom: 1px solid #F1F5F9;
+  padding: 9px 14px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+.elog-map-dots { display: flex; gap: 5px; }
+.elog-map-dot {
+  width: 8px; height: 8px;
+  border-radius: 50%;
+}
+.elog-map-url {
+  flex: 1;
+  background: rgba(226,232,240,0.55);
+  border-radius: 5px;
+  padding: 3px 10px;
+  font-size: 9px;
+  color: #64748B;
+  font-weight: 500;
+}
+
+/* Canvas & SVG */
+.elog-map-canvas { position: relative; }
+.elog-map-svg    { display: block; width: 100%; height: auto; }
+
+/* Animated dashed route */
+.elog-route-path {
+  stroke-dasharray: 6 5;
+  animation: elog-dash-flow 1.8s linear infinite;
+}
+@keyframes elog-dash-flow {
+  from { stroke-dashoffset: 44; }
+  to   { stroke-dashoffset: 0; }
+}
+
+/* Stop pulse rings */
+.elog-node-pulse {
+  animation: elog-pulse-ring 2.2s ease-out infinite;
+}
+@keyframes elog-pulse-ring {
+  0%   { r: 7;  opacity: 0.7; }
+  70%  { r: 14; opacity: 0;   }
+  100% { r: 14; opacity: 0;   }
+}
+
+/* Hub rings */
+.elog-hub-outer { animation: elog-pulse-ring 2.4s ease-out infinite; }
+.elog-hub-mid   { animation: elog-pulse-ring 2.4s ease-out infinite 0.6s; }
+
+/* Overlay cards */
+.elog-map-hub-card,
+.elog-map-telemetry {
+  position: absolute;
+  background: #ffffff;
+  border: 1px solid rgba(226,232,240,0.85);
+  border-radius: 10px;
+  backdrop-filter: blur(4px);
+}
+.elog-map-hub-card {
+  top: 12px; left: 12px;
+  padding: 7px 11px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.elog-map-hub-dot {
+  width: 9px; height: 9px;
+  border-radius: 50%;
+  background: #0F172A;
+  flex-shrink: 0;
+}
+.elog-map-hub-title {
+  font-size: 12px;
+  font-weight: 700;
+  color: #0F172A;
+  line-height: 1.2;
+}
+.elog-map-hub-sub {
+  font-size: 10px;
+  color: #64748B;
+}
+
+.elog-map-telemetry {
+  top: 12px; right: 12px;
+  padding: 8px 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+.elog-map-telem-row {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 11px;
+  color: #475569;
+  white-space: nowrap;
+}
+.elog-map-telem-row strong { color: #0F172A; font-weight: 700; }
+.elog-map-telem-bullet {
+  width: 6px; height: 6px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+/* Floating badges */
+.elog-map-float-truck {
+  position: absolute;
+  left: -6px; bottom: 10px;
+  width: 46px; height: 46px;
+  background: #0F172A;
+  border-radius: 13px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #ffffff;
+  box-shadow: 0 4px 14px rgba(15,23,42,0.22);
+}
+.elog-map-float-gps {
+  position: absolute;
+  right: 8px; bottom: 14px;
+  width: 40px; height: 40px;
+  background: #2563EB;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #ffffff;
+  box-shadow: 0 4px 12px rgba(37,99,235,0.38);
+}
+
+/* --- Right Column - Login Card --- */
+.elog-right-column {
+  flex: 10;
+  display: flex;
+  justify-content: flex-end;
+  align-items: flex-start;
+}
+
+.elog-login-card-wrapper {
+  width: 100%;
+  max-width: 440px;
+  border-radius: 22px;
+  box-shadow: 0 12px 32px rgba(15, 23, 42, 0.07);
+  background-color: #ffffff;
+  border: 1px solid var(--color-border);
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.elog-login-card-wrapper:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 16px 40px rgba(15, 23, 42, 0.1);
+}
+
+.elog-login-card {
+  padding: 38px;
+}
+
+/* Form Brand Header */
+.elog-form-header {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  margin-bottom: 22px;
+}
+
+.elog-form-logo-box {
+  background-color: var(--color-dark);
+  color: #ffffff;
+  padding: 9px;
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 42px;
+  height: 42px;
+}
+
+.elog-form-logo-text {
+  display: flex;
+  flex-direction: column;
+  text-align: left;
+}
+
+.elog-form-logo-title {
+  color: var(--color-dark);
+  font-weight: 800;
+  font-size: 18px;
+  line-height: 1.1;
+  margin: 0;
+}
+
+.elog-form-logo-subtitle {
+  color: var(--color-slate-light);
+  font-weight: 700;
+  font-size: 8.5px;
+  letter-spacing: 1.8px;
+  margin: 0;
+}
+
+.elog-welcome-title {
+  text-align: center;
+  color: var(--color-dark);
+  font-size: 23px;
+  font-weight: 800;
+  letter-spacing: -0.4px;
+  margin: 0 0 7px 0;
+}
+
+.elog-welcome-subtitle {
+  text-align: center;
+  color: var(--color-slate-gray);
+  font-size: 13px;
+  margin: 0 0 30px 0;
+}
+
+/* --- Form Fields --- */
+.elog-form-group {
+  margin-bottom: 18px;
+  display: flex;
+  flex-direction: column;
+}
+
+.elog-form-label {
+  font-size: 9.5px;
+  font-weight: 700;
+  color: var(--color-slate-dark);
+  letter-spacing: 0.9px;
+  margin-bottom: 7px;
+  text-transform: uppercase;
+}
+
+.elog-input-wrapper {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.elog-input-icon-prefix {
+  position: absolute;
+  left: 16px;
+  color: var(--color-slate-light);
+  display: flex;
+  align-items: center;
+  pointer-events: none;
+}
+
+.elog-input {
+  width: 100%;
+  background-color: var(--color-bg-light);
+  border: 1px solid var(--color-border);
+  border-radius: 11px;
+  padding: 13px 16px 13px 46px;
+  font-size: 13.5px;
+  color: var(--color-dark);
+  outline: none;
+  font-family: inherit;
+  transition: all 0.2s ease;
+}
+
+.elog-input-with-suffix {
+  padding-right: 46px;
+}
+
+.elog-input:focus {
+  border-color: var(--color-primary);
+  background-color: #ffffff;
+  box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
+}
+
+.elog-input-error {
+  border-color: #ef4444 !important;
+}
+
+.elog-input-error:focus {
+  box-shadow: 0 0 0 3px rgba(239, 68, 68, 0.1) !important;
+}
+
+.elog-input-icon-suffix {
+  position: absolute;
+  right: 12px;
+  background: none;
+  border: none;
+  color: var(--color-slate-light);
+  cursor: pointer;
+  padding: 4px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  transition: background-color 0.2s, color 0.2s;
+}
+
+.elog-input-icon-suffix:hover {
+  background-color: rgba(15, 23, 42, 0.05);
+  color: var(--color-slate-dark);
+}
+
+.elog-error-message {
+  color: #ef4444;
+  font-size: 11px;
+  margin-top: 5px;
+  font-weight: 500;
+}
+
+/* Remember me + Forgot password Row */
+.elog-form-options {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 16px;
+  font-size: 12.5px;
+}
+
+.elog-checkbox-wrapper {
+  display: flex;
+  align-items: center;
+  cursor: pointer;
+  user-select: none;
+}
+
+.elog-checkbox {
+  width: 18px;
+  height: 18px;
+  accent-color: var(--color-primary);
+  cursor: pointer;
+  margin: 0 8px 0 0;
+  border-radius: 4px;
+  border: 1.5px solid var(--color-slate-light);
+}
+
+.elog-checkbox-label {
+  color: var(--color-slate-dark);
+  font-weight: 500;
+}
+
+.elog-forgot-link {
+  color: var(--color-primary);
+  font-weight: 700;
+  text-decoration: none;
+  transition: color 0.2s;
+}
+
+.elog-forgot-link:hover {
+  color: var(--color-primary-hover);
+  text-decoration: underline;
+}
+
+/* Submit Button */
+.elog-btn-submit {
+  height: 48px;
+  width: 100%;
+  background-color: var(--color-primary);
+  color: #ffffff;
+  border: none;
+  border-radius: 12px;
+  font-size: 14px;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  box-shadow: 0 4px 14px rgba(37, 99, 235, 0.3);
+  margin-bottom: 20px;
+}
+
+.elog-btn-submit:hover:not(:disabled) {
+  background-color: var(--color-primary-hover);
+  transform: translateY(-1px);
+  box-shadow: 0 6px 18px rgba(37, 99, 235, 0.4);
+}
+
+.elog-btn-submit:active:not(:disabled) {
+  transform: translateY(0);
+}
+
+.elog-btn-submit:disabled {
+  opacity: 0.7;
+  cursor: not-allowed;
+}
+
+.elog-spinner {
+  width: 20px;
+  height: 20px;
+  border: 2px solid rgba(255, 255, 255, 0.3);
+  border-radius: 50%;
+  border-top-color: #ffffff;
+  animation: spin 0.8s linear infinite;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+/* Divider */
+.elog-divider {
+  display: flex;
+  align-items: center;
+  margin-bottom: 20px;
+}
+
+.elog-divider-line {
+  flex-grow: 1;
+  height: 1px;
+  background-color: var(--color-border);
+}
+
+.elog-divider-text {
+  color: var(--color-slate-light);
+  font-size: 10.5px;
+  font-weight: 700;
+  padding: 0 14px;
+}
+
+/* Demo Button */
+.elog-btn-demo {
+  height: 46px;
+  width: 100%;
+  background-color: #ffffff;
+  color: var(--color-slate-dark);
+  border: 1.5px solid var(--color-border);
+  border-radius: 12px;
+  font-size: 13px;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.elog-btn-demo:hover {
+  background-color: var(--color-bg-light);
+  border-color: var(--color-slate-light);
+  color: var(--color-dark);
+}
+
+/* --- Footer --- */
+.elog-footer {
+  height: 44px;
+  background-color: #ffffff;
+  border-top: 1px solid var(--color-border);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  z-index: 2;
+}
+
+.elog-footer-text {
+  color: var(--color-slate-light);
+  font-size: 11px;
+  margin: 0;
+}
+
+/* --- Responsive Layout (Breakpoints) --- */
+@media (max-width: 1000px) {
+  .elog-navbar {
+    padding: 0 20px;
+  }
+
+  .elog-nav-links {
+    display: none;
+  }
+
+  .elog-main-body {
+    padding: 24px 16px;
+  }
+
+  .elog-container {
+    flex-direction: column;
+    align-items: center;
+    gap: 32px;
+  }
+
+  .elog-left-column {
+    display: none;
+  }
+
+  .elog-right-column {
+    justify-content: center;
+    width: 100%;
+  }
+
+  .elog-login-card-wrapper {
+    max-width: 100%;
+  }
+
+  .elog-login-card {
+    padding: 28px 20px;
+  }
+}
+
+/* --- Disable Chrome/Edge Autofill Gray/Blue Highlight Background --- */
+.elog-login-card input:-webkit-autofill,
+.elog-login-card input:-webkit-autofill:hover,
+.elog-login-card input:-webkit-autofill:focus,
+.elog-login-card input:-webkit-autofill:active,
+.ant-input:-webkit-autofill,
+.ant-input:-webkit-autofill:hover,
+.ant-input:-webkit-autofill:focus,
+.ant-input:-webkit-autofill:active,
+input:-webkit-autofill,
+input:-webkit-autofill:hover,
+input:-webkit-autofill:focus,
+input:-webkit-autofill:active {
+  -webkit-box-shadow: 0 0 0 1000px #f8fafc inset !important;
+  box-shadow: 0 0 0 1000px #f8fafc inset !important;
+  -webkit-text-fill-color: #1e293b !important;
+  transition: background-color 5000s ease-in-out 0s !important;
+}
