@@ -42,33 +42,28 @@ async function handleAxiosCall<T>(call: () => Promise<any>): Promise<T> {
 export const importApi = {
   async uploadOrders(
     file: File,
-    deliveryDate?: string
+    confirmReplace: boolean = false
   ): Promise<ImportResult> {
     if (USE_MOCK_API) {
-      return uploadOrdersMock(deliveryDate || '', file);
+      return uploadOrdersMock('', file);
     }
 
     const formData = new FormData();
     formData.append('file', file);
-    if (deliveryDate) {
-      formData.append('deliveryDate', deliveryDate);
-    }
 
     const queryParams = new URLSearchParams();
-    if (deliveryDate) {
-      queryParams.set('deliveryDate', deliveryDate);
+    if (confirmReplace) {
+      queryParams.set('confirmReplace', 'true');
     }
 
     const res = await handleAxiosCall<any>(() =>
       axiosInstance.post(`/api/v1/imports?${queryParams.toString()}`, formData, {
-        headers: {
-          'Content-Type': undefined,
-        },
+        headers: { 'Content-Type': undefined },
       })
     );
 
     const batchData = res?.data;
-    
+
     let errorRows: ImportErrorRow[] = [];
     if (batchData && batchData.rejectedRows > 0) {
       try {

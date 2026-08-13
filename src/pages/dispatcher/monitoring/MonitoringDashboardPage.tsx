@@ -667,7 +667,7 @@ const MonitoringDashboardPage: React.FC = () => {
                 size="small"
                 style={{ borderRadius: 8 }}
               >
-                <Table
+                <Table<StopProgress>
                   dataSource={[...tripProgress.stops].sort((a, b) => a.sequenceOrder - b.sequenceOrder)}
                   columns={stopColumns}
                   rowKey="tripStopId"

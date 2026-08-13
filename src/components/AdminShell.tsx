@@ -7,6 +7,7 @@ import {
   BarChart3,
   ChevronDown,
   ClipboardCheck,
+  ClipboardList,
   FileSpreadsheet,
   History,
   Home,
@@ -148,116 +149,124 @@ const AdminShell: React.FC<AdminShellProps> = ({ currentUser, children }) => {
         },
         can(PERMISSIONS.ROLE_READ)
           ? {
-              key: '/roles',
-              icon: <Settings size={ICON_SIZE} />,
-              label: 'Phân quyền',
-              onClick: () => navigate('/roles'),
-            }
+            key: '/roles',
+            icon: <Settings size={ICON_SIZE} />,
+            label: 'Phân quyền',
+            onClick: () => navigate('/roles'),
+          }
           : null,
         can(PERMISSIONS.USER_READ)
           ? {
-              key: '/users',
-              icon: <Users size={ICON_SIZE} />,
-              label: 'Quản lý người dùng',
-              onClick: () => navigate('/users'),
-            }
+            key: '/users',
+            icon: <Users size={ICON_SIZE} />,
+            label: 'Quản lý người dùng',
+            onClick: () => navigate('/users'),
+          }
           : null,
         can(PERMISSIONS.DRIVER_READ)
           ? {
-              key: '/admin/drivers',
-              icon: <UserCog size={ICON_SIZE} />,
-              label: 'Quản lý tài xế',
-              onClick: () => navigate('/admin/drivers'),
-            }
+            key: '/admin/drivers',
+            icon: <UserCog size={ICON_SIZE} />,
+            label: 'Quản lý tài xế',
+            onClick: () => navigate('/admin/drivers'),
+          }
           : null,
         can(PERMISSIONS.STORE_READ)
           ? {
-              key: '/stores',
-              icon: <Home size={ICON_SIZE} />,
-              label: 'Quản lý cửa hàng',
-              onClick: () => navigate('/stores'),
-            }
+            key: '/stores',
+            icon: <Home size={ICON_SIZE} />,
+            label: 'Quản lý cửa hàng',
+            onClick: () => navigate('/stores'),
+          }
           : null,
         can(PERMISSIONS.VEHICLE_READ)
           ? {
-              key: '/vehicles',
-              icon: <Truck size={ICON_SIZE} />,
-              label: 'Quản lý xe',
-              onClick: () => navigate('/vehicles'),
-            }
+            key: '/vehicles',
+            icon: <Truck size={ICON_SIZE} />,
+            label: 'Quản lý xe',
+            onClick: () => navigate('/vehicles'),
+          }
           : null,
         can(PERMISSIONS.PRODUCT_READ)
           ? {
-              key: '/admin/products',
-              icon: <Package size={ICON_SIZE} />,
-              label: 'Quản lý sản phẩm',
-              onClick: () => navigate('/admin/products'),
-            }
+            key: '/admin/products',
+            icon: <Package size={ICON_SIZE} />,
+            label: 'Quản lý sản phẩm',
+            onClick: () => navigate('/admin/products'),
+          }
           : null,
         can(PERMISSIONS.ROUTE_READ)
           ? {
-              key: '/admin/routes',
-              icon: <Map size={ICON_SIZE} />,
-              label: 'Quản lý tuyến',
-              onClick: () => navigate('/admin/routes'),
-            }
+            key: '/admin/routes',
+            icon: <Map size={ICON_SIZE} />,
+            label: 'Quản lý tuyến',
+            onClick: () => navigate('/admin/routes'),
+          }
           : null,
         canViewImport
           ? {
-              key: '/dispatcher/import',
-              icon: <FileSpreadsheet size={ICON_SIZE} />,
-              label: 'Nhập đơn hàng',
-              onClick: () => navigate('/dispatcher/import'),
-            }
+            key: '/dispatcher/import',
+            icon: <FileSpreadsheet size={ICON_SIZE} />,
+            label: 'Nhập đơn hàng',
+            onClick: () => navigate('/dispatcher/import'),
+          }
+          : null,
+        canViewImport
+          ? {
+            key: '/dispatcher/orders',
+            icon: <ClipboardList size={ICON_SIZE} />,
+            label: 'Danh sách đơn hàng',
+            onClick: () => navigate('/dispatcher/orders'),
+          }
           : null,
         canViewTripDraftsMenu
           ? {
-              key: '/dispatcher/trip-drafts',
-              icon: <Layers size={ICON_SIZE} />,
-              label: 'Quản lý gom đơn',
-              onClick: () => navigate('/dispatcher/trip-drafts'),
-            }
+            key: '/dispatcher/trip-drafts',
+            icon: <Layers size={ICON_SIZE} />,
+            label: 'Quản lý gom đơn',
+            onClick: () => navigate('/dispatcher/trip-drafts'),
+          }
           : null,
 
         canViewMonitoring
           ? {
-              key: '/dispatcher/monitoring',
-              icon: <Activity size={ICON_SIZE} />,
-              label: 'Theo dõi chuyến hàng',
-              onClick: () => navigate('/dispatcher/monitoring'),
-            }
+            key: '/dispatcher/monitoring',
+            icon: <Activity size={ICON_SIZE} />,
+            label: 'Theo dõi chuyến hàng',
+            onClick: () => navigate('/dispatcher/monitoring'),
+          }
           : null,
         canViewTripOutcomes
           ? {
-              key: '/dispatcher/trip-outcomes',
-              icon: <ClipboardCheck size={ICON_SIZE} />,
-              label: 'Nghiệm thu chuyến hàng',
-              onClick: () => navigate('/dispatcher/trip-outcomes'),
-            }
+            key: '/dispatcher/trip-outcomes',
+            icon: <ClipboardCheck size={ICON_SIZE} />,
+            label: 'Nghiệm thu chuyến hàng',
+            onClick: () => navigate('/dispatcher/trip-outcomes'),
+          }
           : null,
         canViewExceptions
           ? {
-              key: '/exceptions',
-              icon: <AlertTriangle size={ICON_SIZE} />,
-              label: 'Quản lý ngoại lệ',
-              onClick: () => navigate('/dispatcher/exceptions'),
-            }
+            key: '/exceptions',
+            icon: <AlertTriangle size={ICON_SIZE} />,
+            label: 'Quản lý ngoại lệ',
+            onClick: () => navigate('/dispatcher/exceptions'),
+          }
           : null,
         canViewKpi
           ? {
-              key: '/kpi',
-              icon: <BarChart3 size={ICON_SIZE} />,
-              label: 'KPI vận hành',
-              onClick: () => navigate('/dispatcher/kpi'),
-            }
+            key: '/kpi',
+            icon: <BarChart3 size={ICON_SIZE} />,
+            label: 'KPI vận hành',
+            onClick: () => navigate('/dispatcher/kpi'),
+          }
           : null,
         canViewActivityHistory
           ? {
-              key: '/activity-history',
-              icon: <History size={ICON_SIZE} />,
-              label: 'Nhật ký hoạt động',
-              onClick: () => navigate('/dispatcher/activity-history'),
-            }
+            key: '/activity-history',
+            icon: <History size={ICON_SIZE} />,
+            label: 'Nhật ký hoạt động',
+            onClick: () => navigate('/dispatcher/activity-history'),
+          }
           : null,
       ].filter((item): item is Exclude<typeof item, null> => item !== null),
     },

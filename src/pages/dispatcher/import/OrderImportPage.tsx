@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Breadcrumb, message, Divider } from 'antd';
+import { Breadcrumb, message, Divider, Modal } from 'antd';
 import { useNavigate } from 'react-router-dom';
 import { FileSpreadsheet } from 'lucide-react';
 import AdminShell from '../../../components/AdminShell';
@@ -73,23 +73,87 @@ const OrderImportPage: React.FC = () => {
     loadHistory(page, newSize);
   };
 
-  // Perform the actual upload. Backend parses the Excel file and is the sole
-  // source of truth for order data — the FE does not re-parse the file.
-  // Duplicate-date imports are no longer rejected batch-level (ImportServiceImpl
-  // dropped the confirmReplace/existingActiveBatches mechanism — protection now
-  // lives only at the row level), so every upload just creates a new batch.
-  const handleUploadInitiated = async (file: File, deliveryDate?: string) => {
+  const handleUploadInitiated = async (file: File, confirmReplace: boolean = false) => {
     setUploadLoading(true);
     try {
-      const result = await importApi.uploadOrders(file, deliveryDate);
+      const result = await importApi.uploadOrders(file, confirmReplace);
 
       message.success(`Tải lên file thành công. Tạo Batch #${result.batchId}`);
-
-      // Redirect to detail page directly
       navigate(`/dispatcher/import/history/${result.batchId}`);
     } catch (error: any) {
       console.error('Upload failed', error);
-      message.error(error?.message || 'Không thể xử lý file. Vui lòng thử lại.');
+
+      const isDuplicateError =
+        error?.status === 409 ||
+        error?.body?.code === 'DUPLICATE_ORDERS_EXIST';
+
+      if (isDuplicateError) {
+        // Parse danh sách mã đơn từ message BE: "Phát hiện N đơn hàng đã tồn tại: DH01, DH02, ..."
+        const rawMsg: string = error?.message || '';
+        const colonIdx = rawMsg.lastIndexOf(':');
+        const orderCodes: string[] = colonIdx >= 0
+          ? rawMsg.slice(colonIdx + 1).split(',').map((s: string) => s.trim()).filter(Boolean)
+          : [];
+
+        Modal.confirm({
+          title: 'Phát hiện đơn hàng trùng lặp',
+          icon: null,
+          width: 480,
+          content: (
+            <div style={{ fontSize: 14 }}>
+              <p style={{ marginBottom: 12, color: '#262626' }}>
+                Có <strong style={{ color: '#fa8c16' }}>{orderCodes.length > 0 ? orderCodes.length : 'một số'}</strong> đơn hàng trong file đã tồn tại trên hệ thống.
+              </p>
+              {orderCodes.length > 0 && (
+                <div
+                  style={{
+                    maxHeight: 160,
+                    overflowY: 'auto',
+                    background: '#fafafa',
+                    border: '1px solid #f0f0f0',
+                    borderRadius: 8,
+                    padding: '8px 12px',
+                    marginBottom: 12,
+                  }}
+                >
+                  {orderCodes.map((code) => (
+                    <span
+                      key={code}
+                      style={{
+                        display: 'inline-block',
+                        background: '#fff7e6',
+                        border: '1px solid #ffd591',
+                        borderRadius: 4,
+                        padding: '2px 8px',
+                        margin: '3px 4px 3px 0',
+                        fontSize: 12,
+                        fontFamily: 'monospace',
+                        color: '#d46b08',
+                      }}
+                    >
+                      {code}
+                    </span>
+                  ))}
+                </div>
+              )}
+              <p style={{ margin: 0, color: '#595959' }}>
+                Bạn có muốn <strong>gộp đơn</strong> (cộng dồn số lượng vào đơn cũ) không?
+              </p>
+            </div>
+          ),
+          okText: 'Gộp đơn',
+          cancelText: 'Hủy',
+          okButtonProps: { type: 'primary' },
+          onOk: async () => {
+            await handleUploadInitiated(file, true);
+          },
+          onCancel: () => {
+            message.info('Đã hủy thao tác nhập đơn hàng.');
+          },
+        });
+      } else {
+        message.error(error?.message || 'Không thể xử lý file. Vui lòng thử lại.');
+      }
     } finally {
       setUploadLoading(false);
     }
@@ -108,13 +172,13 @@ const OrderImportPage: React.FC = () => {
 
       <PageHeader
         title="Nhập đơn hàng từ Excel"
-        subtitle="Chọn ngày giao hàng và tải file đơn hàng theo đúng định dạng mẫu để tạo đơn hàng nhanh vào hệ thống."
+        subtitle="Tải file Excel đơn hàng theo đúng định dạng mẫu. Ngày giao hàng sẽ được đọc từ cột Ngày giao trong file."
         icon={<FileSpreadsheet size={20} />}
       />
 
       {/* Upload Card for Dispatcher, ReadOnly Banner for managers */}
       {canImportOrders ? (
-        <ImportUploadCard loading={uploadLoading} onUpload={handleUploadInitiated} />
+        <ImportUploadCard loading={uploadLoading} onUpload={(file) => handleUploadInitiated(file)} />
       ) : (
         <ImportReadOnlyBanner />
       )}
