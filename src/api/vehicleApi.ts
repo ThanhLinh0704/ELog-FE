@@ -18,6 +18,10 @@ export interface VehicleItem {
   averageSpeedKmh?: number | null;
   costPerKm?: number | null;
   status: 'AVAILABLE' | 'IN_USE' | 'MAINTENANCE' | 'OUT_OF_SERVICE';
+  assignedDriverId?: number | null;
+  assignedDriverName?: string | null;
+  assignedDriverPhone?: string | null;
+  assignedDriverLicenseClass?: 'B' | 'C1' | 'C' | null;
   imageUrl?: string | null;
   permitInfo?: string | null;
   description?: string | null;
@@ -57,6 +61,7 @@ export interface VehiclePayload {
   averageSpeedKmh?: number | null;
   costPerKm?: number | null;
   status?: 'AVAILABLE' | 'IN_USE' | 'MAINTENANCE' | 'OUT_OF_SERVICE';
+  assignedDriverId?: number | null;
   imageUrl?: string | null;
   permitInfo?: string | null;
   description?: string | null;
@@ -145,6 +150,10 @@ function normalizeVehicle(raw: any): VehicleItem {
     averageSpeedKmh: raw.averageSpeedKmh != null ? Number(raw.averageSpeedKmh) : null,
     costPerKm: raw.costPerKm != null ? Number(raw.costPerKm) : null,
     status: raw.status ?? 'AVAILABLE',
+    assignedDriverId: raw.assignedDriverId ?? raw.assigned_driver_id ?? null,
+    assignedDriverName: raw.assignedDriverName ?? raw.assigned_driver_name ?? null,
+    assignedDriverPhone: raw.assignedDriverPhone ?? raw.assigned_driver_phone ?? null,
+    assignedDriverLicenseClass: raw.assignedDriverLicenseClass ?? raw.assigned_driver_license_class ?? null,
     imageUrl: raw.imageUrl ?? raw.image_url ?? null,
     permitInfo: raw.permitInfo ?? raw.permit_info ?? null,
     description: raw.description ?? null,
@@ -276,7 +285,7 @@ export const vehicleApi = {
     });
 
     const data = await handleAxiosCall<any>(() =>
-      axiosInstance.get(`/api/vehicles?${query}`)
+      axiosInstance.get(`/api/v1/vehicles?${query}`)
     );
 
     return normalizeVehiclePage(data, page, size);
@@ -288,7 +297,7 @@ export const vehicleApi = {
     }
 
     const data = await handleAxiosCall<any>(() =>
-      axiosInstance.get(`/api/vehicles/${id}`)
+      axiosInstance.get(`/api/v1/vehicles/${id}`)
     );
 
     return normalizeVehicle(data?.data ?? data);
@@ -300,7 +309,7 @@ export const vehicleApi = {
     }
 
     const data = await handleAxiosCall<any>(() =>
-      axiosInstance.get('/api/vehicles/fleet-capacity')
+      axiosInstance.get('/api/v1/vehicles/fleet-capacity')
     );
 
     return normalizeFleetCapacity(data);
@@ -313,7 +322,7 @@ export const vehicleApi = {
 
     const data = await handleAxiosCall<any>(() =>
       axiosInstance.post(
-        '/api/vehicles',
+        '/api/v1/vehicles',
         cleanPayload({
           vehicleCode: payload.vehicleCode?.trim(),
           plateNumber: payload.plateNumber?.trim().toUpperCase(),
@@ -329,6 +338,7 @@ export const vehicleApi = {
           averageSpeedKmh: payload.averageSpeedKmh,
           costPerKm: payload.costPerKm,
           status: payload.status,
+          assignedDriverId: payload.assignedDriverId ?? null,
           imageUrl: payload.imageUrl?.trim() || null,
           permitInfo: payload.permitInfo?.trim() || null,
           description: payload.description?.trim() || null,
@@ -346,7 +356,7 @@ export const vehicleApi = {
 
     const data = await handleAxiosCall<any>(() =>
       axiosInstance.put(
-        `/api/vehicles/${id}`,
+        `/api/v1/vehicles/${id}`,
         cleanPayload({
           vehicleType: payload.vehicleType?.trim(),
           vehicleClass: payload.vehicleClass?.trim() || null,
@@ -360,6 +370,7 @@ export const vehicleApi = {
           averageSpeedKmh: payload.averageSpeedKmh,
           costPerKm: payload.costPerKm,
           status: payload.status,
+          assignedDriverId: payload.assignedDriverId ?? null,
           imageUrl: payload.imageUrl?.trim() || null,
           permitInfo: payload.permitInfo?.trim() || null,
           description: payload.description?.trim() || null,
@@ -376,11 +387,25 @@ export const vehicleApi = {
     }
 
     const data = await handleAxiosCall<any>(() =>
-      axiosInstance.patch(`/api/vehicles/${id}/status`, {
+      axiosInstance.patch(`/api/v1/vehicles/${id}/status`, {
         isActive,
       })
     );
 
     return normalizeVehicle(data?.data ?? data);
+  },
+
+  async getAvailableVehicles(tripId?: number): Promise<VehicleItem[]> {
+    const params: Record<string, any> = {};
+    if (tripId) params.tripId = tripId;
+    const query = encodeQuery(params);
+
+    const data = await handleAxiosCall<any>(() =>
+      axiosInstance.get(`/api/v1/vehicles/available${query ? `?${query}` : ''}`)
+    );
+
+    const payload = data?.data ?? data;
+    const list = Array.isArray(payload) ? payload : payload.content ?? [];
+    return list.map(normalizeVehicle);
   },
 };

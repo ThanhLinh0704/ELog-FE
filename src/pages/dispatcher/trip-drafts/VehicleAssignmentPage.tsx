@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
+import { useParams, useNavigate, useSearchParams, useLocation } from 'react-router-dom';
 import {
   Card,
   Button,
@@ -34,12 +34,17 @@ import {
   PlusOutlined,
   DeleteOutlined,
   PrinterOutlined,
+  DownOutlined,
+  UpOutlined,
 } from '@ant-design/icons';
 import { Truck, Users, ShieldCheck, ShieldAlert } from 'lucide-react';
 import AdminShell from '../../../components/AdminShell';
-import { tripDraftApi } from '../../../api/tripDraftApi';
+import StatusBadge from '../../../components/StatusBadge';
+import { palette } from '../../../theme/tokens';
+import { tripDraftApi, type VehicleRecommendation } from '../../../api/tripDraftApi';
 import {
   getEligibleVehicles,
+  getEligibleVehiclesForStops,
   getAvailableDrivers,
   getFleetCapacityCheck,
   assignTrip,
@@ -48,7 +53,7 @@ import {
   openHandoverSlip,
   updateTripAssignment,
 } from '../../../api/tripApi';
-import type { TripDraft, TripDraftStop } from '../../../types/tripDraft';
+import type { TripDraft, TripDraftStop, CapacityValidationResult } from '../../../types/tripDraft';
 import type {
   EligibleVehicle,
   IneligibleVehicle,
@@ -56,6 +61,8 @@ import type {
   FleetCapacityCheck,
   Trip,
 } from '../../../types/trip';
+import { usePermissions } from '../../../hooks/usePermissions';
+import { PERMISSIONS } from '../../../constants/permissions';
 
 const { Title, Text } = Typography;
 
@@ -107,9 +114,11 @@ function getErrorMessage(err: unknown, fallback = 'Có lỗi xảy ra, vui lòng
   );
 }
 
+type BadgeColor = 'warning' | 'processing' | 'success' | 'purple' | 'blue' | 'cyan' | 'default';
+
 function renderStatusTag(status?: string | null) {
   if (!status) return null;
-  const map: Record<string, { color: string; text: string }> = {
+  const map: Record<string, { color: BadgeColor; text: string }> = {
     DRAFT: { color: 'warning', text: 'Nháp' },
     PLANNED: { color: 'processing', text: 'Đã lập chuyến' },
     VALIDATED: { color: 'success', text: 'Đã kiểm tra tải' },
@@ -118,19 +127,19 @@ function renderStatusTag(status?: string | null) {
     COMPLETED: { color: 'cyan', text: 'Hoàn thành' },
   };
   const { color, text } = map[status] || { color: 'default', text: status };
-  return <Tag color={color} style={{ fontWeight: 500 }}>{text}</Tag>;
+  return <StatusBadge color={color}>{text}</StatusBadge>;
 }
 
 function renderTripStatusTag(status?: string | null) {
   if (!status) return null;
-  const map: Record<string, { color: string; text: string }> = {
+  const map: Record<string, { color: BadgeColor; text: string }> = {
     VALIDATED: { color: 'success', text: 'Sẵn sàng điều phối' },
     DISPATCHED: { color: 'purple', text: 'Đã điều phối' },
     IN_PROGRESS: { color: 'blue', text: 'Đang giao hàng' },
     COMPLETED: { color: 'cyan', text: 'Hoàn thành' },
   };
   const { color, text } = map[status] || { color: 'default', text: status };
-  return <Tag color={color} style={{ fontWeight: 500 }}>{text}</Tag>;
+  return <StatusBadge color={color}>{text}</StatusBadge>;
 }
 
 type Mode = 'single' | 'split';
@@ -144,9 +153,20 @@ interface SplitGroup {
 
 const VehicleAssignmentPage: React.FC = () => {
   const { id } = useParams<{ id: string }>();
+  const [searchParams] = useSearchParams();
   const navigate = useNavigate();
+  const location = useLocation();
+  // Carried over from TripDraftDetailPage when the dispatcher picked a TWO_VEHICLE
+  // recommendation — getEligibleVehicles() checks each vehicle against the WHOLE
+  // route's load, so it can never list either vehicle of a plan that only works
+  // split in two. Prefilling split mode straight from the already-validated plan
+  // sidesteps that instead of re-deriving eligibility per sub-trip client-side.
+  const incomingRecState = location.state as { tripDraftId?: number; recommendation?: VehicleRecommendation } | null;
+  const incomingRecommendation =
+    incomingRecState?.tripDraftId === Number(id) ? incomingRecState.recommendation : undefined;
   const currentUser = getCurrentUser();
-  const isDispatcher = currentUser.roles.includes('DISPATCHER');
+  const { can } = usePermissions();
+  const canCoordinateTrip = can(PERMISSIONS.TRIP_COORDINATE);
 
   // ── State ──────────────────────────────────────────────────────────────────
   const [loading, setLoading] = useState(true);
@@ -157,6 +177,11 @@ const VehicleAssignmentPage: React.FC = () => {
   const [drivers, setDrivers] = useState<AvailableDriver[]>([]);
   const [fleetCheck, setFleetCheck] = useState<FleetCapacityCheck | null>(null);
   const [existingTrips, setExistingTrips] = useState<Trip[]>([]);
+  // Populated only when draft.status === 'PLANNED' — mirrors TripDraftDetailPage's
+  // capacityFailInfo so this page can independently re-derive the same manual
+  // assignment eligibility (spec-manual-assignment-override.md) without relying
+  // on navigation state from the detail page.
+  const [capacityInfo, setCapacityInfo] = useState<CapacityValidationResult | null>(null);
   const [editingTrip, setEditingTrip] = useState<Trip | null>(null);
   const [editVehicleId, setEditVehicleId] = useState<number | null>(null);
   const [editDriverId, setEditDriverId] = useState<number | null>(null);
@@ -167,6 +192,9 @@ const VehicleAssignmentPage: React.FC = () => {
   const [selectedVehicleId, setSelectedVehicleId] = useState<number | null>(null);
   const [selectedDriverId, setSelectedDriverId] = useState<number | null>(null);
   const [confirmModalOpen, setConfirmModalOpen] = useState(false);
+  const [showIneligibleVehicles, setShowIneligibleVehicles] = useState(false);
+  const [showAllEligibleVehicles, setShowAllEligibleVehicles] = useState(false);
+  const ELIGIBLE_PREVIEW_COUNT = 5;
 
   // Split mode
   const [mode, setMode] = useState<Mode>('single');
@@ -174,6 +202,17 @@ const VehicleAssignmentPage: React.FC = () => {
     { groupId: 'g1', vehicleId: null, driverId: null, stopIds: [] },
   ]);
   const [splitConfirmOpen, setSplitConfirmOpen] = useState(false);
+  // Per-group vehicle eligibility for manually-built split groups (no recommendation
+  // prefill) — whole-route eligibleVehicles never lists a vehicle sized for just one
+  // sub-group, so each group's own stopIds must be checked against its own endpoint.
+  const [groupEligibleVehicles, setGroupEligibleVehicles] = useState<Record<string, EligibleVehicle[]>>({});
+  const [groupVehiclesLoading, setGroupVehiclesLoading] = useState<Record<string, boolean>>({});
+  // Surfaces WHY a group has no eligible vehicle — ineligibleVehicles[].failureReason
+  // from the same API response, previously fetched but silently discarded here.
+  const [groupIneligibleVehicles, setGroupIneligibleVehicles] = useState<Record<string, IneligibleVehicle[]>>({});
+  // Distinguishes "API call failed" from "genuinely zero eligible vehicles" — the
+  // previous .catch silently treated both the same, hiding real errors from the dispatcher.
+  const [groupVehiclesError, setGroupVehiclesError] = useState<Record<string, string | null>>({});
 
   // Extracted load function for reuse (call from handlers)
   const loadAll = async () => {
@@ -189,19 +228,69 @@ const VehicleAssignmentPage: React.FC = () => {
       setDraft(draftData);
       setExistingTrips(tripsData);
 
-      // Only load vehicles/drivers if no trips yet and draft is VALIDATED
-      if (tripsData.length === 0 && draftData.status === 'VALIDATED') {
+      // Manual assignment override (spec-manual-assignment-override.md, mirrors
+      // TripServiceImpl.validateAssignmentEligibility): fetch the capacity
+      // validation result when PLANNED so we know whether the automatic check
+      // actually ran and failed (volumeCheckResult !== NOT_CHECKED) — a draft
+      // that never ran the check at all must stay locked.
+      let capacityResult: CapacityValidationResult | null = null;
+      if (draftData.status === 'PLANNED') {
+        try {
+          capacityResult = await tripDraftApi.getCapacityValidationResult(id);
+        } catch (err) {
+          console.error('Failed to fetch capacity validation result', err);
+        }
+      }
+      setCapacityInfo(capacityResult);
+
+      const eligibleForManualAssign =
+        draftData.status === 'VALIDATED' ||
+        (draftData.status === 'PLANNED' &&
+          capacityResult != null &&
+          capacityResult.volumeCheckResult !== 'NOT_CHECKED');
+
+      // Only load vehicles/drivers if no trips yet and draft is eligible for assignment
+      if (tripsData.length === 0 && eligibleForManualAssign) {
         const deliveryDate = draftData.deliveryDate;
         const [vehicleData, driverData, fleetData] = await Promise.all([
           getEligibleVehicles(id),
           getAvailableDrivers(deliveryDate),
           getFleetCapacityCheck(deliveryDate),
         ]);
-        setEligibleVehicles(vehicleData.eligibleVehicles ?? []);
+        const loadedEligible = vehicleData.eligibleVehicles ?? [];
+        setEligibleVehicles(loadedEligible);
         setIneligibleVehicles(vehicleData.ineligibleVehicles ?? []);
         setDrivers(driverData);
         setFleetCheck(fleetData);
-      } else if (tripsData.length === 0 && draftData.status !== 'VALIDATED') {
+
+        const paramVId = searchParams.get('vehicleId');
+        if (paramVId && loadedEligible.some(v => v.vehicleId === Number(paramVId))) {
+          setSelectedVehicleId(Number(paramVId));
+        }
+
+        const paramDriverId = searchParams.get('driverId');
+        if (paramDriverId && driverData.some(d => d.userId === Number(paramDriverId))) {
+          setSelectedDriverId(Number(paramDriverId));
+        }
+
+        if (incomingRecommendation?.subTrips?.length) {
+          const activeDraftStops = (draftData.stops ?? [])
+            .filter((s) => s.isActive)
+            .sort((a, b) => a.sequenceNo - b.sequenceNo);
+
+          const prefilledGroups: SplitGroup[] = incomingRecommendation.subTrips.map((sub, idx) => ({
+            groupId: `rec-${idx}`,
+            vehicleId: sub.vehicleId,
+            driverId: incomingRecommendation.vehicles.find((v) => v.vehicleId === sub.vehicleId)?.driverId ?? null,
+            stopIds: sub.stopSequenceNos
+              .map((seq) => activeDraftStops.find((s) => s.sequenceNo === seq)?.tripDraftStopId)
+              .filter((stopId): stopId is number => stopId != null),
+          }));
+
+          setSplitGroups(prefilledGroups);
+          setMode('split');
+        }
+      } else if (tripsData.length === 0 && !eligibleForManualAssign) {
         // Draft not ready for assignment — load fleet check anyway
         const fleetData = await getFleetCapacityCheck(draftData.deliveryDate);
         setFleetCheck(fleetData);
@@ -220,48 +309,8 @@ const VehicleAssignmentPage: React.FC = () => {
   };
 
   useEffect(() => {
-    const fetchData = async () => {
-      if (!id) return;
-      setLoading(true);
-      setLoadError(null);
-
-      try {
-        const [draftData, tripsData] = await Promise.all([
-          tripDraftApi.getTripDraftById(Number(id)),
-          getTripsByTripDraftId(id),
-        ]);
-        setDraft(draftData);
-        setExistingTrips(tripsData);
-
-        if (tripsData.length === 0 && draftData.status === 'VALIDATED') {
-          const deliveryDate = draftData.deliveryDate;
-          const [vehicleData, driverData, fleetData] = await Promise.all([
-            getEligibleVehicles(id),
-            getAvailableDrivers(deliveryDate),
-            getFleetCapacityCheck(deliveryDate),
-          ]);
-          setEligibleVehicles(vehicleData.eligibleVehicles ?? []);
-          setIneligibleVehicles(vehicleData.ineligibleVehicles ?? []);
-          setDrivers(driverData);
-          setFleetCheck(fleetData);
-        } else if (tripsData.length === 0 && draftData.status !== 'VALIDATED') {
-          const fleetData = await getFleetCapacityCheck(draftData.deliveryDate);
-          setFleetCheck(fleetData);
-        }
-      } catch (err) {
-        console.error(err);
-        const code = getErrorCode(err);
-        if (code === 'TRIP_DRAFT_NOT_VALIDATED') {
-          setLoadError('Trip Draft chưa được kiểm tra tải trọng. Vui lòng thực hiện kiểm tra tải trọng trước.');
-        } else {
-          setLoadError(getErrorMessage(err, 'Không thể tải dữ liệu phân xe. Vui lòng thử lại.'));
-        }
-      } finally {
-        setLoading(false);
-      }
-    };
-    fetchData();
-  }, [id]);
+    loadAll();
+  }, [id, searchParams]);
 
   // ── Derived: active stops for split ─────────────────────────────────────
   const activeStops: TripDraftStop[] = (draft?.stops ?? [])
@@ -270,7 +319,7 @@ const VehicleAssignmentPage: React.FC = () => {
 
   // ── Single mode: assign ──────────────────────────────────────────────────
   const handleConfirmAssign = async () => {
-    if (!id || !selectedVehicleId || !selectedDriverId) return;
+    if (!id || !selectedVehicleId) return;
     setSubmitting(true);
     try {
       await assignTrip(id, { vehicleId: selectedVehicleId, driverId: selectedDriverId });
@@ -386,6 +435,52 @@ const VehicleAssignmentPage: React.FC = () => {
     }
   };
 
+  // ── Split mode: per-group vehicle eligibility (manual, no recommendation) ──
+  // Recommendation-prefilled groups already have the right vehicles via
+  // splitPickerVehicles below, so this only runs for groups the dispatcher built
+  // by hand — each group's stopIds is checked against eligible-vehicles-for-stops.
+  const splitStopIdsKey = splitGroups.map((g) => `${g.groupId}:${g.stopIds.join(',')}`).join('|');
+  useEffect(() => {
+    if (!id || mode !== 'split' || incomingRecommendation) return;
+    let cancelled = false;
+
+    splitGroups.forEach((group) => {
+      if (group.stopIds.length === 0) {
+        setGroupEligibleVehicles((prev) => (prev[group.groupId]?.length ? { ...prev, [group.groupId]: [] } : prev));
+        setGroupIneligibleVehicles((prev) => (prev[group.groupId]?.length ? { ...prev, [group.groupId]: [] } : prev));
+        setGroupVehiclesError((prev) => (prev[group.groupId] ? { ...prev, [group.groupId]: null } : prev));
+        return;
+      }
+      setGroupVehiclesLoading((prev) => ({ ...prev, [group.groupId]: true }));
+      setGroupVehiclesError((prev) => ({ ...prev, [group.groupId]: null }));
+      getEligibleVehiclesForStops(id, group.stopIds)
+        .then((res) => {
+          if (cancelled) return;
+          setGroupEligibleVehicles((prev) => ({ ...prev, [group.groupId]: res.eligibleVehicles ?? [] }));
+          setGroupIneligibleVehicles((prev) => ({ ...prev, [group.groupId]: res.ineligibleVehicles ?? [] }));
+        })
+        .catch((err) => {
+          if (cancelled) return;
+          console.error(`Failed to load eligible vehicles for group ${group.groupId}`, err);
+          setGroupEligibleVehicles((prev) => ({ ...prev, [group.groupId]: [] }));
+          setGroupIneligibleVehicles((prev) => ({ ...prev, [group.groupId]: [] }));
+          setGroupVehiclesError((prev) => ({
+            ...prev,
+            [group.groupId]: getErrorMessage(err, 'Không thể tải danh sách xe cho nhóm này.'),
+          }));
+        })
+        .finally(() => {
+          if (cancelled) return;
+          setGroupVehiclesLoading((prev) => ({ ...prev, [group.groupId]: false }));
+        });
+    });
+
+    return () => {
+      cancelled = true;
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [id, mode, incomingRecommendation, splitStopIdsKey]);
+
   // ── Render: loading ───────────────────────────────────────────────────────
   if (loading) {
     return (
@@ -398,7 +493,7 @@ const VehicleAssignmentPage: React.FC = () => {
   }
 
   // ── Render: 403 ──────────────────────────────────────────────────────────
-  if (!isDispatcher) {
+  if (!canCoordinateTrip) {
     return (
       <AdminShell currentUser={currentUser}>
         <Result
@@ -440,8 +535,43 @@ const VehicleAssignmentPage: React.FC = () => {
     );
   }
 
+  // Manual assignment override (spec-manual-assignment-override.md, mirrors
+  // TripServiceImpl.validateAssignmentEligibility): eligible when VALIDATED, or
+  // when PLANNED and the automatic capacity check actually ran and failed.
+  const canManuallyAssign =
+    draft.status === 'VALIDATED' ||
+    (draft.status === 'PLANNED' && capacityInfo != null && capacityInfo.volumeCheckResult !== 'NOT_CHECKED');
+
   const usedDriverIds = new Set(splitGroups.map((g) => g.driverId).filter(Boolean));
   const usedVehicleIds = new Set(splitGroups.map((g) => g.vehicleId).filter(Boolean));
+
+  // Split mode's vehicle picker needs to show the two vehicles a prefilled
+  // TWO_VEHICLE recommendation selected — they fail the whole-route eligibility
+  // check by definition (that's why the plan is split in two), so they never
+  // appear in `eligibleVehicles`. Add them in without touching the general
+  // (still whole-route-based) eligibility list used elsewhere on this page.
+  const splitPickerVehicles: EligibleVehicle[] = incomingRecommendation
+    ? [
+        ...eligibleVehicles,
+        ...incomingRecommendation.vehicles
+          .filter((rv) => !eligibleVehicles.some((v) => v.vehicleId === rv.vehicleId))
+          .map((rv) => ({
+            vehicleId: rv.vehicleId,
+            plateNumber: rv.plateNumber,
+            vehicleType: rv.vehicleType,
+            maxVolumeM3: rv.maxVolumeM3,
+            payloadKg: rv.payloadKg,
+            remainingVolumeM3: 0,
+            remainingWeightKg: 0,
+          })),
+      ]
+    : eligibleVehicles;
+
+  // Manually-built groups (no incomingRecommendation) get their own picker list,
+  // fetched per-group from eligible-vehicles-for-stops (see effect above) instead
+  // of the whole-route splitPickerVehicles.
+  const getGroupVehicles = (group: SplitGroup): EligibleVehicle[] =>
+    incomingRecommendation ? splitPickerVehicles : (groupEligibleVehicles[group.groupId] ?? []);
 
   return (
     <AdminShell currentUser={currentUser}>
@@ -480,14 +610,18 @@ const VehicleAssignmentPage: React.FC = () => {
         </div>
       </div>
 
-      {/* Draft not VALIDATED warning */}
-      {draft.status !== 'VALIDATED' && existingTrips.length === 0 && (
+      {/* Draft not eligible for assignment warning */}
+      {!canManuallyAssign && existingTrips.length === 0 && (
         <Alert
           type="warning"
           showIcon
           icon={<WarningOutlined />}
           message="Trip Draft chưa sẵn sàng phân xe"
-          description={`Trạng thái hiện tại: ${draft.status}. Trip Draft phải ở trạng thái VALIDATED để phân xe.`}
+          description={
+            draft.status === 'PLANNED'
+              ? `Trạng thái hiện tại: ${draft.status}. Trip Draft cần được "Kiểm tra tải trọng" trước — nếu tự động không đủ tải, hệ thống sẽ cho phép phân xe thủ công.`
+              : `Trạng thái hiện tại: ${draft.status}. Trip Draft phải ở trạng thái VALIDATED (hoặc PLANNED đã kiểm tra tải trọng) để phân xe.`
+          }
           style={{ marginBottom: 16 }}
           action={
             <Button size="small" onClick={() => navigate(`/dispatcher/trip-drafts/${id}/capacity`)}>
@@ -508,12 +642,12 @@ const VehicleAssignmentPage: React.FC = () => {
             <div style={{ fontSize: 13 }}>
               {!fleetCheck.canDispatch && (
                 <div style={{ marginBottom: 4 }}>
-                  <Tag color={fleetCheck.volumeCheckResult === 'FAIL' ? 'red' : 'green'}>
+                  <StatusBadge color={fleetCheck.volumeCheckResult === 'FAIL' ? 'red' : 'green'}>
                     Thể tích: {fmtVolume(fleetCheck.dayTotalVolumeM3)} / {fmtVolume(fleetCheck.fleetTotalVolumeM3)}
-                  </Tag>
-                  <Tag color={fleetCheck.weightCheckResult === 'FAIL' ? 'red' : 'green'}>
+                  </StatusBadge>
+                  <StatusBadge color={fleetCheck.weightCheckResult === 'FAIL' ? 'red' : 'green'}>
                     Tải trọng: {fmtWeight(fleetCheck.dayTotalWeightKg)} / {fmtWeight(fleetCheck.fleetTotalWeightKg)}
-                  </Tag>
+                  </StatusBadge>
                 </div>
               )}
               {fleetCheck.message && <span>{fleetCheck.message}</span>}
@@ -528,7 +662,7 @@ const VehicleAssignmentPage: React.FC = () => {
         <Card
           title={
             <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-              <Truck size={18} style={{ color: '#1677ff' }} />
+              <Truck size={18} style={{ color: '#2563eb' }} />
               <span>Chuyến đã được tạo ({existingTrips.length})</span>
             </div>
           }
@@ -540,7 +674,7 @@ const VehicleAssignmentPage: React.FC = () => {
             pagination={false}
             size="middle"
             columns={[
-              { title: 'Trip ID', dataIndex: 'tripId', key: 'tripId', render: (v: number) => <Tag color="blue">#{v}</Tag> },
+              { title: 'Trip ID', dataIndex: 'tripId', key: 'tripId', render: (v: number) => <StatusBadge color="blue">#{v}</StatusBadge> },
               { title: 'Tuyến', dataIndex: 'fixedRouteCode', key: 'fixedRouteCode' },
               {
                 title: 'Xe',
@@ -609,7 +743,7 @@ const VehicleAssignmentPage: React.FC = () => {
         open={!!editingTrip}
         title={
           <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-            <CarOutlined style={{ color: '#1677ff' }} />
+            <CarOutlined style={{ color: '#2563eb' }} />
             <span>Sửa xe &amp; tài xế — Trip #{editingTrip?.tripId}</span>
           </div>
         }
@@ -683,7 +817,7 @@ const VehicleAssignmentPage: React.FC = () => {
                   style={{
                     padding: '10px 14px',
                     borderRadius: 8,
-                    border: `2px solid ${editVehicleId === v.vehicleId ? '#1677ff' : '#f0f0f0'}`,
+                    border: `2px solid ${editVehicleId === v.vehicleId ? '#2563eb' : '#f0f0f0'}`,
                     background: editVehicleId === v.vehicleId ? '#e6f4ff' : '#fafafa',
                     cursor: 'pointer',
                     display: 'flex',
@@ -721,7 +855,7 @@ const VehicleAssignmentPage: React.FC = () => {
                     padding: '10px 14px',
                     borderRadius: 8,
                     border: `2px solid ${
-                      editDriverId === d.userId ? '#1677ff' : d.available ? '#f0f0f0' : '#ffccc7'
+                      editDriverId === d.userId ? '#2563eb' : d.available ? '#f0f0f0' : '#ffccc7'
                     }`,
                     background: editDriverId === d.userId ? '#e6f4ff' : d.available ? '#fafafa' : '#fff2f0',
                     cursor: d.available ? 'pointer' : 'not-allowed',
@@ -736,7 +870,7 @@ const VehicleAssignmentPage: React.FC = () => {
                       {d.fullName}
                     </Text>
                     {!d.available && (
-                      <Tag color="red" style={{ marginLeft: 8, fontSize: 11 }}>Bận</Tag>
+                      <StatusBadge color="red">Bận</StatusBadge>
                     )}
                   </div>
                   {!d.available && d.busyReason && (
@@ -745,7 +879,7 @@ const VehicleAssignmentPage: React.FC = () => {
                     </Tooltip>
                   )}
                   {d.available && editDriverId === d.userId && (
-                    <CheckOutlined style={{ color: '#1677ff' }} />
+                    <CheckOutlined style={{ color: '#2563eb' }} />
                   )}
                 </div>
               ))}
@@ -755,7 +889,7 @@ const VehicleAssignmentPage: React.FC = () => {
       </Modal>
 
       {/* ── Assignment Form (only when no trips yet & draft VALIDATED) ─────── */}
-      {existingTrips.length === 0 && draft.status === 'VALIDATED' && (
+      {existingTrips.length === 0 && canManuallyAssign && (
         <>
           {/* Mode toggle */}
           <Card style={{ borderRadius: 12, marginBottom: 16 }} bodyStyle={{ padding: '16px 24px' }}>
@@ -790,7 +924,7 @@ const VehicleAssignmentPage: React.FC = () => {
                 <Card
                   title={
                     <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                      <Truck size={16} style={{ color: '#1677ff' }} />
+                      <Truck size={16} style={{ color: '#2563eb' }} />
                       <span>Chọn xe ({eligibleVehicles.length} xe đủ tải)</span>
                     </div>
                   }
@@ -801,12 +935,12 @@ const VehicleAssignmentPage: React.FC = () => {
                   )}
 
                   <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
-                    {eligibleVehicles.map((v, idx) => (
+                    {(showAllEligibleVehicles ? eligibleVehicles : eligibleVehicles.slice(0, ELIGIBLE_PREVIEW_COUNT)).map((v, idx) => (
                       <div
                         key={v.vehicleId}
                         onClick={() => setSelectedVehicleId(v.vehicleId)}
                         style={{
-                          border: selectedVehicleId === v.vehicleId ? '2px solid #1677ff' : '1px solid #d9d9d9',
+                          border: selectedVehicleId === v.vehicleId ? '2px solid #2563eb' : '1px solid #d9d9d9',
                           borderRadius: 8,
                           padding: '10px 14px',
                           cursor: 'pointer',
@@ -817,11 +951,11 @@ const VehicleAssignmentPage: React.FC = () => {
                         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
                           <div>
                             <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-                              <CarOutlined style={{ color: '#1677ff' }} />
+                              <CarOutlined style={{ color: '#2563eb' }} />
                               <Text strong>{v.plateNumber}</Text>
-                              <Tag color="blue" style={{ fontSize: 11 }}>{v.vehicleType}</Tag>
+                              <StatusBadge color="blue">{v.vehicleType}</StatusBadge>
                               {idx === 0 && (
-                                <Tag color="green" style={{ fontSize: 11 }}>Xe nhỏ nhất đủ tải</Tag>
+                                <StatusBadge color="green">Xe nhỏ nhất đủ tải</StatusBadge>
                               )}
                             </div>
                              <div style={{ fontSize: 12, color: '#8c8c8c', marginTop: 4 }}>
@@ -832,19 +966,40 @@ const VehicleAssignmentPage: React.FC = () => {
                             </div>
                           </div>
                           {selectedVehicleId === v.vehicleId && (
-                            <CheckOutlined style={{ color: '#1677ff', fontSize: 16 }} />
+                            <CheckOutlined style={{ color: '#2563eb', fontSize: 16 }} />
                           )}
                         </div>
                       </div>
                     ))}
 
+                    {eligibleVehicles.length > ELIGIBLE_PREVIEW_COUNT && (
+                      <Button
+                        type="dashed"
+                        block
+                        icon={showAllEligibleVehicles ? <UpOutlined /> : <DownOutlined />}
+                        onClick={() => setShowAllEligibleVehicles((prev) => !prev)}
+                      >
+                        {showAllEligibleVehicles
+                          ? 'Thu gọn'
+                          : `Xem thêm ${eligibleVehicles.length - ELIGIBLE_PREVIEW_COUNT} xe`}
+                      </Button>
+                    )}
+
                     {/* Ineligible vehicles */}
                     {ineligibleVehicles.length > 0 && (
                       <>
                         <Divider style={{ margin: '8px 0', fontSize: 12 }}>
-                          <Text type="secondary" style={{ fontSize: 12 }}>Xe không đủ tải</Text>
+                          <Button
+                            type="link"
+                            size="small"
+                            icon={showIneligibleVehicles ? <UpOutlined /> : <DownOutlined />}
+                            onClick={() => setShowIneligibleVehicles((prev) => !prev)}
+                            style={{ fontSize: 12, padding: 0, height: 'auto' }}
+                          >
+                            {showIneligibleVehicles ? 'Ẩn' : 'Xem'} xe không đủ tải ({ineligibleVehicles.length})
+                          </Button>
                         </Divider>
-                        {ineligibleVehicles.map((v) => (
+                        {showIneligibleVehicles && ineligibleVehicles.map((v) => (
                           <Tooltip
                             key={v.vehicleId}
                             title={v.failureReason || `Thể tích: ${v.volumeCheckResult} · Tải trọng: ${v.weightCheckResult}`}
@@ -862,7 +1017,7 @@ const VehicleAssignmentPage: React.FC = () => {
                               <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
                                 <CloseCircleOutlined style={{ color: '#ff4d4f' }} />
                                 <Text style={{ color: '#8c8c8c' }}>{v.plateNumber}</Text>
-                                <Tag color="red" style={{ fontSize: 11 }}>{v.vehicleType}</Tag>
+                                <StatusBadge color="red">{v.vehicleType}</StatusBadge>
                               </div>
                               <div style={{ fontSize: 12, color: '#ff4d4f', marginTop: 4 }}>
                                 {v.failureReason || `Thể tích: ${v.volumeCheckResult} · Tải trọng: ${v.weightCheckResult}`}
@@ -892,6 +1047,32 @@ const VehicleAssignmentPage: React.FC = () => {
                   )}
 
                   <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+                    {/* Auto driver option */}
+                    <div
+                      onClick={() => setSelectedDriverId(null)}
+                      style={{
+                        border: selectedDriverId === null ? '2px solid #2563eb' : '1px dashed #d9d9d9',
+                        borderRadius: 8,
+                        padding: '10px 14px',
+                        cursor: 'pointer',
+                        background: selectedDriverId === null ? '#e6f4ff' : '#fafafa',
+                        transition: 'all 0.15s',
+                      }}
+                    >
+                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                          <UserOutlined style={{ color: '#2563eb' }} />
+                          <div>
+                            <Text strong>Tự động gán tài xế cố định</Text>
+                            <div style={{ fontSize: 12, color: '#8c8c8c' }}>Sử dụng tài xế cố định của xe (nếu có)</div>
+                          </div>
+                        </div>
+                        {selectedDriverId === null && (
+                          <CheckOutlined style={{ color: '#2563eb', fontSize: 16 }} />
+                        )}
+                      </div>
+                    </div>
+
                     {/* Available drivers first */}
                     {drivers.filter((d) => d.available).map((d) => (
                       <div
@@ -991,7 +1172,7 @@ const VehicleAssignmentPage: React.FC = () => {
                                   const d = drivers.find((x) => x.userId === selectedDriverId);
                                   return <Text strong>{d ? d.fullName : `ID: ${selectedDriverId}`}</Text>;
                                 })()
-                              : <Text type="secondary">Chưa chọn</Text>}
+                              : <Text type="secondary" style={{ fontStyle: 'italic' }}>Tự động chọn tài xế cố định của xe</Text>}
                           </div>
                         </div>
                         <div>
@@ -1013,7 +1194,6 @@ const VehicleAssignmentPage: React.FC = () => {
                           icon={<CheckCircleOutlined />}
                           disabled={
                             !selectedVehicleId ||
-                            !selectedDriverId ||
                             submitting ||
                             !fleetCheck?.canDispatch
                           }
@@ -1046,12 +1226,12 @@ const VehicleAssignmentPage: React.FC = () => {
                 <Card
                   title={
                     <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                      <InfoCircleOutlined style={{ color: '#1677ff' }} />
+                      <InfoCircleOutlined style={{ color: '#2563eb' }} />
                       <span>Điểm dừng cần phân ({unassignedStops.length})</span>
                     </div>
                   }
                   style={{ borderRadius: 12 }}
-                  extra={unassignedStops.length === 0 ? <Tag color="success">Đã phân hết</Tag> : <Tag color="warning">Chưa phân</Tag>}
+                  extra={unassignedStops.length === 0 ? <StatusBadge color="success">Đã phân hết</StatusBadge> : <StatusBadge color="warning">Chưa phân</StatusBadge>}
                 >
                   <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
                     {activeStops.map((s) => {
@@ -1111,14 +1291,60 @@ const VehicleAssignmentPage: React.FC = () => {
                         <Col xs={24} sm={12}>
                           <Text type="secondary" style={{ fontSize: 12, display: 'block', marginBottom: 4 }}>Chọn xe</Text>
                           <div style={{ display: 'flex', flexDirection: 'column', gap: 4, maxHeight: 200, overflowY: 'auto' }}>
-                            {eligibleVehicles.map((v) => {
+                            {!incomingRecommendation && group.stopIds.length === 0 && (
+                              <Text type="secondary" style={{ fontSize: 12, fontStyle: 'italic' }}>
+                                Chọn điểm dừng cho chuyến này trước để xem xe đủ tải.
+                              </Text>
+                            )}
+                            {!incomingRecommendation && group.stopIds.length > 0 && groupVehiclesLoading[group.groupId] && (
+                              <Spin size="small" />
+                            )}
+                            {!incomingRecommendation &&
+                              group.stopIds.length > 0 &&
+                              !groupVehiclesLoading[group.groupId] &&
+                              groupVehiclesError[group.groupId] && (
+                                <Alert
+                                  type="error"
+                                  showIcon
+                                  message="Không tải được danh sách xe"
+                                  description={groupVehiclesError[group.groupId]}
+                                  style={{ fontSize: 12 }}
+                                />
+                              )}
+                            {!incomingRecommendation &&
+                              group.stopIds.length > 0 &&
+                              !groupVehiclesLoading[group.groupId] &&
+                              !groupVehiclesError[group.groupId] &&
+                              getGroupVehicles(group).length === 0 && (
+                                <>
+                                  <Text type="warning" style={{ fontSize: 12 }}>
+                                    Không có xe nào đủ tải cho nhóm điểm dừng này.
+                                  </Text>
+                                  {(groupIneligibleVehicles[group.groupId] ?? []).map((v) => (
+                                    <div key={v.vehicleId} style={{ fontSize: 11, color: '#8c8c8c', marginTop: 2 }}>
+                                      <Text type="secondary" style={{ fontSize: 11 }}>{v.plateNumber} ({v.vehicleType}):</Text>{' '}
+                                      {v.failureReason || `Thể tích: ${v.volumeCheckResult} · Tải trọng: ${v.weightCheckResult}`}
+                                    </div>
+                                  ))}
+                                </>
+                              )}
+                            {getGroupVehicles(group).map((v) => {
                               const takenByOther = usedVehicleIds.has(v.vehicleId) && group.vehicleId !== v.vehicleId;
                               return (
                                 <div
                                   key={v.vehicleId}
-                                  onClick={() => !takenByOther && updateGroup(group.groupId, { vehicleId: v.vehicleId })}
+                                  onClick={() =>
+                                    !takenByOther &&
+                                    updateGroup(group.groupId, {
+                                      vehicleId: v.vehicleId,
+                                      // Auto-fill the vehicle's fixed driver when it's available; otherwise
+                                      // leave the driver picker empty so the dispatcher must pick manually
+                                      // (see filemd/FE_Split_Vehicle_Assignment_Guide.md).
+                                      driverId: v.assignedDriverId && v.assignedDriverAvailable ? v.assignedDriverId : null,
+                                    })
+                                  }
                                   style={{
-                                    border: group.vehicleId === v.vehicleId ? '2px solid #1677ff' : '1px solid #d9d9d9',
+                                    border: group.vehicleId === v.vehicleId ? '2px solid #2563eb' : '1px solid #d9d9d9',
                                     borderRadius: 6,
                                     padding: '6px 10px',
                                     cursor: takenByOther ? 'not-allowed' : 'pointer',
@@ -1137,6 +1363,16 @@ const VehicleAssignmentPage: React.FC = () => {
                         </Col>
                         <Col xs={24} sm={12}>
                           <Text type="secondary" style={{ fontSize: 12, display: 'block', marginBottom: 4 }}>Chọn tài xế</Text>
+                          {(() => {
+                            const selectedVehicle = getGroupVehicles(group).find((v) => v.vehicleId === group.vehicleId);
+                            if (!selectedVehicle?.assignedDriverId || selectedVehicle.assignedDriverAvailable !== false) return null;
+                            return (
+                              <Text type="warning" style={{ fontSize: 11, display: 'block', marginBottom: 4 }}>
+                                ⚠️ Tài xế cố định ({selectedVehicle.assignedDriverName}) không khả dụng
+                                {selectedVehicle.assignedDriverBusyReason ? `: ${selectedVehicle.assignedDriverBusyReason}` : ''}. Vui lòng chọn tài xế khác.
+                              </Text>
+                            );
+                          })()}
                           <div style={{ display: 'flex', flexDirection: 'column', gap: 4, maxHeight: 200, overflowY: 'auto' }}>
                             {drivers.filter((d) => d.available).map((d) => {
                               const takenByOther = usedDriverIds.has(d.userId) && group.driverId !== d.userId;
@@ -1176,7 +1412,7 @@ const VehicleAssignmentPage: React.FC = () => {
                                   style={{
                                     cursor: inOtherGroup ? 'not-allowed' : 'pointer',
                                     opacity: inOtherGroup ? 0.4 : 1,
-                                    border: inThisGroup ? '1px solid #1677ff' : undefined,
+                                    border: inThisGroup ? `1px solid ${palette.primary}` : undefined,
                                   }}
                                   onClick={() => {
                                     if (!inOtherGroup) toggleStopInGroup(group.groupId, s.tripDraftStopId);
@@ -1262,7 +1498,7 @@ const VehicleAssignmentPage: React.FC = () => {
             })()}</Text></div>
             <div><Text type="secondary">Tài xế:</Text> <Text strong>{(() => {
               const d = drivers.find((x) => x.userId === selectedDriverId);
-              return d ? d.fullName : '—';
+              return d ? d.fullName : 'Tự động chọn tài xế cố định của xe';
             })()}</Text></div>
             <div><Text type="secondary">Ngày giao:</Text> <Text strong>{formatDate(draft?.deliveryDate)}</Text></div>
             <div><Text type="secondary">Thể tích:</Text> <Text strong>{fmtVolume(draft?.totalVolumeM3)}</Text></div>

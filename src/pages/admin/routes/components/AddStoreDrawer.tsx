@@ -1,8 +1,9 @@
 import React, { useState, useEffect } from 'react';
-import { Drawer, Input, Button, List, Tag, Empty, Spin, message, Typography } from 'antd';
+import { Drawer, Input, Button, List, Empty, Spin, message, Typography } from 'antd';
 import { Search, Plus } from 'lucide-react';
 import type { StoreSearchResult } from '../../../../types/route';
 import { routeApi } from '../../../../api/routeApi';
+import StatusBadge from '../../../../components/StatusBadge';
 
 const { Paragraph, Text } = Typography;
 
@@ -142,13 +143,13 @@ const AddStoreDrawer: React.FC<AddStoreDrawerProps> = ({
                         <span style={{ fontSize: 13, color: '#475569' }}>{store.address}</span>
                         <div>
                           {store.hasCoordinates ? (
-                            <Tag color="success" style={{ borderRadius: 4, margin: 0 }}>
-                              ✅ Có toạ độ
-                            </Tag>
+                            <StatusBadge color="success">
+                              Có toạ độ
+                            </StatusBadge>
                           ) : (
-                            <Tag color="warning" style={{ borderRadius: 4, margin: 0 }}>
-                              ⚠️ Chưa có toạ độ GPS
-                            </Tag>
+                            <StatusBadge color="warning">
+                              Chưa có toạ độ GPS
+                            </StatusBadge>
                           )}
                         </div>
                       </div>

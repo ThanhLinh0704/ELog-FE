@@ -36,7 +36,7 @@ const ActivateRouteModal: React.FC<ActivateRouteModalProps> = ({
     >
       <div style={{ padding: '8px 0' }}>
         <Paragraph>
-          Kích hoạt tuyến <Text strong style={{ color: '#1677ff' }}>{routeCode}</Text>?
+          Kích hoạt tuyến <Text strong style={{ color: '#2563eb' }}>{routeCode}</Text>?
         </Paragraph>
         <Paragraph type="secondary" style={{ fontSize: 13, marginBottom: 0 }}>
           Tuyến này sẽ bắt đầu hoạt động và được sử dụng cho các kế hoạch giao hàng mới.

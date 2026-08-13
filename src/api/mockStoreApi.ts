@@ -143,6 +143,13 @@ export const mockStoreApi = {
       });
     }
 
+    if (params.routeCode) {
+      const routeCodeValue = String(params.routeCode);
+      filtered = filtered.filter((item) =>
+        (item.assignedRoutes ?? []).some((r) => r.code === routeCodeValue)
+      );
+    }
+
     filtered.sort((a, b) => b.id - a.id);
 
     const start = page * size;

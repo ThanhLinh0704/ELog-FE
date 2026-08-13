@@ -3,7 +3,6 @@ import React, { useEffect, useState, useCallback, useRef } from 'react';
 import {
   Card,
   Table,
-  Tag,
   Button,
   Space,
   Typography,
@@ -34,6 +33,7 @@ import {
   Filter,
 } from 'lucide-react';
 import AdminShell from '../../../components/AdminShell';
+import StatusBadge from '../../../components/StatusBadge';
 import {
   getExceptions,
   getExceptionById,
@@ -64,10 +64,13 @@ const EXCEPTION_TYPE_LABELS: Record<string, string> = {
 const REJECTION_TYPE_LABELS: Record<string, string> = {
   STORE_CLOSED: 'Cửa hàng đóng cửa',
   STORE_REFUSED: 'Cửa hàng từ chối nhận',
+  STORE_REJECTED: 'Cửa hàng từ chối nhận',
   WRONG_ITEMS: 'Hàng không đúng đơn',
   DAMAGED_GOODS: 'Hàng bị hư hỏng',
   NO_SPACE: 'Không có chỗ chứa hàng',
+  RECIPIENT_ABSENT: 'Người nhận vắng mặt',
   OTHER: 'Lý do khác',
+  DELIVERY_FAILED_OTHER: 'Lý do khác',
 };
 
 function formatDateTime(isoStr: string | null | undefined): string {
@@ -303,13 +306,12 @@ const ExceptionManagementPage: React.FC = () => {
         const isTime = type === 'TIME_EXCEPTION';
         return (
           <Space direction="vertical" size={2}>
-            <Tag
+            <StatusBadge
               icon={isTime ? <Clock size={12} /> : <XCircle size={12} />}
-              color={isTime ? 'orange' : 'red'}
-              style={{ fontWeight: 600 }}
+              color={isTime ? 'warning' : 'red'}
             >
               {EXCEPTION_TYPE_LABELS[type] || type}
-            </Tag>
+            </StatusBadge>
             {isTime && record.delayMinutes != null && record.delayMinutes > 0 && (
               <Text type="secondary" style={{ fontSize: 12 }}>
                 +{record.delayMinutes} phút
@@ -371,9 +373,9 @@ const ExceptionManagementPage: React.FC = () => {
       render: (_, record) => {
         if (record.resolvedAt) {
           return (
-            <Tag icon={<CheckCircle2 size={12} />} color="success">
+            <StatusBadge icon={<CheckCircle2 size={12} />} color="success">
               Đã giải quyết
-            </Tag>
+            </StatusBadge>
           );
         }
         return (
@@ -423,7 +425,7 @@ const ExceptionManagementPage: React.FC = () => {
         <Breadcrumb
           items={[
             { title: 'Trang chủ' },
-            { title: 'Theo dõi chuyến hàng', href: roles.includes('LOGISTICS_MANAGER') && !roles.includes('DISPATCHER') ? '/manager/monitoring' : '/dispatcher/monitoring' },
+            { title: 'Theo dõi chuyến hàng', href: '/dispatcher/monitoring' },
             { title: 'Quản lý ngoại lệ' },
           ]}
         />
@@ -547,9 +549,9 @@ const ExceptionManagementPage: React.FC = () => {
             drawerException ? (
               <Space>
                 {drawerException.exceptionType === 'TIME_EXCEPTION' ? (
-                  <Tag icon={<Clock size={12} />} color="orange">Trễ ETA</Tag>
+                  <StatusBadge icon={<Clock size={12} />} color="warning">Trễ ETA</StatusBadge>
                 ) : (
-                  <Tag icon={<XCircle size={12} />} color="red">Từ chối giao hàng</Tag>
+                  <StatusBadge icon={<XCircle size={12} />} color="red">Từ chối giao hàng</StatusBadge>
                 )}
                 <Text strong>Ngoại lệ #{drawerException.exceptionId}</Text>
               </Space>
@@ -578,17 +580,17 @@ const ExceptionManagementPage: React.FC = () => {
               >
                 <Descriptions.Item label="Loại">
                   {drawerException.exceptionType === 'TIME_EXCEPTION' ? (
-                    <Tag icon={<Clock size={12} />} color="orange">Trễ ETA</Tag>
+                    <StatusBadge icon={<Clock size={12} />} color="warning">Trễ ETA</StatusBadge>
                   ) : (
-                    <Tag icon={<XCircle size={12} />} color="red">Từ chối giao hàng</Tag>
+                    <StatusBadge icon={<XCircle size={12} />} color="red">Từ chối giao hàng</StatusBadge>
                   )}
                 </Descriptions.Item>
 
                 {drawerException.exceptionType === 'DELIVERY_REJECTION' && drawerException.rejectionType && (
                   <Descriptions.Item label="Lý do từ chối">
-                    <Tag color="volcano">
+                    <StatusBadge color="red">
                       {REJECTION_TYPE_LABELS[drawerException.rejectionType] || drawerException.rejectionType}
-                    </Tag>
+                    </StatusBadge>
                   </Descriptions.Item>
                 )}
 
@@ -642,7 +644,7 @@ const ExceptionManagementPage: React.FC = () => {
 
                 <Descriptions.Item label="Trạng thái">
                   {drawerException.resolvedAt ? (
-                    <Tag icon={<CheckCircle2 size={12} />} color="success">Đã giải quyết</Tag>
+                    <StatusBadge icon={<CheckCircle2 size={12} />} color="success">Đã giải quyết</StatusBadge>
                   ) : (
                     <Badge status="error" text={<Text type="danger" style={{ fontWeight: 600 }}>Chưa xử lý</Text>} />
                   )}

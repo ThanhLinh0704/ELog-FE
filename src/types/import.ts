@@ -11,7 +11,7 @@ export interface ImportErrorRow {
 
 export interface ImportResult {
   batchId: number;
-  deliveryDate: string;
+  deliveryDate?: string | null;
   fileName: string;
   totalRows: number;
   acceptedRows: number;
@@ -22,7 +22,7 @@ export interface ImportResult {
 
 export interface ImportBatchHistory {
   id: number;
-  deliveryDate: string;
+  deliveryDate?: string | null;
   fileName: string;
   uploadedBy: string;
   totalRows: number;
@@ -33,13 +33,25 @@ export interface ImportBatchHistory {
   uploadedAt: string;
 }
 
+export interface ImportedOrderDetail {
+  orderRef: string;
+  deliveryDate?: string | null;
+  storeCode?: string | null;
+  storeName?: string | null;
+  sku?: string | null;
+  productName?: string | null;
+  quantity?: number | null;
+  weightKg?: number | null;
+  volumeM3?: number | null;
+  deliveryTimeWindow?: string | null;
+  recipientName?: string | null;
+  recipientPhone?: string | null;
+  notes?: string | null;
+}
+
 export interface ImportFormValues {
   deliveryDate: string;
   file: any; // We can use 'any' or 'UploadFile' from antd, but 'any' is safe for forms
-}
-
-export interface ImportMockOptions {
-  confirmReplace?: boolean;
 }
 
 export type { UserRole };

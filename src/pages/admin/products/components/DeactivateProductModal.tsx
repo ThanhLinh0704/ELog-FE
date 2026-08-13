@@ -1,6 +1,7 @@
 import React from 'react';
 import { Modal, Typography, Button } from 'antd';
 import { AlertTriangle } from 'lucide-react';
+import { palette } from '../../../../theme/tokens';
 
 const { Text, Paragraph } = Typography;
 
@@ -23,12 +24,13 @@ const DeactivateProductModal: React.FC<DeactivateProductModalProps> = ({
     <Modal
       title={
         <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-          <AlertTriangle color="#ff4d4f" size={20} />
+          <AlertTriangle color={palette.danger} size={20} />
           <span>Vô hiệu hoá sản phẩm "{productSku}"?</span>
         </div>
       }
       open={visible}
       onCancel={loading ? undefined : onCancel}
+      styles={{ root: { borderRadius: 14 } }}
       footer={[
         <Button key="cancel" onClick={onCancel} disabled={loading}>
           Huỷ

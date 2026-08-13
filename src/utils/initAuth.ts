@@ -1,5 +1,5 @@
 // Define a list of auth-related storage keys
-const AUTH_KEYS = ['token', 'refreshToken', 'username', 'roles', 'userId', 'remember', 'accessToken'];
+const AUTH_KEYS = ['token', 'refreshToken', 'username', 'roles', 'permissions', 'userId', 'remember', 'accessToken'];
 
 // Save reference to original Storage prototype methods
 const originalGet = Storage.prototype.getItem;

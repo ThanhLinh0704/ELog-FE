@@ -27,8 +27,6 @@ const LoginPage: React.FC = () => {
                 Quản lý logistics
                 <br />
                 <span className="elog-headline-highlight">và kho vận</span>
-                <br />
-                thông minh
               </h1>
 
               <p className="elog-description">
