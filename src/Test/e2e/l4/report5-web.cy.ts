@@ -22,6 +22,10 @@ let fixtureIds: ReturnType<typeof extractFixtureIds>;
 const fixtureEvidencePath = Cypress.env('REPORT5_FIXTURE_EVIDENCE')
   || '../../../ELog-BE/test-execution/evidence/l3-rerun-results.json';
 
+function apiUrl(path: string) {
+  return `${Cypress.env('apiBaseUrl') || 'http://localhost:8080'}${path}`;
+}
+
 const webJourneys: WebJourney[] = [
   { id: 'L4-WEB-IMPORT-01', title: 'Dispatcher imports an approved delivery file', route: '/dispatcher/import', account: 'dispatcher01', expectedSurface: /Nhập đơn hàng từ Excel/i },
   { id: 'L4-WEB-IMPORT-02', title: 'Dispatcher reviews mixed accepted and rejected rows', route: '/dispatcher/import/history/:batchId', account: 'dispatcher01', expectedSurface: /Thông tin tổng quan|Chi tiết lô nhập/i },
@@ -109,7 +113,7 @@ function assertEtaRecalculation(draftId: number) {
     expect(token, 'browser session token').to.be.a('string').and.not.be.empty;
     return cy.request({
       method: 'GET',
-      url: `http://localhost:8080/api/v1/trip-drafts/${draftId}`,
+      url: apiUrl(`/api/v1/trip-drafts/${draftId}`),
       headers: { Authorization: `Bearer ${token}` },
     });
   }).then((response) => {
@@ -127,7 +131,7 @@ function assertDraftConfirmation(draftId: number) {
     expect(token, 'browser session token').to.be.a('string').and.not.be.empty;
     return cy.request({
       method: 'GET',
-      url: `http://localhost:8080/api/v1/trip-drafts/${draftId}`,
+      url: apiUrl(`/api/v1/trip-drafts/${draftId}`),
       headers: { Authorization: `Bearer ${token}` },
     });
   }).then((response) => {
@@ -139,6 +143,50 @@ function assertDraftConfirmation(draftId: number) {
 function assertVehicleRecommendations() {
   cy.contains('button', /G\u1ee3i \u00fd ph\u00e2n xe/i).should('be.enabled').click();
   cy.contains(/G\u1ee3i \u00fd ph\u00e2n xe t\u1ef1 \u0111\u1ed9ng/i, { timeout: 15000 }).should('be.visible');
+}
+
+function assertSplitAssignmentEvidence(splitDraftId: number) {
+  cy.get('.ant-layout-content', { timeout: 15000 }).should('contain.text', 'Chuyến');
+  cy.window().then((window) => {
+    const token = window.localStorage.getItem('token');
+    expect(token, 'browser session token').to.be.a('string').and.not.be.empty;
+    return cy.request({
+      method: 'GET',
+      url: apiUrl(`/api/v1/trip-drafts/${splitDraftId}`),
+      headers: { Authorization: `Bearer ${token}` },
+    });
+  }).then((response) => {
+    expect(response.status).to.eq(200);
+    expect(response.body.data.status).to.match(/VALIDATED|ASSIGNED|DISPATCHED/);
+    expect(response.body.data.activeStopCount).to.be.gte(2);
+  });
+  cy.window().then((window) => {
+    const token = window.localStorage.getItem('token');
+    expect(token, 'browser session token').to.be.a('string').and.not.be.empty;
+    return cy.request({
+      method: 'GET',
+      url: apiUrl(`/api/v1/trips?tripDraftId=${splitDraftId}`),
+      headers: { Authorization: `Bearer ${token}` },
+    });
+  }).then((response) => {
+    expect(response.status).to.eq(200);
+    const data = response.body.data;
+    const trips = Array.isArray(data) ? data : (data?.content ?? []);
+    expect(trips.length, 'split-created trips').to.be.gte(2);
+  });
+}
+
+function assertActivityHistory(journeyId: string) {
+  cy.get('.ant-layout-content', { timeout: 15000 })
+    .should('contain.text', 'Nhật ký hoạt động');
+  if (journeyId === 'L4-WEB-HIST-01') {
+    cy.get('.ant-layout-content').contains('.ant-tabs-tab', /Lịch sử điều phối/i).click();
+    cy.get('.ant-layout-content').should('contain.text', 'Người thao tác');
+  } else {
+    cy.get('.ant-layout-content').contains('.ant-tabs-tab', /Lịch sử giao hàng/i).click();
+    cy.get('.ant-layout-content').should('contain.text', 'Chuyến');
+  }
+  cy.get('.ant-layout-content').find('.ant-table, .ant-empty', { timeout: 15000 }).should('exist');
 }
 
 function assertRealJourneySurface(journey: WebJourney) {
@@ -169,8 +217,13 @@ function assertRealJourneySurface(journey: WebJourney) {
     cy.screenshot(journey.id, { capture: 'fullPage' });
     return;
   }
+  if (journey.id === 'L4-WEB-ASSIGN-02') {
+    assertSplitAssignmentEvidence(fixtureIds.splitDraftId);
+    cy.screenshot(journey.id, { capture: 'fullPage' });
+    return;
+  }
   if (journey.id === 'L4-WEB-HIST-01' || journey.id === 'L4-WEB-HIST-02') {
-    cy.get('.ant-layout-content').contains(journey.expectedSurface, { timeout: 15000 }).should('be.visible');
+    assertActivityHistory(journey.id);
     cy.screenshot(journey.id, { capture: 'fullPage' });
     return;
   }
