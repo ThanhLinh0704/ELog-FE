@@ -118,13 +118,11 @@ p {
   width: 34px;
   height: 34px;
   border-radius: 10px;
-  background: #4f7fc4;
+  background: linear-gradient(135deg, #5a8cd6 0%, #172b4d 100%);
   display: flex;
   align-items: center;
   justify-content: center;
   margin-right: 12px;
-  font-weight: 800;
-  font-size: 18px;
   color: #fff;
   box-shadow: 0 4px 12px rgba(79, 127, 196, 0.35);
 }

@@ -277,7 +277,14 @@ const AdminShell: React.FC<AdminShellProps> = ({ currentUser, children }) => {
       <Layout style={{ minHeight: '100vh' }}>
         <Sider theme="dark" width={260} className="elog-admin-sider">
           <div onClick={() => navigate('/dashboard')} className="elog-sidebar-logo">
-            <div className="elog-logo-badge">E</div>
+            <div className="elog-logo-badge">
+              <svg width="18" height="18" viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <rect x="18" y="16" width="8" height="32" rx="3.5" fill="currentColor" />
+                <rect x="18" y="16" width="28" height="8" rx="3.5" fill="currentColor" />
+                <rect x="18" y="28" width="22" height="8" rx="3.5" fill="currentColor" />
+                <rect x="18" y="40" width="28" height="8" rx="3.5" fill="currentColor" />
+              </svg>
+            </div>
             <div style={{ lineHeight: 1.2 }}>
               <h1 style={{ margin: 0, fontSize: 15, fontWeight: 700, color: palette.sidebarTextActive, letterSpacing: 0.4 }}>
                 ELog Quản trị
