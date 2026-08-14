@@ -1,29 +1,30 @@
 {
   "schemaVersion": 1,
-  "generatedAt": "2026-08-14T01:44:23.351Z",
+  "generatedAt": "2026-08-14T07:05:28.987Z",
   "branch": "test/2026-08-02v-reports-final",
   "environment": {
     "web": "Cypress 15.20.1 / Electron 138 / Vite 8 / real Spring Boot backend / MySQL 3307",
-    "mobile": "Not Run: Flutter CLI unavailable; adb device list empty",
+    "mobile": "Flutter 3.44.9 / Android emulator-5554 / real Spring Boot backend",
     "networkPolicy": "No response intercepts or stubs in e2e/l4/report5-web.cy.ts"
   },
   "evidence": {
-    "junit": "test-execution/evidence/l4/junit-2f10f8ff31a723953a21f2eb3bff4b2a.xml",
+    "junit": "test-execution/evidence/l4/junit-80e79a632bd7bb75f33be0aeab3b5792.xml",
     "screenshots": "src/Test/cypress/screenshots/report5-web.cy.ts/",
     "cypressLog": "test-execution/evidence/l4/cypress-rerun.log",
     "backendLog": "test-execution/evidence/l4/backend.stdout.log",
-    "mobileDiscovery": "test-execution/evidence/l4/mobile-device-discovery.log"
+    "mobileDiscovery": "test-execution/evidence/l4/mobile-device-discovery.log",
+    "mobileAuthRun": "test-execution/evidence/l4/flutter-mobile-auth-20260814.log"
   },
   "rawCypressTotals": {
     "total": 42,
-    "pass": 29,
-    "fail": 13
+    "pass": 39,
+    "fail": 3
   },
   "totals": {
     "total": 50,
-    "pass": 3,
-    "fail": 39,
-    "notRun": 8
+    "pass": 7,
+    "fail": 36,
+    "notRun": 7
   },
   "results": [
     {
@@ -32,7 +33,7 @@
       "channel": "Web",
       "status": "Pass",
       "rawCypressStatus": "Pass",
-      "durationSeconds": 5.042,
+      "durationSeconds": 8.514,
       "failure": null,
       "invocation": "cypress run --spec e2e/l4/report5-web.cy.ts --env grep=L4-WEB-AUTH-01"
     },
@@ -42,7 +43,7 @@
       "channel": "Web",
       "status": "Pass",
       "rawCypressStatus": "Pass",
-      "durationSeconds": 1.031,
+      "durationSeconds": 1.076,
       "failure": null,
       "invocation": "cypress run --spec e2e/l4/report5-web.cy.ts --env grep=L4-WEB-AUTH-02"
     },
@@ -52,7 +53,7 @@
       "channel": "Web",
       "status": "Pass",
       "rawCypressStatus": "Pass",
-      "durationSeconds": 4.556,
+      "durationSeconds": 7.33,
       "failure": null,
       "invocation": "cypress run --spec e2e/l4/report5-web.cy.ts --env grep=L4-WEB-AUTH-03"
     },
@@ -62,7 +63,7 @@
       "channel": "Web",
       "status": "Fail",
       "rawCypressStatus": "Pass",
-      "durationSeconds": 2.469,
+      "durationSeconds": 5.711,
       "failure": "Cypress reached the real route and observed the expected surface, but the full catalog action/outcome was not automated; conservatively counted Fail to avoid a fake pass.",
       "invocation": "cypress run --spec e2e/l4/report5-web.cy.ts --env grep=L4-WEB-IMPORT-01"
     },
@@ -71,9 +72,9 @@
       "title": "Dispatcher reviews mixed accepted and rejected rows",
       "channel": "Web",
       "status": "Fail",
-      "rawCypressStatus": "Fail",
-      "durationSeconds": 0,
-      "failure": "AssertionError: Timed out retrying after 15000ms: Expected to find content: '/Thông tin tổng quan|Chi tiết lô nhập/i' but never did.\n    at assertRealJourneySurface (webpack://elog-fe-e2e-tests/./e2e/l4/report5-web.cy.ts:92:59)\n    at Context.eval (webpack://elog-fe-e2e-tests/./e2e/l4/report5-web.cy.ts:128:49)",
+      "rawCypressStatus": "Pass",
+      "durationSeconds": 14.19,
+      "failure": "Cypress reached the real route and observed the expected surface, but the full catalog action/outcome was not automated; conservatively counted Fail to avoid a fake pass.",
       "invocation": "cypress run --spec e2e/l4/report5-web.cy.ts --env grep=L4-WEB-IMPORT-02"
     },
     {
@@ -82,7 +83,7 @@
       "channel": "Web",
       "status": "Fail",
       "rawCypressStatus": "Pass",
-      "durationSeconds": 11.163,
+      "durationSeconds": 13.837,
       "failure": "Cypress reached the real route and observed the expected surface, but the full catalog action/outcome was not automated; conservatively counted Fail to avoid a fake pass.",
       "invocation": "cypress run --spec e2e/l4/report5-web.cy.ts --env grep=L4-WEB-IMPORT-03"
     },
@@ -92,7 +93,7 @@
       "channel": "Web",
       "status": "Fail",
       "rawCypressStatus": "Pass",
-      "durationSeconds": 11.182,
+      "durationSeconds": 13.939,
       "failure": "Cypress reached the real route and observed the expected surface, but the full catalog action/outcome was not automated; conservatively counted Fail to avoid a fake pass.",
       "invocation": "cypress run --spec e2e/l4/report5-web.cy.ts --env grep=L4-WEB-PLAN-01"
     },
@@ -101,9 +102,9 @@
       "title": "Dispatcher reviews draft totals and route context",
       "channel": "Web",
       "status": "Fail",
-      "rawCypressStatus": "Fail",
-      "durationSeconds": 0,
-      "failure": "AssertionError: Timed out retrying after 15000ms: Expected to find content: '/Thông tin tổng quan/i' but never did.\n    at assertRealJourneySurface (webpack://elog-fe-e2e-tests/./e2e/l4/report5-web.cy.ts:92:59)\n    at Context.eval (webpack://elog-fe-e2e-tests/./e2e/l4/report5-web.cy.ts:128:49)",
+      "rawCypressStatus": "Pass",
+      "durationSeconds": 14.134,
+      "failure": "Cypress reached the real route and observed the expected surface, but the full catalog action/outcome was not automated; conservatively counted Fail to avoid a fake pass.",
       "invocation": "cypress run --spec e2e/l4/report5-web.cy.ts --env grep=L4-WEB-PLAN-03"
     },
     {
@@ -111,19 +112,19 @@
       "title": "Dispatcher reviews ordered stops and order items",
       "channel": "Web",
       "status": "Fail",
-      "rawCypressStatus": "Fail",
-      "durationSeconds": 0,
-      "failure": "AssertionError: Timed out retrying after 15000ms: Expected to find content: '/điểm dừng|Tổng đơn hàng/i' but never did.\n    at assertRealJourneySurface (webpack://elog-fe-e2e-tests/./e2e/l4/report5-web.cy.ts:92:59)\n    at Context.eval (webpack://elog-fe-e2e-tests/./e2e/l4/report5-web.cy.ts:128:49)",
+      "rawCypressStatus": "Pass",
+      "durationSeconds": 14.797,
+      "failure": "Cypress reached the real route and observed the expected surface, but the full catalog action/outcome was not automated; conservatively counted Fail to avoid a fake pass.",
       "invocation": "cypress run --spec e2e/l4/report5-web.cy.ts --env grep=L4-WEB-PLAN-04"
     },
     {
       "id": "L4-WEB-PLAN-05",
       "title": "Dispatcher recalculates ETA after planning input is ready",
       "channel": "Web",
-      "status": "Fail",
-      "rawCypressStatus": "Fail",
-      "durationSeconds": 0,
-      "failure": "AssertionError: Timed out retrying after 15000ms: Expected to find content: '/ETA|thời gian dự kiến/i' but never did.\n    at assertRealJourneySurface (webpack://elog-fe-e2e-tests/./e2e/l4/report5-web.cy.ts:92:59)\n    at Context.eval (webpack://elog-fe-e2e-tests/./e2e/l4/report5-web.cy.ts:128:49)",
+      "status": "Pass",
+      "rawCypressStatus": "Pass",
+      "durationSeconds": 16.298,
+      "failure": null,
       "invocation": "cypress run --spec e2e/l4/report5-web.cy.ts --env grep=L4-WEB-PLAN-05"
     },
     {
@@ -131,29 +132,29 @@
       "title": "Dispatcher adjusts planned departure and receives refreshed ETA",
       "channel": "Web",
       "status": "Fail",
-      "rawCypressStatus": "Fail",
-      "durationSeconds": 0,
-      "failure": "AssertionError: Timed out retrying after 15000ms: Expected to find content: '/Khởi hành|ETA|kế hoạch/i' but never did.\n    at assertRealJourneySurface (webpack://elog-fe-e2e-tests/./e2e/l4/report5-web.cy.ts:92:59)\n    at Context.eval (webpack://elog-fe-e2e-tests/./e2e/l4/report5-web.cy.ts:128:49)",
+      "rawCypressStatus": "Pass",
+      "durationSeconds": 14.123,
+      "failure": "Cypress reached the real route and observed the expected surface, but the full catalog action/outcome was not automated; conservatively counted Fail to avoid a fake pass.",
       "invocation": "cypress run --spec e2e/l4/report5-web.cy.ts --env grep=L4-WEB-PLAN-06"
     },
     {
       "id": "L4-WEB-PLAN-07",
       "title": "Dispatcher reviews ranked feasible recommendations",
       "channel": "Web",
-      "status": "Fail",
-      "rawCypressStatus": "Fail",
-      "durationSeconds": 0,
-      "failure": "AssertionError: Timed out retrying after 15000ms: Expected to find content: '/Đề xuất|phương án|recommendation/i' but never did.\n    at assertRealJourneySurface (webpack://elog-fe-e2e-tests/./e2e/l4/report5-web.cy.ts:92:59)\n    at Context.eval (webpack://elog-fe-e2e-tests/./e2e/l4/report5-web.cy.ts:128:49)",
+      "status": "Pass",
+      "rawCypressStatus": "Pass",
+      "durationSeconds": 15.657,
+      "failure": null,
       "invocation": "cypress run --spec e2e/l4/report5-web.cy.ts --env grep=L4-WEB-PLAN-07"
     },
     {
       "id": "L4-WEB-PLAN-08",
       "title": "Dispatcher confirms a displayed feasible plan",
       "channel": "Web",
-      "status": "Fail",
-      "rawCypressStatus": "Fail",
-      "durationSeconds": 0,
-      "failure": "AssertionError: Timed out retrying after 15000ms: Expected to find content: '/Xác nhận|Đã xác nhận/i' but never did.\n    at assertRealJourneySurface (webpack://elog-fe-e2e-tests/./e2e/l4/report5-web.cy.ts:92:59)\n    at Context.eval (webpack://elog-fe-e2e-tests/./e2e/l4/report5-web.cy.ts:128:49)",
+      "status": "Pass",
+      "rawCypressStatus": "Pass",
+      "durationSeconds": 17.102,
+      "failure": null,
       "invocation": "cypress run --spec e2e/l4/report5-web.cy.ts --env grep=L4-WEB-PLAN-08"
     },
     {
@@ -162,7 +163,7 @@
       "channel": "Web",
       "status": "Fail",
       "rawCypressStatus": "Pass",
-      "durationSeconds": 11.169,
+      "durationSeconds": 14.297,
       "failure": "Cypress reached the real route and observed the expected surface, but the full catalog action/outcome was not automated; conservatively counted Fail to avoid a fake pass.",
       "invocation": "cypress run --spec e2e/l4/report5-web.cy.ts --env grep=L4-WEB-PLAN-09"
     },
@@ -171,9 +172,9 @@
       "title": "Dispatcher validates draft payload and volume",
       "channel": "Web",
       "status": "Fail",
-      "rawCypressStatus": "Fail",
-      "durationSeconds": 0,
-      "failure": "AssertionError: Timed out retrying after 15000ms: Expected to find content: '/Tổng thể tích|Tổng trọng lượng/i' but never did.\n    at assertRealJourneySurface (webpack://elog-fe-e2e-tests/./e2e/l4/report5-web.cy.ts:92:59)\n    at Context.eval (webpack://elog-fe-e2e-tests/./e2e/l4/report5-web.cy.ts:128:49)",
+      "rawCypressStatus": "Pass",
+      "durationSeconds": 14.445,
+      "failure": "Cypress reached the real route and observed the expected surface, but the full catalog action/outcome was not automated; conservatively counted Fail to avoid a fake pass.",
       "invocation": "cypress run --spec e2e/l4/report5-web.cy.ts --env grep=L4-WEB-CAP-01"
     },
     {
@@ -182,7 +183,7 @@
       "channel": "Web",
       "status": "Fail",
       "rawCypressStatus": "Pass",
-      "durationSeconds": 11.755,
+      "durationSeconds": 13.986,
       "failure": "Cypress reached the real route and observed the expected surface, but the full catalog action/outcome was not automated; conservatively counted Fail to avoid a fake pass.",
       "invocation": "cypress run --spec e2e/l4/report5-web.cy.ts --env grep=L4-WEB-CAP-02"
     },
@@ -192,7 +193,7 @@
       "channel": "Web",
       "status": "Fail",
       "rawCypressStatus": "Pass",
-      "durationSeconds": 11.333,
+      "durationSeconds": 13.804,
       "failure": "Cypress reached the real route and observed the expected surface, but the full catalog action/outcome was not automated; conservatively counted Fail to avoid a fake pass.",
       "invocation": "cypress run --spec e2e/l4/report5-web.cy.ts --env grep=L4-WEB-ASSIGN-01"
     },
@@ -203,7 +204,7 @@
       "status": "Fail",
       "rawCypressStatus": "Fail",
       "durationSeconds": 0,
-      "failure": "AssertionError: Timed out retrying after 15000ms: Expected to find content: '/tách chuyến|Chuyến 1/i' but never did.\n    at assertRealJourneySurface (webpack://elog-fe-e2e-tests/./e2e/l4/report5-web.cy.ts:92:59)\n    at Context.eval (webpack://elog-fe-e2e-tests/./e2e/l4/report5-web.cy.ts:128:49)",
+      "failure": "AssertionError: Timed out retrying after 15000ms: Expected to find content: '/tách chuyến|Chuyến 1/i' but never did.\n    at assertRealJourneySurface (webpack://elog-fe-e2e-tests/./e2e/l4/report5-web.cy.ts:166:59)\n    at Context.eval (webpack://elog-fe-e2e-tests/./e2e/l4/report5-web.cy.ts:209:49)",
       "invocation": "cypress run --spec e2e/l4/report5-web.cy.ts --env grep=L4-WEB-ASSIGN-02"
     },
     {
@@ -212,7 +213,7 @@
       "channel": "Web",
       "status": "Fail",
       "rawCypressStatus": "Pass",
-      "durationSeconds": 11.348,
+      "durationSeconds": 13.39,
       "failure": "Cypress reached the real route and observed the expected surface, but the full catalog action/outcome was not automated; conservatively counted Fail to avoid a fake pass.",
       "invocation": "cypress run --spec e2e/l4/report5-web.cy.ts --env grep=L4-WEB-ASSIGN-03"
     },
@@ -222,7 +223,7 @@
       "channel": "Web",
       "status": "Fail",
       "rawCypressStatus": "Pass",
-      "durationSeconds": 2.564,
+      "durationSeconds": 4.83,
       "failure": "Cypress reached the real route and observed the expected surface, but the full catalog action/outcome was not automated; conservatively counted Fail to avoid a fake pass.",
       "invocation": "cypress run --spec e2e/l4/report5-web.cy.ts --env grep=L4-WEB-MANIFEST-01"
     },
@@ -231,9 +232,9 @@
       "title": "Dispatcher reviews assignment readiness",
       "channel": "Web",
       "status": "Fail",
-      "rawCypressStatus": "Fail",
-      "durationSeconds": 0,
-      "failure": "AssertionError: Timed out retrying after 15000ms: Expected to find content: '/Sẵn sàng|Tải trọng|Trip ID/i' but never did.\n    at assertRealJourneySurface (webpack://elog-fe-e2e-tests/./e2e/l4/report5-web.cy.ts:92:59)\n    at Context.eval (webpack://elog-fe-e2e-tests/./e2e/l4/report5-web.cy.ts:128:49)",
+      "rawCypressStatus": "Pass",
+      "durationSeconds": 13.674,
+      "failure": "Cypress reached the real route and observed the expected surface, but the full catalog action/outcome was not automated; conservatively counted Fail to avoid a fake pass.",
       "invocation": "cypress run --spec e2e/l4/report5-web.cy.ts --env grep=L4-WEB-DISPATCH-01"
     },
     {
@@ -242,7 +243,7 @@
       "channel": "Web",
       "status": "Fail",
       "rawCypressStatus": "Pass",
-      "durationSeconds": 11.831,
+      "durationSeconds": 13.386,
       "failure": "Cypress reached the real route and observed the expected surface, but the full catalog action/outcome was not automated; conservatively counted Fail to avoid a fake pass.",
       "invocation": "cypress run --spec e2e/l4/report5-web.cy.ts --env grep=L4-WEB-DISPATCH-02"
     },
@@ -251,9 +252,9 @@
       "title": "Repeated dispatch keeps the existing locked trip",
       "channel": "Web",
       "status": "Fail",
-      "rawCypressStatus": "Fail",
-      "durationSeconds": 0,
-      "failure": "AssertionError: Timed out retrying after 15000ms: Expected to find content: '/Đã điều phối|DISPATCHED|Trip ID/i' but never did.\n    at assertRealJourneySurface (webpack://elog-fe-e2e-tests/./e2e/l4/report5-web.cy.ts:92:59)\n    at Context.eval (webpack://elog-fe-e2e-tests/./e2e/l4/report5-web.cy.ts:128:49)",
+      "rawCypressStatus": "Pass",
+      "durationSeconds": 13.603,
+      "failure": "Cypress reached the real route and observed the expected surface, but the full catalog action/outcome was not automated; conservatively counted Fail to avoid a fake pass.",
       "invocation": "cypress run --spec e2e/l4/report5-web.cy.ts --env grep=L4-WEB-DISPATCH-03"
     },
     {
@@ -262,7 +263,7 @@
       "channel": "Web",
       "status": "Fail",
       "rawCypressStatus": "Pass",
-      "durationSeconds": 12.107,
+      "durationSeconds": 13.549,
       "failure": "Cypress reached the real route and observed the expected surface, but the full catalog action/outcome was not automated; conservatively counted Fail to avoid a fake pass.",
       "invocation": "cypress run --spec e2e/l4/report5-web.cy.ts --env grep=L4-WEB-MON-01"
     },
@@ -272,7 +273,7 @@
       "channel": "Web",
       "status": "Fail",
       "rawCypressStatus": "Pass",
-      "durationSeconds": 3.567,
+      "durationSeconds": 4.879,
       "failure": "Cypress reached the real route and observed the expected surface, but the full catalog action/outcome was not automated; conservatively counted Fail to avoid a fake pass.",
       "invocation": "cypress run --spec e2e/l4/report5-web.cy.ts --env grep=L4-WEB-MON-02"
     },
@@ -282,7 +283,7 @@
       "channel": "Web",
       "status": "Fail",
       "rawCypressStatus": "Pass",
-      "durationSeconds": 11.116,
+      "durationSeconds": 13.404,
       "failure": "Cypress reached the real route and observed the expected surface, but the full catalog action/outcome was not automated; conservatively counted Fail to avoid a fake pass.",
       "invocation": "cypress run --spec e2e/l4/report5-web.cy.ts --env grep=L4-WEB-MON-03"
     },
@@ -292,7 +293,7 @@
       "channel": "Web",
       "status": "Fail",
       "rawCypressStatus": "Pass",
-      "durationSeconds": 11.294,
+      "durationSeconds": 13.411,
       "failure": "Cypress reached the real route and observed the expected surface, but the full catalog action/outcome was not automated; conservatively counted Fail to avoid a fake pass.",
       "invocation": "cypress run --spec e2e/l4/report5-web.cy.ts --env grep=L4-WEB-EXC-01"
     },
@@ -302,7 +303,7 @@
       "channel": "Web",
       "status": "Fail",
       "rawCypressStatus": "Pass",
-      "durationSeconds": 13.371,
+      "durationSeconds": 13.744,
       "failure": "Cypress reached the real route and observed the expected surface, but the full catalog action/outcome was not automated; conservatively counted Fail to avoid a fake pass.",
       "invocation": "cypress run --spec e2e/l4/report5-web.cy.ts --env grep=L4-WEB-EXC-02"
     },
@@ -312,7 +313,7 @@
       "channel": "Web",
       "status": "Fail",
       "rawCypressStatus": "Pass",
-      "durationSeconds": 12.265,
+      "durationSeconds": 13.424,
       "failure": "Cypress reached the real route and observed the expected surface, but the full catalog action/outcome was not automated; conservatively counted Fail to avoid a fake pass.",
       "invocation": "cypress run --spec e2e/l4/report5-web.cy.ts --env grep=L4-WEB-OUT-01"
     },
@@ -322,7 +323,7 @@
       "channel": "Web",
       "status": "Fail",
       "rawCypressStatus": "Pass",
-      "durationSeconds": 11.652,
+      "durationSeconds": 13.227,
       "failure": "Cypress reached the real route and observed the expected surface, but the full catalog action/outcome was not automated; conservatively counted Fail to avoid a fake pass.",
       "invocation": "cypress run --spec e2e/l4/report5-web.cy.ts --env grep=L4-WEB-OUT-02"
     },
@@ -332,7 +333,7 @@
       "channel": "Web",
       "status": "Fail",
       "rawCypressStatus": "Pass",
-      "durationSeconds": 11.323,
+      "durationSeconds": 13.23,
       "failure": "Cypress reached the real route and observed the expected surface, but the full catalog action/outcome was not automated; conservatively counted Fail to avoid a fake pass.",
       "invocation": "cypress run --spec e2e/l4/report5-web.cy.ts --env grep=L4-WEB-OUT-03"
     },
@@ -342,7 +343,7 @@
       "channel": "Web",
       "status": "Fail",
       "rawCypressStatus": "Pass",
-      "durationSeconds": 11.677,
+      "durationSeconds": 13.687,
       "failure": "Cypress reached the real route and observed the expected surface, but the full catalog action/outcome was not automated; conservatively counted Fail to avoid a fake pass.",
       "invocation": "cypress run --spec e2e/l4/report5-web.cy.ts --env grep=L4-WEB-KPI-01"
     },
@@ -353,7 +354,7 @@
       "status": "Fail",
       "rawCypressStatus": "Fail",
       "durationSeconds": 0,
-      "failure": "AssertionError: Timed out retrying after 15000ms: expected '<span.ant-menu-title-content>' to be 'visible'\n\nThis element `<span.ant-menu-title-content>` is not visible because it has CSS property: `position: fixed` and it's being covered by another element:\n\n`<div class=\"elog-profile-info\">...</div>`\n    at assertRealJourneySurface (webpack://elog-fe-e2e-tests/./e2e/l4/report5-web.cy.ts:92:59)\n    at Context.eval (webpack://elog-fe-e2e-tests/./e2e/l4/report5-web.cy.ts:128:49)",
+      "failure": "AssertionError: Timed out retrying after 15000ms: expected '<span.ant-menu-title-content>' to be 'visible'\n\nThis element `<span.ant-menu-title-content>` is not visible because it has CSS property: `position: fixed` and it's being covered by another element:\n\n`<div class=\"elog-profile-info\">...</div>`\n    at assertRealJourneySurface (webpack://elog-fe-e2e-tests/./e2e/l4/report5-web.cy.ts:166:59)\n    at Context.eval (webpack://elog-fe-e2e-tests/./e2e/l4/report5-web.cy.ts:209:49)",
       "invocation": "cypress run --spec e2e/l4/report5-web.cy.ts --env grep=L4-WEB-HIST-01"
     },
     {
@@ -363,7 +364,7 @@
       "status": "Fail",
       "rawCypressStatus": "Fail",
       "durationSeconds": 0,
-      "failure": "AssertionError: Timed out retrying after 15000ms: expected '<span.ant-menu-title-content>' to be 'visible'\n\nThis element `<span.ant-menu-title-content>` is not visible because it has CSS property: `position: fixed` and it's being covered by another element:\n\n`<div class=\"elog-profile-info\">...</div>`\n    at assertRealJourneySurface (webpack://elog-fe-e2e-tests/./e2e/l4/report5-web.cy.ts:92:59)\n    at Context.eval (webpack://elog-fe-e2e-tests/./e2e/l4/report5-web.cy.ts:128:49)",
+      "failure": "AssertionError: Timed out retrying after 15000ms: expected '<span.ant-menu-title-content>' to be 'visible'\n\nThis element `<span.ant-menu-title-content>` is not visible because it has CSS property: `position: fixed` and it's being covered by another element:\n\n`<div class=\"elog-profile-info\">...</div>`\n    at assertRealJourneySurface (webpack://elog-fe-e2e-tests/./e2e/l4/report5-web.cy.ts:166:59)\n    at Context.eval (webpack://elog-fe-e2e-tests/./e2e/l4/report5-web.cy.ts:209:49)",
       "invocation": "cypress run --spec e2e/l4/report5-web.cy.ts --env grep=L4-WEB-HIST-02"
     },
     {
@@ -372,7 +373,7 @@
       "channel": "Web",
       "status": "Fail",
       "rawCypressStatus": "Pass",
-      "durationSeconds": 11.454,
+      "durationSeconds": 13.697,
       "failure": "Cypress reached the real route and observed the expected surface, but the full catalog action/outcome was not automated; conservatively counted Fail to avoid a fake pass.",
       "invocation": "cypress run --spec e2e/l4/report5-web.cy.ts --env grep=L4-WEB-ADMIN-01"
     },
@@ -382,7 +383,7 @@
       "channel": "Web",
       "status": "Fail",
       "rawCypressStatus": "Pass",
-      "durationSeconds": 11.405,
+      "durationSeconds": 13.77,
       "failure": "Cypress reached the real route and observed the expected surface, but the full catalog action/outcome was not automated; conservatively counted Fail to avoid a fake pass.",
       "invocation": "cypress run --spec e2e/l4/report5-web.cy.ts --env grep=L4-WEB-ADMIN-02"
     },
@@ -392,7 +393,7 @@
       "channel": "Web",
       "status": "Fail",
       "rawCypressStatus": "Pass",
-      "durationSeconds": 11.419,
+      "durationSeconds": 13.456,
       "failure": "Cypress reached the real route and observed the expected surface, but the full catalog action/outcome was not automated; conservatively counted Fail to avoid a fake pass.",
       "invocation": "cypress run --spec e2e/l4/report5-web.cy.ts --env grep=L4-WEB-ADMIN-03"
     },
@@ -402,7 +403,7 @@
       "channel": "Web",
       "status": "Fail",
       "rawCypressStatus": "Pass",
-      "durationSeconds": 11.143,
+      "durationSeconds": 13.496,
       "failure": "Cypress reached the real route and observed the expected surface, but the full catalog action/outcome was not automated; conservatively counted Fail to avoid a fake pass.",
       "invocation": "cypress run --spec e2e/l4/report5-web.cy.ts --env grep=L4-WEB-ADMIN-04"
     },
@@ -412,7 +413,7 @@
       "channel": "Web",
       "status": "Fail",
       "rawCypressStatus": "Pass",
-      "durationSeconds": 11.128,
+      "durationSeconds": 13.366,
       "failure": "Cypress reached the real route and observed the expected surface, but the full catalog action/outcome was not automated; conservatively counted Fail to avoid a fake pass.",
       "invocation": "cypress run --spec e2e/l4/report5-web.cy.ts --env grep=L4-WEB-ADMIN-05"
     },
@@ -422,7 +423,7 @@
       "channel": "Web",
       "status": "Fail",
       "rawCypressStatus": "Pass",
-      "durationSeconds": 11.821,
+      "durationSeconds": 13.713,
       "failure": "Cypress reached the real route and observed the expected surface, but the full catalog action/outcome was not automated; conservatively counted Fail to avoid a fake pass.",
       "invocation": "cypress run --spec e2e/l4/report5-web.cy.ts --env grep=L4-WEB-ADMIN-06"
     },
@@ -432,7 +433,7 @@
       "channel": "Web",
       "status": "Fail",
       "rawCypressStatus": "Pass",
-      "durationSeconds": 11.955,
+      "durationSeconds": 14.12,
       "failure": "Cypress reached the real route and observed the expected surface, but the full catalog action/outcome was not automated; conservatively counted Fail to avoid a fake pass.",
       "invocation": "cypress run --spec e2e/l4/report5-web.cy.ts --env grep=L4-WEB-ADMIN-07"
     },
@@ -442,7 +443,7 @@
       "channel": "Web",
       "status": "Fail",
       "rawCypressStatus": "Pass",
-      "durationSeconds": 11.39,
+      "durationSeconds": 13.997,
       "failure": "Cypress reached the real route and observed the expected surface, but the full catalog action/outcome was not automated; conservatively counted Fail to avoid a fake pass.",
       "invocation": "cypress run --spec e2e/l4/report5-web.cy.ts --env grep=L4-WEB-ADMIN-08"
     },
@@ -450,10 +451,13 @@
       "id": "L4-MOB-AUTH-01",
       "title": "Assigned driver signs in to My Trips",
       "channel": "Mobile",
-      "status": "Not Run",
+      "status": "Pass",
       "durationSeconds": null,
-      "failure": "Flutter CLI is not installed/on PATH and adb devices -l returned no attached device.",
-      "invocation": "flutter test integration_test/report5_l4_mobile_test.dart --plain-name \"L4-MOB-AUTH-01 — Assigned driver signs in to My Trips\""
+      "failure": null,
+      "evidence": [
+        "test-execution/evidence/l4/flutter-mobile-auth-20260814.log"
+      ],
+      "invocation": "flutter test integration_test/report5_l4_mobile_test.dart -d emulator-5554"
     },
     {
       "id": "L4-MOB-TRIP-01",
@@ -461,7 +465,7 @@
       "channel": "Mobile",
       "status": "Not Run",
       "durationSeconds": null,
-      "failure": "Flutter CLI is not installed/on PATH and adb devices -l returned no attached device.",
+      "failure": "No executable integration test has been implemented yet for this mobile catalog journey.",
       "invocation": "flutter test integration_test/report5_l4_mobile_test.dart --plain-name \"L4-MOB-TRIP-01 — Driver reviews assigned work for a selected date\""
     },
     {
@@ -470,7 +474,7 @@
       "channel": "Mobile",
       "status": "Not Run",
       "durationSeconds": null,
-      "failure": "Flutter CLI is not installed/on PATH and adb devices -l returned no attached device.",
+      "failure": "No executable integration test has been implemented yet for this mobile catalog journey.",
       "invocation": "flutter test integration_test/report5_l4_mobile_test.dart --plain-name \"L4-MOB-TRIP-02 — Driver starts the dispatched trip\""
     },
     {
@@ -479,7 +483,7 @@
       "channel": "Mobile",
       "status": "Not Run",
       "durationSeconds": null,
-      "failure": "Flutter CLI is not installed/on PATH and adb devices -l returned no attached device.",
+      "failure": "No executable integration test has been implemented yet for this mobile catalog journey.",
       "invocation": "flutter test integration_test/report5_l4_mobile_test.dart --plain-name \"L4-MOB-TRIP-03 — Driver records arrival at the next stop\""
     },
     {
@@ -488,7 +492,7 @@
       "channel": "Mobile",
       "status": "Not Run",
       "durationSeconds": null,
-      "failure": "Flutter CLI is not installed/on PATH and adb devices -l returned no attached device.",
+      "failure": "No executable integration test has been implemented yet for this mobile catalog journey.",
       "invocation": "flutter test integration_test/report5_l4_mobile_test.dart --plain-name \"L4-MOB-TRIP-04 — Driver completes the final active stop and trip\""
     },
     {
@@ -497,7 +501,7 @@
       "channel": "Mobile",
       "status": "Not Run",
       "durationSeconds": null,
-      "failure": "Flutter CLI is not installed/on PATH and adb devices -l returned no attached device.",
+      "failure": "No executable integration test has been implemented yet for this mobile catalog journey.",
       "invocation": "flutter test integration_test/report5_l4_mobile_test.dart --plain-name \"L4-MOB-TRIP-05 — Driver reports a delivery rejection with reason\""
     },
     {
@@ -506,7 +510,7 @@
       "channel": "Mobile",
       "status": "Not Run",
       "durationSeconds": null,
-      "failure": "Flutter CLI is not installed/on PATH and adb devices -l returned no attached device.",
+      "failure": "No executable integration test has been implemented yet for this mobile catalog journey.",
       "invocation": "flutter test integration_test/report5_l4_mobile_test.dart --plain-name \"L4-MOB-EXC-01 — Driver reviews own exceptions using immediate filters\""
     },
     {
@@ -515,7 +519,7 @@
       "channel": "Mobile",
       "status": "Not Run",
       "durationSeconds": null,
-      "failure": "Flutter CLI is not installed/on PATH and adb devices -l returned no attached device.",
+      "failure": "No executable integration test has been implemented yet for this mobile catalog journey.",
       "invocation": "flutter test integration_test/report5_l4_mobile_test.dart --plain-name \"L4-MOB-PROFILE-01 — Driver reviews identity and signs out\""
     }
   ]

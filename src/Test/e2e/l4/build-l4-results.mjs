@@ -21,6 +21,9 @@ const fullyExercisedWebIds = new Set([
   'L4-WEB-AUTH-01',
   'L4-WEB-AUTH-02',
   'L4-WEB-AUTH-03',
+  'L4-WEB-PLAN-05',
+  'L4-WEB-PLAN-07',
+  'L4-WEB-PLAN-08',
 ]);
 const testcasePattern = /<testcase\b([^>]*)(?:\/>|>([\s\S]*?)<\/testcase>)/g;
 for (const match of xml.matchAll(testcasePattern)) {
@@ -47,10 +50,29 @@ for (const match of xml.matchAll(testcasePattern)) {
 }
 
 const catalog = parseJsonText(fs.readFileSync(catalogPath, 'utf8'));
+const mobileLog = path.resolve(evidenceDir, 'flutter-mobile-auth-20260814.log');
+const mobileResults = new Map();
+if (fs.existsSync(mobileLog)) {
+  const mobileLogBuffer = fs.readFileSync(mobileLog);
+  const mobileLogText = mobileLogBuffer.includes(0)
+    ? mobileLogBuffer.toString('utf16le')
+    : mobileLogBuffer.toString('utf8');
+  if (
+    mobileLogText.includes('L4-MOB-AUTH-01 - assigned driver signs in to My Trips')
+    && mobileLogText.includes('All tests passed!')
+  ) {
+    mobileResults.set('L4-MOB-AUTH-01', {
+      status: 'Pass',
+      evidence: ['test-execution/evidence/l4/flutter-mobile-auth-20260814.log'],
+      invocation: 'flutter test integration_test/report5_l4_mobile_test.dart -d emulator-5554',
+    });
+  }
+}
 const ledger = buildExecutionLedger(
   catalog,
   webResults,
-  'Flutter CLI is not installed/on PATH and adb devices -l returned no attached device.',
+  'No executable integration test has been implemented yet for this mobile catalog journey.',
+  mobileResults,
 );
 
 const output = {
@@ -59,7 +81,9 @@ const output = {
   branch: 'test/2026-08-02v-reports-final',
   environment: {
     web: 'Cypress 15.20.1 / Electron 138 / Vite 8 / real Spring Boot backend / MySQL 3307',
-    mobile: 'Not Run: Flutter CLI unavailable; adb device list empty',
+    mobile: mobileResults.has('L4-MOB-AUTH-01')
+      ? 'Flutter 3.44.9 / Android emulator-5554 / real Spring Boot backend'
+      : 'Not Run: no completed mobile integration-test evidence',
     networkPolicy: 'No response intercepts or stubs in e2e/l4/report5-web.cy.ts',
   },
   evidence: {
@@ -68,6 +92,7 @@ const output = {
     cypressLog: 'test-execution/evidence/l4/cypress-rerun.log',
     backendLog: 'test-execution/evidence/l4/backend.stdout.log',
     mobileDiscovery: 'test-execution/evidence/l4/mobile-device-discovery.log',
+    mobileAuthRun: 'test-execution/evidence/l4/flutter-mobile-auth-20260814.log',
   },
   rawCypressTotals: {
     total: webResults.size,

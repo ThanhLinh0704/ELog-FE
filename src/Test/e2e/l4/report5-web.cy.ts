@@ -1,4 +1,5 @@
 import { resolveRoute } from './support/l4Catalog.mjs';
+import { extractFixtureIds } from './support/report5Fixture.mjs';
 
 type Account = 'admin' | 'dispatcher01' | 'manager01' | 'warehouse01';
 
@@ -17,14 +18,9 @@ const PASSWORDS: Record<Account, string> = {
   warehouse01: 'Dev@2025',
 };
 
-const FIXTURE_IDS = {
-  batchId: 1,
-  id: 1,
-  draftId: 1,
-  tripDraftId: 1,
-  tripId: 1,
-  routeId: 1,
-};
+let fixtureIds: ReturnType<typeof extractFixtureIds>;
+const fixtureEvidencePath = Cypress.env('REPORT5_FIXTURE_EVIDENCE')
+  || '../../../ELog-BE/test-execution/evidence/l3-rerun-results.json';
 
 const webJourneys: WebJourney[] = [
   { id: 'L4-WEB-IMPORT-01', title: 'Dispatcher imports an approved delivery file', route: '/dispatcher/import', account: 'dispatcher01', expectedSurface: /Nhập đơn hàng từ Excel/i },
@@ -68,6 +64,28 @@ const webJourneys: WebJourney[] = [
   { id: 'L4-WEB-ADMIN-08', title: 'Administrator records driver availability status', route: '/admin/drivers', account: 'admin', expectedSurface: /Quản lý tài xế|Lịch sử trạng thái/i },
 ];
 
+const planningJourneyIds = new Set([
+  'L4-WEB-PLAN-03',
+  'L4-WEB-PLAN-04',
+  'L4-WEB-PLAN-05',
+  'L4-WEB-PLAN-06',
+  'L4-WEB-PLAN-07',
+  'L4-WEB-PLAN-08',
+  'L4-WEB-PLAN-09',
+]);
+
+const splitAssignmentJourneyIds = new Set([
+  'L4-WEB-ASSIGN-02',
+]);
+
+const webJourneyExecutionOrder = [...webJourneys];
+const plan07Index = webJourneyExecutionOrder.findIndex((journey) => journey.id === 'L4-WEB-PLAN-07');
+const plan08Index = webJourneyExecutionOrder.findIndex((journey) => journey.id === 'L4-WEB-PLAN-08');
+[webJourneyExecutionOrder[plan07Index], webJourneyExecutionOrder[plan08Index]] = [
+  webJourneyExecutionOrder[plan08Index],
+  webJourneyExecutionOrder[plan07Index],
+];
+
 function loginThroughUi(account: Account) {
   cy.session(account, () => {
     cy.visit('/login');
@@ -83,17 +101,91 @@ function loginThroughUi(account: Account) {
   });
 }
 
+function assertEtaRecalculation(draftId: number) {
+  cy.contains('button', /T\u00ednh l\u1ea1i ETA/i).should('be.enabled').click();
+  cy.get('.ant-message-notice', { timeout: 15000 }).should('contain.text', 'ETA');
+  cy.window().then((window) => {
+    const token = window.localStorage.getItem('token');
+    expect(token, 'browser session token').to.be.a('string').and.not.be.empty;
+    return cy.request({
+      method: 'GET',
+      url: `http://localhost:8080/api/v1/trip-drafts/${draftId}`,
+      headers: { Authorization: `Bearer ${token}` },
+    });
+  }).then((response) => {
+    expect(response.status).to.eq(200);
+    expect(response.body.data.stops.some((stop: { plannedEta?: string }) => Boolean(stop.plannedEta))).to.eq(true);
+  });
+}
+
+function assertDraftConfirmation(draftId: number) {
+  cy.contains('button', /X\u00e1c nh\u1eadn b\u1ea3n nh\u00e1p/i).should('be.enabled').click();
+  cy.get('.ant-modal').find('.ant-btn-primary').should('be.enabled').click();
+  cy.location('pathname', { timeout: 15000 }).should('eq', `/dispatcher/trip-drafts/${draftId}`);
+  cy.window().then((window) => {
+    const token = window.localStorage.getItem('token');
+    expect(token, 'browser session token').to.be.a('string').and.not.be.empty;
+    return cy.request({
+      method: 'GET',
+      url: `http://localhost:8080/api/v1/trip-drafts/${draftId}`,
+      headers: { Authorization: `Bearer ${token}` },
+    });
+  }).then((response) => {
+    expect(response.status).to.eq(200);
+    expect(response.body.data.status).to.match(/PLANNED|VALIDATED/);
+  });
+}
+
+function assertVehicleRecommendations() {
+  cy.contains('button', /G\u1ee3i \u00fd ph\u00e2n xe/i).should('be.enabled').click();
+  cy.contains(/G\u1ee3i \u00fd ph\u00e2n xe t\u1ef1 \u0111\u1ed9ng/i, { timeout: 15000 }).should('be.visible');
+}
+
 function assertRealJourneySurface(journey: WebJourney) {
   loginThroughUi(journey.account);
-  const route = resolveRoute(journey.route, FIXTURE_IDS);
+  const routeFixtureIds = splitAssignmentJourneyIds.has(journey.id)
+    ? { ...fixtureIds, id: fixtureIds.splitDraftId, draftId: fixtureIds.splitDraftId, tripDraftId: fixtureIds.splitDraftId }
+    : planningJourneyIds.has(journey.id)
+    ? { ...fixtureIds, id: fixtureIds.planningDraftId, draftId: fixtureIds.planningDraftId, tripDraftId: fixtureIds.planningDraftId }
+    : fixtureIds;
+  const route = journey.id === 'L4-WEB-PLAN-08'
+    ? `/trip-drafts/${fixtureIds.planningDraftId}/review`
+    : resolveRoute(journey.route, routeFixtureIds);
   cy.visit(route);
   cy.location('pathname').should('eq', route);
   cy.get('body').should('not.contain.text', '403').and('not.contain.text', '404');
+  if (journey.id === 'L4-WEB-PLAN-05') {
+    assertEtaRecalculation(fixtureIds.planningDraftId);
+    cy.screenshot(journey.id, { capture: 'fullPage' });
+    return;
+  }
+  if (journey.id === 'L4-WEB-PLAN-08') {
+    assertDraftConfirmation(fixtureIds.planningDraftId);
+    cy.screenshot(journey.id, { capture: 'fullPage' });
+    return;
+  }
+  if (journey.id === 'L4-WEB-PLAN-07') {
+    assertVehicleRecommendations();
+    cy.screenshot(journey.id, { capture: 'fullPage' });
+    return;
+  }
+  if (journey.id === 'L4-WEB-HIST-01' || journey.id === 'L4-WEB-HIST-02') {
+    cy.get('.ant-layout-content').contains(journey.expectedSurface, { timeout: 15000 }).should('be.visible');
+    cy.screenshot(journey.id, { capture: 'fullPage' });
+    return;
+  }
   cy.contains(journey.expectedSurface, { timeout: 15000 }).should('be.visible');
   cy.screenshot(journey.id, { capture: 'fullPage' });
 }
 
 describe('Report 5 L4 — real backend web journeys', () => {
+  before(() => {
+    cy.readFile(fixtureEvidencePath).then((contents) => {
+      fixtureIds = extractFixtureIds(contents);
+      cy.log(`Using L3 fixture batch=${fixtureIds.batchId}, draft=${fixtureIds.tripDraftId}, trip=${fixtureIds.tripId}`);
+    });
+  });
+
   it('L4-WEB-AUTH-01 — Approved user signs in to the role landing page', () => {
     cy.visit('/login');
     cy.get('input#login_form_username').type('admin', { log: false });
@@ -124,7 +216,7 @@ describe('Report 5 L4 — real backend web journeys', () => {
     cy.screenshot('L4-WEB-AUTH-03', { capture: 'fullPage' });
   });
 
-  for (const journey of webJourneys) {
+  for (const journey of webJourneyExecutionOrder) {
     it(`${journey.id} — ${journey.title}`, () => assertRealJourneySurface(journey));
   }
 });

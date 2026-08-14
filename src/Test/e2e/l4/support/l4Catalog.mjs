@@ -23,7 +23,7 @@ export function resolveRoute(route, fixtureIds) {
   });
 }
 
-export function buildExecutionLedger(catalog, webResults, mobileReason) {
+export function buildExecutionLedger(catalog, webResults, mobileReason, mobileResults = new Map()) {
   const results = catalog.map((item) => {
     const channel = item.entryPoint?.channel;
     if (channel === 'Web') {
@@ -40,6 +40,21 @@ export function buildExecutionLedger(catalog, webResults, mobileReason) {
         durationSeconds: execution.durationSeconds,
         failure: execution.failure || null,
         invocation: `cypress run --spec e2e/l4/report5-web.cy.ts --env grep=${item.id}`,
+      };
+    }
+
+    const mobileExecution = mobileResults.get(item.id);
+    if (mobileExecution) {
+      return {
+        id: item.id,
+        title: item.title,
+        channel,
+        status: mobileExecution.status,
+        durationSeconds: mobileExecution.durationSeconds ?? null,
+        failure: mobileExecution.failure || null,
+        evidence: mobileExecution.evidence || [],
+        invocation: mobileExecution.invocation
+          || `flutter test integration_test/report5_l4_mobile_test.dart --plain-name "${item.id} — ${item.title}"`,
       };
     }
 
