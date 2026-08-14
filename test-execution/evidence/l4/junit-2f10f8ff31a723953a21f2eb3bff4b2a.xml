@@ -1,0 +1,146 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuites name="Mocha Tests" time="630.511" tests="42" failures="13">
+  <testsuite name="Root Suite" timestamp="2026-08-14T01:33:52" tests="0" file="e2e\l4\report5-web.cy.ts" time="0.000" failures="0">
+  </testsuite>
+  <testsuite name="Report 5 L4 — real backend web journeys" timestamp="2026-08-14T01:33:52" tests="42" time="630.507" failures="13">
+    <testcase name="Report 5 L4 — real backend web journeys L4-WEB-AUTH-01 — Approved user signs in to the role landing page" time="5.042" classname="L4-WEB-AUTH-01 — Approved user signs in to the role landing page">
+    </testcase>
+    <testcase name="Report 5 L4 — real backend web journeys L4-WEB-AUTH-02 — Protected route returns a guest to sign-in" time="1.031" classname="L4-WEB-AUTH-02 — Protected route returns a guest to sign-in">
+    </testcase>
+    <testcase name="Report 5 L4 — real backend web journeys L4-WEB-AUTH-03 — Signed-in user ends the session" time="4.556" classname="L4-WEB-AUTH-03 — Signed-in user ends the session">
+    </testcase>
+    <testcase name="Report 5 L4 — real backend web journeys L4-WEB-IMPORT-01 — Dispatcher imports an approved delivery file" time="2.469" classname="L4-WEB-IMPORT-01 — Dispatcher imports an approved delivery file">
+    </testcase>
+    <testcase name="Report 5 L4 — real backend web journeys L4-WEB-IMPORT-02 — Dispatcher reviews mixed accepted and rejected rows" time="0.000" classname="L4-WEB-IMPORT-02 — Dispatcher reviews mixed accepted and rejected rows">
+      <failure message="Timed out retrying after 15000ms: Expected to find content: &apos;/Thông tin tổng quan|Chi tiết lô nhập/i&apos; but never did." type="AssertionError"><![CDATA[AssertionError: Timed out retrying after 15000ms: Expected to find content: '/Thông tin tổng quan|Chi tiết lô nhập/i' but never did.
+    at assertRealJourneySurface (webpack://elog-fe-e2e-tests/./e2e/l4/report5-web.cy.ts:92:59)
+    at Context.eval (webpack://elog-fe-e2e-tests/./e2e/l4/report5-web.cy.ts:128:49)]]></failure>
+    </testcase>
+    <testcase name="Report 5 L4 — real backend web journeys L4-WEB-IMPORT-03 — Dispatcher exports the batch rejection report" time="11.163" classname="L4-WEB-IMPORT-03 — Dispatcher exports the batch rejection report">
+    </testcase>
+    <testcase name="Report 5 L4 — real backend web journeys L4-WEB-PLAN-01 — Dispatcher consolidates eligible orders by delivery date" time="11.182" classname="L4-WEB-PLAN-01 — Dispatcher consolidates eligible orders by delivery date">
+    </testcase>
+    <testcase name="Report 5 L4 — real backend web journeys L4-WEB-PLAN-03 — Dispatcher reviews draft totals and route context" time="0.000" classname="L4-WEB-PLAN-03 — Dispatcher reviews draft totals and route context">
+      <failure message="Timed out retrying after 15000ms: Expected to find content: &apos;/Thông tin tổng quan/i&apos; but never did." type="AssertionError"><![CDATA[AssertionError: Timed out retrying after 15000ms: Expected to find content: '/Thông tin tổng quan/i' but never did.
+    at assertRealJourneySurface (webpack://elog-fe-e2e-tests/./e2e/l4/report5-web.cy.ts:92:59)
+    at Context.eval (webpack://elog-fe-e2e-tests/./e2e/l4/report5-web.cy.ts:128:49)]]></failure>
+    </testcase>
+    <testcase name="Report 5 L4 — real backend web journeys L4-WEB-PLAN-04 — Dispatcher reviews ordered stops and order items" time="0.000" classname="L4-WEB-PLAN-04 — Dispatcher reviews ordered stops and order items">
+      <failure message="Timed out retrying after 15000ms: Expected to find content: &apos;/điểm dừng|Tổng đơn hàng/i&apos; but never did." type="AssertionError"><![CDATA[AssertionError: Timed out retrying after 15000ms: Expected to find content: '/điểm dừng|Tổng đơn hàng/i' but never did.
+    at assertRealJourneySurface (webpack://elog-fe-e2e-tests/./e2e/l4/report5-web.cy.ts:92:59)
+    at Context.eval (webpack://elog-fe-e2e-tests/./e2e/l4/report5-web.cy.ts:128:49)]]></failure>
+    </testcase>
+    <testcase name="Report 5 L4 — real backend web journeys L4-WEB-PLAN-05 — Dispatcher recalculates ETA after planning input is ready" time="0.000" classname="L4-WEB-PLAN-05 — Dispatcher recalculates ETA after planning input is ready">
+      <failure message="Timed out retrying after 15000ms: Expected to find content: &apos;/ETA|thời gian dự kiến/i&apos; but never did." type="AssertionError"><![CDATA[AssertionError: Timed out retrying after 15000ms: Expected to find content: '/ETA|thời gian dự kiến/i' but never did.
+    at assertRealJourneySurface (webpack://elog-fe-e2e-tests/./e2e/l4/report5-web.cy.ts:92:59)
+    at Context.eval (webpack://elog-fe-e2e-tests/./e2e/l4/report5-web.cy.ts:128:49)]]></failure>
+    </testcase>
+    <testcase name="Report 5 L4 — real backend web journeys L4-WEB-PLAN-06 — Dispatcher adjusts planned departure and receives refreshed ETA" time="0.000" classname="L4-WEB-PLAN-06 — Dispatcher adjusts planned departure and receives refreshed ETA">
+      <failure message="Timed out retrying after 15000ms: Expected to find content: &apos;/Khởi hành|ETA|kế hoạch/i&apos; but never did." type="AssertionError"><![CDATA[AssertionError: Timed out retrying after 15000ms: Expected to find content: '/Khởi hành|ETA|kế hoạch/i' but never did.
+    at assertRealJourneySurface (webpack://elog-fe-e2e-tests/./e2e/l4/report5-web.cy.ts:92:59)
+    at Context.eval (webpack://elog-fe-e2e-tests/./e2e/l4/report5-web.cy.ts:128:49)]]></failure>
+    </testcase>
+    <testcase name="Report 5 L4 — real backend web journeys L4-WEB-PLAN-07 — Dispatcher reviews ranked feasible recommendations" time="0.000" classname="L4-WEB-PLAN-07 — Dispatcher reviews ranked feasible recommendations">
+      <failure message="Timed out retrying after 15000ms: Expected to find content: &apos;/Đề xuất|phương án|recommendation/i&apos; but never did." type="AssertionError"><![CDATA[AssertionError: Timed out retrying after 15000ms: Expected to find content: '/Đề xuất|phương án|recommendation/i' but never did.
+    at assertRealJourneySurface (webpack://elog-fe-e2e-tests/./e2e/l4/report5-web.cy.ts:92:59)
+    at Context.eval (webpack://elog-fe-e2e-tests/./e2e/l4/report5-web.cy.ts:128:49)]]></failure>
+    </testcase>
+    <testcase name="Report 5 L4 — real backend web journeys L4-WEB-PLAN-08 — Dispatcher confirms a displayed feasible plan" time="0.000" classname="L4-WEB-PLAN-08 — Dispatcher confirms a displayed feasible plan">
+      <failure message="Timed out retrying after 15000ms: Expected to find content: &apos;/Xác nhận|Đã xác nhận/i&apos; but never did." type="AssertionError"><![CDATA[AssertionError: Timed out retrying after 15000ms: Expected to find content: '/Xác nhận|Đã xác nhận/i' but never did.
+    at assertRealJourneySurface (webpack://elog-fe-e2e-tests/./e2e/l4/report5-web.cy.ts:92:59)
+    at Context.eval (webpack://elog-fe-e2e-tests/./e2e/l4/report5-web.cy.ts:128:49)]]></failure>
+    </testcase>
+    <testcase name="Report 5 L4 — real backend web journeys L4-WEB-PLAN-09 — Dispatcher withdraws a plan before execution" time="11.169" classname="L4-WEB-PLAN-09 — Dispatcher withdraws a plan before execution">
+    </testcase>
+    <testcase name="Report 5 L4 — real backend web journeys L4-WEB-CAP-01 — Dispatcher validates draft payload and volume" time="0.000" classname="L4-WEB-CAP-01 — Dispatcher validates draft payload and volume">
+      <failure message="Timed out retrying after 15000ms: Expected to find content: &apos;/Tổng thể tích|Tổng trọng lượng/i&apos; but never did." type="AssertionError"><![CDATA[AssertionError: Timed out retrying after 15000ms: Expected to find content: '/Tổng thể tích|Tổng trọng lượng/i' but never did.
+    at assertRealJourneySurface (webpack://elog-fe-e2e-tests/./e2e/l4/report5-web.cy.ts:92:59)
+    at Context.eval (webpack://elog-fe-e2e-tests/./e2e/l4/report5-web.cy.ts:128:49)]]></failure>
+    </testcase>
+    <testcase name="Report 5 L4 — real backend web journeys L4-WEB-CAP-02 — Infeasible single-vehicle result offers the split path" time="11.755" classname="L4-WEB-CAP-02 — Infeasible single-vehicle result offers the split path">
+    </testcase>
+    <testcase name="Report 5 L4 — real backend web journeys L4-WEB-ASSIGN-01 — Dispatcher assigns one eligible vehicle and driver" time="11.333" classname="L4-WEB-ASSIGN-01 — Dispatcher assigns one eligible vehicle and driver">
+    </testcase>
+    <testcase name="Report 5 L4 — real backend web journeys L4-WEB-ASSIGN-02 — Dispatcher assigns a validated two-vehicle split" time="0.000" classname="L4-WEB-ASSIGN-02 — Dispatcher assigns a validated two-vehicle split">
+      <failure message="Timed out retrying after 15000ms: Expected to find content: &apos;/tách chuyến|Chuyến 1/i&apos; but never did." type="AssertionError"><![CDATA[AssertionError: Timed out retrying after 15000ms: Expected to find content: '/tách chuyến|Chuyến 1/i' but never did.
+    at assertRealJourneySurface (webpack://elog-fe-e2e-tests/./e2e/l4/report5-web.cy.ts:92:59)
+    at Context.eval (webpack://elog-fe-e2e-tests/./e2e/l4/report5-web.cy.ts:128:49)]]></failure>
+    </testcase>
+    <testcase name="Report 5 L4 — real backend web journeys L4-WEB-ASSIGN-03 — Dispatcher changes resources before dispatch lock" time="11.348" classname="L4-WEB-ASSIGN-03 — Dispatcher changes resources before dispatch lock">
+    </testcase>
+    <testcase name="Report 5 L4 — real backend web journeys L4-WEB-MANIFEST-01 — Warehouse user generates and reviews LIFO guidance" time="2.564" classname="L4-WEB-MANIFEST-01 — Warehouse user generates and reviews LIFO guidance">
+    </testcase>
+    <testcase name="Report 5 L4 — real backend web journeys L4-WEB-DISPATCH-01 — Dispatcher reviews assignment readiness" time="0.000" classname="L4-WEB-DISPATCH-01 — Dispatcher reviews assignment readiness">
+      <failure message="Timed out retrying after 15000ms: Expected to find content: &apos;/Sẵn sàng|Tải trọng|Trip ID/i&apos; but never did." type="AssertionError"><![CDATA[AssertionError: Timed out retrying after 15000ms: Expected to find content: '/Sẵn sàng|Tải trọng|Trip ID/i' but never did.
+    at assertRealJourneySurface (webpack://elog-fe-e2e-tests/./e2e/l4/report5-web.cy.ts:92:59)
+    at Context.eval (webpack://elog-fe-e2e-tests/./e2e/l4/report5-web.cy.ts:128:49)]]></failure>
+    </testcase>
+    <testcase name="Report 5 L4 — real backend web journeys L4-WEB-DISPATCH-02 — Dispatcher locks and publishes an eligible trip" time="11.831" classname="L4-WEB-DISPATCH-02 — Dispatcher locks and publishes an eligible trip">
+    </testcase>
+    <testcase name="Report 5 L4 — real backend web journeys L4-WEB-DISPATCH-03 — Repeated dispatch keeps the existing locked trip" time="0.000" classname="L4-WEB-DISPATCH-03 — Repeated dispatch keeps the existing locked trip">
+      <failure message="Timed out retrying after 15000ms: Expected to find content: &apos;/Đã điều phối|DISPATCHED|Trip ID/i&apos; but never did." type="AssertionError"><![CDATA[AssertionError: Timed out retrying after 15000ms: Expected to find content: '/Đã điều phối|DISPATCHED|Trip ID/i' but never did.
+    at assertRealJourneySurface (webpack://elog-fe-e2e-tests/./e2e/l4/report5-web.cy.ts:92:59)
+    at Context.eval (webpack://elog-fe-e2e-tests/./e2e/l4/report5-web.cy.ts:128:49)]]></failure>
+    </testcase>
+    <testcase name="Report 5 L4 — real backend web journeys L4-WEB-MON-01 — Dispatcher reviews active-trip fleet status" time="12.107" classname="L4-WEB-MON-01 — Dispatcher reviews active-trip fleet status">
+    </testcase>
+    <testcase name="Report 5 L4 — real backend web journeys L4-WEB-MON-02 — Dispatcher drills into trip progress" time="3.567" classname="L4-WEB-MON-02 — Dispatcher drills into trip progress">
+    </testcase>
+    <testcase name="Report 5 L4 — real backend web journeys L4-WEB-MON-03 — Dispatcher reviews current operational violations" time="11.116" classname="L4-WEB-MON-03 — Dispatcher reviews current operational violations">
+    </testcase>
+    <testcase name="Report 5 L4 — real backend web journeys L4-WEB-EXC-01 — Dispatcher filters and inspects exception detail" time="11.294" classname="L4-WEB-EXC-01 — Dispatcher filters and inspects exception detail">
+    </testcase>
+    <testcase name="Report 5 L4 — real backend web journeys L4-WEB-EXC-02 — Manager resolves an exception with an audit note" time="13.371" classname="L4-WEB-EXC-02 — Manager resolves an exception with an audit note">
+    </testcase>
+    <testcase name="Report 5 L4 — real backend web journeys L4-WEB-OUT-01 — Dispatcher reviews submitted trip outcomes" time="12.265" classname="L4-WEB-OUT-01 — Dispatcher reviews submitted trip outcomes">
+    </testcase>
+    <testcase name="Report 5 L4 — real backend web journeys L4-WEB-OUT-02 — Manager validates a submitted outcome" time="11.652" classname="L4-WEB-OUT-02 — Manager validates a submitted outcome">
+    </testcase>
+    <testcase name="Report 5 L4 — real backend web journeys L4-WEB-OUT-03 — Manager returns an outcome for audited correction" time="11.323" classname="L4-WEB-OUT-03 — Manager returns an outcome for audited correction">
+    </testcase>
+    <testcase name="Report 5 L4 — real backend web journeys L4-WEB-KPI-01 — Manager reviews dated KPI summary, trend, and route performance" time="11.677" classname="L4-WEB-KPI-01 — Manager reviews dated KPI summary, trend, and route performance">
+    </testcase>
+    <testcase name="Report 5 L4 — real backend web journeys L4-WEB-HIST-01 — Auditor searches immutable planning events" time="0.000" classname="L4-WEB-HIST-01 — Auditor searches immutable planning events">
+      <failure message="Timed out retrying after 15000ms: expected &apos;&lt;span.ant-menu-title-content&gt;&apos; to be &apos;visible&apos;
+
+This element `&lt;span.ant-menu-title-content&gt;` is not visible because it has CSS property: `position: fixed` and it&apos;s being covered by another element:
+
+`&lt;div class=&quot;elog-profile-info&quot;&gt;...&lt;/div&gt;`" type="AssertionError"><![CDATA[AssertionError: Timed out retrying after 15000ms: expected '<span.ant-menu-title-content>' to be 'visible'
+
+This element `<span.ant-menu-title-content>` is not visible because it has CSS property: `position: fixed` and it's being covered by another element:
+
+`<div class="elog-profile-info">...</div>`
+    at assertRealJourneySurface (webpack://elog-fe-e2e-tests/./e2e/l4/report5-web.cy.ts:92:59)
+    at Context.eval (webpack://elog-fe-e2e-tests/./e2e/l4/report5-web.cy.ts:128:49)]]></failure>
+    </testcase>
+    <testcase name="Report 5 L4 — real backend web journeys L4-WEB-HIST-02 — Auditor opens a trip outcome timeline" time="0.000" classname="L4-WEB-HIST-02 — Auditor opens a trip outcome timeline">
+      <failure message="Timed out retrying after 15000ms: expected &apos;&lt;span.ant-menu-title-content&gt;&apos; to be &apos;visible&apos;
+
+This element `&lt;span.ant-menu-title-content&gt;` is not visible because it has CSS property: `position: fixed` and it&apos;s being covered by another element:
+
+`&lt;div class=&quot;elog-profile-info&quot;&gt;...&lt;/div&gt;`" type="AssertionError"><![CDATA[AssertionError: Timed out retrying after 15000ms: expected '<span.ant-menu-title-content>' to be 'visible'
+
+This element `<span.ant-menu-title-content>` is not visible because it has CSS property: `position: fixed` and it's being covered by another element:
+
+`<div class="elog-profile-info">...</div>`
+    at assertRealJourneySurface (webpack://elog-fe-e2e-tests/./e2e/l4/report5-web.cy.ts:92:59)
+    at Context.eval (webpack://elog-fe-e2e-tests/./e2e/l4/report5-web.cy.ts:128:49)]]></failure>
+    </testcase>
+    <testcase name="Report 5 L4 — real backend web journeys L4-WEB-ADMIN-01 — Administrator creates an internal user" time="11.454" classname="L4-WEB-ADMIN-01 — Administrator creates an internal user">
+    </testcase>
+    <testcase name="Report 5 L4 — real backend web journeys L4-WEB-ADMIN-02 — Administrator changes the roles of another user" time="11.405" classname="L4-WEB-ADMIN-02 — Administrator changes the roles of another user">
+    </testcase>
+    <testcase name="Report 5 L4 — real backend web journeys L4-WEB-ADMIN-03 — Administrator updates a role permission set" time="11.419" classname="L4-WEB-ADMIN-03 — Administrator updates a role permission set">
+    </testcase>
+    <testcase name="Report 5 L4 — real backend web journeys L4-WEB-ADMIN-04 — Administrator creates an active mapped store" time="11.143" classname="L4-WEB-ADMIN-04 — Administrator creates an active mapped store">
+    </testcase>
+    <testcase name="Report 5 L4 — real backend web journeys L4-WEB-ADMIN-05 — Administrator registers an eligible vehicle" time="11.128" classname="L4-WEB-ADMIN-05 — Administrator registers an eligible vehicle">
+    </testcase>
+    <testcase name="Report 5 L4 — real backend web journeys L4-WEB-ADMIN-06 — Administrator creates a product with physical attributes" time="11.821" classname="L4-WEB-ADMIN-06 — Administrator creates a product with physical attributes">
+    </testcase>
+    <testcase name="Report 5 L4 — real backend web journeys L4-WEB-ADMIN-07 — Administrator maintains ordered route stops" time="11.955" classname="L4-WEB-ADMIN-07 — Administrator maintains ordered route stops">
+    </testcase>
+    <testcase name="Report 5 L4 — real backend web journeys L4-WEB-ADMIN-08 — Administrator records driver availability status" time="11.390" classname="L4-WEB-ADMIN-08 — Administrator records driver availability status">
+    </testcase>
+  </testsuite>
+</testsuites>
