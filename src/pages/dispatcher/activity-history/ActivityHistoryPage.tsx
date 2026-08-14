@@ -41,6 +41,7 @@ import {
   type TripOutcomeEvent,
   type TripOutcomeEventType,
 } from '../../../types/tripOutcomeEvent';
+import { REASON_CODE_LABELS } from '../../../types/driverTrip';
 
 const { Text, Title } = Typography;
 
@@ -136,7 +137,11 @@ const OutcomeAuditTab: React.FC = () => {
     {
       title: 'Ghi chú',
       key: 'note',
-      render: (_, record) => record.exceptionText || record.reasonCode || record.validationNote || '—',
+      render: (_, record) => {
+        const rawNote = record.exceptionText || record.reasonCode || record.validationNote;
+        if (!rawNote) return '—';
+        return REASON_CODE_LABELS[rawNote] || rawNote;
+      },
     },
     {
       title: '',
@@ -256,7 +261,9 @@ const OutcomeAuditTab: React.FC = () => {
                     </div>
                   )}
                   {(ev.exceptionText || ev.reasonCode) && (
-                    <div style={{ fontSize: 13, color: '#cf1322' }}>{ev.exceptionText || ev.reasonCode}</div>
+                    <div style={{ fontSize: 13, color: '#cf1322' }}>
+                      {REASON_CODE_LABELS[ev.exceptionText || ''] || REASON_CODE_LABELS[ev.reasonCode || ''] || ev.exceptionText || ev.reasonCode}
+                    </div>
                   )}
                   {ev.actorUsername && (
                     <Text type="secondary" style={{ fontSize: 12 }}>bởi {ev.actorUsername}</Text>

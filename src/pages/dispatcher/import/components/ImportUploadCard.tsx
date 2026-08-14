@@ -8,7 +8,7 @@ import { palette } from '../../../../theme/tokens';
 
 interface ImportUploadCardProps {
   loading: boolean;
-  onUpload: (file: File, deliveryDate?: string) => void;
+  onUpload: (file: File) => void;
 }
 
 const ImportUploadCard: React.FC<ImportUploadCardProps> = ({ loading, onUpload }) => {

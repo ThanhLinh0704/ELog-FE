@@ -32,6 +32,7 @@ import { getTripOutcomeHistory } from '../../../api/tripOutcomeEventApi';
 import type { TripOutcome } from '../../../types/tripOutcome';
 import { OUTCOME_STATUS_LABEL } from '../../../types/tripOutcome';
 import { TRIP_OUTCOME_EVENT_TYPE_LABEL, type TripOutcomeEvent } from '../../../types/tripOutcomeEvent';
+import { REASON_CODE_LABELS } from '../../../types/driverTrip';
 
 const { Title, Text } = Typography;
 const { TextArea } = Input;
@@ -236,30 +237,17 @@ const TripOutcomePage: React.FC = () => {
       render: (_: unknown, record: TripOutcome) => (
         <Space wrap>
           {record.status === 'SUBMITTED' && (
-            <>
-              <Tooltip title="Xác nhận kết quả chuyến xe">
-                <Button
-                  type="primary"
-                  size="small"
-                  icon={<CheckCircleOutlined />}
-                  style={{ background: '#52c41a', borderColor: '#52c41a', borderRadius: 6 }}
-                  onClick={() => setValidateTarget(record)}
-                >
-                  Nghiệm thu
-                </Button>
-              </Tooltip>
-              <Tooltip title="Gửi lại để tài xế điều chỉnh">
-                <Button
-                  size="small"
-                  danger
-                  icon={<CloseCircleOutlined />}
-                  style={{ borderRadius: 6 }}
-                  onClick={() => { setAmendTarget(record); setAmendReason(''); }}
-                >
-                  Yêu cầu sửa
-                </Button>
-              </Tooltip>
-            </>
+            <Tooltip title="Xác nhận kết quả chuyến xe">
+              <Button
+                type="primary"
+                size="small"
+                icon={<CheckCircleOutlined />}
+                style={{ background: '#52c41a', borderColor: '#52c41a', borderRadius: 6 }}
+                onClick={() => setValidateTarget(record)}
+              >
+                Nghiệm thu
+              </Button>
+            </Tooltip>
           )}
           {record.status === 'VALIDATED' && (
             <Tooltip title={`Nghiệm thu bởi: ${record.validatedBy || 'Hệ thống'} lúc ${formatDateTime(record.validatedAt)}`}>
@@ -534,7 +522,8 @@ const TripOutcomePage: React.FC = () => {
                 title: 'Ghi chú / Chi tiết',
                 key: 'details',
                 render: (_: unknown, r: TripOutcomeEvent) => {
-                  const note = r.validationNote || r.exceptionText || r.reasonCode || r.deliveryResult;
+                  const rawNote = r.validationNote || r.exceptionText || r.reasonCode;
+                  const note = rawNote ? (REASON_CODE_LABELS[rawNote] || rawNote) : (r.deliveryResult ? (r.deliveryResult) : null);
                   return (
                     <Text type="secondary" style={{ fontSize: 12 }}>
                       {note || (r.statusBefore && r.statusAfter ? `${r.statusBefore} → ${r.statusAfter}` : '—')}

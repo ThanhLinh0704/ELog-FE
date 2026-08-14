@@ -26,6 +26,8 @@ import {
   type LoadingManifest,
   type LoadingManifestStop,
 } from '../api/loadingManifestApi';
+import { getTripsByTripDraftId } from '../api/tripApi';
+import type { Trip } from '../types/trip';
 import ManifestSummary from '../components/manifest/ManifestSummary';
 import FlatManifestView from '../components/manifest/FlatManifestView';
 import ByStopManifestView from '../components/manifest/ByStopManifestView';
@@ -82,6 +84,7 @@ const LifoManifestPage = () => {
 
   const [manifest, setManifest] = useState<LoadingManifest | null>(null);
   const [stops, setStops] = useState<LoadingManifestStop[]>([]);
+  const [createdTrips, setCreatedTrips] = useState<Trip[]>([]);
   const [loading, setLoading] = useState(true);
   const [actionLoading, setActionLoading] = useState(false);
   const [error, setError] = useState('');
@@ -106,6 +109,12 @@ const LifoManifestPage = () => {
         setStops(nextStops);
       } catch {
         setStops(nextManifest.stops ?? []);
+      }
+      try {
+        const tripsData = await getTripsByTripDraftId(tripDraftId);
+        setCreatedTrips(tripsData);
+      } catch {
+        setCreatedTrips([]);
       }
     } catch (err) {
       if (isManifestNotFound(err)) {
@@ -214,7 +223,7 @@ const LifoManifestPage = () => {
           message="Cách đọc màn hình này"
           description="Hàng giao ở điểm cuối tuyến sẽ được xếp lên xe trước và nằm sâu trong khoang xe. Hàng giao ở điểm đầu tuyến sẽ xếp sau cùng, nằm gần cửa xe để dỡ xuống trước."
         />
-        <ManifestSummary manifest={manifest} />
+        <ManifestSummary manifest={manifest} createdTrips={createdTrips} />
         <Tabs
           items={[
             {

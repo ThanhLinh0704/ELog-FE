@@ -44,7 +44,7 @@ import TripOutcomePage from './pages/dispatcher/outcomes/TripOutcomePage';
 
 import KpiDashboardPage from './pages/dispatcher/kpi/KpiDashboardPage';
 import ActivityHistoryPage from './pages/dispatcher/activity-history/ActivityHistoryPage';
-
+import OrderManagementPage from './pages/dispatcher/orders/OrderManagementPage';
 
 function App() {
   return (
@@ -216,6 +216,16 @@ function App() {
           element={
             <ProtectedPermissionRoute anyOf={[PERMISSIONS.ORDER_IMPORT, PERMISSIONS.TRIP_READ]}>
               <ImportBatchDetailPage />
+            </ProtectedPermissionRoute>
+          }
+        />
+
+        {/* Order Management */}
+        <Route
+          path="/dispatcher/orders"
+          element={
+            <ProtectedPermissionRoute anyOf={[PERMISSIONS.ORDER_IMPORT, PERMISSIONS.TRIP_READ]}>
+              <OrderManagementPage />
             </ProtectedPermissionRoute>
           }
         />
