@@ -73,7 +73,7 @@ export const userApi = {
     const query = encodeQuery({ keyword, role, isActive, page, size, sort });
 
     const data = await handleAxiosCall<any>(() =>
-      axiosInstance.get(`/api/users?${query}`)
+      axiosInstance.get(`/api/v1/users?${query}`)
     );
     return normalizeUserPage(data, page, size);
   },
@@ -84,7 +84,7 @@ export const userApi = {
     }
 
     const data = await handleAxiosCall<any>(() =>
-      axiosInstance.post('/api/users', payload)
+      axiosInstance.post('/api/v1/users', payload)
     );
     return normalizeUser(data?.data ?? data);
   },
@@ -95,7 +95,7 @@ export const userApi = {
     }
 
     const data = await handleAxiosCall<any>(() =>
-      axiosInstance.put(`/api/users/${id}`, payload)
+      axiosInstance.put(`/api/v1/users/${id}`, payload)
     );
     return normalizeUser(data?.data ?? data);
   },
@@ -106,7 +106,7 @@ export const userApi = {
     }
 
     const data = await handleAxiosCall<any>(() =>
-      axiosInstance.patch(`/api/users/${id}/roles`, { roles })
+      axiosInstance.patch(`/api/v1/users/${id}/roles`, { roles })
     );
     return normalizeUser(data?.data ?? data);
   },
@@ -117,7 +117,7 @@ export const userApi = {
     }
 
     const data = await handleAxiosCall<any>(() =>
-      axiosInstance.patch(`/api/users/${id}/status`, { isActive })
+      axiosInstance.patch(`/api/v1/users/${id}/status`, { isActive })
     );
     return normalizeUser(data?.data ?? data);
   },

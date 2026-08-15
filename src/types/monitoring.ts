@@ -7,7 +7,7 @@ export type TripMonitoringStatus = 'DISPATCHED' | 'IN_PROGRESS' | 'COMPLETED';
 
 export type TripStopMonitoringStatus = 'PENDING' | 'IN_PROGRESS' | 'COMPLETED' | 'EXCEPTION';
 
-// ── ActiveTripsResponse (GET /api/dashboard/active-trips) ─────────────────────
+// ── ActiveTripsResponse (GET /api/v1/dashboard/active-trips) ─────────────────────
 
 /** Backend: ActiveTripsResponse.ExceptionSummary */
 export interface MonitoringExceptionSummary {
@@ -45,7 +45,7 @@ export interface ActiveTripsResponse {
   trips: ActiveTripSummary[];
 }
 
-// ── TripProgressResponse (GET /api/trips/{id}/progress) ───────────────────────
+// ── TripProgressResponse (GET /api/v1/trips/{id}/progress) ───────────────────────
 
 /** Backend: TripProgressResponse.ExceptionDetail */
 export interface ProgressExceptionDetail {
@@ -69,6 +69,8 @@ export interface StopProgress {
   delayMinutes: number | null;
   hasException: boolean;
   exceptions: ProgressExceptionDetail[];
+  latitude: number | null;
+  longitude: number | null;
 }
 
 /** Backend: TripProgressResponse.VehicleInfo */
@@ -90,6 +92,9 @@ export interface TripProgressResponse {
   fixedRouteCode: string;
   deliveryDate: string;
   status: string;
+  totalDistanceKm: number | null;
+  /** Encoded polyline (Goong.io format); multiple legs joined by ';'. */
+  routePolyline: string | null;
   vehicle: ProgressVehicleInfo;
   driver: ProgressDriverInfo;
   stops: StopProgress[];
@@ -97,7 +102,7 @@ export interface TripProgressResponse {
   gpsNote: string | null;
 }
 
-// ── TripStartResponse (POST /api/trips/{id}/start) ───────────────────────────
+// ── TripStartResponse (POST /api/v1/trips/{id}/start) ───────────────────────────
 
 /** Backend: TripStartResponse */
 export interface TripStartResponse {
@@ -109,7 +114,7 @@ export interface TripStartResponse {
   message: string;
 }
 
-// ── StopArriveResponse (POST /api/trip-stops/{id}/arrive) ────────────────────
+// ── StopArriveResponse (POST /api/v1/trip-stops/{id}/arrive) ────────────────────
 
 /** Backend: StopArriveResponse */
 export interface StopArriveResponse {
@@ -124,7 +129,7 @@ export interface StopArriveResponse {
   message: string;
 }
 
-// ── StopCompleteResponse (POST /api/trip-stops/{id}/complete) ────────────────
+// ── StopCompleteResponse (POST /api/v1/trip-stops/{id}/complete) ────────────────
 
 /** Backend: StopCompleteResponse.NextStopInfo */
 export interface NextStopInfo {

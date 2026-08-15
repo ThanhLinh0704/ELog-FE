@@ -8,7 +8,6 @@ import {
   Row,
   Col,
   Statistic,
-  Tag,
   Divider,
   Spin,
   message,
@@ -17,11 +16,15 @@ import {
   Table,
   Empty
 } from 'antd';
-import { ArrowLeftOutlined, LoadingOutlined, CheckCircleOutlined, CloseCircleOutlined, InfoCircleOutlined, WarningOutlined } from '@ant-design/icons';
+import { ArrowLeftOutlined, LoadingOutlined, CheckCircleOutlined, CloseCircleOutlined, InfoCircleOutlined, WarningOutlined, DownOutlined, UpOutlined } from '@ant-design/icons';
 import { ShieldAlert, Scale } from 'lucide-react';
 import AdminShell from '../../../components/AdminShell';
+import StatusBadge from '../../../components/StatusBadge';
+import { palette } from '../../../theme/tokens';
 import { tripDraftApi } from '../../../api/tripDraftApi';
 import type { CapacityValidationResult, IneligibleVehicle } from '../../../types/tripDraft';
+import { usePermissions } from '../../../hooks/usePermissions';
+import { PERMISSIONS } from '../../../constants/permissions';
 
 const { Title, Text, Paragraph } = Typography;
 
@@ -47,15 +50,18 @@ const CapacityValidationPage: React.FC = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const currentUser = getCurrentUser();
+  const { can } = usePermissions();
+  const canValidateCapacity = can(PERMISSIONS.TRIP_CONFIRM);
 
   const [loading, setLoading] = useState(true);
   const [validating, setValidating] = useState(false);
   const [result, setResult] = useState<CapacityValidationResult | null>(null);
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
   const [errorCode, setErrorCode] = useState<string | null>(null);
+  const [showAllEligible, setShowAllEligible] = useState(false);
+  const [showIneligible, setShowIneligible] = useState(false);
 
-  const roles = currentUser.roles || [];
-  const isDispatcher = roles.includes('DISPATCHER');
+  const ELIGIBLE_PREVIEW_COUNT = 5;
 
   const fetchValidationResult = async (showLoading = true) => {
     if (!id) return;
@@ -88,7 +94,7 @@ const CapacityValidationPage: React.FC = () => {
   }, [id]);
 
   const handleValidate = async () => {
-    if (!id || !isDispatcher) return;
+    if (!id || !canValidateCapacity) return;
     setValidating(true);
     setErrorMsg(null);
     setErrorCode(null);
@@ -123,7 +129,7 @@ const CapacityValidationPage: React.FC = () => {
 
   const renderStatusTag = (status?: string) => {
     if (!status) return null;
-    let color = 'default';
+    let color: 'default' | 'warning' | 'processing' | 'success' | 'purple' | 'blue' | 'cyan' = 'default';
     let text = status;
 
     switch (status) {
@@ -153,17 +159,17 @@ const CapacityValidationPage: React.FC = () => {
         break;
     }
 
-    return <Tag color={color} style={{ fontWeight: 500 }}>{text}</Tag>;
+    return <StatusBadge color={color}>{text}</StatusBadge>;
   };
 
   const renderConstraintIcon = (result?: string) => {
     if (result === 'PASS') {
-      return <Tag color="success" icon={<CheckCircleOutlined />}>Đạt</Tag>;
+      return <StatusBadge color="success" icon={<CheckCircleOutlined />}>Đạt</StatusBadge>;
     }
     if (result === 'FAIL') {
-      return <Tag color="error" icon={<CloseCircleOutlined />}>Không đạt</Tag>;
+      return <StatusBadge color="error" icon={<CloseCircleOutlined />}>Không đạt</StatusBadge>;
     }
-    return <Tag color="default" icon={<InfoCircleOutlined />}>Chưa kiểm tra</Tag>;
+    return <StatusBadge color="default" icon={<InfoCircleOutlined />}>Chưa kiểm tra</StatusBadge>;
   };
 
   const formatVolume = (val?: number) => {
@@ -309,20 +315,20 @@ const CapacityValidationPage: React.FC = () => {
           <Card
             title={
               <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                <Scale size={18} style={{ color: '#1677ff' }} />
+                <Scale size={18} style={{ color: palette.primary }} />
                 <span style={{ fontSize: 16, fontWeight: 600 }}>Tải trọng chuyến gom đơn</span>
               </div>
             }
-            style={{ borderRadius: 12, boxShadow: '0 4px 12px rgba(0,0,0,0.05)' }}
+            style={{ borderRadius: 14, boxShadow: palette.cardShadow }}
           >
             <Row gutter={[16, 16]}>
               <Col span={12}>
-                <Card style={{ background: '#f9fafb', border: '1px solid #f3f4f6', borderRadius: 8, textAlign: 'center' }} bodyStyle={{ padding: '16px 12px' }}>
+                <Card style={{ background: palette.bgLayout, border: `1px solid ${palette.borderSoft}`, borderRadius: 10, textAlign: 'center' }} bodyStyle={{ padding: '16px 12px' }}>
                   <Statistic
                     title="Tổng thể tích (m³)"
                     value={result?.totalVolumeM3}
                     precision={3}
-                    valueStyle={{ color: '#096dd9', fontWeight: 700, fontSize: 20 }}
+                    valueStyle={{ color: palette.primaryDark, fontWeight: 700, fontSize: 20 }}
                   />
                   <div style={{ marginTop: 8 }}>
                     {renderConstraintIcon(result?.volumeCheckResult)}
@@ -330,12 +336,12 @@ const CapacityValidationPage: React.FC = () => {
                 </Card>
               </Col>
               <Col span={12}>
-                <Card style={{ background: '#f9fafb', border: '1px solid #f3f4f6', borderRadius: 8, textAlign: 'center' }} bodyStyle={{ padding: '16px 12px' }}>
+                <Card style={{ background: palette.bgLayout, border: `1px solid ${palette.borderSoft}`, borderRadius: 10, textAlign: 'center' }} bodyStyle={{ padding: '16px 12px' }}>
                   <Statistic
                     title="Tổng trọng lượng (kg)"
                     value={result?.totalWeightKg}
                     precision={3}
-                    valueStyle={{ color: '#d46b08', fontWeight: 700, fontSize: 20 }}
+                    valueStyle={{ color: palette.gold, fontWeight: 700, fontSize: 20 }}
                   />
                   <div style={{ marginTop: 8 }}>
                     {renderConstraintIcon(result?.weightCheckResult)}
@@ -379,7 +385,7 @@ const CapacityValidationPage: React.FC = () => {
                   </div>
                 }
               >
-                {isDispatcher ? (
+                {canValidateCapacity ? (
                   <Button
                     type="primary"
                     size="large"
@@ -391,7 +397,7 @@ const CapacityValidationPage: React.FC = () => {
                   </Button>
                 ) : (
                   <Alert
-                    message="Chỉ Điều phối viên (Dispatcher) mới có quyền thực hiện kiểm tra tải trọng."
+                    message="Bạn không có quyền thực hiện kiểm tra tải trọng."
                     type="info"
                     showIcon
                     style={{ display: 'inline-block', textAlign: 'left', borderRadius: 8 }}
@@ -407,13 +413,23 @@ const CapacityValidationPage: React.FC = () => {
             {/* Case PASS */}
             {result.validationPassed ? (
               <div style={{ display: 'flex', flexDirection: 'column', gap: 24 }}>
-                <Alert
-                  message={<Text strong style={{ color: '#27272a' }}>Kiểm tra tải trọng thành công</Text>}
-                  description={`Tìm thấy các xe đơn lẻ trong fleet có đủ sức chứa cho chuyến đi này.`}
-                  type="success"
-                  showIcon
-                  style={{ borderRadius: 8 }}
-                />
+                {(result.eligibleVehicles?.length ?? 0) === 0 ? (
+                  <Alert
+                    message={<Text strong style={{ color: '#27272a' }}>Kiểm tra tải trọng thành công — cần chia 2 xe</Text>}
+                    description="Không có xe đơn lẻ nào đủ tải cho tuyến này, nhưng hệ thống xác nhận có thể chia tải thành 2 xe (tối đa cho phép). Vào mục 'Gợi ý phân xe tự động' để xem chi tiết phương án 2 xe và tiến hành phân xe."
+                    type="success"
+                    showIcon
+                    style={{ borderRadius: 8 }}
+                  />
+                ) : (
+                  <Alert
+                    message={<Text strong style={{ color: '#27272a' }}>Kiểm tra tải trọng thành công</Text>}
+                    description={`Tìm thấy các xe đơn lẻ trong fleet có đủ sức chứa cho chuyến đi này.`}
+                    type="success"
+                    showIcon
+                    style={{ borderRadius: 8 }}
+                  />
+                )}
 
                 {/* Check if vehicle list is provided by backend */}
                 {((result.eligibleVehicles && result.eligibleVehicles.length > 0) || (result.ineligibleVehicles && result.ineligibleVehicles.length > 0)) ? (
@@ -430,7 +446,7 @@ const CapacityValidationPage: React.FC = () => {
                         bodyStyle={{ padding: 16 }}
                       >
                         <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
-                          {result.eligibleVehicles.map((vehicle, idx) => (
+                          {(showAllEligible ? result.eligibleVehicles : result.eligibleVehicles.slice(0, ELIGIBLE_PREVIEW_COUNT)).map((vehicle, idx) => (
                             <Card
                               key={vehicle.vehicleId}
                               style={{
@@ -445,8 +461,8 @@ const CapacityValidationPage: React.FC = () => {
                                 <div>
                                   <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
                                     <Text strong style={{ fontSize: 16 }}>{vehicle.plateNumber}</Text>
-                                    <Tag color="blue">{vehicle.vehicleType}</Tag>
-                                    {idx === 0 && <Tag color="success" style={{ fontWeight: 600 }}>Xe nhỏ nhất đủ tải</Tag>}
+                                    <StatusBadge color="blue">{vehicle.vehicleType}</StatusBadge>
+                                    {idx === 0 && <StatusBadge color="success">Xe nhỏ nhất đủ tải</StatusBadge>}
                                   </div>
                                   <div style={{ marginTop: 8, fontSize: 13, color: '#52525b' }}>
                                     <div>Giới hạn: <Text strong>{formatVolume(vehicle.maxVolumeM3)} m³</Text> / <Text strong>{formatWeight(vehicle.maxWeightKg)} kg</Text></div>
@@ -461,6 +477,18 @@ const CapacityValidationPage: React.FC = () => {
                               </div>
                             </Card>
                           ))}
+                          {result.eligibleVehicles.length > ELIGIBLE_PREVIEW_COUNT && (
+                            <Button
+                              type="dashed"
+                              block
+                              icon={showAllEligible ? <UpOutlined /> : <DownOutlined />}
+                              onClick={() => setShowAllEligible((prev) => !prev)}
+                            >
+                              {showAllEligible
+                                ? 'Thu gọn'
+                                : `Xem thêm ${result.eligibleVehicles.length - ELIGIBLE_PREVIEW_COUNT} xe`}
+                            </Button>
+                          )}
                         </div>
                       </Card>
                     )}
@@ -473,35 +501,55 @@ const CapacityValidationPage: React.FC = () => {
                             Danh sách xe không đủ tải ({result.ineligibleVehicles.length})
                           </Text>
                         }
+                        extra={
+                          <Button
+                            type="link"
+                            size="small"
+                            icon={showIneligible ? <UpOutlined /> : <DownOutlined />}
+                            onClick={() => setShowIneligible((prev) => !prev)}
+                          >
+                            {showIneligible ? 'Ẩn' : 'Xem'}
+                          </Button>
+                        }
                         style={{ borderRadius: 12, boxShadow: '0 4px 12px rgba(0,0,0,0.02)' }}
                         bodyStyle={{ padding: 0 }}
                       >
-                        <Table
-                          dataSource={result.ineligibleVehicles}
-                          rowKey="vehicleId"
-                          pagination={false}
-                          size="small"
-                          columns={[
-                            {
-                              title: 'Biển số',
-                              dataIndex: 'plateNumber',
-                              key: 'plateNumber',
-                              render: (val: string) => <Text strong>{val}</Text>
-                            },
-                            {
-                              title: 'Loại xe',
-                              dataIndex: 'vehicleType',
-                              key: 'vehicleType',
-                              render: (val: string) => <Tag>{val}</Tag>
-                            },
-                            {
-                              title: 'Lý do không đạt',
-                              dataIndex: 'failureReason',
-                              key: 'failureReason',
-                              render: (val: string) => <Text type="danger" style={{ fontSize: 12 }}>{val || 'Không đủ tải'}</Text>
-                            }
-                          ]}
-                        />
+                        {showIneligible && (
+                          <Table
+                            dataSource={result.ineligibleVehicles}
+                            rowKey="vehicleId"
+                            pagination={false}
+                            size="middle"
+                            columns={[
+                              {
+                                title: 'Biển số',
+                                dataIndex: 'plateNumber',
+                                key: 'plateNumber',
+                                width: 150,
+                                render: (val: string) => <Text strong>{val}</Text>
+                              },
+                              {
+                                title: 'Loại xe',
+                                dataIndex: 'vehicleType',
+                                key: 'vehicleType',
+                                width: 120,
+                                render: (val: string) => <StatusBadge>{val}</StatusBadge>
+                              },
+                              {
+                                title: 'Lý do không đạt',
+                                dataIndex: 'failureReason',
+                                key: 'failureReason',
+                                render: (val: string) => (
+                                  <div style={{ padding: '4px 0', lineHeight: '1.6' }}>
+                                    <Text type="danger" style={{ fontSize: 13 }}>
+                                      {val || 'Không đủ tải'}
+                                    </Text>
+                                  </div>
+                                )
+                              }
+                            ]}
+                          />
+                        )}
                       </Card>
                     )}
                   </>
@@ -521,7 +569,7 @@ const CapacityValidationPage: React.FC = () => {
                       Tiến hành phân xe
                     </Button>
                   </Tooltip>
-                  {isDispatcher && (
+                  {canValidateCapacity && (
                     <Button size="large" onClick={handleValidate} loading={validating} style={{ borderRadius: 6 }}>
                       Kiểm tra lại
                     </Button>
@@ -546,6 +594,8 @@ const CapacityValidationPage: React.FC = () => {
                           {result.bindingConstraint === 'VOLUME' && 'Vượt giới hạn thể tích'}
                           {result.bindingConstraint === 'WEIGHT' && 'Vượt giới hạn tải trọng'}
                           {result.bindingConstraint === 'BOTH' && 'Vượt cả giới hạn thể tích và tải trọng'}
+                          {result.bindingConstraint === 'TIME_WINDOW' && 'Vi phạm khung giờ giao hàng (không liên quan tải trọng)'}
+                          {result.bindingConstraint === 'ROUTE_CONSTRAINT' && 'Vi phạm ràng buộc tuyến/cửa hàng (không liên quan tải trọng)'}
                           {!result.bindingConstraint && 'Vượt giới hạn tải trọng'}
                         </Text>
                       </div>
@@ -567,7 +617,7 @@ const CapacityValidationPage: React.FC = () => {
                   <Card
                     title={
                       <Text strong style={{ fontSize: 15 }}>
-                        Chi tiết giới hạn tải trọng của đội xe
+                        Chi tiết giới hạn tải trọng của đội xe ({result.ineligibleVehicles.length})
                       </Text>
                     }
                     style={{ borderRadius: 12, boxShadow: '0 4px 12px rgba(0,0,0,0.02)' }}
@@ -576,23 +626,26 @@ const CapacityValidationPage: React.FC = () => {
                     <Table
                       dataSource={result.ineligibleVehicles}
                       rowKey="vehicleId"
-                      pagination={false}
-                      size="small"
+                      pagination={result.ineligibleVehicles.length > 5 ? { pageSize: 5, showSizeChanger: false } : false}
+                      size="middle"
                       columns={[
                         {
                           title: 'Biển số',
                           dataIndex: 'plateNumber',
                           key: 'plateNumber',
+                          width: 120,
                           render: (val: string) => <Text strong>{val}</Text>
                         },
                         {
                           title: 'Loại xe',
                           dataIndex: 'vehicleType',
                           key: 'vehicleType',
+                          width: 100,
                         },
                         {
                           title: 'Giới hạn tối đa',
                           key: 'limits',
+                          width: 180,
                           render: (_, vehicle: IneligibleVehicle) => (
                             <span style={{ fontSize: 13 }}>
                               {formatVolume(vehicle.maxVolumeM3)} m³ / {formatWeight(vehicle.maxWeightKg)} kg
@@ -602,8 +655,9 @@ const CapacityValidationPage: React.FC = () => {
                         {
                           title: 'Kết quả kiểm tra',
                           key: 'results',
+                          width: 180,
                           render: (_, vehicle: IneligibleVehicle) => (
-                            <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
+                            <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
                               <div>m³: {renderConstraintIcon(vehicle.volumeCheckResult)}</div>
                               <div>kg: {renderConstraintIcon(vehicle.weightCheckResult)}</div>
                             </div>
@@ -613,7 +667,11 @@ const CapacityValidationPage: React.FC = () => {
                           title: 'Lý do không đạt',
                           dataIndex: 'failureReason',
                           key: 'failureReason',
-                          render: (val: string) => <Text type="danger" style={{ fontSize: 12 }}>{val}</Text>
+                          render: (val: string) => (
+                            <div style={{ padding: '4px 0', lineHeight: '1.6' }}>
+                              <Text type="danger" style={{ fontSize: 13 }}>{val}</Text>
+                            </div>
+                          )
                         }
                       ]}
                     />
@@ -632,12 +690,12 @@ const CapacityValidationPage: React.FC = () => {
                   <Button size="large" onClick={() => navigate(`/dispatcher/trip-drafts/${id}`)} style={{ borderRadius: 6 }}>
                     Quay lại xem Trip Draft
                   </Button>
-                  {isDispatcher && (
+                  {canValidateCapacity && (
                     <Button size="large" onClick={handleValidate} loading={validating} style={{ borderRadius: 6 }}>
                       Kiểm tra lại
                     </Button>
                   )}
-                  {isDispatcher && result?.validationPassed && (
+                  {canValidateCapacity && result?.validationPassed && (
                     <Button
                       type="primary"
                       size="large"

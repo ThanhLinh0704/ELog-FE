@@ -288,7 +288,6 @@ describe('US-05 — Route Management', () => {
 
   it('TC-08: tạo route thiếu mã và tên thì hiển thị validation errors', () => {
     cy.intercept('POST', '**/api/routes').as('createRouteShouldNotRun');
-
     visitAs('/admin/routes/new');
     cy.contains('button', 'Tạo tuyến').click();
 
@@ -299,7 +298,6 @@ describe('US-05 — Route Management', () => {
 
   it('TC-09: mã route chứa ký tự không hợp lệ thì frontend không gọi API', () => {
     cy.intercept('POST', '**/api/routes').as('createRouteShouldNotRun');
-
     visitAs('/admin/routes/new');
     cy.get('input[placeholder="Ví dụ: RT-BT-01"]').type('RT BT 01!');
     cy.get('input[placeholder="Nhập tên tuyến"]').type('Tuyến mã sai format');

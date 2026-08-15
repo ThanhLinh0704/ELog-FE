@@ -43,3 +43,14 @@ export interface StoreSearchResult {
   isActive: boolean;
   routeId: string | null;
 }
+
+export interface RouteDirections {
+  routeId: string;
+  routeCode: string;
+  routeName: string;
+  routePolyline: string | null;
+  totalDistanceKm: number | null;
+  totalDurationMin: number | null;
+  warehouseLat: number;
+  warehouseLng: number;
+}

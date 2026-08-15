@@ -10,6 +10,5 @@ export const USER_ROLES: UserRole[] = [
   { value: 'SYSTEM_ADMIN', label: 'System Admin' },
   { value: 'DISPATCHER', label: 'Điều phối viên' },
   { value: 'LOGISTICS_MANAGER', label: 'Quản lý logistics' },
-  { value: 'WAREHOUSE_STAFF', label: 'Nhân viên kho' },
   { value: 'DRIVER', label: 'Tài xế' },
 ];

@@ -183,7 +183,6 @@ describe('US-04 — Store Management', () => {
 
     cy.contains('button', 'Thêm cửa hàng').click();
     fillRequiredStoreFields('ST-BT-001', 'Store trùng mã', '99 Nguyễn Oanh, Gò Vấp');
-
     cy.get('.ant-modal').within(() => {
       cy.contains('button', 'Tạo cửa hàng').click();
     });
@@ -228,7 +227,6 @@ describe('US-04 — Store Management', () => {
   it('TC-07: tạo store thiếu field bắt buộc thì hiển thị validation errors', () => {
     interceptStoreList();
     cy.intercept('POST', '**/api/stores').as('createStoreShouldNotRun');
-
     visitAs('/stores');
     cy.wait('@getStores');
 
@@ -246,7 +244,6 @@ describe('US-04 — Store Management', () => {
   it('TC-08: số điện thoại sai format thì frontend không gọi API', () => {
     interceptStoreList();
     cy.intercept('POST', '**/api/stores').as('createStoreShouldNotRun');
-
     visitAs('/stores');
     cy.wait('@getStores');
 
@@ -270,7 +267,6 @@ describe('US-04 — Store Management', () => {
 
   it('TC-09: DRIVER không có quyền đọc Store Management thì bị đưa về dashboard', () => {
     cy.intercept('GET', '**/api/stores*').as('getStoresShouldNotRun');
-
     visitAs('/stores', ['DRIVER'], 'driver01');
 
     cy.url().should('include', '/dashboard');
@@ -298,7 +294,6 @@ describe('US-04 — Store Management', () => {
   it('TC-11: nhập longitude nhưng thiếu latitude bị chặn inline', () => {
     interceptStoreList();
     cy.intercept('POST', '**/api/stores').as('storeLongitudeOnlyShouldNotRun');
-
     visitAs('/stores');
     cy.wait('@getStores');
     cy.contains('button', 'Thêm cửa hàng').click();

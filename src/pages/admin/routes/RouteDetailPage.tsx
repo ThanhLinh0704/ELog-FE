@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate, useParams, Link } from 'react-router-dom';
 import {
-  Card, Row, Col, Space, Button, Breadcrumb, Tag, Alert, Tooltip, Empty, Spin, message, Typography, Result
+  Card, Row, Col, Space, Button, Breadcrumb, Alert, Tooltip, Empty, Spin, message, Typography, Result
 } from 'antd';
 import { ArrowLeft, Edit3, Lock, Unlock, Plus } from 'lucide-react';
 import {
@@ -20,6 +20,7 @@ import {
   verticalListSortingStrategy
 } from '@dnd-kit/sortable';
 import AdminShell from '../../../components/AdminShell';
+import StatusBadge from '../../../components/StatusBadge';
 import type { DeliveryRoute, RouteStop, StoreSearchResult } from '../../../types/route';
 import { routeApi } from '../../../api/routeApi';
 import { USE_MOCK_API } from '../../../config';
@@ -31,6 +32,8 @@ import AddStoreDrawer from './components/AddStoreDrawer';
 import ActivateRouteModal from './components/ActivateRouteModal';
 import DeactivateRouteModal from './components/DeactivateRouteModal';
 import DeleteStopModal from './components/DeleteStopModal';
+import { usePermissions } from '../../../hooks/usePermissions';
+import { PERMISSIONS } from '../../../constants/permissions';
 
 const { Paragraph, Text } = Typography;
 
@@ -51,7 +54,8 @@ const RouteDetailPage: React.FC = () => {
     console.error('Failed to parse roles', e);
   }
 
-  const isAdmin = roles.includes('SYSTEM_ADMIN');
+  const { can } = usePermissions();
+  const canWriteRoute = can(PERMISSIONS.ROUTE_WRITE);
   const currentUser = {
     id: Number(userId),
     username,
@@ -107,7 +111,7 @@ const RouteDetailPage: React.FC = () => {
 
   // Handler for activating the route
   const handleActivate = async () => {
-    if (!route || !routeId) return;
+    if (!route || !routeId || !canWriteRoute) return;
     setActionLoading(true);
     try {
       const updated = await routeApi.updateStatus(routeId, 'ACTIVE');
@@ -123,7 +127,7 @@ const RouteDetailPage: React.FC = () => {
 
   // Handler for deactivating the route
   const handleDeactivate = async () => {
-    if (!route || !routeId) return;
+    if (!route || !routeId || !canWriteRoute) return;
     setActionLoading(true);
     try {
       const updated = await routeApi.updateStatus(routeId, 'INACTIVE');
@@ -139,7 +143,7 @@ const RouteDetailPage: React.FC = () => {
 
   // Handler for drag end stop reordering
   const handleDragEnd = async ({ active, over }: DragEndEvent) => {
-    if (!over || active.id === over.id || !routeId || !route) return;
+    if (!over || active.id === over.id || !routeId || !route || !canWriteRoute) return;
 
     const previousStops = [...stops];
 
@@ -171,7 +175,7 @@ const RouteDetailPage: React.FC = () => {
 
   // Handler for adding stop
   const handleAddStore = async (store: StoreSearchResult) => {
-    if (!routeId || !route) return;
+    if (!routeId || !route || !canWriteRoute) return;
     try {
       const newStop = await routeApi.addStop(routeId, store);
       const newStops = [...stops, newStop];
@@ -193,13 +197,17 @@ const RouteDetailPage: React.FC = () => {
 
   // Trigger delete stop dialog
   const handleOpenDelete = (stop: RouteStop) => {
+    if (!canWriteRoute) {
+      return;
+    }
+
     setActionStop(stop);
     setDeleteVisible(true);
   };
 
   // Confirm delete stop
   const handleDeleteStop = async () => {
-    if (!actionStop || !route || !routeId) return;
+    if (!actionStop || !route || !routeId || !canWriteRoute) return;
     setActionLoading(true);
     try {
       let autoDeactivated = false;
@@ -323,7 +331,7 @@ const RouteDetailPage: React.FC = () => {
         </div>
 
         {/* Read-only Info Banner */}
-        {!isAdmin && (
+        {!canWriteRoute && (
           <Alert
             message="Thông tin thông báo"
             description="ℹ️ Dữ liệu tuyến chỉ được chỉnh sửa bởi Quản trị viên hệ thống."
@@ -364,7 +372,7 @@ const RouteDetailPage: React.FC = () => {
                 bordered={false}
                 style={{ boxShadow: '0 1px 2px rgba(0,0,0,0.03)' }}
                 extra={
-                  isAdmin && (
+                  canWriteRoute && (
                     <Tooltip title="Chỉnh sửa thông tin">
                       <Button
                         type="text"
@@ -390,9 +398,9 @@ const RouteDetailPage: React.FC = () => {
                     <div>
                       <Text type="secondary" style={{ fontSize: 12, display: 'block' }}>TRẠNG THÁI</Text>
                       <div style={{ marginTop: 4 }}>
-                        <Tag color={route.status === 'ACTIVE' ? 'success' : 'default'} style={{ borderRadius: 4, fontWeight: 500 }}>
+                        <StatusBadge color={route.status === 'ACTIVE' ? 'success' : 'default'}>
                           {route.status === 'ACTIVE' ? 'Đang hoạt động' : 'Chưa kích hoạt'}
-                        </Tag>
+                        </StatusBadge>
                       </div>
                     </div>
 
@@ -421,7 +429,7 @@ const RouteDetailPage: React.FC = () => {
                     </div>
 
                     {/* Admin Status Toggles */}
-                    {isAdmin && (
+                    {canWriteRoute && (
                       <div style={{ marginTop: 12 }}>
                         {route.status === 'ACTIVE' ? (
                           <Button
@@ -459,13 +467,13 @@ const RouteDetailPage: React.FC = () => {
                 title={
                   <Space style={{ width: '100%', justifyContent: 'space-between' }}>
                     <span style={{ fontSize: 16, fontWeight: 700 }}>Danh sách điểm dừng</span>
-                    <Tag color="blue" style={{ borderRadius: 4, fontWeight: 600 }}>{stops.length} điểm dừng</Tag>
+                    <StatusBadge color="blue">{stops.length} điểm dừng</StatusBadge>
                   </Space>
                 }
                 bordered={false}
                 style={{ boxShadow: '0 1px 2px rgba(0,0,0,0.03)' }}
                 extra={
-                  isAdmin && (
+                  canWriteRoute && (
                     <Button
                       type="primary"
                       icon={<Plus size={14} />}
@@ -481,7 +489,7 @@ const RouteDetailPage: React.FC = () => {
                   <div style={{ textAlign: 'center', padding: '40px 0' }}>
                     <Empty
                       description={
-                        isAdmin ? (
+                        canWriteRoute ? (
                           <div>
                             <Text strong style={{ fontSize: 15, display: 'block' }}>Tuyến chưa có điểm dừng.</Text>
                             <Text type="secondary" style={{ fontSize: 13 }}>Hãy thêm ít nhất 2 điểm dừng để có thể kích hoạt tuyến.</Text>
@@ -491,7 +499,7 @@ const RouteDetailPage: React.FC = () => {
                         )
                       }
                     >
-                      {isAdmin && (
+                      {canWriteRoute && (
                         <Button type="primary" icon={<Plus size={14} />} onClick={() => setDrawerVisible(true)} style={{ borderRadius: 6 }}>
                           Thêm điểm dừng
                         </Button>
@@ -535,7 +543,7 @@ const RouteDetailPage: React.FC = () => {
                             <SortableStopItem
                               key={stop.id}
                               stop={stop}
-                              readOnly={!isAdmin}
+                              readOnly={!canWriteRoute}
                               onDelete={handleOpenDelete}
                             />
                           ))}

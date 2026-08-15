@@ -91,31 +91,17 @@ p {
   margin: 0;
 }
 
-code,
-.counter {
-  font-family: var(--mono);
-  display: inline-flex;
-  border-radius: 4px;
-  color: var(--text-h);
-}
-
-code {
-  font-size: 15px;
-  line-height: 135%;
-  padding: 4px 8px;
-  background: var(--code-bg);
-}
-
 /* ─── AdminShell Layout & Styling ─── */
 .elog-admin-sider {
-  border-right: 1px solid rgba(255, 255, 255, 0.05);
+  border-right: 1px solid rgba(255, 255, 255, 0.10);
   position: fixed;
   height: 100vh;
   left: 0;
   top: 0;
   bottom: 0;
   z-index: 100;
-  background: #0d1727;
+  background: #172b4d;
+  box-shadow: 2px 0 12px rgba(15, 23, 42, 0.12);
 }
 
 .elog-sidebar-logo {
@@ -124,23 +110,21 @@ code {
   align-items: center;
   padding: 0 24px;
   cursor: pointer;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
-  background: #0d1727;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.10);
+  background: #172b4d;
 }
 
 .elog-logo-badge {
   width: 34px;
   height: 34px;
   border-radius: 10px;
-  background: linear-gradient(135deg, #06b6d4 0%, #10b981 100%);
+  background: linear-gradient(135deg, #5a8cd6 0%, #172b4d 100%);
   display: flex;
   align-items: center;
   justify-content: center;
   margin-right: 12px;
-  font-weight: 800;
-  font-size: 18px;
   color: #fff;
-  box-shadow: 0 4px 12px rgba(6, 182, 212, 0.2);
+  box-shadow: 0 4px 12px rgba(79, 127, 196, 0.35);
 }
 
 .elog-sidebar-menu-wrapper {
@@ -155,10 +139,30 @@ code {
   overflow-x: hidden;
 }
 
+/* Left accent bar on the active nav item — antd Menu has no native affordance for this */
+.elog-sidebar-menu-scrollable .ant-menu-item {
+  position: relative;
+}
+
+.elog-sidebar-menu-scrollable .ant-menu-item-selected::before {
+  content: '';
+  position: absolute;
+  left: -12px;
+  top: 8px;
+  bottom: 8px;
+  width: 3px;
+  border-radius: 0 3px 3px 0;
+  background: #4f7fc4;
+}
+
+.elog-sidebar-menu-scrollable .ant-menu-item-selected {
+  font-weight: 600;
+}
+
 .elog-sidebar-profile {
   padding: 16px 24px;
-  border-top: 1px solid rgba(255, 255, 255, 0.05);
-  background-color: #09101c;
+  border-top: 1px solid rgba(255, 255, 255, 0.10);
+  background-color: #0f1d33;
 }
 
 .elog-profile-info {
@@ -180,15 +184,21 @@ code {
 .elog-logout-btn {
   width: 100%;
   border-radius: 8px;
-  border-color: rgba(255, 255, 255, 0.1) !important;
-  color: rgba(255, 255, 255, 0.85) !important;
-  background-color: rgba(255, 255, 255, 0.03) !important;
+  border-color: rgba(255, 255, 255, 0.2) !important;
+  color: #fecaca !important;
+  background-color: rgba(255, 255, 255, 0.06) !important;
   display: flex;
   align-items: center;
   justify-content: center;
   gap: 8px;
   font-size: 13px;
   font-weight: 500;
+}
+
+.elog-logout-btn:hover {
+  border-color: rgba(232, 93, 104, 0.6) !important;
+  color: #ffffff !important;
+  background-color: rgba(232, 93, 104, 0.25) !important;
 }
 
 .elog-admin-header {
@@ -198,8 +208,49 @@ code {
   align-items: center;
   justify-content: space-between;
   height: 64px;
-  border-bottom: 1px solid #f0f0f0;
+  border-bottom: 1px solid #e4e8ee;
   position: sticky;
   top: 0;
   z-index: 99;
+}
+
+.elog-admin-header .ant-input-affix-wrapper {
+  background: #f3f5f7;
+  border-color: transparent;
+}
+
+.elog-admin-header .ant-input-affix-wrapper:hover,
+.elog-admin-header .ant-input-affix-wrapper:focus,
+.elog-admin-header .ant-input-affix-wrapper-focused {
+  background: #fff;
+  border-color: #4f7fc4;
+}
+
+.elog-admin-header .ant-input-affix-wrapper .ant-input {
+  background: transparent;
+}
+
+.elog-header-icon-btn {
+  width: 40px;
+  height: 40px;
+  border-radius: 10px;
+}
+
+.elog-header-icon-btn:hover {
+  background: #f3f5f7 !important;
+}
+
+/* --- Disable Browser Autofill Background Highlight --- */
+input:-webkit-autofill,
+input:-webkit-autofill:hover,
+input:-webkit-autofill:focus,
+input:-webkit-autofill:active,
+.ant-input:-webkit-autofill,
+.ant-input:-webkit-autofill:hover,
+.ant-input:-webkit-autofill:focus,
+.ant-input:-webkit-autofill:active {
+  -webkit-box-shadow: 0 0 0 1000px #f8fafc inset !important;
+  box-shadow: 0 0 0 1000px #f8fafc inset !important;
+  -webkit-text-fill-color: #1e293b !important;
+  transition: background-color 5000s ease-in-out 0s !important;
 }

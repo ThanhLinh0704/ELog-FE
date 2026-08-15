@@ -4,17 +4,23 @@ import {
   Form, Input, InputNumber, Button, Card, Row, Col, Breadcrumb,
   Result, Typography, message, Spin, Switch, Select, Space
 } from 'antd';
-import { ArrowLeft, HelpCircle } from 'lucide-react';
+import { ArrowLeft, HelpCircle, PackagePlus } from 'lucide-react';
 import AdminShell from '../../../components/AdminShell';
+import PageHeader from '../../../components/PageHeader';
+import { palette } from '../../../theme/tokens';
 import { productApi } from '../../../api/productApi';
 import { calculateVolumeM3 } from '../../../utils/productCalculations';
+import { PERMISSIONS } from '../../../constants/permissions';
+import { usePermissions } from '../../../hooks/usePermissions';
 
 const { Paragraph, Text } = Typography;
 
 const ProductFormPage: React.FC = () => {
   const navigate = useNavigate();
   const { productId } = useParams<{ productId: string }>();
+  const { can } = usePermissions();
   const isEditMode = !!productId;
+  const canWriteProduct = can(PERMISSIONS.PRODUCT_WRITE);
 
   // Retrieve current user roles from localStorage
   const username = localStorage.getItem('username') || '';
@@ -29,7 +35,6 @@ const ProductFormPage: React.FC = () => {
     console.error('Failed to parse roles', e);
   }
 
-  const isSystemAdmin = roles.includes('SYSTEM_ADMIN');
   const currentUser = {
     id: Number(userId),
     username,
@@ -128,7 +133,7 @@ const ProductFormPage: React.FC = () => {
   };
 
   // Render 403 page if not authorized
-  if (!isSystemAdmin) {
+  if (!canWriteProduct) {
     return (
       <AdminShell currentUser={currentUser}>
         <Result
@@ -174,15 +179,17 @@ const ProductFormPage: React.FC = () => {
               { title: <Link to="/admin/products">Quản lý sản phẩm</Link> },
               { title: isEditMode ? 'Chỉnh sửa sản phẩm' : 'Thêm sản phẩm' }
             ]}
+            style={{ marginBottom: 12, fontSize: 13 }}
           />
-          <h2 style={{ margin: '8px 0 0 0', fontSize: 24, fontWeight: 700, color: '#1f1f1f' }}>
-            {isEditMode ? 'Chỉnh sửa sản phẩm' : 'Thêm sản phẩm'}
-          </h2>
-          <p style={{ margin: '4px 0 0 0', color: '#8c8c8c' }}>
-            {isEditMode
-              ? 'Cập nhật thông tin và thông số vật lý của sản phẩm.'
-              : 'Khai báo thông tin và kích thước bao bì của sản phẩm.'}
-          </p>
+          <PageHeader
+            title={isEditMode ? 'Chỉnh sửa sản phẩm' : 'Thêm sản phẩm'}
+            subtitle={
+              isEditMode
+                ? 'Cập nhật thông tin và thông số vật lý của sản phẩm.'
+                : 'Khai báo thông tin và kích thước bao bì của sản phẩm.'
+            }
+            icon={<PackagePlus size={20} />}
+          />
         </div>
 
         {/* Back Link */}
@@ -198,7 +205,7 @@ const ProductFormPage: React.FC = () => {
         </div>
 
         {loading ? (
-          <Card bordered={false} style={{ textAlign: 'center', padding: '60px 0' }}>
+          <Card bordered={false} style={{ textAlign: 'center', padding: '60px 0', borderRadius: 14 }}>
             <Spin size="large" />
             <Paragraph style={{ marginTop: 16 }}>Đang tải dữ liệu sản phẩm...</Paragraph>
           </Card>
@@ -218,13 +225,13 @@ const ProductFormPage: React.FC = () => {
                   <Card
                     title="Thông tin cơ bản"
                     bordered={false}
-                    style={{ boxShadow: '0 1px 2px 0 rgba(0, 0, 0, 0.03)' }}
+                    style={{ borderRadius: 14, boxShadow: palette.cardShadow }}
                   >
                     {/* SKU input */}
                     <Form.Item
                       label={
-                        <span style={{ fontWeight: 600, color: '#475569' }}>
-                          SKU <span style={{ color: '#ff4d4f' }}>*</span>
+                        <span style={{ fontWeight: 600, color: palette.textBody }}>
+                          SKU <span style={{ color: palette.danger }}>*</span>
                         </span>
                       }
                       name="sku"
@@ -254,8 +261,8 @@ const ProductFormPage: React.FC = () => {
                     {/* Product Name input */}
                     <Form.Item
                       label={
-                        <span style={{ fontWeight: 600, color: '#475569' }}>
-                          Tên sản phẩm <span style={{ color: '#ff4d4f' }}>*</span>
+                        <span style={{ fontWeight: 600, color: palette.textBody }}>
+                          Tên sản phẩm <span style={{ color: palette.danger }}>*</span>
                         </span>
                       }
                       name="productName"
@@ -282,12 +289,12 @@ const ProductFormPage: React.FC = () => {
                   <Card
                     title="Đặc tính & Mô tả đóng gói"
                     bordered={false}
-                    style={{ boxShadow: '0 1px 2px 0 rgba(0, 0, 0, 0.03)' }}
+                    style={{ borderRadius: 14, boxShadow: palette.cardShadow }}
                   >
                     <Row gutter={16}>
                       <Col xs={24} sm={12}>
                         <Form.Item
-                          label={<span style={{ fontWeight: 600, color: '#475569' }}>Hình dáng đóng gói</span>}
+                          label={<span style={{ fontWeight: 600, color: palette.textBody }}>Hình dáng đóng gói</span>}
                           name="shape"
                         >
                           <Select placeholder="Chọn hình dáng đóng gói" allowClear>
@@ -301,7 +308,7 @@ const ProductFormPage: React.FC = () => {
 
                       <Col xs={24} sm={12}>
                         <Form.Item
-                          label={<span style={{ fontWeight: 600, color: '#475569' }}>Hàng dễ vỡ</span>}
+                          label={<span style={{ fontWeight: 600, color: palette.textBody }}>Hàng dễ vỡ</span>}
                           name="isFragile"
                           valuePropName="checked"
                         >
@@ -311,7 +318,7 @@ const ProductFormPage: React.FC = () => {
                     </Row>
 
                     <Form.Item
-                      label={<span style={{ fontWeight: 600, color: '#475569' }}>Đường dẫn ảnh đóng gói (URL)</span>}
+                      label={<span style={{ fontWeight: 600, color: palette.textBody }}>Đường dẫn ảnh đóng gói (URL)</span>}
                       name="packageImageUrl"
                       rules={[{ max: 512, message: 'Đường dẫn ảnh không quá 512 ký tự.' }]}
                     >
@@ -319,7 +326,7 @@ const ProductFormPage: React.FC = () => {
                     </Form.Item>
 
                     <Form.Item
-                      label={<span style={{ fontWeight: 600, color: '#475569' }}>Mô tả sản phẩm</span>}
+                      label={<span style={{ fontWeight: 600, color: palette.textBody }}>Mô tả sản phẩm</span>}
                       name="description"
                     >
                       <Input.TextArea placeholder="Nhập mô tả sản phẩm..." rows={3} />
@@ -333,12 +340,12 @@ const ProductFormPage: React.FC = () => {
                 <Card
                   title="Thông số vật lý"
                   bordered={false}
-                  style={{ height: '100%', boxShadow: '0 1px 2px 0 rgba(0, 0, 0, 0.03)' }}
+                  style={{ height: '100%', borderRadius: 14, boxShadow: palette.cardShadow }}
                 >
                   <Row gutter={[16, 12]}>
                     <Col xs={24} sm={12}>
                       <Form.Item
-                        label={<span style={{ fontWeight: 600, color: '#475569' }}>Dài (m) <span style={{ color: '#ff4d4f' }}>*</span></span>}
+                        label={<span style={{ fontWeight: 600, color: palette.textBody }}>Dài (m) <span style={{ color: palette.danger }}>*</span></span>}
                         name="lengthM"
                         rules={[
                           { required: true, message: 'Vui lòng nhập chiều dài' },
@@ -356,7 +363,7 @@ const ProductFormPage: React.FC = () => {
 
                     <Col xs={24} sm={12}>
                       <Form.Item
-                        label={<span style={{ fontWeight: 600, color: '#475569' }}>Trọng lượng (kg) <span style={{ color: '#ff4d4f' }}>*</span></span>}
+                        label={<span style={{ fontWeight: 600, color: palette.textBody }}>Trọng lượng (kg) <span style={{ color: palette.danger }}>*</span></span>}
                         name="weightKg"
                         rules={[
                           { required: true, message: 'Vui lòng nhập trọng lượng' },
@@ -374,7 +381,7 @@ const ProductFormPage: React.FC = () => {
 
                     <Col xs={24} sm={12}>
                       <Form.Item
-                        label={<span style={{ fontWeight: 600, color: '#475569' }}>Rộng (m) <span style={{ color: '#ff4d4f' }}>*</span></span>}
+                        label={<span style={{ fontWeight: 600, color: palette.textBody }}>Rộng (m) <span style={{ color: palette.danger }}>*</span></span>}
                         name="widthM"
                         rules={[
                           { required: true, message: 'Vui lòng nhập chiều rộng' },
@@ -392,7 +399,7 @@ const ProductFormPage: React.FC = () => {
 
                     <Col xs={24} sm={12}>
                       <Form.Item
-                        label={<span style={{ fontWeight: 600, color: '#475569' }}>Cao (m) <span style={{ color: '#ff4d4f' }}>*</span></span>}
+                        label={<span style={{ fontWeight: 600, color: palette.textBody }}>Cao (m) <span style={{ color: palette.danger }}>*</span></span>}
                         name="heightM"
                         rules={[
                           { required: true, message: 'Vui lòng nhập chiều cao' },
@@ -415,19 +422,19 @@ const ProductFormPage: React.FC = () => {
                       Thể tích (m³)
                     </Text>
                     <div style={{
-                      backgroundColor: '#f8fafc',
+                      backgroundColor: palette.bgLayout,
                       padding: '12px 16px',
-                      borderRadius: 8,
-                      border: '1px solid #e2e8f0',
+                      borderRadius: 10,
+                      border: `1px solid ${palette.borderSoft}`,
                       fontSize: 16,
                       fontWeight: 700,
-                      color: calculatedVolume != null ? '#0f172a' : '#94a3b8'
+                      color: calculatedVolume != null ? palette.textDark : palette.textFaint
                     }}>
                       {calculatedVolume != null ? `${calculatedVolume.toFixed(6)} m³` : '—'}
                     </div>
                     <div style={{ marginTop: 8, display: 'flex', gap: 6, alignItems: 'flex-start' }}>
-                      <HelpCircle size={14} style={{ color: '#64748b', marginTop: 2, flexShrink: 0 }} />
-                      <span style={{ fontSize: 11.5, color: '#64748b', lineHeight: 1.3 }}>
+                      <HelpCircle size={14} style={{ color: palette.textMuted, marginTop: 2, flexShrink: 0 }} />
+                      <span style={{ fontSize: 11.5, color: palette.textMuted, lineHeight: 1.3 }}>
                         Nhập kích thước bao bì thực tế, bao gồm hộp đóng gói, không phải kích thước sản phẩm trần.
                       </span>
                     </div>
@@ -443,9 +450,9 @@ const ProductFormPage: React.FC = () => {
               gap: 12,
               marginTop: 24,
               padding: '16px 24px',
-              backgroundColor: '#fff',
-              borderRadius: 12,
-              boxShadow: '0 1px 2px 0 rgba(0, 0, 0, 0.03)'
+              backgroundColor: palette.bgCard,
+              borderRadius: 14,
+              boxShadow: palette.cardShadow
             }}>
               <Button
                 disabled={submitting}

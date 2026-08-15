@@ -24,24 +24,24 @@ function unwrap<T>(res: { data: ApiResponseWrapper<T> }): T {
 // ── Dashboard APIs (DISPATCHER / LOGISTICS_MANAGER) ──────────────────────────
 
 /**
- * GET /api/dashboard/active-trips?date=YYYY-MM-DD
+ * GET /api/v1/dashboard/active-trips?date=YYYY-MM-DD
  * Returns active trips for a date (DISPATCHED/IN_PROGRESS/COMPLETED).
  */
 export async function getActiveTrips(date?: string): Promise<ActiveTripsResponse> {
   const res = await axiosInstance.get<ApiResponseWrapper<ActiveTripsResponse>>(
-    '/api/dashboard/active-trips',
+    '/api/v1/dashboard/active-trips',
     { params: date ? { date } : undefined }
   );
   return unwrap(res);
 }
 
 /**
- * GET /api/trips/{id}/progress
+ * GET /api/v1/trips/{id}/progress
  * Returns detailed stop-by-stop progress of a trip.
  */
 export async function getTripProgress(tripId: number): Promise<TripProgressResponse> {
   const res = await axiosInstance.get<ApiResponseWrapper<TripProgressResponse>>(
-    `/api/trips/${tripId}/progress`
+    `/api/v1/trips/${tripId}/progress`
   );
   return unwrap(res);
 }
@@ -49,36 +49,36 @@ export async function getTripProgress(tripId: number): Promise<TripProgressRespo
 // ── Driver Action APIs (DRIVER) ──────────────────────────────────────────────
 
 /**
- * POST /api/trips/{id}/start
+ * POST /api/v1/trips/{id}/start
  * Driver starts trip: DISPATCHED → IN_PROGRESS.
  */
 export async function startTrip(tripId: number): Promise<TripStartResponse> {
   const res = await axiosInstance.post<ApiResponseWrapper<TripStartResponse>>(
-    `/api/trips/${tripId}/start`
+    `/api/v1/trips/${tripId}/start`
   );
   return unwrap(res);
 }
 
 /**
- * POST /api/trip-stops/{id}/arrive
+ * POST /api/v1/trip-stops/{id}/arrive
  * Driver arrives at stop: PENDING → IN_PROGRESS.
  * Auto-flags TIME_EXCEPTION if late (BR-09).
  */
 export async function arriveAtStop(tripStopId: number): Promise<StopArriveResponse> {
   const res = await axiosInstance.post<ApiResponseWrapper<StopArriveResponse>>(
-    `/api/trip-stops/${tripStopId}/arrive`
+    `/api/v1/trip-stops/${tripStopId}/arrive`
   );
   return unwrap(res);
 }
 
 /**
- * POST /api/trip-stops/{id}/complete
+ * POST /api/v1/trip-stops/{id}/complete
  * Driver completes stop: IN_PROGRESS → COMPLETED.
  * Trip auto-completes if last stop done.
  */
 export async function completeStop(tripStopId: number): Promise<StopCompleteResponse> {
   const res = await axiosInstance.post<ApiResponseWrapper<StopCompleteResponse>>(
-    `/api/trip-stops/${tripStopId}/complete`
+    `/api/v1/trip-stops/${tripStopId}/complete`
   );
   return unwrap(res);
 }

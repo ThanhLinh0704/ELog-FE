@@ -12,11 +12,11 @@ import {
   Skeleton,
   Space,
   Tabs,
-  Tag,
   Typography,
 } from 'antd';
 import { ArrowLeft, RefreshCcw, Truck } from 'lucide-react';
 import AdminShell from '../components/AdminShell';
+import StatusBadge from '../components/StatusBadge';
 import {
   generateLoadingManifest,
   getLoadingManifest,
@@ -26,11 +26,15 @@ import {
   type LoadingManifest,
   type LoadingManifestStop,
 } from '../api/loadingManifestApi';
+import { getTripsByTripDraftId } from '../api/tripApi';
+import type { Trip } from '../types/trip';
 import ManifestSummary from '../components/manifest/ManifestSummary';
 import FlatManifestView from '../components/manifest/FlatManifestView';
 import ByStopManifestView from '../components/manifest/ByStopManifestView';
+import { usePermissions } from '../hooks/usePermissions';
+import { PERMISSIONS } from '../constants/permissions';
 
-const { Title, Paragraph } = Typography;
+const { Title } = Typography;
 
 const readRoles = (): string[] => {
   try {
@@ -64,13 +68,23 @@ const LifoManifestPage = () => {
   const params = useParams();
   const tripDraftId = params.tripDraftId ?? params.tripId ?? '';
   const currentUser = useMemo(getCurrentUser, []);
-  const canGenerate = currentUser.roles.includes('DISPATCHER');
-  const canView = currentUser.roles.some((role) =>
-    ['DISPATCHER', 'WAREHOUSE_STAFF', 'LOGISTICS_MANAGER'].includes(role)
-  );
+  const { can } = usePermissions();
+  const canView = can(PERMISSIONS.TRIP_READ);
+  const canGenerate = can(PERMISSIONS.TRIP_COORDINATE);
+
+  const handleBack = () => {
+    if (window.history.state && window.history.state.idx > 0) {
+      navigate(-1);
+    } else if (params.tripDraftId) {
+      navigate('/dispatcher/trip-drafts');
+    } else {
+      navigate('/dispatcher/monitoring');
+    }
+  };
 
   const [manifest, setManifest] = useState<LoadingManifest | null>(null);
   const [stops, setStops] = useState<LoadingManifestStop[]>([]);
+  const [createdTrips, setCreatedTrips] = useState<Trip[]>([]);
   const [loading, setLoading] = useState(true);
   const [actionLoading, setActionLoading] = useState(false);
   const [error, setError] = useState('');
@@ -96,6 +110,12 @@ const LifoManifestPage = () => {
       } catch {
         setStops(nextManifest.stops ?? []);
       }
+      try {
+        const tripsData = await getTripsByTripDraftId(tripDraftId);
+        setCreatedTrips(tripsData);
+      } catch {
+        setCreatedTrips([]);
+      }
     } catch (err) {
       if (isManifestNotFound(err)) {
         setManifest(null);
@@ -114,6 +134,11 @@ const LifoManifestPage = () => {
   }, [loadManifest]);
 
   const handleGenerate = () => {
+    if (!canGenerate) {
+      message.warning('Bạn không có quyền tạo bảng xếp hàng.');
+      return;
+    }
+
     Modal.confirm({
       title: 'Tạo bảng hướng dẫn xếp hàng?',
       content: 'Hệ thống sẽ sắp xếp hàng theo thứ tự giao ngược lại: điểm giao cuối xếp lên xe trước, điểm giao đầu xếp lên xe sau cùng.',
@@ -135,7 +160,7 @@ const LifoManifestPage = () => {
     });
   };
 
-  const statusTag = manifest ? <Tag color="processing">Đã tạo bảng xếp hàng</Tag> : <Tag>Chưa tạo</Tag>;
+  const statusTag = manifest ? <StatusBadge color="processing">Đã tạo bảng xếp hàng</StatusBadge> : <StatusBadge>Chưa tạo</StatusBadge>;
 
   const renderContent = () => {
     if (loading) {
@@ -198,7 +223,7 @@ const LifoManifestPage = () => {
           message="Cách đọc màn hình này"
           description="Hàng giao ở điểm cuối tuyến sẽ được xếp lên xe trước và nằm sâu trong khoang xe. Hàng giao ở điểm đầu tuyến sẽ xếp sau cùng, nằm gần cửa xe để dỡ xuống trước."
         />
-        <ManifestSummary manifest={manifest} />
+        <ManifestSummary manifest={manifest} createdTrips={createdTrips} />
         <Tabs
           items={[
             {
@@ -220,24 +245,39 @@ const LifoManifestPage = () => {
   return (
     <AdminShell currentUser={currentUser}>
       <Space direction="vertical" size="large" style={{ width: '100%' }}>
-        <Flex justify="space-between" align="flex-start" gap={16} wrap>
-          <Space direction="vertical" size={4}>
+        <Flex justify="space-between" align="center" gap={16} wrap style={{ marginBottom: 16 }}>
+          <Space direction="vertical" size={8}>
             <Breadcrumb
               items={[
-                { title: 'Dashboard' },
-                { title: 'Lập kế hoạch chuyến' },
+                { title: 'Dashboard', href: '/dashboard' },
+                { title: params.tripDraftId ? 'Quản lý gom đơn' : 'Theo dõi chuyến hàng', href: params.tripDraftId ? '/dispatcher/trip-drafts' : '/dispatcher/monitoring' },
                 { title: 'Hướng dẫn xếp hàng' },
               ]}
             />
-            <Space align="center" wrap>
-              <Title level={2} style={{ margin: 0 }}>
-                Hướng dẫn xếp hàng lên xe
-              </Title>
-              {statusTag}
-            </Space>
-            <Paragraph type="secondary" style={{ margin: 0 }}>
-              Màn hình này cho biết kiện hàng nào cần xếp lên xe trước, kiện nào để gần cửa xe để giao đúng thứ tự.
-            </Paragraph>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+              <Button
+                type="text"
+                icon={<ArrowLeft size={18} />}
+                onClick={handleBack}
+                style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  width: 32,
+                  height: 32,
+                  borderRadius: '50%',
+                  backgroundColor: '#f5f5f5',
+                  border: 'none',
+                  padding: 0
+                }}
+              />
+              <Space align="center" wrap>
+                <Title level={2} style={{ margin: 0, fontWeight: 700 }}>
+                  Hướng dẫn xếp hàng lên xe
+                </Title>
+                {statusTag}
+              </Space>
+            </div>
           </Space>
 
           <Space wrap>
@@ -253,9 +293,6 @@ const LifoManifestPage = () => {
             ) : null}
             <Button icon={<RefreshCcw size={16} />} onClick={loadManifest} loading={loading}>
               Tải lại
-            </Button>
-            <Button icon={<ArrowLeft size={16} />} onClick={() => navigate(`/trip-drafts/${tripDraftId}/review`)}>
-              Quay lại lập kế hoạch
             </Button>
           </Space>
         </Flex>

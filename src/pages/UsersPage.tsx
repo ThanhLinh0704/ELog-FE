@@ -1,8 +1,8 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import {
-  Table, Card, Row, Col, Space, Button, Input, Select, Breadcrumb,
-  Statistic, Tag, Badge, Popconfirm, message, Alert, Avatar
+  Table, Card, Space, Button, Input, Select, Breadcrumb,
+  Badge, Popconfirm, message, Alert, Avatar, Typography
 } from 'antd';
 import { Edit3, Lock, Plus, RefreshCw, Search, Unlock } from 'lucide-react';
 import { USER_ROLES } from '../config';
@@ -11,6 +11,9 @@ import { userApi } from '../api/userApi';
 import { type User } from '../utils/userMapper';
 import UserFormModal from '../components/UserFormModal';
 import AdminShell from '../components/AdminShell';
+import StatusBadge from '../components/StatusBadge';
+import { usePermissions } from '../hooks/usePermissions';
+import { PERMISSIONS } from '../constants/permissions';
 
 const UsersPage: React.FC = () => {
   const navigate = useNavigate();
@@ -34,6 +37,8 @@ const UsersPage: React.FC = () => {
     fullName: username,
     roles,
   };
+  const { can } = usePermissions();
+  const canWriteUser = can(PERMISSIONS.USER_WRITE);
 
   const [users, setUsers] = useState<User[]>([]);
   const [keyword, setKeyword] = useState('');
@@ -64,7 +69,7 @@ const UsersPage: React.FC = () => {
       setPageMeta({ totalElements: result.totalElements, totalPages: result.totalPages });
     } catch (err: any) {
       if (err.status === 403 || err.response?.status === 403) {
-        navigate('/dashboard');
+        setError('Bạn không có quyền quản lý người dùng.');
       } else {
         setError(err.message || 'Không tải được danh sách người dùng.');
       }
@@ -111,6 +116,11 @@ const UsersPage: React.FC = () => {
   }
 
   async function createUser(payload: any) {
+    if (!canWriteUser) {
+      message.warning('Bạn không có quyền tạo người dùng.');
+      return;
+    }
+
     setApiFieldErrors({});
     try {
       await userApi.createUser(payload);
@@ -130,6 +140,11 @@ const UsersPage: React.FC = () => {
   }
 
   async function updateProfile(id: number, payload: any) {
+    if (!canWriteUser) {
+      message.warning('Bạn không có quyền chỉnh sửa người dùng.');
+      return;
+    }
+
     setApiFieldErrors({});
     try {
       await userApi.updateUser(id, payload);
@@ -145,6 +160,11 @@ const UsersPage: React.FC = () => {
   }
 
   async function updateRoles(id: number, rolesPayload: string[]) {
+    if (!canWriteUser) {
+      message.warning('Bạn không có quyền cập nhật vai trò người dùng.');
+      return;
+    }
+
     try {
       await userApi.updateRoles(id, rolesPayload);
       setFormMode(null);
@@ -158,6 +178,11 @@ const UsersPage: React.FC = () => {
   }
 
   async function toggleUserStatus(user: User) {
+    if (!canWriteUser) {
+      message.warning('Bạn không có quyền cập nhật trạng thái người dùng.');
+      return;
+    }
+
     const nextActive = !user.isActive;
     try {
       await userApi.updateStatus(user.id, nextActive);
@@ -184,7 +209,7 @@ const UsersPage: React.FC = () => {
         const isCurrentUser = record.id === currentUser.id;
         return (
           <Space>
-            <Avatar style={{ backgroundColor: '#1677ff' }}>
+            <Avatar style={{ backgroundColor: '#2563eb' }}>
               {record.fullName.slice(0, 1).toUpperCase()}
             </Avatar>
             <div>
@@ -216,9 +241,9 @@ const UsersPage: React.FC = () => {
           {rolesList.map((roleVal) => {
             const matched = USER_ROLES.find((item) => item.value === roleVal);
             return (
-              <Tag color="blue" key={roleVal}>
+              <StatusBadge color="blue" key={roleVal}>
                 {matched ? matched.label : roleVal}
-              </Tag>
+              </StatusBadge>
             );
           })}
         </Space>
@@ -245,6 +270,10 @@ const UsersPage: React.FC = () => {
       key: 'actions',
       render: (_: any, record: User) => {
         const isCurrentUser = record.id === currentUser.id;
+        if (!canWriteUser) {
+          return <Typography.Text type="secondary">Chỉ xem</Typography.Text>;
+        }
+
         return (
           <Space size="small">
             <Button
@@ -299,24 +328,6 @@ const UsersPage: React.FC = () => {
           </p>
         </div>
 
-        <Row gutter={[16, 16]}>
-          <Col xs={24} sm={8}>
-            <Card size="small" bordered={false} style={{ boxShadow: '0 1px 2px 0 rgba(0, 0, 0, 0.03)' }}>
-              <Statistic title="Tổng kết quả" value={pageMeta.totalElements} suffix="người dùng" />
-            </Card>
-          </Col>
-          <Col xs={24} sm={8}>
-            <Card size="small" bordered={false} style={{ boxShadow: '0 1px 2px 0 rgba(0, 0, 0, 0.03)' }}>
-              <Statistic title="Trang hiện tại" value={page + 1} suffix={`/ ${pageMeta.totalPages} trang`} />
-            </Card>
-          </Col>
-          <Col xs={24} sm={8}>
-            <Card size="small" bordered={false} style={{ boxShadow: '0 1px 2px 0 rgba(0, 0, 0, 0.03)' }}>
-              <Statistic title="Quyền truy cập" value="Admin" suffix="SYSTEM_ADMIN" />
-            </Card>
-          </Col>
-        </Row>
-
         <Card bordered={false} style={{ boxShadow: '0 1px 2px 0 rgba(0, 0, 0, 0.03)' }}>
           <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 16, flexWrap: 'wrap', gap: 12 }}>
             <Space size="middle" wrap>
@@ -359,6 +370,7 @@ const UsersPage: React.FC = () => {
               <Button
                 type="primary"
                 icon={<Plus size={14} />}
+                style={{ display: canWriteUser ? undefined : 'none' }}
                 onClick={() => {
                   setApiFieldErrors({});
                   setEditingUser(null);

@@ -1,4 +1,4 @@
-import type { ImportBatchHistory, ImportResult, ImportMockOptions, ImportErrorRow } from '../types/import';
+import type { ImportBatchHistory, ImportResult, ImportErrorRow } from '../types/import';
 import { getImportHistory, saveImportHistory, mockImportResult } from './importData';
 
 const delay = (ms = 1200) => new Promise((resolve) => setTimeout(resolve, ms));
@@ -10,25 +10,17 @@ export const findActiveBatchByDate = (deliveryDate: string): ImportBatchHistory 
   );
 };
 
+// Backend no longer rejects duplicate-date imports at the batch level (see
+// ImportServiceImpl.importExcel — batch-level replace/confirmReplace was removed,
+// protection now lives only at the row level). Mock mirrors that: always creates
+// a new batch, never 409s, never deactivates prior batches for the same date.
 export async function uploadOrdersMock(
   deliveryDate: string,
-  file: File,
-  options: ImportMockOptions = {}
+  file: File
 ): Promise<ImportResult> {
   await delay();
 
   const history = getImportHistory();
-  const hasActiveBatch = history.some(
-    (batch) => batch.deliveryDate === deliveryDate && batch.isActive
-  );
-
-  if (hasActiveBatch && !options.confirmReplace) {
-    throw {
-      status: 409,
-      code: "ACTIVE_BATCH_EXISTS",
-      message: "Ngày giao hàng đã có batch hiện hành",
-    };
-  }
 
   // Calculate new batch ID
   const maxId = history.reduce((max, item) => (item.id > max ? item.id : max), 0);
@@ -66,16 +58,6 @@ export async function uploadOrdersMock(
     };
   }
 
-  // If replacing, mark previous batches on the same date as inactive
-  let updatedHistory = [...history];
-  if (hasActiveBatch && options.confirmReplace) {
-    updatedHistory = updatedHistory.map((batch) =>
-      batch.deliveryDate === deliveryDate && batch.isActive
-        ? { ...batch, isActive: false }
-        : batch
-    );
-  }
-
   // Get current user fullName from localStorage or fallback
   const username = localStorage.getItem('username') || 'Nguyễn Văn Dispatcher';
 
@@ -93,7 +75,7 @@ export async function uploadOrdersMock(
     uploadedAt: new Date().toISOString(),
   };
 
-  updatedHistory = [newHistoryRecord, ...updatedHistory];
+  const updatedHistory = [newHistoryRecord, ...history];
   saveImportHistory(updatedHistory);
 
   return result;

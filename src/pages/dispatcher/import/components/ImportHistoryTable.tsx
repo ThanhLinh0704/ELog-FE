@@ -6,6 +6,7 @@ import { useNavigate } from 'react-router-dom';
 import dayjs from 'dayjs';
 import type { ImportBatchHistory } from '../../../../types/import';
 import ImportStatusTag from './ImportStatusTag';
+import { palette } from '../../../../theme/tokens';
 
 interface ImportHistoryTableProps {
   data: ImportBatchHistory[];
@@ -26,8 +27,8 @@ const ImportHistoryTable: React.FC<ImportHistoryTableProps> = ({
 }) => {
   const navigate = useNavigate();
 
-  const formatDate = (dateStr: string, format = 'DD/MM/YYYY') => {
-    if (!dateStr) return '';
+  const formatDate = (dateStr?: string | null, format = 'DD/MM/YYYY') => {
+    if (!dateStr) return <span style={{ fontStyle: 'italic', color: palette.gold }}>Nhiều ngày giao hàng</span>;
     return dayjs(dateStr).format(format);
   };
 
@@ -68,9 +69,9 @@ const ImportHistoryTable: React.FC<ImportHistoryTableProps> = ({
       align: 'center',
       render: (_, record) => (
         <Space size={8}>
-          <Badge count={record.totalRows} showZero overflowCount={999} style={{ backgroundColor: '#8c8c8c' }} title="Tổng số dòng" />
-          <Badge count={record.acceptedRows} showZero overflowCount={999} style={{ backgroundColor: '#52c41a' }} title="Số dòng thành công" />
-          <Badge count={record.rejectedRows} showZero overflowCount={999} style={{ backgroundColor: '#ff4d4f' }} title="Số dòng lỗi" />
+          <Badge count={record.totalRows} showZero overflowCount={999} style={{ backgroundColor: palette.textMuted }} title="Tổng số dòng" />
+          <Badge count={record.acceptedRows} showZero overflowCount={999} style={{ backgroundColor: palette.success }} title="Số dòng thành công" />
+          <Badge count={record.rejectedRows} showZero overflowCount={999} style={{ backgroundColor: palette.danger }} title="Số dòng lỗi" />
         </Space>
       ),
     },
@@ -114,14 +115,14 @@ const ImportHistoryTable: React.FC<ImportHistoryTableProps> = ({
       title={
         <div style={{ display: 'flex', flexDirection: 'column' }}>
           <span style={{ fontWeight: 600, fontSize: 16 }}>Lịch sử nhập đơn hàng</span>
-          <span style={{ fontWeight: 'normal', fontSize: 13, color: '#8c8c8c', marginTop: 4 }}>
+          <span style={{ fontWeight: 'normal', fontSize: 13, color: palette.textMuted, marginTop: 4 }}>
             Theo dõi các batch Excel đã được tải lên hệ thống theo ngày giao hàng
           </span>
         </div>
       }
       style={{
-        borderRadius: 12,
-        boxShadow: '0 4px 12px rgba(0,0,0,0.05)',
+        borderRadius: 14,
+        boxShadow: palette.cardShadow,
       }}
     >
       <Table
@@ -134,7 +135,7 @@ const ImportHistoryTable: React.FC<ImportHistoryTableProps> = ({
           pageSize: pageSize,
           total: totalElements,
           showSizeChanger: true,
-          pageSizeOptions: ['10', '20', '50'],
+          pageSizeOptions: ['5', '10', '20', '50'],
           onChange: (page, pSize) => onPageChange(page - 1, pSize),
         }}
         scroll={{ x: 'max-content' }}

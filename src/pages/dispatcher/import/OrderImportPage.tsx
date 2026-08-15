@@ -1,16 +1,15 @@
 import React, { useState, useEffect } from 'react';
-import { Typography, Breadcrumb, message, Divider } from 'antd';
+import { Breadcrumb, message, Divider, Modal } from 'antd';
 import { useNavigate } from 'react-router-dom';
+import { FileSpreadsheet } from 'lucide-react';
 import AdminShell from '../../../components/AdminShell';
+import PageHeader from '../../../components/PageHeader';
 import ImportUploadCard from './components/ImportUploadCard';
 import ImportReadOnlyBanner from './components/ImportReadOnlyBanner';
 import ImportHistoryTable from './components/ImportHistoryTable';
-import * as XLSX from 'xlsx';
 import { canUploadOrders } from '../../../utils/importPermissions';
 import { importApi } from '../../../api/importApi';
 import type { ImportBatchHistory } from '../../../types/import';
-
-const { Title, Paragraph } = Typography;
 
 function getCurrentUser() {
   const username = localStorage.getItem('username') || '';
@@ -34,7 +33,7 @@ function getCurrentUser() {
 
 const OrderImportPage: React.FC = () => {
   const currentUser = getCurrentUser();
-  const isDispatcher = canUploadOrders(currentUser.roles);
+  const canImportOrders = canUploadOrders();
   const navigate = useNavigate();
 
   // Loading states
@@ -74,89 +73,90 @@ const OrderImportPage: React.FC = () => {
     loadHistory(page, newSize);
   };
 
-  // Perform the actual upload
-  const executeUpload = async (deliveryDate: string, file: File) => {
+  const handleUploadInitiated = async (file: File, confirmReplace: boolean = false) => {
     setUploadLoading(true);
-
-    // Parse excel file in frontend to extract all successfully imported items
-    let excelRows: any[] = [];
     try {
-      const dataBuffer = await file.arrayBuffer();
-      const workbook = XLSX.read(dataBuffer, { type: 'array' });
-      const sheetName = workbook.SheetNames[0];
-      const sheet = workbook.Sheets[sheetName];
-      const rowsJson = XLSX.utils.sheet_to_json<any[]>(sheet, { header: 1 });
-      
-      const headers = (rowsJson[0] || []) as string[];
-      
-      const orderRefIdx = 0;
-      const storeCodeIdx = 1;
-      const skuIdx = 2;
-      const quantityIdx = 3;
-      const timeWindowIdx = 4;
-      const recipientNameIdx = 5;
-      const recipientPhoneIdx = 6;
-      const notesIdx = 7;
-
-      for (let i = 1; i < rowsJson.length; i++) {
-        const row = rowsJson[i] as any[];
-        if (row && row.length > 0) {
-          const orderRef = orderRefIdx < row.length ? String(row[orderRefIdx] || '').trim() : '';
-          const storeCode = storeCodeIdx < row.length ? String(row[storeCodeIdx] || '').trim() : '';
-          const sku = skuIdx < row.length ? String(row[skuIdx] || '').trim() : '';
-          const quantity = quantityIdx < row.length ? (parseInt(String(row[quantityIdx] || '0').trim()) || 0) : 0;
-          const deliveryTimeWindow = timeWindowIdx < row.length ? String(row[timeWindowIdx] || '').trim() : '';
-          const recipientName = recipientNameIdx < row.length ? String(row[recipientNameIdx] || '').trim() : '';
-          const recipientPhone = recipientPhoneIdx < row.length ? String(row[recipientPhoneIdx] || '').trim() : '';
-          const notes = notesIdx < row.length ? String(row[notesIdx] || '').trim() : '';
-
-          if (storeCode || sku) {
-            excelRows.push({
-              rowNumber: i + 1,
-              orderRef,
-              storeCode,
-              sku,
-              quantity,
-              deliveryTimeWindow,
-              recipientName,
-              recipientPhone,
-              notes,
-            });
-          }
-        }
-      }
-    } catch (err) {
-      console.error("Error parsing Excel in frontend", err);
-    }
-
-    try {
-      const result = await importApi.uploadOrders(deliveryDate, file, false);
-      
-      // Filter and save successful rows to localStorage
-      try {
-        const errorRowNumbers = new Set((result.errors || []).map((e: any) => e.rowNumber));
-        const successRows = excelRows.filter(r => !errorRowNumbers.has(r.rowNumber));
-        localStorage.setItem(`import_batch_success_rows_${result.batchId}`, JSON.stringify(successRows));
-      } catch (err) {
-        console.error("Error caching success rows in localStorage", err);
-      }
+      const result = await importApi.uploadOrders(file, confirmReplace);
 
       message.success(`Tải lên file thành công. Tạo Batch #${result.batchId}`);
-      
-      // Redirect to detail page directly
       navigate(`/dispatcher/import/history/${result.batchId}`);
-
     } catch (error: any) {
       console.error('Upload failed', error);
-      message.error(error?.message || 'Không thể xử lý file. Vui lòng thử lại.');
+
+      const isDuplicateError =
+        error?.status === 409 ||
+        error?.body?.code === 'DUPLICATE_ORDERS_EXIST';
+
+      if (isDuplicateError) {
+        // Parse danh sách mã đơn từ message BE: "Phát hiện N đơn hàng đã tồn tại: DH01, DH02, ..."
+        const rawMsg: string = error?.message || '';
+        const colonIdx = rawMsg.lastIndexOf(':');
+        const orderCodes: string[] = colonIdx >= 0
+          ? rawMsg.slice(colonIdx + 1).split(',').map((s: string) => s.trim()).filter(Boolean)
+          : [];
+
+        Modal.confirm({
+          title: 'Phát hiện đơn hàng trùng lặp',
+          icon: null,
+          width: 480,
+          content: (
+            <div style={{ fontSize: 14 }}>
+              <p style={{ marginBottom: 12, color: '#262626' }}>
+                Có <strong style={{ color: '#fa8c16' }}>{orderCodes.length > 0 ? orderCodes.length : 'một số'}</strong> đơn hàng trong file đã tồn tại trên hệ thống.
+              </p>
+              {orderCodes.length > 0 && (
+                <div
+                  style={{
+                    maxHeight: 160,
+                    overflowY: 'auto',
+                    background: '#fafafa',
+                    border: '1px solid #f0f0f0',
+                    borderRadius: 8,
+                    padding: '8px 12px',
+                    marginBottom: 12,
+                  }}
+                >
+                  {orderCodes.map((code) => (
+                    <span
+                      key={code}
+                      style={{
+                        display: 'inline-block',
+                        background: '#fff7e6',
+                        border: '1px solid #ffd591',
+                        borderRadius: 4,
+                        padding: '2px 8px',
+                        margin: '3px 4px 3px 0',
+                        fontSize: 12,
+                        fontFamily: 'monospace',
+                        color: '#d46b08',
+                      }}
+                    >
+                      {code}
+                    </span>
+                  ))}
+                </div>
+              )}
+              <p style={{ margin: 0, color: '#595959' }}>
+                Bạn có muốn <strong>gộp đơn</strong> (cộng dồn số lượng vào đơn cũ) không?
+              </p>
+            </div>
+          ),
+          okText: 'Gộp đơn',
+          cancelText: 'Hủy',
+          okButtonProps: { type: 'primary' },
+          onOk: async () => {
+            await handleUploadInitiated(file, true);
+          },
+          onCancel: () => {
+            message.info('Đã hủy thao tác nhập đơn hàng.');
+          },
+        });
+      } else {
+        message.error(error?.message || 'Không thể xử lý file. Vui lòng thử lại.');
+      }
     } finally {
       setUploadLoading(false);
     }
-  };
-
-  // Pre-upload checks
-  const handleUploadInitiated = async (deliveryDate: string, file: File) => {
-    await executeUpload(deliveryDate, file);
   };
 
   return (
@@ -170,18 +170,15 @@ const OrderImportPage: React.FC = () => {
         />
       </div>
 
-      <div style={{ marginBottom: 24 }}>
-        <Title level={3} style={{ marginTop: 8, marginBottom: 8, fontWeight: 700 }}>
-          Nhập đơn hàng từ Excel
-        </Title>
-        <Paragraph style={{ color: '#595959', fontSize: 14 }}>
-          Chọn ngày giao hàng và tải file đơn hàng theo đúng định dạng mẫu để tạo đơn hàng nhanh vào hệ thống.
-        </Paragraph>
-      </div>
+      <PageHeader
+        title="Nhập đơn hàng từ Excel"
+        subtitle="Tải file Excel đơn hàng theo đúng định dạng mẫu. Ngày giao hàng sẽ được đọc từ cột Ngày giao trong file."
+        icon={<FileSpreadsheet size={20} />}
+      />
 
       {/* Upload Card for Dispatcher, ReadOnly Banner for managers */}
-      {isDispatcher ? (
-        <ImportUploadCard loading={uploadLoading} onUpload={handleUploadInitiated} />
+      {canImportOrders ? (
+        <ImportUploadCard loading={uploadLoading} onUpload={(file) => handleUploadInitiated(file)} />
       ) : (
         <ImportReadOnlyBanner />
       )}

@@ -6,22 +6,28 @@ import {
   DatePicker, 
   Button, 
   Breadcrumb, 
-  Typography, 
-  Space, 
-  Tag, 
-  Alert, 
+  Typography,
+  Space,
+  Alert,
   message, 
   Tooltip,
-  Empty
+  Empty,
+  Modal,
+  InputNumber
 } from 'antd';
-import { CalendarOutlined, PlayCircleOutlined, EyeOutlined } from '@ant-design/icons';
-import { Layers, AlertTriangle } from 'lucide-react';
+import { CalendarOutlined, PlayCircleOutlined, EyeOutlined, SendOutlined } from '@ant-design/icons';
+import { Layers, AlertTriangle, ClipboardList, Search, PackageCheck } from 'lucide-react';
 import dayjs from 'dayjs';
 import AdminShell from '../../../components/AdminShell';
+import PageHeader from '../../../components/PageHeader';
+import StatusBadge, { type StatusBadgeColor } from '../../../components/StatusBadge';
+import { palette } from '../../../theme/tokens';
 import { tripDraftApi } from '../../../api/tripDraftApi';
 import type { TripDraft } from '../../../types/tripDraft';
+import { usePermissions } from '../../../hooks/usePermissions';
+import { PERMISSIONS } from '../../../constants/permissions';
 
-const { Title, Text } = Typography;
+const { Text } = Typography;
 
 function getCurrentUser() {
   const username = localStorage.getItem('username') || '';
@@ -47,10 +53,8 @@ const TripDraftListPage: React.FC = () => {
   const navigate = useNavigate();
   const [searchParams, setSearchParams] = useSearchParams();
   const currentUser = getCurrentUser();
-
-  // Roles verification
-  const roles = currentUser.roles || [];
-  const canRunConsolidate = roles.some(role => ["SYSTEM_ADMIN", "DISPATCHER"].includes(role));
+  const { can } = usePermissions();
+  const canRunConsolidate = can(PERMISSIONS.TRIP_WRITE);
 
   // Date state (defaults to parameter or today)
   const dateParam = searchParams.get('deliveryDate');
@@ -61,16 +65,20 @@ const TripDraftListPage: React.FC = () => {
   const [consolidating, setConsolidating] = useState(false);
   const [drafts, setDrafts] = useState<TripDraft[]>([]);
   const [skippedRoutes, setSkippedRoutes] = useState<any[]>([]);
+  const [error, setError] = useState<string | null>(null);
 
   // Pagination state
   const [page, setPage] = useState(0);
   const [pageSize, setPageSize] = useState(20);
   const [totalElements, setTotalElements] = useState(0);
+  const [isDraftModalOpen, setIsDraftModalOpen] = useState(false);
+  const [draftId, setDraftId] = useState<number | null>(null);
 
   const deliveryDateStr = selectedDate.format('YYYY-MM-DD');
 
   const fetchDrafts = async (dateStr: string, pageNum: number, sizeNum: number) => {
     setLoading(true);
+    setError(null);
     try {
       const response = await tripDraftApi.getTripDrafts({
         deliveryDate: dateStr,
@@ -81,7 +89,11 @@ const TripDraftListPage: React.FC = () => {
       setTotalElements(response.totalElements);
     } catch (e: any) {
       console.error(e);
-      message.error("Không thể tải danh sách đợt gom đơn.");
+      if (e?.status === 403 || e?.response?.status === 403) {
+        setError("Bạn không có quyền xem danh sách đợt gom đơn.");
+        return;
+      }
+      setError("Không thể tải danh sách đợt gom đơn.");
     } finally {
       setLoading(false);
     }
@@ -103,6 +115,11 @@ const TripDraftListPage: React.FC = () => {
   };
 
   const handleConsolidate = async () => {
+    if (!canRunConsolidate) {
+      message.warning('Bạn không có quyền gom đơn.');
+      return;
+    }
+
     setConsolidating(true);
     setSkippedRoutes([]);
     try {
@@ -131,7 +148,7 @@ const TripDraftListPage: React.FC = () => {
 
   // Status tag mapper
   const renderStatusTag = (status: string) => {
-    let color = 'default';
+    let color: StatusBadgeColor = 'default';
     let text = status;
 
     switch (status) {
@@ -161,7 +178,7 @@ const TripDraftListPage: React.FC = () => {
         break;
     }
 
-    return <Tag color={color} style={{ fontWeight: 500 }}>{text}</Tag>;
+    return <StatusBadge color={color}>{text}</StatusBadge>;
   };
 
   const columns = [
@@ -169,7 +186,15 @@ const TripDraftListPage: React.FC = () => {
       title: 'ID',
       dataIndex: 'id',
       key: 'id',
-      render: (id: number) => <Text strong style={{ color: '#1677ff' }}>#{id}</Text>,
+      render: (id: number) => (
+        <Text
+          strong
+          style={{ color: palette.primary, cursor: 'pointer' }}
+          onClick={() => navigate(`/dispatcher/trip-drafts/${id}`)}
+        >
+          #{id}
+        </Text>
+      ),
       width: 80,
     },
     {
@@ -188,7 +213,7 @@ const TripDraftListPage: React.FC = () => {
             <Text>{record.activeStopCount}/{total}</Text>
             {record.skippedStopCount > 0 && (
               <Tooltip title={`${record.skippedStopCount} stop bị bỏ qua do không có đơn hàng`}>
-                <Tag color="default">Bỏ qua: {record.skippedStopCount}</Tag>
+                <StatusBadge color="default">Bỏ qua: {record.skippedStopCount}</StatusBadge>
               </Tooltip>
             )}
           </Space>
@@ -216,15 +241,34 @@ const TripDraftListPage: React.FC = () => {
     {
       title: 'Thao tác',
       key: 'actions',
-      render: (_: any, record: TripDraft) => (
-        <Button
-          type="link"
-          icon={<EyeOutlined />}
-          onClick={() => navigate(`/dispatcher/trip-drafts/${record.id}`)}
-        >
-          Xem chi tiết
-        </Button>
-      ),
+      render: (_: any, record: TripDraft) => {
+        // Từ trạng thái "Đã lập chuyến" (PLANNED) trở đi, draft đã được xử lý xong —
+        // không còn sửa bản nháp được nữa, nên ẩn "Mở bản nháp" và đổi "Xem chi tiết"
+        // thành "Điều phối" vì lúc này màn chi tiết chủ yếu dùng để điều phối xe/tài xế.
+        const isDraft = record.status === 'DRAFT';
+        return (
+          <Space size="small">
+            <Button
+              type="link"
+              icon={isDraft ? <EyeOutlined /> : <SendOutlined />}
+              onClick={() => navigate(`/dispatcher/trip-drafts/${record.id}`)}
+            >
+              {isDraft ? 'Xem chi tiết' : 'Điều phối'}
+            </Button>
+            {isDraft && (
+              <Button
+                type="primary"
+                ghost
+                icon={<ClipboardList size={14} />}
+                style={{ borderRadius: 6, fontWeight: 500 }}
+                onClick={() => navigate(`/trip-drafts/${record.id}/review`)}
+              >
+                Mở bản nháp
+              </Button>
+            )}
+          </Space>
+        );
+      },
     },
   ];
 
@@ -239,41 +283,50 @@ const TripDraftListPage: React.FC = () => {
         />
       </div>
 
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 24, flexWrap: 'wrap', gap: 12 }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
-          <Layers size={24} style={{ color: '#1677ff' }} />
-          <Title level={3} style={{ margin: 0, fontWeight: 700 }}>
-            Quản lý gom đơn (Trip Drafts)
-          </Title>
-        </div>
+      <PageHeader
+        title="Quản lý gom đơn (Trip Drafts)"
+        subtitle="Gom đơn theo tuyến và ngày giao hàng, theo dõi trạng thái từng đợt."
+        icon={<Layers size={20} />}
+        actions={
+          <Space size={16} wrap>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+              <CalendarOutlined style={{ color: palette.textFaint }} />
+              <Text type="secondary">Ngày giao hàng:</Text>
+              <DatePicker
+                value={selectedDate}
+                onChange={handleDateChange}
+                format="DD/MM/YYYY"
+                allowClear={false}
+                style={{ width: 150 }}
+              />
+            </div>
 
-        <Space size={16} wrap>
-          <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-            <CalendarOutlined style={{ color: '#8c8c8c' }} />
-            <Text type="secondary">Ngày giao hàng:</Text>
-            <DatePicker
-              value={selectedDate}
-              onChange={handleDateChange}
-              format="DD/MM/YYYY"
-              allowClear={false}
-              style={{ width: 150 }}
-            />
-          </div>
+            <Tooltip title={!canRunConsolidate ? "Bạn không có quyền Dispatcher để thực hiện gom đơn" : ""}>
+              <Button
+                type="primary"
+                icon={<PlayCircleOutlined />}
+                loading={consolidating}
+                disabled={!canRunConsolidate || consolidating}
+                onClick={handleConsolidate}
+                style={{ fontWeight: 600, height: 38, display: canRunConsolidate ? undefined : 'none' }}
+              >
+                Gom đơn (Consolidate)
+              </Button>
+            </Tooltip>
+          </Space>
+        }
+      />
 
-          <Tooltip title={!canRunConsolidate ? "Bạn không có quyền Dispatcher để thực hiện gom đơn" : ""}>
-            <Button
-              type="primary"
-              icon={<PlayCircleOutlined />}
-              loading={consolidating}
-              disabled={!canRunConsolidate || consolidating}
-              onClick={handleConsolidate}
-              style={{ borderRadius: 6, fontWeight: 600, height: 38 }}
-            >
-              Gom đơn (Consolidate)
-            </Button>
-          </Tooltip>
-        </Space>
-      </div>
+      {/* Permission / Fetch Error Alert */}
+      {error && (
+        <Alert
+          message="Lỗi tải dữ liệu"
+          description={error}
+          type="error"
+          showIcon
+          style={{ marginBottom: 20, borderRadius: 10 }}
+        />
+      )}
 
       {/* Warning Alert if skippedRoutes list is not empty */}
       {skippedRoutes.length > 0 && (
@@ -296,15 +349,15 @@ const TripDraftListPage: React.FC = () => {
           type="warning"
           showIcon={false}
           closable
-          style={{ marginBottom: 20, borderRadius: 8 }}
+          style={{ marginBottom: 20, borderRadius: 10 }}
         />
       )}
 
       {/* Main Table */}
       <Card
         style={{
-          borderRadius: 12,
-          boxShadow: '0 4px 12px rgba(0,0,0,0.05)',
+          borderRadius: 14,
+          boxShadow: palette.cardShadow,
         }}
         bodyStyle={{ padding: 0 }}
       >
@@ -340,6 +393,64 @@ const TripDraftListPage: React.FC = () => {
           }}
         />
       </Card>
+
+      {/* Modal Mở bản nháp chuyến */}
+      <Modal
+        title={
+          <Space>
+            <ClipboardList size={18} />
+            <span>Mở bản nháp chuyến</span>
+          </Space>
+        }
+        open={isDraftModalOpen}
+        onCancel={() => {
+          setIsDraftModalOpen(false);
+          setDraftId(null);
+        }}
+        footer={null}
+        width={400}
+      >
+        <div style={{ paddingTop: 16 }}>
+          <div style={{ marginBottom: 16 }}>
+            <label style={{ display: 'block', marginBottom: 8, fontWeight: 500 }}>
+              <span style={{ color: palette.danger, marginRight: 4 }}>*</span>
+              ID bản nháp
+            </label>
+            <InputNumber
+              min={1}
+              precision={0}
+              value={draftId || undefined}
+              onChange={(value) => setDraftId(value)}
+              placeholder="Ví dụ: 10"
+              style={{ width: '100%' }}
+            />
+            <div style={{ color: palette.textMuted, fontSize: 12, marginTop: 4 }}>
+              Nhập ID bản nháp để mở màn kiểm tra.
+            </div>
+          </div>
+          <Space size="middle" style={{ width: '100%', justifyContent: 'flex-end' }}>
+            <Button
+              type="primary"
+              icon={<Search size={16} />}
+              disabled={!draftId}
+              onClick={() => {
+                if (draftId) navigate(`/trip-drafts/${draftId}/review`);
+              }}
+            >
+              Kiểm tra bản nháp
+            </Button>
+            <Button
+              icon={<PackageCheck size={16} />}
+              disabled={!draftId}
+              onClick={() => {
+                if (draftId) navigate(`/trip-drafts/${draftId}/loading-manifest`);
+              }}
+            >
+              LIFO Manifest
+            </Button>
+          </Space>
+        </div>
+      </Modal>
     </AdminShell>
   );
 };

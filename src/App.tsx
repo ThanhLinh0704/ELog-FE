@@ -4,7 +4,10 @@ import LoginPage from './pages/login/LoginPage';
 import NotFoundPage from './pages/NotFoundPage';
 import ProtectedRoute from './components/ProtectedRoute';
 import PublicRoute from './components/PublicRoute';
+import ProtectedPermissionRoute from './components/auth/ProtectedPermissionRoute';
+import { PERMISSIONS } from './constants/permissions';
 import UsersPage from './pages/UsersPage';
+import DriverManagementPage from './pages/admin/drivers/DriverManagementPage';
 import ProductListPage from './pages/admin/products/ProductListPage';
 import ProductFormPage from './pages/admin/products/ProductFormPage';
 import ProductDetailPage from './pages/admin/products/ProductDetailPage';
@@ -14,17 +17,16 @@ import RouteCreatePage from './pages/admin/routes/RouteCreatePage';
 import RouteDetailPage from './pages/admin/routes/RouteDetailPage';
 import RouteEditPage from './pages/admin/routes/RouteEditPage';
 import ForbiddenPage from './pages/ForbiddenPage';
-import RouteManagementGuard from './guards/RouteManagementGuard';
 
 import StoresPage from './pages/StoresPage';
 import VehiclesPage from './pages/VehiclesPage';
 import LifoManifestPage from './pages/LifoManifestPage';
-import TripDraftsPage from './pages/TripDraftsPage';
+
 import TripDraftReviewPage from './pages/TripDraftReviewPage';
+import RoleManagementPage from './pages/RoleManagementPage';
 
 import OrderImportPage from './pages/dispatcher/import/OrderImportPage';
 import ImportBatchDetailPage from './pages/dispatcher/import/ImportBatchDetailPage';
-import ImportModuleGuard from './guards/ImportModuleGuard';
 import TripDraftListPage from './pages/dispatcher/trip-drafts/TripDraftListPage';
 import TripDraftDetailPage from './pages/dispatcher/trip-drafts/TripDraftDetailPage';
 import CapacityValidationPage from './pages/dispatcher/trip-drafts/CapacityValidationPage';
@@ -38,7 +40,11 @@ import DriverGuard from './guards/DriverGuard';
 
 import ExceptionManagementPage from './pages/dispatcher/exceptions/ExceptionManagementPage';
 import ExceptionGuard from './guards/ExceptionGuard';
+import TripOutcomePage from './pages/dispatcher/outcomes/TripOutcomePage';
 
+import KpiDashboardPage from './pages/dispatcher/kpi/KpiDashboardPage';
+import ActivityHistoryPage from './pages/dispatcher/activity-history/ActivityHistoryPage';
+import OrderManagementPage from './pages/dispatcher/orders/OrderManagementPage';
 
 function App() {
   return (
@@ -77,96 +83,98 @@ function App() {
         <Route
           path="/users"
           element={
-            <ProtectedRoute>
+            <ProtectedPermissionRoute permission={PERMISSIONS.USER_READ}>
               <UsersPage />
-            </ProtectedRoute>
+            </ProtectedPermissionRoute>
+          }
+        />
+
+        <Route
+          path="/admin/drivers"
+          element={
+            <ProtectedPermissionRoute permission={PERMISSIONS.DRIVER_READ}>
+              <DriverManagementPage />
+            </ProtectedPermissionRoute>
           }
         />
 
         <Route
           path="/stores"
           element={
-            <ProtectedRoute>
+            <ProtectedPermissionRoute permission={PERMISSIONS.STORE_READ}>
               <StoresPage />
-            </ProtectedRoute>
+            </ProtectedPermissionRoute>
           }
         />
 
         <Route
           path="/vehicles"
           element={
-            <ProtectedRoute>
+            <ProtectedPermissionRoute permission={PERMISSIONS.VEHICLE_READ}>
               <VehiclesPage />
-            </ProtectedRoute>
+            </ProtectedPermissionRoute>
           }
         />
 
-        <Route
-          path="/trip-drafts"
-          element={
-            <ProtectedRoute>
-              <TripDraftsPage />
-            </ProtectedRoute>
-          }
-        />
+
 
         <Route
           path="/trip-drafts/:draftId/review"
           element={
-            <ProtectedRoute>
+            <ProtectedPermissionRoute permission={PERMISSIONS.TRIP_READ}>
               <TripDraftReviewPage />
-            </ProtectedRoute>
+            </ProtectedPermissionRoute>
           }
         />
 
         <Route
           path="/trip-drafts/:tripDraftId/loading-manifest"
           element={
-            <ProtectedRoute>
+            <ProtectedPermissionRoute permission={PERMISSIONS.TRIP_READ}>
               <LifoManifestPage />
-            </ProtectedRoute>
+            </ProtectedPermissionRoute>
           }
         />
 
         <Route
           path="/trips/:tripId/loading-manifest"
           element={
-            <ProtectedRoute>
+            <ProtectedPermissionRoute permission={PERMISSIONS.TRIP_READ}>
               <LifoManifestPage />
-            </ProtectedRoute>
+            </ProtectedPermissionRoute>
           }
         />
 
         <Route
           path="/admin/products"
           element={
-            <ProtectedRoute>
+            <ProtectedPermissionRoute permission={PERMISSIONS.PRODUCT_READ}>
               <ProductListPage />
-            </ProtectedRoute>
+            </ProtectedPermissionRoute>
           }
         />
         <Route
           path="/admin/products/new"
           element={
-            <ProtectedRoute>
+            <ProtectedPermissionRoute permission={PERMISSIONS.PRODUCT_WRITE}>
               <ProductFormPage />
-            </ProtectedRoute>
+            </ProtectedPermissionRoute>
           }
         />
         <Route
           path="/admin/products/:productId"
           element={
-            <ProtectedRoute>
+            <ProtectedPermissionRoute permission={PERMISSIONS.PRODUCT_READ}>
               <ProductDetailPage />
-            </ProtectedRoute>
+            </ProtectedPermissionRoute>
           }
         />
         <Route
           path="/admin/products/:productId/edit"
           element={
-            <ProtectedRoute>
+            <ProtectedPermissionRoute permission={PERMISSIONS.PRODUCT_WRITE}>
               <ProductFormPage />
-            </ProtectedRoute>
+            </ProtectedPermissionRoute>
           }
         />
 
@@ -174,33 +182,33 @@ function App() {
         <Route
           path="/admin/routes"
           element={
-            <RouteManagementGuard>
+            <ProtectedPermissionRoute permission={PERMISSIONS.ROUTE_READ}>
               <RouteListPage />
-            </RouteManagementGuard>
+            </ProtectedPermissionRoute>
           }
         />
         <Route
           path="/admin/routes/new"
           element={
-            <RouteManagementGuard>
+            <ProtectedPermissionRoute permission={PERMISSIONS.ROUTE_WRITE}>
               <RouteCreatePage />
-            </RouteManagementGuard>
+            </ProtectedPermissionRoute>
           }
         />
         <Route
           path="/admin/routes/:routeId"
           element={
-            <RouteManagementGuard>
+            <ProtectedPermissionRoute permission={PERMISSIONS.ROUTE_READ}>
               <RouteDetailPage />
-            </RouteManagementGuard>
+            </ProtectedPermissionRoute>
           }
         />
         <Route
           path="/admin/routes/:routeId/edit"
           element={
-            <RouteManagementGuard>
+            <ProtectedPermissionRoute permission={PERMISSIONS.ROUTE_WRITE}>
               <RouteEditPage />
-            </RouteManagementGuard>
+            </ProtectedPermissionRoute>
           }
         />
 
@@ -208,17 +216,27 @@ function App() {
         <Route
           path="/dispatcher/import"
           element={
-            <ImportModuleGuard>
+            <ProtectedPermissionRoute anyOf={[PERMISSIONS.ORDER_IMPORT, PERMISSIONS.TRIP_READ]}>
               <OrderImportPage />
-            </ImportModuleGuard>
+            </ProtectedPermissionRoute>
           }
         />
         <Route
           path="/dispatcher/import/history/:batchId"
           element={
-            <ImportModuleGuard>
+            <ProtectedPermissionRoute anyOf={[PERMISSIONS.ORDER_IMPORT, PERMISSIONS.TRIP_READ]}>
               <ImportBatchDetailPage />
-            </ImportModuleGuard>
+            </ProtectedPermissionRoute>
+          }
+        />
+
+        {/* Order Management */}
+        <Route
+          path="/dispatcher/orders"
+          element={
+            <ProtectedPermissionRoute anyOf={[PERMISSIONS.ORDER_IMPORT, PERMISSIONS.TRIP_READ]}>
+              <OrderManagementPage />
+            </ProtectedPermissionRoute>
           }
         />
 
@@ -226,25 +244,25 @@ function App() {
         <Route
           path="/dispatcher/trip-drafts"
           element={
-            <ProtectedRoute>
+            <ProtectedPermissionRoute permission={PERMISSIONS.TRIP_READ}>
               <TripDraftListPage />
-            </ProtectedRoute>
+            </ProtectedPermissionRoute>
           }
         />
         <Route
           path="/dispatcher/trip-drafts/:id"
           element={
-            <ProtectedRoute>
+            <ProtectedPermissionRoute permission={PERMISSIONS.TRIP_READ}>
               <TripDraftDetailPage />
-            </ProtectedRoute>
+            </ProtectedPermissionRoute>
           }
         />
         <Route
           path="/dispatcher/trip-drafts/:id/capacity"
           element={
-            <ProtectedRoute>
+            <ProtectedPermissionRoute permission={PERMISSIONS.TRIP_READ}>
               <CapacityValidationPage />
-            </ProtectedRoute>
+            </ProtectedPermissionRoute>
           }
         />
 
@@ -252,9 +270,9 @@ function App() {
         <Route
           path="/dispatcher/trip-drafts/:id/assign"
           element={
-            <ProtectedRoute>
+            <ProtectedPermissionRoute permission={PERMISSIONS.TRIP_COORDINATE}>
               <VehicleAssignmentPage />
-            </ProtectedRoute>
+            </ProtectedPermissionRoute>
           }
         />
 
@@ -262,12 +280,20 @@ function App() {
         <Route
           path="/dispatcher/trips/:tripId/dispatch"
           element={
-            <ProtectedRoute>
+            <ProtectedPermissionRoute permission={PERMISSIONS.TRIP_COORDINATE}>
               <DispatchPage />
-            </ProtectedRoute>
+            </ProtectedPermissionRoute>
           }
         />
 
+        <Route
+          path="/roles"
+          element={
+            <ProtectedPermissionRoute permission={PERMISSIONS.ROLE_READ}>
+              <RoleManagementPage />
+            </ProtectedPermissionRoute>
+          }
+        />
 
         {/* US-17 Monitoring Dashboard */}
         <Route
@@ -302,6 +328,60 @@ function App() {
             <ExceptionGuard>
               <ExceptionManagementPage />
             </ExceptionGuard>
+          }
+        />
+
+        {/* Trip Outcomes — Dispatcher / Manager review */}
+        <Route
+          path="/dispatcher/trip-outcomes"
+          element={
+            <ProtectedPermissionRoute permission={PERMISSIONS.TRIP_READ}>
+              <TripOutcomePage />
+            </ProtectedPermissionRoute>
+          }
+        />
+        <Route
+          path="/manager/trip-outcomes"
+          element={
+            <ProtectedPermissionRoute permission={PERMISSIONS.TRIP_READ}>
+              <TripOutcomePage />
+            </ProtectedPermissionRoute>
+          }
+        />
+
+        {/* US-19 KPI Dashboard */}
+        <Route
+          path="/dispatcher/kpi"
+          element={
+            <ProtectedPermissionRoute permission={PERMISSIONS.KPI_READ}>
+              <KpiDashboardPage />
+            </ProtectedPermissionRoute>
+          }
+        />
+        <Route
+          path="/manager/kpi"
+          element={
+            <ProtectedPermissionRoute permission={PERMISSIONS.KPI_READ}>
+              <KpiDashboardPage />
+            </ProtectedPermissionRoute>
+          }
+        />
+
+        {/* Activity History — Planning + Trip Outcome audit log */}
+        <Route
+          path="/dispatcher/activity-history"
+          element={
+            <ProtectedPermissionRoute anyOf={[PERMISSIONS.TRIP_READ, PERMISSIONS.PLANNING_HISTORY_READ]}>
+              <ActivityHistoryPage />
+            </ProtectedPermissionRoute>
+          }
+        />
+        <Route
+          path="/manager/activity-history"
+          element={
+            <ProtectedPermissionRoute anyOf={[PERMISSIONS.TRIP_READ, PERMISSIONS.PLANNING_HISTORY_READ]}>
+              <ActivityHistoryPage />
+            </ProtectedPermissionRoute>
           }
         />
 

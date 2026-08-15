@@ -276,7 +276,7 @@ const normalizeManifest = (raw: unknown): LoadingManifest => {
 
 export async function getLoadingManifest(tripDraftId: string | number): Promise<LoadingManifest> {
   const response = await axiosInstance.get<ApiResponse<LoadingManifest>>(
-    `/api/trip-drafts/${tripDraftId}/manifest`
+    `/api/v1/trip-drafts/${tripDraftId}/manifest`
   );
   return normalizeManifest(unwrapData(response.data));
 }
@@ -286,7 +286,7 @@ export async function generateLoadingManifest(
   _payload: GenerateManifestRequest = { generationMode: 'LIFO' }
 ): Promise<LoadingManifest> {
   const response = await axiosInstance.post<ApiResponse<LoadingManifest>>(
-    `/api/trip-drafts/${tripDraftId}/generate-manifest`
+    `/api/v1/trip-drafts/${tripDraftId}/generate-manifest`
   );
   return normalizeManifest(unwrapData(response.data));
 }
@@ -301,7 +301,7 @@ export async function getManifestFlatItems(
 
 export async function getManifestStops(tripDraftId: string | number): Promise<LoadingManifestStop[]> {
   const response = await axiosInstance.get<ApiResponse<Pick<LoadingManifest, 'stops'>>>(
-    `/api/trip-drafts/${tripDraftId}/manifest/by-stop`
+    `/api/v1/trip-drafts/${tripDraftId}/manifest/by-stop`
   );
   const data = unwrapData(response.data);
   const stops = isRecord(data) && Array.isArray(data.stops) ? data.stops : [];
@@ -312,7 +312,7 @@ export async function regenerateLoadingManifest(
   _tripDraftId: string | number,
   _payload: RegenerateManifestRequest
 ): Promise<LoadingManifest> {
-  // PROPOSED API: POST /api/trip-drafts/{id}/manifest/regenerate is not present in ELog_API_Contract US-13.
+  // PROPOSED API: POST /api/v1/trip-drafts/{id}/manifest/regenerate is not present in ELog_API_Contract US-13.
   throw new Error('Regenerate manifest API is not defined in the current API Contract.');
 }
 
@@ -320,7 +320,7 @@ export async function confirmLoadingManifest(
   _tripDraftId: string | number,
   _payload: ConfirmManifestRequest
 ): Promise<LoadingManifest> {
-  // PROPOSED API: POST /api/trip-drafts/{id}/manifest/confirm is not present in ELog_API_Contract US-13.
+  // PROPOSED API: POST /api/v1/trip-drafts/{id}/manifest/confirm is not present in ELog_API_Contract US-13.
   throw new Error('Confirm manifest API is not defined in the current API Contract.');
 }
 
