@@ -45,6 +45,16 @@ function App() {
     <BrowserRouter>
       <Routes>
         <Route path="/" element={<Navigate to="/login" replace />} />
+        <Route path="/products" element={<Navigate to="/admin/products" replace />} />
+        <Route path="/routes" element={<Navigate to="/admin/routes" replace />} />
+        <Route path="/orders/import" element={<Navigate to="/dispatcher/import" replace />} />
+        <Route path="/import" element={<Navigate to="/dispatcher/import" replace />} />
+        <Route path="/trip-drafts" element={<Navigate to="/dispatcher/trip-drafts" replace />} />
+        <Route path="/trips" element={<Navigate to="/dispatcher/trips/1/dispatch" replace />} />
+        <Route path="/trips/dispatch" element={<Navigate to="/dispatcher/trips/1/dispatch" replace />} />
+        <Route path="/dispatcher/trips/dispatch" element={<Navigate to="/dispatcher/trips/1/dispatch" replace />} />
+        <Route path="/monitoring" element={<Navigate to="/dispatcher/monitoring" replace />} />
+        <Route path="/exceptions" element={<Navigate to="/dispatcher/exceptions" replace />} />
 
         <Route
           path="/login"

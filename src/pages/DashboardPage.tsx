@@ -87,12 +87,13 @@ const DashboardPage: React.FC = () => {
       setLoading(true);
       setError('');
       try {
+        const isSystemAdmin = roles.includes('SYSTEM_ADMIN');
         const [usersRes, storesRes, capacityRes, productsRes, routesRes] = await Promise.all([
-          roles.includes('SYSTEM_ADMIN') ? userApi.getUsers({ page: 0, size: 1 }) : Promise.resolve({ totalElements: 0 }),
-          storeApi.getStores({ page: 0, size: 1 }),
-          vehicleApi.getFleetCapacity(),
-          productApi.getProducts({ page: 0, size: 1 }),
-          routeApi.getRoutes({ page: 0, size: 1 }),
+          isSystemAdmin ? userApi.getUsers({ page: 0, size: 1 }).catch(() => ({ totalElements: 0 })) : Promise.resolve({ totalElements: 0 }),
+          storeApi.getStores({ page: 0, size: 1 }).catch(() => ({ totalElements: 0 })),
+          vehicleApi.getFleetCapacity().catch(() => ({ activeVehicleCount: 0, totalMaxWeightKg: 0, totalMaxVolumeM3: 0 })),
+          productApi.getProducts({ page: 0, size: 1 }).catch(() => ({ totalElements: 0 })),
+          routeApi.getRoutes({ page: 0, size: 1 }).catch(() => ({ totalElements: 0 })),
         ]);
 
         // Fallback or count vehicles

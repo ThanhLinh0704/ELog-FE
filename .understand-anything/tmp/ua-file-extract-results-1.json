@@ -1,0 +1,2651 @@
+{
+  "scriptCompleted": true,
+  "filesAnalyzed": 25,
+  "filesSkipped": [],
+  "results": [
+    {
+      "path": "CLAUDE.md",
+      "language": "markdown",
+      "fileCategory": "docs",
+      "totalLines": 157,
+      "nonEmptyLines": 118,
+      "sections": [
+        {
+          "heading": "ELog Delivery Management System — CLAUDE.md",
+          "level": 1,
+          "line": 1
+        },
+        {
+          "heading": "1. System One-liner + 3 Key Constraints",
+          "level": 2,
+          "line": 7
+        },
+        {
+          "heading": "2. Tech Stack",
+          "level": 2,
+          "line": 19
+        },
+        {
+          "heading": "3. Actors",
+          "level": 2,
+          "line": 36
+        },
+        {
+          "heading": "4. Trip Lifecycle",
+          "level": 2,
+          "line": 47
+        },
+        {
+          "heading": "5. Top 5 Most-Violated Business Rules",
+          "level": 2,
+          "line": 57
+        },
+        {
+          "heading": "6. Out-of-Scope (NEVER invent these features)",
+          "level": 2,
+          "line": 71
+        },
+        {
+          "heading": "7. Folder Structure",
+          "level": 2,
+          "line": 85
+        },
+        {
+          "heading": "8. API Base URL Convention",
+          "level": 2,
+          "line": 115
+        },
+        {
+          "heading": "9. Definition of Done (Universal Checklist)",
+          "level": 2,
+          "line": 131
+        },
+        {
+          "heading": "10. On-Demand Loading Guide",
+          "level": 2,
+          "line": 144
+        }
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 0,
+        "functionCount": 0,
+        "classCount": 0,
+        "sectionCount": 11
+      }
+    },
+    {
+      "path": "docs/api-conventions.md",
+      "language": "markdown",
+      "fileCategory": "docs",
+      "totalLines": 157,
+      "nonEmptyLines": 124,
+      "sections": [
+        {
+          "heading": "ELog — API Conventions",
+          "level": 1,
+          "line": 1
+        },
+        {
+          "heading": "Base URL",
+          "level": 2,
+          "line": 7
+        },
+        {
+          "heading": "Authentication",
+          "level": 2,
+          "line": 17
+        },
+        {
+          "heading": "Standard Response Envelope",
+          "level": 2,
+          "line": 31
+        },
+        {
+          "heading": "Success (2xx)",
+          "level": 3,
+          "line": 33
+        },
+        {
+          "heading": "Paginated Success",
+          "level": 3,
+          "line": 42
+        },
+        {
+          "heading": "Error (4xx / 5xx)",
+          "level": 3,
+          "line": 56
+        },
+        {
+          "heading": "HTTP Status Code Convention",
+          "level": 2,
+          "line": 70
+        },
+        {
+          "heading": "Error Codes (Application-level)",
+          "level": 2,
+          "line": 87
+        },
+        {
+          "heading": "Pagination Convention",
+          "level": 2,
+          "line": 102
+        },
+        {
+          "heading": "Resource Naming Rules",
+          "level": 2,
+          "line": 114
+        },
+        {
+          "heading": "File Upload Convention (Excel Import)",
+          "level": 2,
+          "line": 125
+        },
+        {
+          "heading": "Swagger / OpenAPI",
+          "level": 2,
+          "line": 153
+        }
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 0,
+        "functionCount": 0,
+        "classCount": 0,
+        "sectionCount": 13
+      }
+    },
+    {
+      "path": "docs/business-rules.md",
+      "language": "markdown",
+      "fileCategory": "docs",
+      "totalLines": 104,
+      "nonEmptyLines": 81,
+      "sections": [
+        {
+          "heading": "ELog — Business Rules Reference",
+          "level": 1,
+          "line": 1
+        },
+        {
+          "heading": "Full Business Rule Register (BR-01 → BR-11)",
+          "level": 2,
+          "line": 7
+        },
+        {
+          "heading": "Edge Cases — Most Commonly Missed",
+          "level": 2,
+          "line": 25
+        },
+        {
+          "heading": "BR-02 Edge Cases",
+          "level": 3,
+          "line": 27
+        },
+        {
+          "heading": "BR-03 Edge Cases",
+          "level": 3,
+          "line": 31
+        },
+        {
+          "heading": "BR-04 Edge Cases",
+          "level": 3,
+          "line": 35
+        },
+        {
+          "heading": "BR-07 Edge Cases",
+          "level": 3,
+          "line": 39
+        },
+        {
+          "heading": "BR-11 Edge Cases",
+          "level": 3,
+          "line": 43
+        },
+        {
+          "heading": "DC-01 — Invalid Trip State Transitions",
+          "level": 2,
+          "line": 49
+        },
+        {
+          "heading": "GAP Log — Implementation Impact",
+          "level": 2,
+          "line": 68
+        },
+        {
+          "heading": "Actors — Role & Permission Matrix",
+          "level": 2,
+          "line": 78
+        },
+        {
+          "heading": "Use Case → Business Rule Traceability",
+          "level": 2,
+          "line": 92
+        }
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 0,
+        "functionCount": 0,
+        "classCount": 0,
+        "sectionCount": 12
+      }
+    },
+    {
+      "path": "docs/data-model.md",
+      "language": "markdown",
+      "fileCategory": "docs",
+      "totalLines": 172,
+      "nonEmptyLines": 141,
+      "sections": [
+        {
+          "heading": "ELog — Data Model Reference",
+          "level": 1,
+          "line": 1
+        },
+        {
+          "heading": "Key Data Concepts (Canonical Definitions)",
+          "level": 2,
+          "line": 7
+        },
+        {
+          "heading": "Entity Overview",
+          "level": 2,
+          "line": 20
+        },
+        {
+          "heading": "Core Tables — Field Notes",
+          "level": 2,
+          "line": 51
+        },
+        {
+          "heading": "`users`",
+          "level": 3,
+          "line": 53
+        },
+        {
+          "heading": "`roles`",
+          "level": 3,
+          "line": 60
+        },
+        {
+          "heading": "`routes`",
+          "level": 3,
+          "line": 65
+        },
+        {
+          "heading": "`route_stops`",
+          "level": 3,
+          "line": 72
+        },
+        {
+          "heading": "`stores`",
+          "level": 3,
+          "line": 80
+        },
+        {
+          "heading": "`vehicles`",
+          "level": 3,
+          "line": 86
+        },
+        {
+          "heading": "`orders`",
+          "level": 3,
+          "line": 94
+        },
+        {
+          "heading": "`trips`",
+          "level": 3,
+          "line": 102
+        },
+        {
+          "heading": "`trip_stops`",
+          "level": 3,
+          "line": 110
+        },
+        {
+          "heading": "`loading_manifest_items`",
+          "level": 3,
+          "line": 117
+        },
+        {
+          "heading": "`delivery_records`",
+          "level": 3,
+          "line": 125
+        },
+        {
+          "heading": "`epod`",
+          "level": 3,
+          "line": 132
+        },
+        {
+          "heading": "`exceptions`",
+          "level": 3,
+          "line": 140
+        },
+        {
+          "heading": "Relationships Summary",
+          "level": 2,
+          "line": 149
+        },
+        {
+          "heading": "NFR Constraints Affecting Schema",
+          "level": 2,
+          "line": 168
+        }
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 0,
+        "functionCount": 0,
+        "classCount": 0,
+        "sectionCount": 19
+      }
+    },
+    {
+      "path": "docs/superpowers/plans/2026-06-28-excel-import-integration.md",
+      "language": "markdown",
+      "fileCategory": "docs",
+      "totalLines": 354,
+      "nonEmptyLines": 294,
+      "sections": [
+        {
+          "heading": "Kế hoạch Triển khai — Tích hợp API Excel Nhập đơn hàng",
+          "level": 1,
+          "line": 1
+        },
+        {
+          "heading": "Ràng buộc Toàn cục",
+          "level": 2,
+          "line": 11
+        },
+        {
+          "heading": "Nhiệm vụ 1: Tạo tệp Mapper Utility",
+          "level": 3,
+          "line": 18
+        },
+        {
+          "heading": "Nhiệm vụ 2: Tạo tệp Dịch vụ API Tích hợp",
+          "level": 3,
+          "line": 68
+        },
+        {
+          "heading": "Nhiệm vụ 3: Cập nhật Trang Cockpit Giao diện Nhập đơn",
+          "level": 3,
+          "line": 231
+        },
+        {
+          "heading": "Nhiệm vụ 4: Cập nhật Trang Chi tiết Batch Import",
+          "level": 3,
+          "line": 305
+        },
+        {
+          "heading": "Nhiệm vụ 5: Xác minh",
+          "level": 3,
+          "line": 352
+        }
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 0,
+        "functionCount": 0,
+        "classCount": 0,
+        "sectionCount": 7
+      }
+    },
+    {
+      "path": "docs/superpowers/plans/2026-07-18-store-address-map-integration.md",
+      "language": "markdown",
+      "fileCategory": "docs",
+      "totalLines": 385,
+      "nonEmptyLines": 332,
+      "sections": [
+        {
+          "heading": "Kế hoạch Triển khai — Tích hợp Bản đồ Chọn Địa chỉ Cửa hàng",
+          "level": 1,
+          "line": 1
+        },
+        {
+          "heading": "Ràng buộc Toàn cục",
+          "level": 2,
+          "line": 14
+        },
+        {
+          "heading": "Nhiệm vụ 1: Cài đặt và cấu hình thư viện Leaflet",
+          "level": 3,
+          "line": 21
+        },
+        {
+          "heading": "Nhiệm vụ 2: Tạo component chọn vị trí trên bản đồ (`MapSelector`)",
+          "level": 3,
+          "line": 42
+        },
+        {
+          "heading": "Nhiệm vụ 3: Tích hợp Bản đồ vào Modal Thêm/Sửa Cửa hàng",
+          "level": 3,
+          "line": 276
+        },
+        {
+          "heading": "Kế hoạch Xác minh và Kiểm thử",
+          "level": 2,
+          "line": 370
+        },
+        {
+          "heading": "Kiểm thử thủ công bằng trình duyệt:",
+          "level": 3,
+          "line": 372
+        }
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 0,
+        "functionCount": 0,
+        "classCount": 0,
+        "sectionCount": 7
+      }
+    },
+    {
+      "path": "docs/superpowers/specs/2026-06-28-excel-import-integration-design.md",
+      "language": "markdown",
+      "fileCategory": "docs",
+      "totalLines": 116,
+      "nonEmptyLines": 91,
+      "sections": [
+        {
+          "heading": "Tài liệu Thiết kế — Tích hợp API Excel Nhập đơn hàng",
+          "level": 1,
+          "line": 1
+        },
+        {
+          "heading": "1. Tổng quan các Endpoint API",
+          "level": 2,
+          "line": 7
+        },
+        {
+          "heading": "2. Kiểu dữ liệu & Hàm ánh xạ (Mapper Utility)",
+          "level": 2,
+          "line": 20
+        },
+        {
+          "heading": "Bảng đối chiếu các trường:",
+          "level": 3,
+          "line": 24
+        },
+        {
+          "heading": "Thông tin Batch:",
+          "level": 4,
+          "line": 26
+        },
+        {
+          "heading": "Thông tin Dòng lỗi:",
+          "level": 4,
+          "line": 31
+        },
+        {
+          "heading": "Code đề xuất cho Mapper (`src/utils/importMapper.ts`):",
+          "level": 3,
+          "line": 34
+        },
+        {
+          "heading": "3. Kiến trúc dịch vụ tích hợp (Integration Service)",
+          "level": 2,
+          "line": 77
+        },
+        {
+          "heading": "Sơ đồ luồng Upload xử lý lỗi trùng ngày (Conflict HTTP 409):",
+          "level": 3,
+          "line": 83
+        },
+        {
+          "heading": "4. Điều chỉnh các Trang Giao diện (UI)",
+          "level": 2,
+          "line": 108
+        }
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 0,
+        "functionCount": 0,
+        "classCount": 0,
+        "sectionCount": 10
+      }
+    },
+    {
+      "path": "docs/tech-stack.md",
+      "language": "markdown",
+      "fileCategory": "docs",
+      "totalLines": 211,
+      "nonEmptyLines": 176,
+      "sections": [
+        {
+          "heading": "ELog — Tech Stack Details",
+          "level": 1,
+          "line": 1
+        },
+        {
+          "heading": "Backend — Spring Boot 3.x",
+          "level": 2,
+          "line": 7
+        },
+        {
+          "heading": "Project Structure Pattern",
+          "level": 3,
+          "line": 9
+        },
+        {
+          "heading": "Key Dependencies (pom.xml)",
+          "level": 3,
+          "line": 26
+        },
+        {
+          "heading": "application.yml Key Sections",
+          "level": 3,
+          "line": 41
+        },
+        {
+          "heading": "Flyway Migration Naming Convention",
+          "level": 3,
+          "line": 61
+        },
+        {
+          "heading": "Frontend — ReactJS 19.x",
+          "level": 2,
+          "line": 70
+        },
+        {
+          "heading": "Project Bootstrap (Standalone Workspace)",
+          "level": 3,
+          "line": 72
+        },
+        {
+          "heading": "Key Dependencies (package.json)",
+          "level": 3,
+          "line": 79
+        },
+        {
+          "heading": "Folder Conventions",
+          "level": 3,
+          "line": 89
+        },
+        {
+          "heading": "Axios Base Config",
+          "level": 3,
+          "line": 101
+        },
+        {
+          "heading": "Database — MySQL 8.x",
+          "level": 2,
+          "line": 123
+        },
+        {
+          "heading": "Authentication — JWT",
+          "level": 2,
+          "line": 134
+        },
+        {
+          "heading": "Firebase (Deferred — INC-2+)",
+          "level": 2,
+          "line": 147
+        },
+        {
+          "heading": "AWS (Deferred)",
+          "level": 2,
+          "line": 154
+        },
+        {
+          "heading": "Git Strategy",
+          "level": 2,
+          "line": 160
+        },
+        {
+          "heading": "Branches",
+          "level": 3,
+          "line": 162
+        },
+        {
+          "heading": "PR Template (minimum)",
+          "level": 3,
+          "line": 170
+        },
+        {
+          "heading": "CI Pipeline (GitHub Actions)",
+          "level": 2,
+          "line": 186
+        }
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 0,
+        "functionCount": 0,
+        "classCount": 0,
+        "sectionCount": 19
+      }
+    },
+    {
+      "path": "docs/us01-checklist.md",
+      "language": "markdown",
+      "fileCategory": "docs",
+      "totalLines": 174,
+      "nonEmptyLines": 134,
+      "sections": [
+        {
+          "heading": "ELog — US-01 Project Skeleton Checklist",
+          "level": 1,
+          "line": 1
+        },
+        {
+          "heading": "US-01 Goal",
+          "level": 2,
+          "line": 7
+        },
+        {
+          "heading": "Task Breakdown",
+          "level": 2,
+          "line": 17
+        },
+        {
+          "heading": "T-01 Database: Initial Schema + Flyway Migration",
+          "level": 3,
+          "line": 19
+        },
+        {
+          "heading": "T-02 Backend: Spring Boot Project Structure",
+          "level": 3,
+          "line": 34
+        },
+        {
+          "heading": "T-03 Frontend: ReactJS Project Structure",
+          "level": 3,
+          "line": 56
+        },
+        {
+          "heading": "T-04 Git Strategy Setup",
+          "level": 3,
+          "line": 81
+        },
+        {
+          "heading": "T-06 Environment Setup Guide",
+          "level": 3,
+          "line": 106
+        },
+        {
+          "heading": "US-01 Definition of Done",
+          "level": 2,
+          "line": 117
+        },
+        {
+          "heading": "Sprint 1 Scope Reminder",
+          "level": 2,
+          "line": 129
+        },
+        {
+          "heading": "File Naming Conventions (US-01 scope)",
+          "level": 2,
+          "line": 141
+        },
+        {
+          "heading": "Java",
+          "level": 3,
+          "line": 143
+        },
+        {
+          "heading": "SQL",
+          "level": 3,
+          "line": 152
+        },
+        {
+          "heading": "React",
+          "level": 3,
+          "line": 157
+        },
+        {
+          "heading": "Known Issues / Decisions for US-01",
+          "level": 2,
+          "line": 167
+        }
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 0,
+        "functionCount": 0,
+        "classCount": 0,
+        "sectionCount": 15
+      }
+    },
+    {
+      "path": "ELog_kehoachphattrien.md",
+      "language": "markdown",
+      "fileCategory": "docs",
+      "totalLines": 400,
+      "nonEmptyLines": 263,
+      "sections": [
+        {
+          "heading": "ELog Delivery Management System",
+          "level": 1,
+          "line": 1
+        },
+        {
+          "heading": "Incremental Development Plan",
+          "level": 2,
+          "line": 3
+        },
+        {
+          "heading": "Project Context",
+          "level": 2,
+          "line": 5
+        },
+        {
+          "heading": "Scope",
+          "level": 2,
+          "line": 17
+        },
+        {
+          "heading": "Included",
+          "level": 3,
+          "line": 19
+        },
+        {
+          "heading": "Deferred",
+          "level": 3,
+          "line": 27
+        },
+        {
+          "heading": "INC-1 Foundation & Master Data",
+          "level": 1,
+          "line": 35
+        },
+        {
+          "heading": "EP-01 Project Setup & Infrastructure",
+          "level": 2,
+          "line": 37
+        },
+        {
+          "heading": "US-01 Project Skeleton",
+          "level": 3,
+          "line": 39
+        },
+        {
+          "heading": "EP-02 Authentication & Authorization",
+          "level": 2,
+          "line": 55
+        },
+        {
+          "heading": "US-02 JWT Authentication",
+          "level": 3,
+          "line": 57
+        },
+        {
+          "heading": "US-03 User Management",
+          "level": 3,
+          "line": 71
+        },
+        {
+          "heading": "EP-03 Master Data",
+          "level": 2,
+          "line": 84
+        },
+        {
+          "heading": "US-04 Route Management",
+          "level": 3,
+          "line": 86
+        },
+        {
+          "heading": "US-05 Store Management",
+          "level": 3,
+          "line": 98
+        },
+        {
+          "heading": "US-06 Vehicle Management",
+          "level": 3,
+          "line": 109
+        },
+        {
+          "heading": "US-07 Product Management",
+          "level": 3,
+          "line": 121
+        },
+        {
+          "heading": "INC-2 Order Import & Route Consolidation",
+          "level": 1,
+          "line": 137
+        },
+        {
+          "heading": "EP-04 Excel Import & Route Grouping",
+          "level": 2,
+          "line": 139
+        },
+        {
+          "heading": "US-08 Excel Import",
+          "level": 3,
+          "line": 141
+        },
+        {
+          "heading": "US-09 Import Validation",
+          "level": 3,
+          "line": 154
+        },
+        {
+          "heading": "US-10 Route Consolidation",
+          "level": 3,
+          "line": 166
+        },
+        {
+          "heading": "INC-3 Capacity Planning, LIFO & ETA",
+          "level": 1,
+          "line": 181
+        },
+        {
+          "heading": "EP-05 Capacity Validation & LIFO",
+          "level": 2,
+          "line": 183
+        },
+        {
+          "heading": "US-11 Capacity Validation",
+          "level": 3,
+          "line": 185
+        },
+        {
+          "heading": "US-12 LIFO Manifest",
+          "level": 3,
+          "line": 197
+        },
+        {
+          "heading": "EP-06 Route Planning & ETA",
+          "level": 2,
+          "line": 212
+        },
+        {
+          "heading": "US-13 Stop Filtering",
+          "level": 3,
+          "line": 214
+        },
+        {
+          "heading": "US-14 ETA Calculation",
+          "level": 3,
+          "line": 226
+        },
+        {
+          "heading": "INC-4 Vehicle Assignment & Dispatching",
+          "level": 1,
+          "line": 241
+        },
+        {
+          "heading": "EP-07 Dispatch Planning",
+          "level": 2,
+          "line": 243
+        },
+        {
+          "heading": "US-15 Vehicle Assignment",
+          "level": 3,
+          "line": 245
+        },
+        {
+          "heading": "US-16 Dispatch Execution",
+          "level": 3,
+          "line": 258
+        },
+        {
+          "heading": "INC-5 Monitoring & KPI",
+          "level": 1,
+          "line": 274
+        },
+        {
+          "heading": "EP-08 Trip Monitoring",
+          "level": 2,
+          "line": 276
+        },
+        {
+          "heading": "US-17 Dashboard Monitoring",
+          "level": 3,
+          "line": 278
+        },
+        {
+          "heading": "US-18 Exception Management",
+          "level": 3,
+          "line": 291
+        },
+        {
+          "heading": "EP-09 KPI Reporting",
+          "level": 2,
+          "line": 304
+        },
+        {
+          "heading": "US-19 KPI Dashboard",
+          "level": 3,
+          "line": 306
+        },
+        {
+          "heading": "Sprint Plan",
+          "level": 1,
+          "line": 322
+        },
+        {
+          "heading": "Sprint 1",
+          "level": 2,
+          "line": 324
+        },
+        {
+          "heading": "Sprint 2",
+          "level": 2,
+          "line": 338
+        },
+        {
+          "heading": "Sprint 3",
+          "level": 2,
+          "line": 350
+        },
+        {
+          "heading": "Sprint 4",
+          "level": 2,
+          "line": 360
+        },
+        {
+          "heading": "Sprint 5",
+          "level": 2,
+          "line": 370
+        },
+        {
+          "heading": "Sprint 6",
+          "level": 2,
+          "line": 382
+        },
+        {
+          "heading": "Sprint 7",
+          "level": 2,
+          "line": 390
+        }
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 0,
+        "functionCount": 0,
+        "classCount": 0,
+        "sectionCount": 47
+      }
+    },
+    {
+      "path": "ELog_Project_Context.md",
+      "language": "markdown",
+      "fileCategory": "docs",
+      "totalLines": 164,
+      "nonEmptyLines": 122,
+      "sections": [
+        {
+          "heading": "ELog Delivery Management System — Project Context",
+          "level": 1,
+          "line": 1
+        },
+        {
+          "heading": "1. Identity & Role",
+          "level": 2,
+          "line": 6
+        },
+        {
+          "heading": "2. System Summary",
+          "level": 2,
+          "line": 15
+        },
+        {
+          "heading": "3. Actors",
+          "level": 2,
+          "line": 22
+        },
+        {
+          "heading": "4. Feature Map",
+          "level": 2,
+          "line": 31
+        },
+        {
+          "heading": "5. Business Rules",
+          "level": 2,
+          "line": 44
+        },
+        {
+          "heading": "6. Trip Lifecycle",
+          "level": 2,
+          "line": 62
+        },
+        {
+          "heading": "7. Scope Exclusions (NEVER invent these)",
+          "level": 2,
+          "line": 72
+        },
+        {
+          "heading": "8. Artifact Reference",
+          "level": 2,
+          "line": 86
+        },
+        {
+          "heading": "9. Working Rules (BA Conventions)",
+          "level": 2,
+          "line": 97
+        },
+        {
+          "heading": "10. Key Data Concepts",
+          "level": 2,
+          "line": 110
+        },
+        {
+          "heading": "11. Use Case Index (UC-01 → UC-16)",
+          "level": 2,
+          "line": 121
+        },
+        {
+          "heading": "12. NFR Highlights (from SRS)",
+          "level": 2,
+          "line": 144
+        },
+        {
+          "heading": "13. GAP Log",
+          "level": 2,
+          "line": 154
+        }
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 0,
+        "functionCount": 0,
+        "classCount": 0,
+        "sectionCount": 14
+      }
+    },
+    {
+      "path": "IMPORT_ERROR_DETAIL_API_AUDIT_AND_FE_SPEC.md",
+      "language": "markdown",
+      "fileCategory": "docs",
+      "totalLines": 972,
+      "nonEmptyLines": 755,
+      "sections": [
+        {
+          "heading": "IMPORT ERROR DETAIL — API Audit & Frontend Implementation Spec",
+          "level": 1,
+          "line": 1
+        },
+        {
+          "heading": "1. Mục tiêu",
+          "level": 2,
+          "line": 3
+        },
+        {
+          "heading": "2. Yêu cầu quan trọng cho AI Coding",
+          "level": 2,
+          "line": 29
+        },
+        {
+          "heading": "3. Phạm vi",
+          "level": 2,
+          "line": 47
+        },
+        {
+          "heading": "3.1 Backend",
+          "level": 3,
+          "line": 49
+        },
+        {
+          "heading": "3.2 Frontend",
+          "level": 3,
+          "line": 80
+        },
+        {
+          "heading": "4. Phân quyền",
+          "level": 2,
+          "line": 96
+        },
+        {
+          "heading": "5. API Contract cần kiểm tra",
+          "level": 1,
+          "line": 109
+        },
+        {
+          "heading": "5.1 Upload file Excel để nhập đơn hàng",
+          "level": 2,
+          "line": 111
+        },
+        {
+          "heading": "Endpoint",
+          "level": 3,
+          "line": 113
+        },
+        {
+          "heading": "Role",
+          "level": 3,
+          "line": 119
+        },
+        {
+          "heading": "Request",
+          "level": 3,
+          "line": 125
+        },
+        {
+          "heading": "Response 201",
+          "level": 3,
+          "line": 135
+        },
+        {
+          "heading": "Response 400 — FILE_TOO_LARGE",
+          "level": 3,
+          "line": 156
+        },
+        {
+          "heading": "Response 409 — DUPLICATE_DELIVERY_DATE",
+          "level": 3,
+          "line": 168
+        },
+        {
+          "heading": "5.2 Lấy danh sách lỗi theo batch",
+          "level": 2,
+          "line": 186
+        },
+        {
+          "heading": "Endpoint",
+          "level": 3,
+          "line": 190
+        },
+        {
+          "heading": "Role",
+          "level": 3,
+          "line": 196
+        },
+        {
+          "heading": "Query Parameters",
+          "level": 3,
+          "line": 204
+        },
+        {
+          "heading": "Response 200",
+          "level": 3,
+          "line": 213
+        },
+        {
+          "heading": "Response 404",
+          "level": 3,
+          "line": 249
+        },
+        {
+          "heading": "5.3 Export file báo cáo lỗi Excel",
+          "level": 2,
+          "line": 263
+        },
+        {
+          "heading": "Endpoint",
+          "level": 3,
+          "line": 265
+        },
+        {
+          "heading": "Response",
+          "level": 3,
+          "line": 271
+        },
+        {
+          "heading": "5.4 API lịch sử import batch",
+          "level": 2,
+          "line": 290
+        },
+        {
+          "heading": "6. Backend Audit Checklist",
+          "level": 1,
+          "line": 321
+        },
+        {
+          "heading": "7. Frontend Audit Checklist",
+          "level": 1,
+          "line": 377
+        },
+        {
+          "heading": "8. Types Frontend",
+          "level": 1,
+          "line": 434
+        },
+        {
+          "heading": "9. API Service cần có ở Frontend",
+          "level": 1,
+          "line": 483
+        },
+        {
+          "heading": "9.1 Upload",
+          "level": 2,
+          "line": 485
+        },
+        {
+          "heading": "9.2 Get import errors",
+          "level": 2,
+          "line": 510
+        },
+        {
+          "heading": "9.3 Export errors",
+          "level": 2,
+          "line": 536
+        },
+        {
+          "heading": "9.4 Download blob",
+          "level": 2,
+          "line": 553
+        },
+        {
+          "heading": "10. Error Handling",
+          "level": 1,
+          "line": 575
+        },
+        {
+          "heading": "10.1 Duplicate delivery date",
+          "level": 2,
+          "line": 577
+        },
+        {
+          "heading": "10.2 File too large",
+          "level": 2,
+          "line": 586
+        },
+        {
+          "heading": "10.3 Batch not found",
+          "level": 2,
+          "line": 593
+        },
+        {
+          "heading": "10.4 Export failed",
+          "level": 2,
+          "line": 601
+        },
+        {
+          "heading": "11. UI nâng cấp màn hình lỗi import",
+          "level": 1,
+          "line": 609
+        },
+        {
+          "heading": "11.1 Layout",
+          "level": 2,
+          "line": 611
+        },
+        {
+          "heading": "11.2 Filter dropdown",
+          "level": 2,
+          "line": 629
+        },
+        {
+          "heading": "12. Error Badge Mapping",
+          "level": 1,
+          "line": 657
+        },
+        {
+          "heading": "13. Error Table Columns",
+          "level": 1,
+          "line": 713
+        },
+        {
+          "heading": "14. Export Button",
+          "level": 1,
+          "line": 736
+        },
+        {
+          "heading": "15. Lưu ý field mapping quan trọng",
+          "level": 1,
+          "line": 766
+        },
+        {
+          "heading": "16. Implementation Plan",
+          "level": 1,
+          "line": 801
+        },
+        {
+          "heading": "Bước 1 — Audit backend",
+          "level": 2,
+          "line": 803
+        },
+        {
+          "heading": "Bước 2 — Audit frontend",
+          "level": 2,
+          "line": 815
+        },
+        {
+          "heading": "Bước 3 — Implement",
+          "level": 2,
+          "line": 829
+        },
+        {
+          "heading": "Bước 4 — Verify",
+          "level": 2,
+          "line": 845
+        },
+        {
+          "heading": "17. Acceptance Criteria",
+          "level": 1,
+          "line": 864
+        },
+        {
+          "heading": "API Audit",
+          "level": 2,
+          "line": 866
+        },
+        {
+          "heading": "Upload",
+          "level": 2,
+          "line": 875
+        },
+        {
+          "heading": "Result Summary",
+          "level": 2,
+          "line": 886
+        },
+        {
+          "heading": "Error Detail",
+          "level": 2,
+          "line": 897
+        },
+        {
+          "heading": "Error Badge",
+          "level": 2,
+          "line": 913
+        },
+        {
+          "heading": "Export",
+          "level": 2,
+          "line": 919
+        },
+        {
+          "heading": "Permission",
+          "level": 2,
+          "line": 927
+        },
+        {
+          "heading": "18. Prompt ngắn giao cho AI Coding",
+          "level": 1,
+          "line": 938
+        }
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 0,
+        "functionCount": 0,
+        "classCount": 0,
+        "sectionCount": 59
+      }
+    },
+    {
+      "path": "ORDER_IMPORT_FRONTEND_SPEC.md",
+      "language": "markdown",
+      "fileCategory": "docs",
+      "totalLines": 1167,
+      "nonEmptyLines": 893,
+      "sections": [
+        {
+          "heading": "Frontend Specification — Excel Order Import",
+          "level": 1,
+          "line": 1
+        },
+        {
+          "heading": "1. Mục tiêu",
+          "level": 2,
+          "line": 3
+        },
+        {
+          "heading": "2. Công nghệ đề xuất",
+          "level": 2,
+          "line": 35
+        },
+        {
+          "heading": "3. Phạm vi frontend",
+          "level": 2,
+          "line": 50
+        },
+        {
+          "heading": "4. Route đề xuất",
+          "level": 2,
+          "line": 80
+        },
+        {
+          "heading": "5. Phân quyền giao diện",
+          "level": 2,
+          "line": 96
+        },
+        {
+          "heading": "5.1 DISPATCHER",
+          "level": 3,
+          "line": 105
+        },
+        {
+          "heading": "5.2 LOGISTICS_MANAGER và SYSTEM_ADMIN",
+          "level": 3,
+          "line": 117
+        },
+        {
+          "heading": "5.3 Role khác",
+          "level": 3,
+          "line": 141
+        },
+        {
+          "heading": "6. TypeScript Types",
+          "level": 2,
+          "line": 149
+        },
+        {
+          "heading": "7. Mock Data",
+          "level": 2,
+          "line": 201
+        },
+        {
+          "heading": "7.1 Import result mẫu",
+          "level": 3,
+          "line": 203
+        },
+        {
+          "heading": "7.2 Lịch sử import mẫu",
+          "level": 3,
+          "line": 233
+        },
+        {
+          "heading": "8. Bố cục trang",
+          "level": 2,
+          "line": 278
+        },
+        {
+          "heading": "9. Màn hình 1 — Tải lên đơn hàng",
+          "level": 1,
+          "line": 315
+        },
+        {
+          "heading": "9.1 Header",
+          "level": 2,
+          "line": 317
+        },
+        {
+          "heading": "9.2 Upload Card",
+          "level": 2,
+          "line": 324
+        },
+        {
+          "heading": "Ngày giao hàng",
+          "level": 3,
+          "line": 338
+        },
+        {
+          "heading": "File Excel",
+          "level": 3,
+          "line": 355
+        },
+        {
+          "heading": "9.3 Nút Tải xuống file mẫu",
+          "level": 2,
+          "line": 378
+        },
+        {
+          "heading": "9.4 Nút Tải lên",
+          "level": 2,
+          "line": 452
+        },
+        {
+          "heading": "10. Dialog xác nhận thay thế batch",
+          "level": 1,
+          "line": 470
+        },
+        {
+          "heading": "11. Mock Upload Flow",
+          "level": 1,
+          "line": 516
+        },
+        {
+          "heading": "11.1 Trạng thái xử lý",
+          "level": 2,
+          "line": 518
+        },
+        {
+          "heading": "11.2 Mock service",
+          "level": 2,
+          "line": 532
+        },
+        {
+          "heading": "12. Màn hình 2 — Kết quả Import",
+          "level": 1,
+          "line": 579
+        },
+        {
+          "heading": "12.1 Header",
+          "level": 2,
+          "line": 581
+        },
+        {
+          "heading": "12.2 Summary",
+          "level": 2,
+          "line": 589
+        },
+        {
+          "heading": "12.3 Cảnh báo dòng lỗi",
+          "level": 2,
+          "line": 600
+        },
+        {
+          "heading": "12.4 Batch 100% lỗi",
+          "level": 2,
+          "line": 627
+        },
+        {
+          "heading": "13. Bảng chi tiết dòng lỗi",
+          "level": 1,
+          "line": 647
+        },
+        {
+          "heading": "14. Tải báo cáo lỗi",
+          "level": 1,
+          "line": 676
+        },
+        {
+          "heading": "15. Màn hình 3 — Lịch sử Import",
+          "level": 1,
+          "line": 721
+        },
+        {
+          "heading": "15.1 Header",
+          "level": 2,
+          "line": 723
+        },
+        {
+          "heading": "15.2 Bảng dữ liệu",
+          "level": 2,
+          "line": 730
+        },
+        {
+          "heading": "Trạng thái",
+          "level": 3,
+          "line": 742
+        },
+        {
+          "heading": "Thao tác",
+          "level": 3,
+          "line": 749
+        },
+        {
+          "heading": "Phân trang",
+          "level": 3,
+          "line": 757
+        },
+        {
+          "heading": "16. Chi tiết Batch",
+          "level": 1,
+          "line": 765
+        },
+        {
+          "heading": "17. Xử lý lỗi và trạng thái UI",
+          "level": 1,
+          "line": 786
+        },
+        {
+          "heading": "18. Empty States",
+          "level": 1,
+          "line": 812
+        },
+        {
+          "heading": "Chưa có lịch sử",
+          "level": 2,
+          "line": 814
+        },
+        {
+          "heading": "Batch không có lỗi",
+          "level": 2,
+          "line": 826
+        },
+        {
+          "heading": "19. Component đề xuất",
+          "level": 1,
+          "line": 834
+        },
+        {
+          "heading": "20. Permission Utilities",
+          "level": 1,
+          "line": 871
+        },
+        {
+          "heading": "21. File Validation Utility",
+          "level": 1,
+          "line": 892
+        },
+        {
+          "heading": "22. Mock Active Batch Check",
+          "level": 1,
+          "line": 922
+        },
+        {
+          "heading": "23. Responsive",
+          "level": 1,
+          "line": 972
+        },
+        {
+          "heading": "Desktop",
+          "level": 2,
+          "line": 974
+        },
+        {
+          "heading": "Tablet",
+          "level": 2,
+          "line": 980
+        },
+        {
+          "heading": "Mobile",
+          "level": 2,
+          "line": 986
+        },
+        {
+          "heading": "24. Accessibility và UX",
+          "level": 1,
+          "line": 999
+        },
+        {
+          "heading": "25. Acceptance Criteria",
+          "level": 1,
+          "line": 1014
+        },
+        {
+          "heading": "Phân quyền",
+          "level": 2,
+          "line": 1016
+        },
+        {
+          "heading": "Upload Form",
+          "level": 2,
+          "line": 1026
+        },
+        {
+          "heading": "File mẫu",
+          "level": 2,
+          "line": 1037
+        },
+        {
+          "heading": "Trùng ngày",
+          "level": 2,
+          "line": 1047
+        },
+        {
+          "heading": "Kết quả Import",
+          "level": 2,
+          "line": 1055
+        },
+        {
+          "heading": "Danh sách lỗi",
+          "level": 2,
+          "line": 1067
+        },
+        {
+          "heading": "Lịch sử",
+          "level": 2,
+          "line": 1076
+        },
+        {
+          "heading": "26. Kết quả đầu ra mong muốn từ AI",
+          "level": 1,
+          "line": 1091
+        },
+        {
+          "heading": "27. Prompt ngắn giao cho AI Coding",
+          "level": 1,
+          "line": 1129
+        }
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 0,
+        "functionCount": 0,
+        "classCount": 0,
+        "sectionCount": 62
+      }
+    },
+    {
+      "path": "PRODUCT_CATALOG_FRONTEND_SPEC.md",
+      "language": "markdown",
+      "fileCategory": "docs",
+      "totalLines": 1225,
+      "nonEmptyLines": 881,
+      "sections": [
+        {
+          "heading": "Frontend Specification — Product Catalog Management",
+          "level": 1,
+          "line": 1
+        },
+        {
+          "heading": "1. Mục tiêu",
+          "level": 2,
+          "line": 3
+        },
+        {
+          "heading": "2. Phạm vi frontend",
+          "level": 2,
+          "line": 23
+        },
+        {
+          "heading": "2.1 Công nghệ ưu tiên",
+          "level": 3,
+          "line": 25
+        },
+        {
+          "heading": "2.2 Chỉ triển khai phía client",
+          "level": 3,
+          "line": 34
+        },
+        {
+          "heading": "3. Phân quyền giao diện",
+          "level": 2,
+          "line": 62
+        },
+        {
+          "heading": "3.1 Quy tắc hiển thị theo role",
+          "level": 3,
+          "line": 71
+        },
+        {
+          "heading": "4. Cấu trúc route đề xuất",
+          "level": 2,
+          "line": 93
+        },
+        {
+          "heading": "5. Kiểu dữ liệu frontend",
+          "level": 2,
+          "line": 111
+        },
+        {
+          "heading": "6. Mock data mẫu",
+          "level": 2,
+          "line": 139
+        },
+        {
+          "heading": "7. Màn hình 1 — Danh sách sản phẩm",
+          "level": 1,
+          "line": 189
+        },
+        {
+          "heading": "7.1 Tiêu đề màn hình",
+          "level": 2,
+          "line": 191
+        },
+        {
+          "heading": "7.2 Thanh công cụ",
+          "level": 2,
+          "line": 198
+        },
+        {
+          "heading": "Ô tìm kiếm",
+          "level": 3,
+          "line": 206
+        },
+        {
+          "heading": "Bộ lọc trạng thái",
+          "level": 3,
+          "line": 222
+        },
+        {
+          "heading": "7.3 Bảng dữ liệu",
+          "level": 2,
+          "line": 240
+        },
+        {
+          "heading": "Định dạng dữ liệu",
+          "level": 3,
+          "line": 251
+        },
+        {
+          "heading": "Status chip",
+          "level": 3,
+          "line": 256
+        },
+        {
+          "heading": "Thao tác từng dòng",
+          "level": 3,
+          "line": 263
+        },
+        {
+          "heading": "7.4 Phân trang",
+          "level": 2,
+          "line": 281
+        },
+        {
+          "heading": "7.5 Trạng thái UI",
+          "level": 2,
+          "line": 297
+        },
+        {
+          "heading": "Loading",
+          "level": 3,
+          "line": 299
+        },
+        {
+          "heading": "Không có dữ liệu tìm kiếm",
+          "level": 3,
+          "line": 306
+        },
+        {
+          "heading": "Danh mục chưa có sản phẩm",
+          "level": 3,
+          "line": 320
+        },
+        {
+          "heading": "8. Màn hình 2 — Form thêm hoặc chỉnh sửa sản phẩm",
+          "level": 1,
+          "line": 343
+        },
+        {
+          "heading": "8.1 Tiêu đề",
+          "level": 2,
+          "line": 345
+        },
+        {
+          "heading": "8.2 Bố cục tổng thể",
+          "level": 2,
+          "line": 361
+        },
+        {
+          "heading": "8.3 Nhóm 1 — Thông tin cơ bản",
+          "level": 2,
+          "line": 375
+        },
+        {
+          "heading": "SKU",
+          "level": 3,
+          "line": 377
+        },
+        {
+          "heading": "Tên sản phẩm",
+          "level": 3,
+          "line": 420
+        },
+        {
+          "heading": "8.4 Nhóm 2 — Thông số vật lý",
+          "level": 2,
+          "line": 454
+        },
+        {
+          "heading": "Dài",
+          "level": 3,
+          "line": 478
+        },
+        {
+          "heading": "Rộng",
+          "level": 3,
+          "line": 505
+        },
+        {
+          "heading": "Cao",
+          "level": 3,
+          "line": 531
+        },
+        {
+          "heading": "Trọng lượng",
+          "level": 3,
+          "line": 557
+        },
+        {
+          "heading": "8.5 Tự động tính thể tích",
+          "level": 2,
+          "line": 585
+        },
+        {
+          "heading": "Công thức",
+          "level": 3,
+          "line": 587
+        },
+        {
+          "heading": "Hành vi",
+          "level": 3,
+          "line": 594
+        },
+        {
+          "heading": "Field thể tích",
+          "level": 3,
+          "line": 611
+        },
+        {
+          "heading": "Hint text",
+          "level": 3,
+          "line": 640
+        },
+        {
+          "heading": "Lưu ý frontend-only",
+          "level": 3,
+          "line": 649
+        },
+        {
+          "heading": "8.6 Submit form",
+          "level": 2,
+          "line": 670
+        },
+        {
+          "heading": "Chế độ thêm mới",
+          "level": 3,
+          "line": 672
+        },
+        {
+          "heading": "Chế độ chỉnh sửa",
+          "level": 3,
+          "line": 691
+        },
+        {
+          "heading": "Trạng thái đang submit",
+          "level": 3,
+          "line": 710
+        },
+        {
+          "heading": "Mock lỗi SKU trùng",
+          "level": 3,
+          "line": 717
+        },
+        {
+          "heading": "9. Màn hình 3 — Chi tiết sản phẩm",
+          "level": 1,
+          "line": 741
+        },
+        {
+          "heading": "9.1 Header",
+          "level": 2,
+          "line": 743
+        },
+        {
+          "heading": "9.2 Card 1 — Thông tin sản phẩm",
+          "level": 2,
+          "line": 756
+        },
+        {
+          "heading": "9.3 Card 2 — Thông số vật lý",
+          "level": 2,
+          "line": 782
+        },
+        {
+          "heading": "9.4 Ví dụ tích luỹ",
+          "level": 2,
+          "line": 806
+        },
+        {
+          "heading": "10. Dialog vô hiệu hoá sản phẩm",
+          "level": 1,
+          "line": 848
+        },
+        {
+          "heading": "10.1 Điều kiện hiển thị",
+          "level": 2,
+          "line": 850
+        },
+        {
+          "heading": "10.2 Nội dung dialog",
+          "level": 2,
+          "line": 854
+        },
+        {
+          "heading": "10.3 Khi xác nhận",
+          "level": 2,
+          "line": 878
+        },
+        {
+          "heading": "11. Dialog kích hoạt sản phẩm",
+          "level": 1,
+          "line": 892
+        },
+        {
+          "heading": "12. Xử lý lỗi và trạng thái UI",
+          "level": 1,
+          "line": 921
+        },
+        {
+          "heading": "13. Component đề xuất",
+          "level": 1,
+          "line": 938
+        },
+        {
+          "heading": "14. Utility function đề xuất",
+          "level": 1,
+          "line": 971
+        },
+        {
+          "heading": "15. Mock service đề xuất",
+          "level": 1,
+          "line": 1013
+        },
+        {
+          "heading": "16. Yêu cầu responsive",
+          "level": 1,
+          "line": 1058
+        },
+        {
+          "heading": "Desktop",
+          "level": 2,
+          "line": 1060
+        },
+        {
+          "heading": "Tablet",
+          "level": 2,
+          "line": 1067
+        },
+        {
+          "heading": "Mobile",
+          "level": 2,
+          "line": 1073
+        },
+        {
+          "heading": "17. Accessibility và UX",
+          "level": 1,
+          "line": 1083
+        },
+        {
+          "heading": "18. Acceptance Criteria",
+          "level": 1,
+          "line": 1097
+        },
+        {
+          "heading": "Danh sách sản phẩm",
+          "level": 2,
+          "line": 1099
+        },
+        {
+          "heading": "Phân quyền giao diện",
+          "level": 2,
+          "line": 1110
+        },
+        {
+          "heading": "Form sản phẩm",
+          "level": 2,
+          "line": 1121
+        },
+        {
+          "heading": "Auto-calculate volume",
+          "level": 2,
+          "line": 1132
+        },
+        {
+          "heading": "Chi tiết sản phẩm",
+          "level": 2,
+          "line": 1145
+        },
+        {
+          "heading": "Vô hiệu hoá và kích hoạt",
+          "level": 2,
+          "line": 1155
+        },
+        {
+          "heading": "19. Kết quả đầu ra mong muốn từ AI code",
+          "level": 1,
+          "line": 1165
+        },
+        {
+          "heading": "20. Prompt ngắn giao cho AI coding",
+          "level": 1,
+          "line": 1196
+        }
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 0,
+        "functionCount": 0,
+        "classCount": 0,
+        "sectionCount": 74
+      }
+    },
+    {
+      "path": "README.md",
+      "language": "markdown",
+      "fileCategory": "docs",
+      "totalLines": 83,
+      "nonEmptyLines": 60,
+      "sections": [
+        {
+          "heading": "Prerequisites",
+          "level": 2,
+          "line": 7
+        },
+        {
+          "heading": "Local Setup",
+          "level": 2,
+          "line": 17
+        },
+        {
+          "heading": "Git Workflow",
+          "level": 2,
+          "line": 35
+        },
+        {
+          "heading": "Branch naming",
+          "level": 3,
+          "line": 37
+        },
+        {
+          "heading": "Flow",
+          "level": 3,
+          "line": 46
+        },
+        {
+          "heading": "Project Structure",
+          "level": 2,
+          "line": 60
+        }
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 0,
+        "functionCount": 0,
+        "classCount": 0,
+        "sectionCount": 6
+      }
+    },
+    {
+      "path": "src/Test/e2e/us02-auth-e2e-spec.md",
+      "language": "markdown",
+      "fileCategory": "docs",
+      "totalLines": 365,
+      "nonEmptyLines": 281,
+      "sections": [
+        {
+          "heading": "US-02 Authentication & Authorization — E2E Test Specification",
+          "level": 1,
+          "line": 1
+        },
+        {
+          "heading": "Thông tin API Backend",
+          "level": 2,
+          "line": 8
+        },
+        {
+          "heading": "Response envelope chuẩn",
+          "level": 3,
+          "line": 18
+        },
+        {
+          "heading": "Tài khoản test cần chuẩn bị",
+          "level": 2,
+          "line": 41
+        },
+        {
+          "heading": "Token Storage Convention",
+          "level": 2,
+          "line": 54
+        },
+        {
+          "heading": "Test Cases",
+          "level": 2,
+          "line": 65
+        },
+        {
+          "heading": "TC-01: Login đúng credentials → token hợp lệ",
+          "level": 3,
+          "line": 69
+        },
+        {
+          "heading": "TC-02: Login sai password → 401",
+          "level": 3,
+          "line": 103
+        },
+        {
+          "heading": "TC-03: Login tài khoản bị khóa → 403",
+          "level": 3,
+          "line": 133
+        },
+        {
+          "heading": "TC-04: Access protected page với token hợp lệ → thành công",
+          "level": 3,
+          "line": 163
+        },
+        {
+          "heading": "TC-05: Access protected page không có token → 401, redirect login",
+          "level": 3,
+          "line": 181
+        },
+        {
+          "heading": "TC-06: Access protected page với role không đủ quyền → 403",
+          "level": 3,
+          "line": 198
+        },
+        {
+          "heading": "TC-07: Refresh token hợp lệ → access token mới",
+          "level": 3,
+          "line": 225
+        },
+        {
+          "heading": "TC-08: Refresh token đã logout / không hợp lệ → 401",
+          "level": 3,
+          "line": 255
+        },
+        {
+          "heading": "TC-09: Access token bị tamper (sửa payload) → 401",
+          "level": 3,
+          "line": 282
+        },
+        {
+          "heading": "Script SQL — Tạo tài khoản test",
+          "level": 2,
+          "line": 312
+        },
+        {
+          "heading": "Acceptance Criteria",
+          "level": 2,
+          "line": 353
+        }
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 0,
+        "functionCount": 0,
+        "classCount": 0,
+        "sectionCount": 17
+      }
+    },
+    {
+      "path": "src/Test/e2e/us02-auth-fix-report.md",
+      "language": "markdown",
+      "fileCategory": "docs",
+      "totalLines": 264,
+      "nonEmptyLines": 190,
+      "sections": [
+        {
+          "heading": "Báo cáo: Các lỗi & Thiếu sót cần sửa — US-02 Authentication",
+          "level": 1,
+          "line": 1
+        },
+        {
+          "heading": "Tóm tắt nhanh",
+          "level": 2,
+          "line": 8
+        },
+        {
+          "heading": "Lỗi 1 — Sai key lưu token vào localStorage",
+          "level": 2,
+          "line": 20
+        },
+        {
+          "heading": "Vấn đề",
+          "level": 3,
+          "line": 22
+        },
+        {
+          "heading": "Cách sửa",
+          "level": 3,
+          "line": 42
+        },
+        {
+          "heading": "Lỗi 2 — Thiếu PrivateRoute (Route Guard)",
+          "level": 2,
+          "line": 60
+        },
+        {
+          "heading": "Vấn đề",
+          "level": 3,
+          "line": 62
+        },
+        {
+          "heading": "Cách sửa",
+          "level": 3,
+          "line": 73
+        },
+        {
+          "heading": "Lỗi 3 — Thiếu Axios Interceptor tự động Refresh Token",
+          "level": 2,
+          "line": 102
+        },
+        {
+          "heading": "Vấn đề",
+          "level": 3,
+          "line": 104
+        },
+        {
+          "heading": "Cách sửa",
+          "level": 3,
+          "line": 118
+        },
+        {
+          "heading": "Lỗi 4 — Thiếu xử lý khi token bị tamper/thu hồi",
+          "level": 2,
+          "line": 189
+        },
+        {
+          "heading": "Vấn đề",
+          "level": 3,
+          "line": 191
+        },
+        {
+          "heading": "Cách sửa",
+          "level": 3,
+          "line": 195
+        },
+        {
+          "heading": "Lỗi 5 — Thiếu trang 403 và RBAC Route Guard",
+          "level": 2,
+          "line": 201
+        },
+        {
+          "heading": "Vấn đề",
+          "level": 3,
+          "line": 203
+        },
+        {
+          "heading": "Cách sửa",
+          "level": 3,
+          "line": 207
+        },
+        {
+          "heading": "Checklist — Để tất cả 9 TC pass",
+          "level": 2,
+          "line": 253
+        }
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 0,
+        "functionCount": 0,
+        "classCount": 0,
+        "sectionCount": 18
+      }
+    },
+    {
+      "path": "src/Test/README.md",
+      "language": "markdown",
+      "fileCategory": "docs",
+      "totalLines": 215,
+      "nonEmptyLines": 152,
+      "sections": [
+        {
+          "heading": "Hướng dẫn chạy E2E Test — US-02 Authentication",
+          "level": 1,
+          "line": 1
+        },
+        {
+          "heading": "Yêu cầu trước khi chạy",
+          "level": 2,
+          "line": 3
+        },
+        {
+          "heading": "Chuẩn bị dữ liệu test",
+          "level": 2,
+          "line": 14
+        },
+        {
+          "heading": "Cài đặt",
+          "level": 2,
+          "line": 52
+        },
+        {
+          "heading": "Chạy test",
+          "level": 2,
+          "line": 63
+        },
+        {
+          "heading": "Cách 1 — Giao diện đồ họa (khuyên dùng khi dev)",
+          "level": 3,
+          "line": 65
+        },
+        {
+          "heading": "Cách 2 — Headless (dùng cho CI hoặc chạy nhanh)",
+          "level": 3,
+          "line": 77
+        },
+        {
+          "heading": "Tốc độ chạy test",
+          "level": 3,
+          "line": 86
+        },
+        {
+          "heading": "Cấu trúc file test",
+          "level": 2,
+          "line": 104
+        },
+        {
+          "heading": "Danh sách test cases",
+          "level": 2,
+          "line": 122
+        },
+        {
+          "heading": "Xử lý lỗi thường gặp",
+          "level": 2,
+          "line": 146
+        },
+        {
+          "heading": "Hai nhóm E2E từ US-02 đến US-06",
+          "level": 2,
+          "line": 167
+        },
+        {
+          "heading": "1. Deterministic UI E2E",
+          "level": 3,
+          "line": 169
+        },
+        {
+          "heading": "2. Full-stack smoke E2E",
+          "level": 3,
+          "line": 185
+        },
+        {
+          "heading": "Chạy tất cả",
+          "level": 3,
+          "line": 209
+        }
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 0,
+        "functionCount": 0,
+        "classCount": 0,
+        "sectionCount": 15
+      }
+    },
+    {
+      "path": ".env.development",
+      "language": "config",
+      "fileCategory": "config",
+      "totalLines": 2,
+      "nonEmptyLines": 2,
+      "definitions": [
+        {
+          "name": "VITE_API_BASE_URL",
+          "kind": "variable",
+          "fields": [],
+          "startLine": 1,
+          "endLine": 1
+        },
+        {
+          "name": "VITE_USE_MOCK",
+          "kind": "variable",
+          "fields": [],
+          "startLine": 2,
+          "endLine": 2
+        }
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 0,
+        "functionCount": 0,
+        "classCount": 0,
+        "definitionCount": 2
+      }
+    },
+    {
+      "path": "package.json",
+      "language": "json",
+      "fileCategory": "config",
+      "totalLines": 43,
+      "nonEmptyLines": 43,
+      "sections": [
+        {
+          "heading": "name",
+          "level": 1,
+          "line": 2
+        },
+        {
+          "heading": "private",
+          "level": 1,
+          "line": 3
+        },
+        {
+          "heading": "version",
+          "level": 1,
+          "line": 4
+        },
+        {
+          "heading": "type",
+          "level": 1,
+          "line": 5
+        },
+        {
+          "heading": "scripts",
+          "level": 1,
+          "line": 6
+        },
+        {
+          "heading": "dependencies",
+          "level": 1,
+          "line": 12
+        },
+        {
+          "heading": "devDependencies",
+          "level": 1,
+          "line": 28
+        }
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 0,
+        "functionCount": 0,
+        "classCount": 0,
+        "sectionCount": 7
+      }
+    },
+    {
+      "path": "src/Test/e2e/tsconfig.json",
+      "language": "json",
+      "fileCategory": "config",
+      "totalLines": 11,
+      "nonEmptyLines": 11,
+      "sections": [
+        {
+          "heading": "compilerOptions",
+          "level": 1,
+          "line": 2
+        },
+        {
+          "heading": "include",
+          "level": 1,
+          "line": 10
+        }
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 0,
+        "functionCount": 0,
+        "classCount": 0,
+        "sectionCount": 2
+      }
+    },
+    {
+      "path": "src/Test/package.json",
+      "language": "json",
+      "fileCategory": "config",
+      "totalLines": 15,
+      "nonEmptyLines": 15,
+      "sections": [
+        {
+          "heading": "name",
+          "level": 1,
+          "line": 2
+        },
+        {
+          "heading": "private",
+          "level": 1,
+          "line": 3
+        },
+        {
+          "heading": "version",
+          "level": 1,
+          "line": 4
+        },
+        {
+          "heading": "scripts",
+          "level": 1,
+          "line": 5
+        },
+        {
+          "heading": "devDependencies",
+          "level": 1,
+          "line": 12
+        }
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 0,
+        "functionCount": 0,
+        "classCount": 0,
+        "sectionCount": 5
+      }
+    },
+    {
+      "path": "tsconfig.app.json",
+      "language": "json",
+      "fileCategory": "config",
+      "totalLines": 26,
+      "nonEmptyLines": 24,
+      "sections": [
+        {
+          "heading": "compilerOptions",
+          "level": 1,
+          "line": 2
+        },
+        {
+          "heading": "include",
+          "level": 1,
+          "line": 24
+        },
+        {
+          "heading": "exclude",
+          "level": 1,
+          "line": 25
+        }
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 0,
+        "functionCount": 0,
+        "classCount": 0,
+        "sectionCount": 3
+      }
+    },
+    {
+      "path": "tsconfig.json",
+      "language": "json",
+      "fileCategory": "config",
+      "totalLines": 7,
+      "nonEmptyLines": 7,
+      "sections": [
+        {
+          "heading": "files",
+          "level": 1,
+          "line": 2
+        },
+        {
+          "heading": "references",
+          "level": 1,
+          "line": 3
+        }
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 0,
+        "functionCount": 0,
+        "classCount": 0,
+        "sectionCount": 2
+      }
+    },
+    {
+      "path": "tsconfig.node.json",
+      "language": "json",
+      "fileCategory": "config",
+      "totalLines": 24,
+      "nonEmptyLines": 22,
+      "sections": [
+        {
+          "heading": "compilerOptions",
+          "level": 1,
+          "line": 2
+        },
+        {
+          "heading": "include",
+          "level": 1,
+          "line": 23
+        }
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 0,
+        "functionCount": 0,
+        "classCount": 0,
+        "sectionCount": 2
+      }
+    }
+  ]
+}

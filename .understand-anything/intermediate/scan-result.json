@@ -1,0 +1,1648 @@
+{
+  "name": "frontend",
+  "description": "Frontend của hệ thống ELog Delivery Management System, phục vụ quản lý giao nhận thiết bị điện tử cho các doanh nghiệp SME tại Việt Nam theo mô hình một kho, tuyến cố định và giao tới cửa hàng. Lưu ý: dự án có hơn 100 tệp nguồn; nên giới hạn phạm vi phân tích vào một thư mục con để xử lý nhanh hơn.",
+  "languages": [
+    "config",
+    "css",
+    "html",
+    "javascript",
+    "json",
+    "markdown",
+    "typescript"
+  ],
+  "frameworks": [
+    "React",
+    "Redux",
+    "TypeScript",
+    "Vite"
+  ],
+  "files": [
+    {
+      "path": ".env.development",
+      "language": "config",
+      "sizeLines": 1,
+      "fileCategory": "config"
+    },
+    {
+      "path": "CLAUDE.md",
+      "language": "markdown",
+      "sizeLines": 157,
+      "fileCategory": "docs"
+    },
+    {
+      "path": "ELog_Project_Context.md",
+      "language": "markdown",
+      "sizeLines": 164,
+      "fileCategory": "docs"
+    },
+    {
+      "path": "ELog_kehoachphattrien.md",
+      "language": "markdown",
+      "sizeLines": 400,
+      "fileCategory": "docs"
+    },
+    {
+      "path": "IMPORT_ERROR_DETAIL_API_AUDIT_AND_FE_SPEC.md",
+      "language": "markdown",
+      "sizeLines": 972,
+      "fileCategory": "docs"
+    },
+    {
+      "path": "ORDER_IMPORT_FRONTEND_SPEC.md",
+      "language": "markdown",
+      "sizeLines": 1167,
+      "fileCategory": "docs"
+    },
+    {
+      "path": "PRODUCT_CATALOG_FRONTEND_SPEC.md",
+      "language": "markdown",
+      "sizeLines": 1225,
+      "fileCategory": "docs"
+    },
+    {
+      "path": "README.md",
+      "language": "markdown",
+      "sizeLines": 83,
+      "fileCategory": "docs"
+    },
+    {
+      "path": "cypress/e2e/address-flow.cy.ts",
+      "language": "typescript",
+      "sizeLines": 44,
+      "fileCategory": "code"
+    },
+    {
+      "path": "cypress/e2e/auth-flow.cy.ts",
+      "language": "typescript",
+      "sizeLines": 44,
+      "fileCategory": "code"
+    },
+    {
+      "path": "cypress/e2e/capacityvalidation-flow.cy.ts",
+      "language": "typescript",
+      "sizeLines": 44,
+      "fileCategory": "code"
+    },
+    {
+      "path": "cypress/e2e/consolidation-flow.cy.ts",
+      "language": "typescript",
+      "sizeLines": 44,
+      "fileCategory": "code"
+    },
+    {
+      "path": "cypress/e2e/constraintvalidation-flow.cy.ts",
+      "language": "typescript",
+      "sizeLines": 44,
+      "fileCategory": "code"
+    },
+    {
+      "path": "cypress/e2e/drivertrip-flow.cy.ts",
+      "language": "typescript",
+      "sizeLines": 44,
+      "fileCategory": "code"
+    },
+    {
+      "path": "cypress/e2e/exception-flow.cy.ts",
+      "language": "typescript",
+      "sizeLines": 44,
+      "fileCategory": "code"
+    },
+    {
+      "path": "cypress/e2e/import-flow.cy.ts",
+      "language": "typescript",
+      "sizeLines": 44,
+      "fileCategory": "code"
+    },
+    {
+      "path": "cypress/e2e/kpi-flow.cy.ts",
+      "language": "typescript",
+      "sizeLines": 44,
+      "fileCategory": "code"
+    },
+    {
+      "path": "cypress/e2e/route-flow.cy.ts",
+      "language": "typescript",
+      "sizeLines": 44,
+      "fileCategory": "code"
+    },
+    {
+      "path": "cypress/e2e/store-flow.cy.ts",
+      "language": "typescript",
+      "sizeLines": 44,
+      "fileCategory": "code"
+    },
+    {
+      "path": "cypress/e2e/trip-flow.cy.ts",
+      "language": "typescript",
+      "sizeLines": 44,
+      "fileCategory": "code"
+    },
+    {
+      "path": "cypress/e2e/tripdraft-flow.cy.ts",
+      "language": "typescript",
+      "sizeLines": 44,
+      "fileCategory": "code"
+    },
+    {
+      "path": "cypress/e2e/tripmonitoring-flow.cy.ts",
+      "language": "typescript",
+      "sizeLines": 44,
+      "fileCategory": "code"
+    },
+    {
+      "path": "cypress/e2e/user-flow.cy.ts",
+      "language": "typescript",
+      "sizeLines": 44,
+      "fileCategory": "code"
+    },
+    {
+      "path": "cypress/e2e/vehicle-flow.cy.ts",
+      "language": "typescript",
+      "sizeLines": 44,
+      "fileCategory": "code"
+    },
+    {
+      "path": "docs/api-conventions.md",
+      "language": "markdown",
+      "sizeLines": 157,
+      "fileCategory": "docs"
+    },
+    {
+      "path": "docs/business-rules.md",
+      "language": "markdown",
+      "sizeLines": 104,
+      "fileCategory": "docs"
+    },
+    {
+      "path": "docs/data-model.md",
+      "language": "markdown",
+      "sizeLines": 172,
+      "fileCategory": "docs"
+    },
+    {
+      "path": "docs/superpowers/plans/2026-06-28-excel-import-integration.md",
+      "language": "markdown",
+      "sizeLines": 354,
+      "fileCategory": "docs"
+    },
+    {
+      "path": "docs/superpowers/plans/2026-07-18-store-address-map-integration.md",
+      "language": "markdown",
+      "sizeLines": 385,
+      "fileCategory": "docs"
+    },
+    {
+      "path": "docs/superpowers/specs/2026-06-28-excel-import-integration-design.md",
+      "language": "markdown",
+      "sizeLines": 116,
+      "fileCategory": "docs"
+    },
+    {
+      "path": "docs/tech-stack.md",
+      "language": "markdown",
+      "sizeLines": 211,
+      "fileCategory": "docs"
+    },
+    {
+      "path": "docs/us01-checklist.md",
+      "language": "markdown",
+      "sizeLines": 174,
+      "fileCategory": "docs"
+    },
+    {
+      "path": "eslint.config.js",
+      "language": "javascript",
+      "sizeLines": 22,
+      "fileCategory": "code"
+    },
+    {
+      "path": "index.html",
+      "language": "html",
+      "sizeLines": 13,
+      "fileCategory": "markup"
+    },
+    {
+      "path": "package.json",
+      "language": "json",
+      "sizeLines": 43,
+      "fileCategory": "config"
+    },
+    {
+      "path": "src/App.css",
+      "language": "css",
+      "sizeLines": 184,
+      "fileCategory": "markup"
+    },
+    {
+      "path": "src/App.tsx",
+      "language": "typescript",
+      "sizeLines": 324,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src/Test/README.md",
+      "language": "markdown",
+      "sizeLines": 215,
+      "fileCategory": "docs"
+    },
+    {
+      "path": "src/Test/cypress.config.ts",
+      "language": "typescript",
+      "sizeLines": 14,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src/Test/e2e/fullstack/us02-auth.fullstack.cy.ts",
+      "language": "typescript",
+      "sizeLines": 11,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src/Test/e2e/fullstack/us03-users.fullstack.cy.ts",
+      "language": "typescript",
+      "sizeLines": 14,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src/Test/e2e/fullstack/us04-stores.fullstack.cy.ts",
+      "language": "typescript",
+      "sizeLines": 14,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src/Test/e2e/fullstack/us05-routes.fullstack.cy.ts",
+      "language": "typescript",
+      "sizeLines": 15,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src/Test/e2e/fullstack/us06-vehicles.fullstack.cy.ts",
+      "language": "typescript",
+      "sizeLines": 15,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src/Test/e2e/support/e2e.ts",
+      "language": "typescript",
+      "sizeLines": 38,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src/Test/e2e/support/testHelpers.ts",
+      "language": "typescript",
+      "sizeLines": 106,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src/Test/e2e/tsconfig.json",
+      "language": "json",
+      "sizeLines": 11,
+      "fileCategory": "config"
+    },
+    {
+      "path": "src/Test/e2e/us02-auth-e2e-spec.md",
+      "language": "markdown",
+      "sizeLines": 365,
+      "fileCategory": "docs"
+    },
+    {
+      "path": "src/Test/e2e/us02-auth-fix-report.md",
+      "language": "markdown",
+      "sizeLines": 264,
+      "fileCategory": "docs"
+    },
+    {
+      "path": "src/Test/e2e/us02-auth.cy.ts",
+      "language": "typescript",
+      "sizeLines": 510,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src/Test/e2e/us03-user-management.cy.ts",
+      "language": "typescript",
+      "sizeLines": 386,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src/Test/e2e/us04-store-management.cy.ts",
+      "language": "typescript",
+      "sizeLines": 439,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src/Test/e2e/us05-route-management.cy.ts",
+      "language": "typescript",
+      "sizeLines": 475,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src/Test/e2e/us06-vehicle-management.cy.ts",
+      "language": "typescript",
+      "sizeLines": 442,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src/Test/package.json",
+      "language": "json",
+      "sizeLines": 15,
+      "fileCategory": "config"
+    },
+    {
+      "path": "src/api/addressApi.ts",
+      "language": "typescript",
+      "sizeLines": 87,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src/api/axiosInstance.ts",
+      "language": "typescript",
+      "sizeLines": 131,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src/api/exceptionApi.ts",
+      "language": "typescript",
+      "sizeLines": 93,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src/api/importApi.ts",
+      "language": "typescript",
+      "sizeLines": 205,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src/api/loadingManifestApi.ts",
+      "language": "typescript",
+      "sizeLines": 349,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src/api/mockStoreApi.ts",
+      "language": "typescript",
+      "sizeLines": 269,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src/api/mockUserApi.ts",
+      "language": "typescript",
+      "sizeLines": 128,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src/api/monitoringApi.ts",
+      "language": "typescript",
+      "sizeLines": 84,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src/api/productApi.ts",
+      "language": "typescript",
+      "sizeLines": 181,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src/api/roleApi.ts",
+      "language": "typescript",
+      "sizeLines": 57,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src/api/routeApi.ts",
+      "language": "typescript",
+      "sizeLines": 253,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src/api/storeApi.ts",
+      "language": "typescript",
+      "sizeLines": 361,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src/api/tripApi.ts",
+      "language": "typescript",
+      "sizeLines": 208,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src/api/tripDraftApi.ts",
+      "language": "typescript",
+      "sizeLines": 428,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src/api/userApi.ts",
+      "language": "typescript",
+      "sizeLines": 124,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src/api/vehicleApi.ts",
+      "language": "typescript",
+      "sizeLines": 386,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src/components/AdminShell.tsx",
+      "language": "typescript",
+      "sizeLines": 342,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src/components/MapSelector.tsx",
+      "language": "typescript",
+      "sizeLines": 264,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src/components/ProtectedRoute.tsx",
+      "language": "typescript",
+      "sizeLines": 19,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src/components/PublicRoute.tsx",
+      "language": "typescript",
+      "sizeLines": 19,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src/components/TripRouteMap.tsx",
+      "language": "typescript",
+      "sizeLines": 209,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src/components/UserFormModal.tsx",
+      "language": "typescript",
+      "sizeLines": 226,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src/components/auth/PermissionGuard.tsx",
+      "language": "typescript",
+      "sizeLines": 33,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src/components/auth/ProtectedPermissionRoute.tsx",
+      "language": "typescript",
+      "sizeLines": 36,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src/components/manifest/ByStopManifestView.tsx",
+      "language": "typescript",
+      "sizeLines": 134,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src/components/manifest/FlatManifestView.tsx",
+      "language": "typescript",
+      "sizeLines": 206,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src/components/manifest/ManifestSummary.tsx",
+      "language": "typescript",
+      "sizeLines": 104,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src/config.ts",
+      "language": "typescript",
+      "sizeLines": 15,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src/constants/permissions.ts",
+      "language": "typescript",
+      "sizeLines": 29,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src/guards/DriverGuard.tsx",
+      "language": "typescript",
+      "sizeLines": 25,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src/guards/ExceptionGuard.tsx",
+      "language": "typescript",
+      "sizeLines": 25,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src/guards/ImportModuleGuard.tsx",
+      "language": "typescript",
+      "sizeLines": 25,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src/guards/MonitoringGuard.tsx",
+      "language": "typescript",
+      "sizeLines": 25,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src/guards/RouteManagementGuard.tsx",
+      "language": "typescript",
+      "sizeLines": 25,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src/hooks/useDebounce.ts",
+      "language": "typescript",
+      "sizeLines": 12,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src/hooks/usePermissions.ts",
+      "language": "typescript",
+      "sizeLines": 44,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src/index.css",
+      "language": "css",
+      "sizeLines": 205,
+      "fileCategory": "markup"
+    },
+    {
+      "path": "src/main.tsx",
+      "language": "typescript",
+      "sizeLines": 12,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src/mocks/importData.ts",
+      "language": "typescript",
+      "sizeLines": 97,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src/mocks/importService.ts",
+      "language": "typescript",
+      "sizeLines": 180,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src/mocks/mockVehicles.ts",
+      "language": "typescript",
+      "sizeLines": 358,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src/mocks/productData.ts",
+      "language": "typescript",
+      "sizeLines": 69,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src/mocks/productService.ts",
+      "language": "typescript",
+      "sizeLines": 148,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src/mocks/routeData.ts",
+      "language": "typescript",
+      "sizeLines": 135,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src/mocks/routeService.ts",
+      "language": "typescript",
+      "sizeLines": 297,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src/mocks/storeData.ts",
+      "language": "typescript",
+      "sizeLines": 118,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src/pages/DashboardPage.tsx",
+      "language": "typescript",
+      "sizeLines": 580,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src/pages/ForbiddenPage.tsx",
+      "language": "typescript",
+      "sizeLines": 31,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src/pages/LifoManifestPage.tsx",
+      "language": "typescript",
+      "sizeLines": 297,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src/pages/NotFoundPage.tsx",
+      "language": "typescript",
+      "sizeLines": 5,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src/pages/RoleManagementPage.tsx",
+      "language": "typescript",
+      "sizeLines": 228,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src/pages/StoresPage.tsx",
+      "language": "typescript",
+      "sizeLines": 1145,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src/pages/TripDraftReviewPage.tsx",
+      "language": "typescript",
+      "sizeLines": 831,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src/pages/UsersPage.tsx",
+      "language": "typescript",
+      "sizeLines": 447,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src/pages/VehiclesPage.tsx",
+      "language": "typescript",
+      "sizeLines": 1051,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src/pages/admin/products/ProductDetailPage.tsx",
+      "language": "typescript",
+      "sizeLines": 346,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src/pages/admin/products/ProductFormPage.tsx",
+      "language": "typescript",
+      "sizeLines": 475,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src/pages/admin/products/ProductListPage.tsx",
+      "language": "typescript",
+      "sizeLines": 412,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src/pages/admin/products/components/ActivateProductModal.tsx",
+      "language": "typescript",
+      "sizeLines": 54,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src/pages/admin/products/components/DeactivateProductModal.tsx",
+      "language": "typescript",
+      "sizeLines": 57,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src/pages/admin/routes/RouteCreatePage.tsx",
+      "language": "typescript",
+      "sizeLines": 203,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src/pages/admin/routes/RouteDetailPage.tsx",
+      "language": "typescript",
+      "sizeLines": 598,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src/pages/admin/routes/RouteEditPage.tsx",
+      "language": "typescript",
+      "sizeLines": 226,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src/pages/admin/routes/RouteListPage.tsx",
+      "language": "typescript",
+      "sizeLines": 464,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src/pages/admin/routes/components/ActivateRouteModal.tsx",
+      "language": "typescript",
+      "sizeLines": 49,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src/pages/admin/routes/components/AddStoreDrawer.tsx",
+      "language": "typescript",
+      "sizeLines": 167,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src/pages/admin/routes/components/DeactivateRouteModal.tsx",
+      "language": "typescript",
+      "sizeLines": 49,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src/pages/admin/routes/components/DeleteStopModal.tsx",
+      "language": "typescript",
+      "sizeLines": 49,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src/pages/admin/routes/components/SortableStopItem.tsx",
+      "language": "typescript",
+      "sizeLines": 153,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src/pages/dispatcher/exceptions/ExceptionManagementPage.tsx",
+      "language": "typescript",
+      "sizeLines": 743,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src/pages/dispatcher/import/ImportBatchDetailPage.tsx",
+      "language": "typescript",
+      "sizeLines": 346,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src/pages/dispatcher/import/OrderImportPage.tsx",
+      "language": "typescript",
+      "sizeLines": 202,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src/pages/dispatcher/import/components/ImportErrorsTable.tsx",
+      "language": "typescript",
+      "sizeLines": 319,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src/pages/dispatcher/import/components/ImportHistoryTable.tsx",
+      "language": "typescript",
+      "sizeLines": 149,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src/pages/dispatcher/import/components/ImportReadOnlyBanner.tsx",
+      "language": "typescript",
+      "sizeLines": 21,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src/pages/dispatcher/import/components/ImportResultCard.tsx",
+      "language": "typescript",
+      "sizeLines": 199,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src/pages/dispatcher/import/components/ImportStatusTag.tsx",
+      "language": "typescript",
+      "sizeLines": 20,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src/pages/dispatcher/import/components/ImportSuccessTable.tsx",
+      "language": "typescript",
+      "sizeLines": 267,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src/pages/dispatcher/import/components/ImportUploadCard.tsx",
+      "language": "typescript",
+      "sizeLines": 169,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src/pages/dispatcher/import/components/ReplaceBatchModal.tsx",
+      "language": "typescript",
+      "sizeLines": 58,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src/pages/dispatcher/monitoring/MonitoringDashboardPage.tsx",
+      "language": "typescript",
+      "sizeLines": 680,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src/pages/dispatcher/trip-drafts/CapacityValidationPage.tsx",
+      "language": "typescript",
+      "sizeLines": 703,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src/pages/dispatcher/trip-drafts/TripDraftDetailPage.tsx",
+      "language": "typescript",
+      "sizeLines": 460,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src/pages/dispatcher/trip-drafts/TripDraftListPage.tsx",
+      "language": "typescript",
+      "sizeLines": 426,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src/pages/dispatcher/trip-drafts/VehicleAssignmentPage.tsx",
+      "language": "typescript",
+      "sizeLines": 1303,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src/pages/dispatcher/trips/DispatchPage.tsx",
+      "language": "typescript",
+      "sizeLines": 659,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src/pages/driver/DeliveryRejectionModal.tsx",
+      "language": "typescript",
+      "sizeLines": 293,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src/pages/driver/DriverMyTripsPage.tsx",
+      "language": "typescript",
+      "sizeLines": 776,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src/pages/login/FeatureCard.tsx",
+      "language": "typescript",
+      "sizeLines": 19,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src/pages/login/LoginForm.tsx",
+      "language": "typescript",
+      "sizeLines": 211,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src/pages/login/LoginPage.tsx",
+      "language": "typescript",
+      "sizeLines": 144,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src/pages/login/MapMockup.tsx",
+      "language": "typescript",
+      "sizeLines": 212,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src/pages/login/Navbar.tsx",
+      "language": "typescript",
+      "sizeLines": 65,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src/styles/login/LoginPage.css",
+      "language": "css",
+      "sizeLines": 807,
+      "fileCategory": "markup"
+    },
+    {
+      "path": "src/types/exception.ts",
+      "language": "typescript",
+      "sizeLines": 150,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src/types/import.ts",
+      "language": "typescript",
+      "sizeLines": 45,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src/types/monitoring.ts",
+      "language": "typescript",
+      "sizeLines": 149,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src/types/product.ts",
+      "language": "typescript",
+      "sizeLines": 25,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src/types/route.ts",
+      "language": "typescript",
+      "sizeLines": 45,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src/types/trip.ts",
+      "language": "typescript",
+      "sizeLines": 152,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src/types/tripDraft.ts",
+      "language": "typescript",
+      "sizeLines": 86,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src/utils/errorReport.ts",
+      "language": "typescript",
+      "sizeLines": 24,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src/utils/excelTemplate.ts",
+      "language": "typescript",
+      "sizeLines": 38,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src/utils/importMapper.ts",
+      "language": "typescript",
+      "sizeLines": 40,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src/utils/importPermissions.ts",
+      "language": "typescript",
+      "sizeLines": 11,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src/utils/initAuth.ts",
+      "language": "typescript",
+      "sizeLines": 66,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src/utils/numberFormat.ts",
+      "language": "typescript",
+      "sizeLines": 5,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src/utils/permissionChecker.ts",
+      "language": "typescript",
+      "sizeLines": 58,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src/utils/productCalculations.ts",
+      "language": "typescript",
+      "sizeLines": 27,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src/utils/productMapper.ts",
+      "language": "typescript",
+      "sizeLines": 89,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src/utils/routeCalculations.ts",
+      "language": "typescript",
+      "sizeLines": 35,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src/utils/routeMapper.ts",
+      "language": "typescript",
+      "sizeLines": 78,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src/utils/routePermissions.ts",
+      "language": "typescript",
+      "sizeLines": 6,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src/utils/userMapper.ts",
+      "language": "typescript",
+      "sizeLines": 97,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src/utils/validateExcel.ts",
+      "language": "typescript",
+      "sizeLines": 21,
+      "fileCategory": "code"
+    },
+    {
+      "path": "tsconfig.app.json",
+      "language": "json",
+      "sizeLines": 26,
+      "fileCategory": "config"
+    },
+    {
+      "path": "tsconfig.json",
+      "language": "json",
+      "sizeLines": 7,
+      "fileCategory": "config"
+    },
+    {
+      "path": "tsconfig.node.json",
+      "language": "json",
+      "sizeLines": 24,
+      "fileCategory": "config"
+    },
+    {
+      "path": "vite.config.ts",
+      "language": "typescript",
+      "sizeLines": 15,
+      "fileCategory": "code"
+    }
+  ],
+  "totalFiles": 174,
+  "filteredByIgnore": 0,
+  "estimatedComplexity": "large",
+  "importMap": {
+    ".env.development": [],
+    "CLAUDE.md": [],
+    "ELog_Project_Context.md": [],
+    "ELog_kehoachphattrien.md": [],
+    "IMPORT_ERROR_DETAIL_API_AUDIT_AND_FE_SPEC.md": [],
+    "ORDER_IMPORT_FRONTEND_SPEC.md": [],
+    "PRODUCT_CATALOG_FRONTEND_SPEC.md": [],
+    "README.md": [],
+    "cypress/e2e/address-flow.cy.ts": [],
+    "cypress/e2e/auth-flow.cy.ts": [],
+    "cypress/e2e/capacityvalidation-flow.cy.ts": [],
+    "cypress/e2e/consolidation-flow.cy.ts": [],
+    "cypress/e2e/constraintvalidation-flow.cy.ts": [],
+    "cypress/e2e/drivertrip-flow.cy.ts": [],
+    "cypress/e2e/exception-flow.cy.ts": [],
+    "cypress/e2e/import-flow.cy.ts": [],
+    "cypress/e2e/kpi-flow.cy.ts": [],
+    "cypress/e2e/route-flow.cy.ts": [],
+    "cypress/e2e/store-flow.cy.ts": [],
+    "cypress/e2e/trip-flow.cy.ts": [],
+    "cypress/e2e/tripdraft-flow.cy.ts": [],
+    "cypress/e2e/tripmonitoring-flow.cy.ts": [],
+    "cypress/e2e/user-flow.cy.ts": [],
+    "cypress/e2e/vehicle-flow.cy.ts": [],
+    "docs/api-conventions.md": [],
+    "docs/business-rules.md": [],
+    "docs/data-model.md": [],
+    "docs/superpowers/plans/2026-06-28-excel-import-integration.md": [],
+    "docs/superpowers/plans/2026-07-18-store-address-map-integration.md": [],
+    "docs/superpowers/specs/2026-06-28-excel-import-integration-design.md": [],
+    "docs/tech-stack.md": [],
+    "docs/us01-checklist.md": [],
+    "eslint.config.js": [],
+    "index.html": [],
+    "package.json": [],
+    "src/App.css": [],
+    "src/App.tsx": [
+      "src/components/ProtectedRoute.tsx",
+      "src/components/PublicRoute.tsx",
+      "src/components/auth/ProtectedPermissionRoute.tsx",
+      "src/constants/permissions.ts",
+      "src/guards/DriverGuard.tsx",
+      "src/guards/ExceptionGuard.tsx",
+      "src/guards/MonitoringGuard.tsx",
+      "src/pages/DashboardPage.tsx",
+      "src/pages/ForbiddenPage.tsx",
+      "src/pages/LifoManifestPage.tsx",
+      "src/pages/NotFoundPage.tsx",
+      "src/pages/RoleManagementPage.tsx",
+      "src/pages/StoresPage.tsx",
+      "src/pages/TripDraftReviewPage.tsx",
+      "src/pages/UsersPage.tsx",
+      "src/pages/VehiclesPage.tsx",
+      "src/pages/admin/products/ProductDetailPage.tsx",
+      "src/pages/admin/products/ProductFormPage.tsx",
+      "src/pages/admin/products/ProductListPage.tsx",
+      "src/pages/admin/routes/RouteCreatePage.tsx",
+      "src/pages/admin/routes/RouteDetailPage.tsx",
+      "src/pages/admin/routes/RouteEditPage.tsx",
+      "src/pages/admin/routes/RouteListPage.tsx",
+      "src/pages/dispatcher/exceptions/ExceptionManagementPage.tsx",
+      "src/pages/dispatcher/import/ImportBatchDetailPage.tsx",
+      "src/pages/dispatcher/import/OrderImportPage.tsx",
+      "src/pages/dispatcher/monitoring/MonitoringDashboardPage.tsx",
+      "src/pages/dispatcher/trip-drafts/CapacityValidationPage.tsx",
+      "src/pages/dispatcher/trip-drafts/TripDraftDetailPage.tsx",
+      "src/pages/dispatcher/trip-drafts/TripDraftListPage.tsx",
+      "src/pages/dispatcher/trip-drafts/VehicleAssignmentPage.tsx",
+      "src/pages/dispatcher/trips/DispatchPage.tsx",
+      "src/pages/driver/DriverMyTripsPage.tsx",
+      "src/pages/login/LoginPage.tsx"
+    ],
+    "src/Test/README.md": [],
+    "src/Test/cypress.config.ts": [],
+    "src/Test/e2e/fullstack/us02-auth.fullstack.cy.ts": [
+      "src/Test/e2e/support/testHelpers.ts"
+    ],
+    "src/Test/e2e/fullstack/us03-users.fullstack.cy.ts": [
+      "src/Test/e2e/support/testHelpers.ts"
+    ],
+    "src/Test/e2e/fullstack/us04-stores.fullstack.cy.ts": [
+      "src/Test/e2e/support/testHelpers.ts"
+    ],
+    "src/Test/e2e/fullstack/us05-routes.fullstack.cy.ts": [
+      "src/Test/e2e/support/testHelpers.ts"
+    ],
+    "src/Test/e2e/fullstack/us06-vehicles.fullstack.cy.ts": [
+      "src/Test/e2e/support/testHelpers.ts"
+    ],
+    "src/Test/e2e/support/e2e.ts": [],
+    "src/Test/e2e/support/testHelpers.ts": [],
+    "src/Test/e2e/tsconfig.json": [],
+    "src/Test/e2e/us02-auth-e2e-spec.md": [],
+    "src/Test/e2e/us02-auth-fix-report.md": [],
+    "src/Test/e2e/us02-auth.cy.ts": [],
+    "src/Test/e2e/us03-user-management.cy.ts": [
+      "src/Test/e2e/support/testHelpers.ts"
+    ],
+    "src/Test/e2e/us04-store-management.cy.ts": [
+      "src/Test/e2e/support/testHelpers.ts"
+    ],
+    "src/Test/e2e/us05-route-management.cy.ts": [
+      "src/Test/e2e/support/testHelpers.ts"
+    ],
+    "src/Test/e2e/us06-vehicle-management.cy.ts": [
+      "src/Test/e2e/support/testHelpers.ts"
+    ],
+    "src/Test/package.json": [],
+    "src/api/addressApi.ts": [
+      "src/api/axiosInstance.ts",
+      "src/config.ts"
+    ],
+    "src/api/axiosInstance.ts": [],
+    "src/api/exceptionApi.ts": [
+      "src/api/axiosInstance.ts",
+      "src/types/exception.ts"
+    ],
+    "src/api/importApi.ts": [
+      "src/api/axiosInstance.ts",
+      "src/config.ts",
+      "src/mocks/importService.ts",
+      "src/types/import.ts",
+      "src/utils/importMapper.ts"
+    ],
+    "src/api/loadingManifestApi.ts": [
+      "src/api/axiosInstance.ts"
+    ],
+    "src/api/mockStoreApi.ts": [
+      "src/api/storeApi.ts"
+    ],
+    "src/api/mockUserApi.ts": [
+      "src/api/userApi.ts",
+      "src/utils/userMapper.ts"
+    ],
+    "src/api/monitoringApi.ts": [
+      "src/api/axiosInstance.ts",
+      "src/types/monitoring.ts"
+    ],
+    "src/api/productApi.ts": [
+      "src/api/axiosInstance.ts",
+      "src/config.ts",
+      "src/mocks/productService.ts",
+      "src/types/product.ts",
+      "src/utils/productMapper.ts"
+    ],
+    "src/api/roleApi.ts": [
+      "src/api/axiosInstance.ts"
+    ],
+    "src/api/routeApi.ts": [
+      "src/api/axiosInstance.ts",
+      "src/config.ts",
+      "src/mocks/routeService.ts",
+      "src/types/route.ts",
+      "src/utils/routeMapper.ts"
+    ],
+    "src/api/storeApi.ts": [
+      "src/api/axiosInstance.ts",
+      "src/api/mockStoreApi.ts",
+      "src/config.ts"
+    ],
+    "src/api/tripApi.ts": [
+      "src/api/axiosInstance.ts",
+      "src/types/trip.ts"
+    ],
+    "src/api/tripDraftApi.ts": [
+      "src/api/axiosInstance.ts",
+      "src/types/tripDraft.ts"
+    ],
+    "src/api/userApi.ts": [
+      "src/api/axiosInstance.ts",
+      "src/api/mockUserApi.ts",
+      "src/config.ts",
+      "src/utils/userMapper.ts"
+    ],
+    "src/api/vehicleApi.ts": [
+      "src/api/axiosInstance.ts",
+      "src/config.ts",
+      "src/mocks/mockVehicles.ts"
+    ],
+    "src/components/AdminShell.tsx": [
+      "src/api/axiosInstance.ts",
+      "src/constants/permissions.ts",
+      "src/hooks/usePermissions.ts"
+    ],
+    "src/components/MapSelector.tsx": [],
+    "src/components/ProtectedRoute.tsx": [],
+    "src/components/PublicRoute.tsx": [],
+    "src/components/TripRouteMap.tsx": [
+      "src/types/monitoring.ts"
+    ],
+    "src/components/UserFormModal.tsx": [
+      "src/config.ts",
+      "src/utils/userMapper.ts"
+    ],
+    "src/components/auth/PermissionGuard.tsx": [
+      "src/hooks/usePermissions.ts"
+    ],
+    "src/components/auth/ProtectedPermissionRoute.tsx": [
+      "src/utils/permissionChecker.ts"
+    ],
+    "src/components/manifest/ByStopManifestView.tsx": [
+      "src/api/loadingManifestApi.ts"
+    ],
+    "src/components/manifest/FlatManifestView.tsx": [
+      "src/api/loadingManifestApi.ts"
+    ],
+    "src/components/manifest/ManifestSummary.tsx": [
+      "src/api/loadingManifestApi.ts"
+    ],
+    "src/config.ts": [],
+    "src/constants/permissions.ts": [],
+    "src/guards/DriverGuard.tsx": [
+      "src/constants/permissions.ts",
+      "src/utils/permissionChecker.ts"
+    ],
+    "src/guards/ExceptionGuard.tsx": [
+      "src/constants/permissions.ts",
+      "src/utils/permissionChecker.ts"
+    ],
+    "src/guards/ImportModuleGuard.tsx": [
+      "src/constants/permissions.ts",
+      "src/utils/permissionChecker.ts"
+    ],
+    "src/guards/MonitoringGuard.tsx": [
+      "src/constants/permissions.ts",
+      "src/utils/permissionChecker.ts"
+    ],
+    "src/guards/RouteManagementGuard.tsx": [
+      "src/constants/permissions.ts",
+      "src/utils/permissionChecker.ts"
+    ],
+    "src/hooks/useDebounce.ts": [],
+    "src/hooks/usePermissions.ts": [
+      "src/utils/permissionChecker.ts"
+    ],
+    "src/index.css": [],
+    "src/main.tsx": [
+      "src/App.tsx",
+      "src/index.css",
+      "src/utils/initAuth.ts"
+    ],
+    "src/mocks/importData.ts": [
+      "src/types/import.ts"
+    ],
+    "src/mocks/importService.ts": [
+      "src/mocks/importData.ts",
+      "src/types/import.ts"
+    ],
+    "src/mocks/mockVehicles.ts": [
+      "src/api/vehicleApi.ts"
+    ],
+    "src/mocks/productData.ts": [
+      "src/types/product.ts"
+    ],
+    "src/mocks/productService.ts": [
+      "src/mocks/productData.ts",
+      "src/types/product.ts",
+      "src/utils/productCalculations.ts"
+    ],
+    "src/mocks/routeData.ts": [
+      "src/types/route.ts"
+    ],
+    "src/mocks/routeService.ts": [
+      "src/mocks/routeData.ts",
+      "src/mocks/storeData.ts",
+      "src/types/route.ts",
+      "src/utils/routeCalculations.ts"
+    ],
+    "src/mocks/storeData.ts": [
+      "src/types/route.ts"
+    ],
+    "src/pages/DashboardPage.tsx": [
+      "src/api/productApi.ts",
+      "src/api/routeApi.ts",
+      "src/api/storeApi.ts",
+      "src/api/tripApi.ts",
+      "src/api/userApi.ts",
+      "src/api/vehicleApi.ts",
+      "src/components/AdminShell.tsx",
+      "src/config.ts",
+      "src/constants/permissions.ts",
+      "src/hooks/usePermissions.ts",
+      "src/types/trip.ts"
+    ],
+    "src/pages/ForbiddenPage.tsx": [],
+    "src/pages/LifoManifestPage.tsx": [
+      "src/api/loadingManifestApi.ts",
+      "src/components/AdminShell.tsx",
+      "src/components/manifest/ByStopManifestView.tsx",
+      "src/components/manifest/FlatManifestView.tsx",
+      "src/components/manifest/ManifestSummary.tsx",
+      "src/constants/permissions.ts",
+      "src/hooks/usePermissions.ts"
+    ],
+    "src/pages/NotFoundPage.tsx": [],
+    "src/pages/RoleManagementPage.tsx": [
+      "src/api/roleApi.ts",
+      "src/components/AdminShell.tsx",
+      "src/constants/permissions.ts",
+      "src/hooks/usePermissions.ts"
+    ],
+    "src/pages/StoresPage.tsx": [
+      "src/api/addressApi.ts",
+      "src/api/storeApi.ts",
+      "src/components/AdminShell.tsx",
+      "src/components/MapSelector.tsx",
+      "src/constants/permissions.ts",
+      "src/hooks/useDebounce.ts",
+      "src/hooks/usePermissions.ts"
+    ],
+    "src/pages/TripDraftReviewPage.tsx": [
+      "src/api/storeApi.ts",
+      "src/api/tripDraftApi.ts",
+      "src/components/AdminShell.tsx",
+      "src/constants/permissions.ts",
+      "src/hooks/usePermissions.ts"
+    ],
+    "src/pages/UsersPage.tsx": [
+      "src/api/userApi.ts",
+      "src/components/AdminShell.tsx",
+      "src/components/UserFormModal.tsx",
+      "src/config.ts",
+      "src/constants/permissions.ts",
+      "src/hooks/useDebounce.ts",
+      "src/hooks/usePermissions.ts",
+      "src/utils/userMapper.ts"
+    ],
+    "src/pages/VehiclesPage.tsx": [
+      "src/api/vehicleApi.ts",
+      "src/components/AdminShell.tsx",
+      "src/constants/permissions.ts",
+      "src/hooks/useDebounce.ts",
+      "src/hooks/usePermissions.ts"
+    ],
+    "src/pages/admin/products/ProductDetailPage.tsx": [
+      "src/api/productApi.ts",
+      "src/components/AdminShell.tsx",
+      "src/constants/permissions.ts",
+      "src/hooks/usePermissions.ts",
+      "src/pages/admin/products/components/ActivateProductModal.tsx",
+      "src/pages/admin/products/components/DeactivateProductModal.tsx",
+      "src/types/product.ts",
+      "src/utils/numberFormat.ts",
+      "src/utils/productCalculations.ts"
+    ],
+    "src/pages/admin/products/ProductFormPage.tsx": [
+      "src/api/productApi.ts",
+      "src/components/AdminShell.tsx",
+      "src/constants/permissions.ts",
+      "src/hooks/usePermissions.ts",
+      "src/utils/productCalculations.ts"
+    ],
+    "src/pages/admin/products/ProductListPage.tsx": [
+      "src/api/productApi.ts",
+      "src/components/AdminShell.tsx",
+      "src/constants/permissions.ts",
+      "src/hooks/usePermissions.ts",
+      "src/pages/admin/products/components/ActivateProductModal.tsx",
+      "src/pages/admin/products/components/DeactivateProductModal.tsx",
+      "src/types/product.ts",
+      "src/utils/numberFormat.ts"
+    ],
+    "src/pages/admin/products/components/ActivateProductModal.tsx": [],
+    "src/pages/admin/products/components/DeactivateProductModal.tsx": [],
+    "src/pages/admin/routes/RouteCreatePage.tsx": [
+      "src/api/routeApi.ts",
+      "src/components/AdminShell.tsx"
+    ],
+    "src/pages/admin/routes/RouteDetailPage.tsx": [
+      "src/api/routeApi.ts",
+      "src/components/AdminShell.tsx",
+      "src/config.ts",
+      "src/constants/permissions.ts",
+      "src/hooks/usePermissions.ts",
+      "src/mocks/routeService.ts",
+      "src/pages/admin/routes/components/ActivateRouteModal.tsx",
+      "src/pages/admin/routes/components/AddStoreDrawer.tsx",
+      "src/pages/admin/routes/components/DeactivateRouteModal.tsx",
+      "src/pages/admin/routes/components/DeleteStopModal.tsx",
+      "src/pages/admin/routes/components/SortableStopItem.tsx",
+      "src/types/route.ts",
+      "src/utils/routeCalculations.ts"
+    ],
+    "src/pages/admin/routes/RouteEditPage.tsx": [
+      "src/api/routeApi.ts",
+      "src/components/AdminShell.tsx"
+    ],
+    "src/pages/admin/routes/RouteListPage.tsx": [
+      "src/api/routeApi.ts",
+      "src/components/AdminShell.tsx",
+      "src/config.ts",
+      "src/constants/permissions.ts",
+      "src/hooks/usePermissions.ts",
+      "src/mocks/routeData.ts",
+      "src/pages/admin/routes/components/ActivateRouteModal.tsx",
+      "src/pages/admin/routes/components/DeactivateRouteModal.tsx",
+      "src/types/route.ts",
+      "src/utils/routeCalculations.ts"
+    ],
+    "src/pages/admin/routes/components/ActivateRouteModal.tsx": [],
+    "src/pages/admin/routes/components/AddStoreDrawer.tsx": [
+      "src/api/routeApi.ts",
+      "src/types/route.ts"
+    ],
+    "src/pages/admin/routes/components/DeactivateRouteModal.tsx": [],
+    "src/pages/admin/routes/components/DeleteStopModal.tsx": [],
+    "src/pages/admin/routes/components/SortableStopItem.tsx": [
+      "src/types/route.ts"
+    ],
+    "src/pages/dispatcher/exceptions/ExceptionManagementPage.tsx": [
+      "src/api/exceptionApi.ts",
+      "src/components/AdminShell.tsx",
+      "src/types/exception.ts"
+    ],
+    "src/pages/dispatcher/import/ImportBatchDetailPage.tsx": [
+      "src/api/importApi.ts",
+      "src/components/AdminShell.tsx",
+      "src/config.ts",
+      "src/pages/dispatcher/import/components/ImportErrorsTable.tsx",
+      "src/pages/dispatcher/import/components/ImportStatusTag.tsx",
+      "src/pages/dispatcher/import/components/ImportSuccessTable.tsx",
+      "src/types/import.ts",
+      "src/utils/errorReport.ts"
+    ],
+    "src/pages/dispatcher/import/OrderImportPage.tsx": [
+      "src/api/importApi.ts",
+      "src/components/AdminShell.tsx",
+      "src/pages/dispatcher/import/components/ImportHistoryTable.tsx",
+      "src/pages/dispatcher/import/components/ImportReadOnlyBanner.tsx",
+      "src/pages/dispatcher/import/components/ImportUploadCard.tsx",
+      "src/types/import.ts",
+      "src/utils/importPermissions.ts"
+    ],
+    "src/pages/dispatcher/import/components/ImportErrorsTable.tsx": [
+      "src/api/importApi.ts",
+      "src/config.ts",
+      "src/types/import.ts",
+      "src/utils/errorReport.ts"
+    ],
+    "src/pages/dispatcher/import/components/ImportHistoryTable.tsx": [
+      "src/pages/dispatcher/import/components/ImportStatusTag.tsx",
+      "src/types/import.ts"
+    ],
+    "src/pages/dispatcher/import/components/ImportReadOnlyBanner.tsx": [],
+    "src/pages/dispatcher/import/components/ImportResultCard.tsx": [
+      "src/api/importApi.ts",
+      "src/config.ts",
+      "src/types/import.ts",
+      "src/utils/errorReport.ts"
+    ],
+    "src/pages/dispatcher/import/components/ImportStatusTag.tsx": [],
+    "src/pages/dispatcher/import/components/ImportSuccessTable.tsx": [
+      "src/api/productApi.ts",
+      "src/api/storeApi.ts",
+      "src/types/import.ts",
+      "src/types/product.ts"
+    ],
+    "src/pages/dispatcher/import/components/ImportUploadCard.tsx": [
+      "src/utils/excelTemplate.ts",
+      "src/utils/validateExcel.ts"
+    ],
+    "src/pages/dispatcher/import/components/ReplaceBatchModal.tsx": [],
+    "src/pages/dispatcher/monitoring/MonitoringDashboardPage.tsx": [
+      "src/api/monitoringApi.ts",
+      "src/components/AdminShell.tsx",
+      "src/components/TripRouteMap.tsx",
+      "src/types/monitoring.ts"
+    ],
+    "src/pages/dispatcher/trip-drafts/CapacityValidationPage.tsx": [
+      "src/api/tripDraftApi.ts",
+      "src/components/AdminShell.tsx",
+      "src/constants/permissions.ts",
+      "src/hooks/usePermissions.ts",
+      "src/types/tripDraft.ts"
+    ],
+    "src/pages/dispatcher/trip-drafts/TripDraftDetailPage.tsx": [
+      "src/api/tripApi.ts",
+      "src/api/tripDraftApi.ts",
+      "src/components/AdminShell.tsx",
+      "src/types/trip.ts",
+      "src/types/tripDraft.ts"
+    ],
+    "src/pages/dispatcher/trip-drafts/TripDraftListPage.tsx": [
+      "src/api/tripDraftApi.ts",
+      "src/components/AdminShell.tsx",
+      "src/constants/permissions.ts",
+      "src/hooks/usePermissions.ts",
+      "src/types/tripDraft.ts"
+    ],
+    "src/pages/dispatcher/trip-drafts/VehicleAssignmentPage.tsx": [
+      "src/api/tripApi.ts",
+      "src/api/tripDraftApi.ts",
+      "src/components/AdminShell.tsx",
+      "src/constants/permissions.ts",
+      "src/hooks/usePermissions.ts",
+      "src/types/trip.ts",
+      "src/types/tripDraft.ts"
+    ],
+    "src/pages/dispatcher/trips/DispatchPage.tsx": [
+      "src/api/tripApi.ts",
+      "src/components/AdminShell.tsx",
+      "src/constants/permissions.ts",
+      "src/hooks/usePermissions.ts",
+      "src/types/trip.ts"
+    ],
+    "src/pages/driver/DeliveryRejectionModal.tsx": [
+      "src/api/exceptionApi.ts",
+      "src/types/exception.ts"
+    ],
+    "src/pages/driver/DriverMyTripsPage.tsx": [
+      "src/api/monitoringApi.ts",
+      "src/api/tripApi.ts",
+      "src/components/AdminShell.tsx",
+      "src/pages/driver/DeliveryRejectionModal.tsx",
+      "src/types/monitoring.ts",
+      "src/types/trip.ts"
+    ],
+    "src/pages/login/FeatureCard.tsx": [],
+    "src/pages/login/LoginForm.tsx": [
+      "src/api/axiosInstance.ts"
+    ],
+    "src/pages/login/LoginPage.tsx": [
+      "src/pages/login/FeatureCard.tsx",
+      "src/pages/login/LoginForm.tsx",
+      "src/pages/login/MapMockup.tsx",
+      "src/pages/login/Navbar.tsx",
+      "src/styles/login/LoginPage.css"
+    ],
+    "src/pages/login/MapMockup.tsx": [],
+    "src/pages/login/Navbar.tsx": [],
+    "src/styles/login/LoginPage.css": [],
+    "src/types/exception.ts": [],
+    "src/types/import.ts": [
+      "src/types/route.ts"
+    ],
+    "src/types/monitoring.ts": [],
+    "src/types/product.ts": [],
+    "src/types/route.ts": [],
+    "src/types/trip.ts": [
+      "src/types/tripDraft.ts"
+    ],
+    "src/types/tripDraft.ts": [],
+    "src/utils/errorReport.ts": [
+      "src/types/import.ts"
+    ],
+    "src/utils/excelTemplate.ts": [],
+    "src/utils/importMapper.ts": [
+      "src/types/import.ts"
+    ],
+    "src/utils/importPermissions.ts": [
+      "src/constants/permissions.ts",
+      "src/utils/permissionChecker.ts"
+    ],
+    "src/utils/initAuth.ts": [],
+    "src/utils/numberFormat.ts": [],
+    "src/utils/permissionChecker.ts": [
+      "src/constants/permissions.ts"
+    ],
+    "src/utils/productCalculations.ts": [],
+    "src/utils/productMapper.ts": [
+      "src/types/product.ts"
+    ],
+    "src/utils/routeCalculations.ts": [
+      "src/types/route.ts"
+    ],
+    "src/utils/routeMapper.ts": [
+      "src/types/route.ts"
+    ],
+    "src/utils/routePermissions.ts": [
+      "src/constants/permissions.ts",
+      "src/utils/permissionChecker.ts"
+    ],
+    "src/utils/userMapper.ts": [],
+    "src/utils/validateExcel.ts": [],
+    "tsconfig.app.json": [],
+    "tsconfig.json": [],
+    "tsconfig.node.json": [],
+    "vite.config.ts": []
+  }
+}

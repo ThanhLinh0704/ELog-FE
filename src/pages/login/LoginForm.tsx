@@ -19,6 +19,14 @@ const LoginForm: React.FC = () => {
       const response = await axiosInstance.post('/api/auth/login', {
         username: values.username.trim(),
         password: values.password,
+      }).catch((err) => {
+        if (err.response?.status === 404 || err.response?.status === 401) {
+          return axiosInstance.post('/api/auth/login', {
+            username: values.username.trim(),
+            password: values.password,
+          });
+        }
+        throw err;
       });
 
       const tokenData = response.data.data;

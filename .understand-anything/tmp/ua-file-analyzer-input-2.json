@@ -1,0 +1,194 @@
+{
+  "projectRoot": "D:\\FULearning\\semester 9\\Elog\\ELog-FE",
+  "batchFiles": [
+    {
+      "path": "index.html",
+      "language": "html",
+      "sizeLines": 13,
+      "fileCategory": "markup"
+    },
+    {
+      "path": "src/App.css",
+      "language": "css",
+      "sizeLines": 184,
+      "fileCategory": "markup"
+    },
+    {
+      "path": "src/index.css",
+      "language": "css",
+      "sizeLines": 205,
+      "fileCategory": "markup"
+    },
+    {
+      "path": "src/styles/login/LoginPage.css",
+      "language": "css",
+      "sizeLines": 807,
+      "fileCategory": "markup"
+    },
+    {
+      "path": "cypress/e2e/address-flow.cy.ts",
+      "language": "typescript",
+      "sizeLines": 44,
+      "fileCategory": "code"
+    },
+    {
+      "path": "cypress/e2e/auth-flow.cy.ts",
+      "language": "typescript",
+      "sizeLines": 44,
+      "fileCategory": "code"
+    },
+    {
+      "path": "cypress/e2e/capacityvalidation-flow.cy.ts",
+      "language": "typescript",
+      "sizeLines": 44,
+      "fileCategory": "code"
+    },
+    {
+      "path": "cypress/e2e/consolidation-flow.cy.ts",
+      "language": "typescript",
+      "sizeLines": 44,
+      "fileCategory": "code"
+    },
+    {
+      "path": "cypress/e2e/constraintvalidation-flow.cy.ts",
+      "language": "typescript",
+      "sizeLines": 44,
+      "fileCategory": "code"
+    },
+    {
+      "path": "cypress/e2e/drivertrip-flow.cy.ts",
+      "language": "typescript",
+      "sizeLines": 44,
+      "fileCategory": "code"
+    },
+    {
+      "path": "cypress/e2e/exception-flow.cy.ts",
+      "language": "typescript",
+      "sizeLines": 44,
+      "fileCategory": "code"
+    },
+    {
+      "path": "cypress/e2e/import-flow.cy.ts",
+      "language": "typescript",
+      "sizeLines": 44,
+      "fileCategory": "code"
+    },
+    {
+      "path": "cypress/e2e/kpi-flow.cy.ts",
+      "language": "typescript",
+      "sizeLines": 44,
+      "fileCategory": "code"
+    },
+    {
+      "path": "cypress/e2e/route-flow.cy.ts",
+      "language": "typescript",
+      "sizeLines": 44,
+      "fileCategory": "code"
+    },
+    {
+      "path": "cypress/e2e/store-flow.cy.ts",
+      "language": "typescript",
+      "sizeLines": 44,
+      "fileCategory": "code"
+    },
+    {
+      "path": "cypress/e2e/trip-flow.cy.ts",
+      "language": "typescript",
+      "sizeLines": 44,
+      "fileCategory": "code"
+    },
+    {
+      "path": "cypress/e2e/tripdraft-flow.cy.ts",
+      "language": "typescript",
+      "sizeLines": 44,
+      "fileCategory": "code"
+    },
+    {
+      "path": "cypress/e2e/tripmonitoring-flow.cy.ts",
+      "language": "typescript",
+      "sizeLines": 44,
+      "fileCategory": "code"
+    },
+    {
+      "path": "cypress/e2e/user-flow.cy.ts",
+      "language": "typescript",
+      "sizeLines": 44,
+      "fileCategory": "code"
+    },
+    {
+      "path": "cypress/e2e/vehicle-flow.cy.ts",
+      "language": "typescript",
+      "sizeLines": 44,
+      "fileCategory": "code"
+    },
+    {
+      "path": "eslint.config.js",
+      "language": "javascript",
+      "sizeLines": 22,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src/api/addressApi.ts",
+      "language": "typescript",
+      "sizeLines": 87,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src/api/axiosInstance.ts",
+      "language": "typescript",
+      "sizeLines": 131,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src/api/exceptionApi.ts",
+      "language": "typescript",
+      "sizeLines": 93,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src/api/importApi.ts",
+      "language": "typescript",
+      "sizeLines": 205,
+      "fileCategory": "code"
+    }
+  ],
+  "batchImportData": {
+    "index.html": [],
+    "src/App.css": [],
+    "src/index.css": [],
+    "src/styles/login/LoginPage.css": [],
+    "cypress/e2e/address-flow.cy.ts": [],
+    "cypress/e2e/auth-flow.cy.ts": [],
+    "cypress/e2e/capacityvalidation-flow.cy.ts": [],
+    "cypress/e2e/consolidation-flow.cy.ts": [],
+    "cypress/e2e/constraintvalidation-flow.cy.ts": [],
+    "cypress/e2e/drivertrip-flow.cy.ts": [],
+    "cypress/e2e/exception-flow.cy.ts": [],
+    "cypress/e2e/import-flow.cy.ts": [],
+    "cypress/e2e/kpi-flow.cy.ts": [],
+    "cypress/e2e/route-flow.cy.ts": [],
+    "cypress/e2e/store-flow.cy.ts": [],
+    "cypress/e2e/trip-flow.cy.ts": [],
+    "cypress/e2e/tripdraft-flow.cy.ts": [],
+    "cypress/e2e/tripmonitoring-flow.cy.ts": [],
+    "cypress/e2e/user-flow.cy.ts": [],
+    "cypress/e2e/vehicle-flow.cy.ts": [],
+    "eslint.config.js": [],
+    "src/api/addressApi.ts": [
+      "src/api/axiosInstance.ts",
+      "src/config.ts"
+    ],
+    "src/api/axiosInstance.ts": [],
+    "src/api/exceptionApi.ts": [
+      "src/api/axiosInstance.ts",
+      "src/types/exception.ts"
+    ],
+    "src/api/importApi.ts": [
+      "src/api/axiosInstance.ts",
+      "src/config.ts",
+      "src/mocks/importService.ts",
+      "src/types/import.ts",
+      "src/utils/importMapper.ts"
+    ]
+  }
+}

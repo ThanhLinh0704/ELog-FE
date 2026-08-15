@@ -1,0 +1,795 @@
+{
+  "scriptCompleted": true,
+  "filesAnalyzed": 25,
+  "filesSkipped": [],
+  "results": [
+    {
+      "path": "index.html",
+      "language": "html",
+      "fileCategory": "markup",
+      "totalLines": 13,
+      "nonEmptyLines": 13,
+      "metrics": {}
+    },
+    {
+      "path": "src/App.css",
+      "language": "css",
+      "fileCategory": "markup",
+      "totalLines": 184,
+      "nonEmptyLines": 158,
+      "metrics": {}
+    },
+    {
+      "path": "src/index.css",
+      "language": "css",
+      "fileCategory": "markup",
+      "totalLines": 205,
+      "nonEmptyLines": 184,
+      "metrics": {}
+    },
+    {
+      "path": "src/styles/login/LoginPage.css",
+      "language": "css",
+      "fileCategory": "markup",
+      "totalLines": 807,
+      "nonEmptyLines": 714,
+      "metrics": {}
+    },
+    {
+      "path": "cypress/e2e/address-flow.cy.ts",
+      "language": "typescript",
+      "fileCategory": "code",
+      "totalLines": 44,
+      "nonEmptyLines": 43,
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 0,
+        "functionCount": 0,
+        "classCount": 0
+      }
+    },
+    {
+      "path": "cypress/e2e/auth-flow.cy.ts",
+      "language": "typescript",
+      "fileCategory": "code",
+      "totalLines": 44,
+      "nonEmptyLines": 43,
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 0,
+        "functionCount": 0,
+        "classCount": 0
+      }
+    },
+    {
+      "path": "cypress/e2e/capacityvalidation-flow.cy.ts",
+      "language": "typescript",
+      "fileCategory": "code",
+      "totalLines": 44,
+      "nonEmptyLines": 43,
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 0,
+        "functionCount": 0,
+        "classCount": 0
+      }
+    },
+    {
+      "path": "cypress/e2e/consolidation-flow.cy.ts",
+      "language": "typescript",
+      "fileCategory": "code",
+      "totalLines": 44,
+      "nonEmptyLines": 43,
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 0,
+        "functionCount": 0,
+        "classCount": 0
+      }
+    },
+    {
+      "path": "cypress/e2e/constraintvalidation-flow.cy.ts",
+      "language": "typescript",
+      "fileCategory": "code",
+      "totalLines": 44,
+      "nonEmptyLines": 43,
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 0,
+        "functionCount": 0,
+        "classCount": 0
+      }
+    },
+    {
+      "path": "cypress/e2e/drivertrip-flow.cy.ts",
+      "language": "typescript",
+      "fileCategory": "code",
+      "totalLines": 44,
+      "nonEmptyLines": 43,
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 0,
+        "functionCount": 0,
+        "classCount": 0
+      }
+    },
+    {
+      "path": "cypress/e2e/exception-flow.cy.ts",
+      "language": "typescript",
+      "fileCategory": "code",
+      "totalLines": 44,
+      "nonEmptyLines": 43,
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 0,
+        "functionCount": 0,
+        "classCount": 0
+      }
+    },
+    {
+      "path": "cypress/e2e/import-flow.cy.ts",
+      "language": "typescript",
+      "fileCategory": "code",
+      "totalLines": 44,
+      "nonEmptyLines": 43,
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 0,
+        "functionCount": 0,
+        "classCount": 0
+      }
+    },
+    {
+      "path": "cypress/e2e/kpi-flow.cy.ts",
+      "language": "typescript",
+      "fileCategory": "code",
+      "totalLines": 44,
+      "nonEmptyLines": 43,
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 0,
+        "functionCount": 0,
+        "classCount": 0
+      }
+    },
+    {
+      "path": "cypress/e2e/route-flow.cy.ts",
+      "language": "typescript",
+      "fileCategory": "code",
+      "totalLines": 44,
+      "nonEmptyLines": 43,
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 0,
+        "functionCount": 0,
+        "classCount": 0
+      }
+    },
+    {
+      "path": "cypress/e2e/store-flow.cy.ts",
+      "language": "typescript",
+      "fileCategory": "code",
+      "totalLines": 44,
+      "nonEmptyLines": 43,
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 0,
+        "functionCount": 0,
+        "classCount": 0
+      }
+    },
+    {
+      "path": "cypress/e2e/trip-flow.cy.ts",
+      "language": "typescript",
+      "fileCategory": "code",
+      "totalLines": 44,
+      "nonEmptyLines": 43,
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 0,
+        "functionCount": 0,
+        "classCount": 0
+      }
+    },
+    {
+      "path": "cypress/e2e/tripdraft-flow.cy.ts",
+      "language": "typescript",
+      "fileCategory": "code",
+      "totalLines": 44,
+      "nonEmptyLines": 43,
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 0,
+        "functionCount": 0,
+        "classCount": 0
+      }
+    },
+    {
+      "path": "cypress/e2e/tripmonitoring-flow.cy.ts",
+      "language": "typescript",
+      "fileCategory": "code",
+      "totalLines": 44,
+      "nonEmptyLines": 43,
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 0,
+        "functionCount": 0,
+        "classCount": 0
+      }
+    },
+    {
+      "path": "cypress/e2e/user-flow.cy.ts",
+      "language": "typescript",
+      "fileCategory": "code",
+      "totalLines": 44,
+      "nonEmptyLines": 43,
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 0,
+        "functionCount": 0,
+        "classCount": 0
+      }
+    },
+    {
+      "path": "cypress/e2e/vehicle-flow.cy.ts",
+      "language": "typescript",
+      "fileCategory": "code",
+      "totalLines": 44,
+      "nonEmptyLines": 43,
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 0,
+        "functionCount": 0,
+        "classCount": 0
+      }
+    },
+    {
+      "path": "eslint.config.js",
+      "language": "javascript",
+      "fileCategory": "code",
+      "totalLines": 22,
+      "nonEmptyLines": 21,
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 0,
+        "functionCount": 0,
+        "classCount": 0
+      }
+    },
+    {
+      "path": "src/api/addressApi.ts",
+      "language": "typescript",
+      "fileCategory": "code",
+      "totalLines": 87,
+      "nonEmptyLines": 76,
+      "functions": [
+        {
+          "name": "handleAxiosCall",
+          "startLine": 74,
+          "endLine": 87,
+          "params": [
+            "call"
+          ]
+        }
+      ],
+      "exports": [
+        {
+          "name": "addressApi",
+          "line": 42,
+          "isDefault": false
+        }
+      ],
+      "callGraph": [
+        {
+          "caller": "getProvinces",
+          "callee": "await handleAxiosCall",
+          "lineNumber": 47
+        },
+        {
+          "caller": "getProvinces",
+          "callee": "axiosInstance.get",
+          "lineNumber": 48
+        },
+        {
+          "caller": "getDistricts",
+          "callee": "mockDistricts.filter",
+          "lineNumber": 55
+        },
+        {
+          "caller": "getDistricts",
+          "callee": "await handleAxiosCall",
+          "lineNumber": 57
+        },
+        {
+          "caller": "getDistricts",
+          "callee": "axiosInstance.get",
+          "lineNumber": 58
+        },
+        {
+          "caller": "getWards",
+          "callee": "mockWards.filter",
+          "lineNumber": 65
+        },
+        {
+          "caller": "getWards",
+          "callee": "await handleAxiosCall",
+          "lineNumber": 67
+        },
+        {
+          "caller": "getWards",
+          "callee": "axiosInstance.get",
+          "lineNumber": 68
+        },
+        {
+          "caller": "handleAxiosCall",
+          "callee": "call",
+          "lineNumber": 76
+        }
+      ],
+      "metrics": {
+        "importCount": 2,
+        "exportCount": 1,
+        "functionCount": 1,
+        "classCount": 0
+      }
+    },
+    {
+      "path": "src/api/axiosInstance.ts",
+      "language": "typescript",
+      "fileCategory": "code",
+      "totalLines": 131,
+      "nonEmptyLines": 108,
+      "functions": [
+        {
+          "name": "processQueue",
+          "startLine": 23,
+          "endLine": 32,
+          "params": [
+            "error",
+            "token"
+          ]
+        }
+      ],
+      "callGraph": [
+        {
+          "caller": "processQueue",
+          "callee": "failedQueue.forEach",
+          "lineNumber": 24
+        },
+        {
+          "caller": "processQueue",
+          "callee": "prom.reject",
+          "lineNumber": 26
+        },
+        {
+          "caller": "processQueue",
+          "callee": "prom.resolve",
+          "lineNumber": 28
+        }
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 0,
+        "functionCount": 1,
+        "classCount": 0
+      }
+    },
+    {
+      "path": "src/api/exceptionApi.ts",
+      "language": "typescript",
+      "fileCategory": "code",
+      "totalLines": 93,
+      "nonEmptyLines": 81,
+      "functions": [
+        {
+          "name": "unwrap",
+          "startLine": 20,
+          "endLine": 22,
+          "params": [
+            "res"
+          ]
+        },
+        {
+          "name": "rejectDelivery",
+          "startLine": 31,
+          "endLine": 40,
+          "params": [
+            "tripStopId",
+            "request"
+          ]
+        },
+        {
+          "name": "getExceptions",
+          "startLine": 48,
+          "endLine": 61,
+          "params": [
+            "filters"
+          ]
+        },
+        {
+          "name": "getExceptionById",
+          "startLine": 69,
+          "endLine": 76,
+          "params": [
+            "exceptionId"
+          ]
+        },
+        {
+          "name": "resolveException",
+          "startLine": 84,
+          "endLine": 93,
+          "params": [
+            "exceptionId",
+            "request"
+          ]
+        }
+      ],
+      "exports": [
+        {
+          "name": "rejectDelivery",
+          "line": 31,
+          "isDefault": false
+        },
+        {
+          "name": "getExceptions",
+          "line": 48,
+          "isDefault": false
+        },
+        {
+          "name": "getExceptionById",
+          "line": 69,
+          "isDefault": false
+        },
+        {
+          "name": "resolveException",
+          "line": 84,
+          "isDefault": false
+        }
+      ],
+      "callGraph": [
+        {
+          "caller": "rejectDelivery",
+          "callee": "await axiosInstance.post",
+          "lineNumber": 35
+        },
+        {
+          "caller": "rejectDelivery",
+          "callee": "unwrap",
+          "lineNumber": 39
+        },
+        {
+          "caller": "getExceptions",
+          "callee": "await axiosInstance.get",
+          "lineNumber": 56
+        },
+        {
+          "caller": "getExceptions",
+          "callee": "unwrap",
+          "lineNumber": 60
+        },
+        {
+          "caller": "getExceptionById",
+          "callee": "await axiosInstance.get",
+          "lineNumber": 72
+        },
+        {
+          "caller": "getExceptionById",
+          "callee": "unwrap",
+          "lineNumber": 75
+        },
+        {
+          "caller": "resolveException",
+          "callee": "await axiosInstance.patch",
+          "lineNumber": 88
+        },
+        {
+          "caller": "resolveException",
+          "callee": "unwrap",
+          "lineNumber": 92
+        }
+      ],
+      "metrics": {
+        "importCount": 2,
+        "exportCount": 4,
+        "functionCount": 5,
+        "classCount": 0
+      }
+    },
+    {
+      "path": "src/api/importApi.ts",
+      "language": "typescript",
+      "fileCategory": "code",
+      "totalLines": 205,
+      "nonEmptyLines": 176,
+      "functions": [
+        {
+          "name": "handleAxiosCall",
+          "startLine": 27,
+          "endLine": 40,
+          "params": [
+            "call"
+          ]
+        }
+      ],
+      "classes": [
+        {
+          "name": "ApiError",
+          "startLine": 15,
+          "endLine": 25,
+          "methods": [
+            "constructor"
+          ],
+          "properties": [
+            "status",
+            "body"
+          ]
+        }
+      ],
+      "exports": [
+        {
+          "name": "ApiError",
+          "line": 15,
+          "isDefault": false
+        },
+        {
+          "name": "importApi",
+          "line": 42,
+          "isDefault": false
+        }
+      ],
+      "callGraph": [
+        {
+          "caller": "constructor",
+          "callee": "super",
+          "lineNumber": 20
+        },
+        {
+          "caller": "handleAxiosCall",
+          "callee": "call",
+          "lineNumber": 29
+        },
+        {
+          "caller": "uploadOrders",
+          "callee": "uploadOrdersMock",
+          "lineNumber": 49
+        },
+        {
+          "caller": "uploadOrders",
+          "callee": "formData.append",
+          "lineNumber": 53
+        },
+        {
+          "caller": "uploadOrders",
+          "callee": "formData.append",
+          "lineNumber": 54
+        },
+        {
+          "caller": "uploadOrders",
+          "callee": "formData.append",
+          "lineNumber": 55
+        },
+        {
+          "caller": "uploadOrders",
+          "callee": "String",
+          "lineNumber": 55
+        },
+        {
+          "caller": "uploadOrders",
+          "callee": "queryParams.set",
+          "lineNumber": 58
+        },
+        {
+          "caller": "uploadOrders",
+          "callee": "queryParams.set",
+          "lineNumber": 59
+        },
+        {
+          "caller": "uploadOrders",
+          "callee": "String",
+          "lineNumber": 59
+        },
+        {
+          "caller": "uploadOrders",
+          "callee": "await handleAxiosCall",
+          "lineNumber": 61
+        },
+        {
+          "caller": "uploadOrders",
+          "callee": "axiosInstance.post",
+          "lineNumber": 62
+        },
+        {
+          "caller": "uploadOrders",
+          "callee": "queryParams.toString",
+          "lineNumber": 62
+        },
+        {
+          "caller": "uploadOrders",
+          "callee": "this.getBatchErrors",
+          "lineNumber": 74
+        },
+        {
+          "caller": "uploadOrders",
+          "callee": "console.error",
+          "lineNumber": 76
+        },
+        {
+          "caller": "uploadOrders",
+          "callee": "mapBatchResponseToResult",
+          "lineNumber": 80
+        },
+        {
+          "caller": "getImportHistory",
+          "callee": "getImportHistoryMock",
+          "lineNumber": 91
+        },
+        {
+          "caller": "getImportHistory",
+          "callee": "query.set",
+          "lineNumber": 96
+        },
+        {
+          "caller": "getImportHistory",
+          "callee": "String",
+          "lineNumber": 96
+        },
+        {
+          "caller": "getImportHistory",
+          "callee": "query.set",
+          "lineNumber": 97
+        },
+        {
+          "caller": "getImportHistory",
+          "callee": "String",
+          "lineNumber": 97
+        },
+        {
+          "caller": "getImportHistory",
+          "callee": "query.set",
+          "lineNumber": 98
+        },
+        {
+          "caller": "getImportHistory",
+          "callee": "query.set",
+          "lineNumber": 100
+        },
+        {
+          "caller": "getImportHistory",
+          "callee": "await handleAxiosCall",
+          "lineNumber": 103
+        },
+        {
+          "caller": "getImportHistory",
+          "callee": "axiosInstance.get",
+          "lineNumber": 104
+        },
+        {
+          "caller": "getImportHistory",
+          "callee": "query.toString",
+          "lineNumber": 104
+        },
+        {
+          "caller": "getImportHistory",
+          "callee": "rawList.map",
+          "lineNumber": 108
+        },
+        {
+          "caller": "getBatchDetail",
+          "callee": "getImportBatchDetailMock",
+          "lineNumber": 119
+        },
+        {
+          "caller": "getBatchDetail",
+          "callee": "await handleAxiosCall",
+          "lineNumber": 122
+        },
+        {
+          "caller": "getBatchDetail",
+          "callee": "axiosInstance.get",
+          "lineNumber": 123
+        },
+        {
+          "caller": "getBatchDetail",
+          "callee": "this.getBatchErrors",
+          "lineNumber": 132
+        },
+        {
+          "caller": "getBatchDetail",
+          "callee": "console.error",
+          "lineNumber": 134
+        },
+        {
+          "caller": "getBatchDetail",
+          "callee": "mapBatchResponseToResult",
+          "lineNumber": 138
+        },
+        {
+          "caller": "getBatchErrors",
+          "callee": "this.getImportErrors",
+          "lineNumber": 142
+        },
+        {
+          "caller": "getImportErrors",
+          "callee": "getImportBatchDetailMock",
+          "lineNumber": 154
+        },
+        {
+          "caller": "getImportErrors",
+          "callee": "allErrors.filter",
+          "lineNumber": 157
+        },
+        {
+          "caller": "getImportErrors",
+          "callee": "filtered.slice",
+          "lineNumber": 163
+        },
+        {
+          "caller": "getImportErrors",
+          "callee": "Math.ceil",
+          "lineNumber": 171
+        },
+        {
+          "caller": "getImportErrors",
+          "callee": "query.set",
+          "lineNumber": 177
+        },
+        {
+          "caller": "getImportErrors",
+          "callee": "String",
+          "lineNumber": 177
+        },
+        {
+          "caller": "getImportErrors",
+          "callee": "query.set",
+          "lineNumber": 178
+        },
+        {
+          "caller": "getImportErrors",
+          "callee": "String",
+          "lineNumber": 178
+        },
+        {
+          "caller": "getImportErrors",
+          "callee": "query.set",
+          "lineNumber": 179
+        },
+        {
+          "caller": "getImportErrors",
+          "callee": "query.set",
+          "lineNumber": 181
+        },
+        {
+          "caller": "getImportErrors",
+          "callee": "await handleAxiosCall",
+          "lineNumber": 184
+        },
+        {
+          "caller": "getImportErrors",
+          "callee": "axiosInstance.get",
+          "lineNumber": 185
+        },
+        {
+          "caller": "getImportErrors",
+          "callee": "query.toString",
+          "lineNumber": 185
+        },
+        {
+          "caller": "getImportErrors",
+          "callee": "rawErrors.map",
+          "lineNumber": 190
+        },
+        {
+          "caller": "exportImportErrors",
+          "callee": "axiosInstance.get",
+          "lineNumber": 200
+        }
+      ],
+      "metrics": {
+        "importCount": 5,
+        "exportCount": 2,
+        "functionCount": 1,
+        "classCount": 1
+      }
+    }
+  ]
+}

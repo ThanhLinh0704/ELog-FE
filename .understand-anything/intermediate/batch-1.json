@@ -1,0 +1,616 @@
+{
+  "nodes": [
+    {
+      "id": "document:CLAUDE.md",
+      "type": "document",
+      "name": "CLAUDE.md",
+      "filePath": "CLAUDE.md",
+      "summary": "Tài liệu chỉ dẫn cốt lõi cho ELog, tổng hợp phạm vi hệ thống, tech stack, actor, vòng đời chuyến đi, business rule thường bị vi phạm và Definition of Done. Tài liệu cũng quy định cấu trúc thư mục cùng convention cho API base URL.",
+      "tags": ["documentation", "project-guidelines", "architecture", "business-rules"],
+      "complexity": "moderate"
+    },
+    {
+      "id": "document:docs/api-conventions.md",
+      "type": "document",
+      "name": "api-conventions.md",
+      "filePath": "docs/api-conventions.md",
+      "summary": "Định nghĩa convention giao tiếp API của ELog, gồm base URL, xác thực, response envelope, HTTP status, error code, pagination và quy tắc đặt tên resource. Tài liệu còn mô tả convention upload Excel và điểm tích hợp Swagger/OpenAPI.",
+      "tags": ["documentation", "api-contract", "authentication", "error-handling", "pagination"],
+      "complexity": "moderate"
+    },
+    {
+      "id": "document:docs/business-rules.md",
+      "type": "document",
+      "name": "business-rules.md",
+      "filePath": "docs/business-rules.md",
+      "summary": "Tập hợp business rule BR-01 đến BR-11, các edge case thường bị bỏ sót và những chuyển trạng thái chuyến đi không hợp lệ. Tài liệu liên kết rule với actor, quyền hạn, use case và tác động triển khai.",
+      "tags": ["documentation", "business-rules", "authorization", "trip-lifecycle"],
+      "complexity": "moderate"
+    },
+    {
+      "id": "document:docs/data-model.md",
+      "type": "document",
+      "name": "data-model.md",
+      "filePath": "docs/data-model.md",
+      "summary": "Mô tả mô hình dữ liệu chuẩn của ELog với các entity người dùng, tuyến, cửa hàng, phương tiện, đơn hàng, chuyến đi, giao hàng và ngoại lệ. Tài liệu ghi chú field, quan hệ giữa các bảng và các ràng buộc NFR ảnh hưởng đến schema.",
+      "tags": ["documentation", "data-model", "database", "schema-definition"],
+      "complexity": "moderate"
+    },
+    {
+      "id": "document:docs/superpowers/plans/2026-06-28-excel-import-integration.md",
+      "type": "document",
+      "name": "2026-06-28-excel-import-integration.md",
+      "filePath": "docs/superpowers/plans/2026-06-28-excel-import-integration.md",
+      "summary": "Kế hoạch triển khai tích hợp API nhập đơn hàng từ Excel theo từng nhiệm vụ: mapper, API service, màn hình upload, trang chi tiết batch và bước xác minh. Kế hoạch chỉ rõ các file frontend cần tạo hoặc cập nhật cùng ràng buộc xử lý lỗi.",
+      "tags": ["documentation", "implementation-plan", "excel-import", "api-integration"],
+      "complexity": "complex"
+    },
+    {
+      "id": "document:docs/superpowers/plans/2026-07-18-store-address-map-integration.md",
+      "type": "document",
+      "name": "2026-07-18-store-address-map-integration.md",
+      "filePath": "docs/superpowers/plans/2026-07-18-store-address-map-integration.md",
+      "summary": "Kế hoạch tích hợp Leaflet để chọn tọa độ địa chỉ cửa hàng, từ cài đặt thư viện và xây dựng MapSelector đến nhúng vào luồng thêm hoặc sửa cửa hàng. Tài liệu kèm chiến lược xác minh và kiểm thử thủ công trên trình duyệt.",
+      "tags": ["documentation", "implementation-plan", "map-integration", "leaflet", "store-management"],
+      "complexity": "complex"
+    },
+    {
+      "id": "document:docs/superpowers/specs/2026-06-28-excel-import-integration-design.md",
+      "type": "document",
+      "name": "2026-06-28-excel-import-integration-design.md",
+      "filePath": "docs/superpowers/specs/2026-06-28-excel-import-integration-design.md",
+      "summary": "Thiết kế kỹ thuật cho tích hợp nhập đơn Excel, bao quát endpoint, kiểu dữ liệu, quy tắc mapping, integration service và điều chỉnh UI. Tài liệu nhấn mạnh luồng xử lý xung đột HTTP 409 khi trùng ngày giao hàng.",
+      "tags": ["documentation", "technical-design", "excel-import", "api-contract", "data-mapping"],
+      "complexity": "moderate"
+    },
+    {
+      "id": "document:docs/tech-stack.md",
+      "type": "document",
+      "name": "tech-stack.md",
+      "filePath": "docs/tech-stack.md",
+      "summary": "Tài liệu tham chiếu tech stack toàn hệ thống, từ Spring Boot, React, MySQL và JWT đến convention cấu trúc dự án, Axios, migration, Git và CI. Phần frontend mô tả dependency chủ chốt cùng cách tổ chức thư mục và cấu hình kết nối API.",
+      "tags": ["documentation", "tech-stack", "architecture", "build-system", "ci-cd"],
+      "complexity": "moderate"
+    },
+    {
+      "id": "document:docs/us01-checklist.md",
+      "type": "document",
+      "name": "us01-checklist.md",
+      "filePath": "docs/us01-checklist.md",
+      "summary": "Checklist xây dựng skeleton cho US-01, chia nhỏ công việc database, backend, frontend, Git và hướng dẫn môi trường. Tài liệu xác định Definition of Done, convention đặt tên và các quyết định ban đầu của Sprint 1.",
+      "tags": ["documentation", "checklist", "project-bootstrap", "definition-of-done"],
+      "complexity": "moderate"
+    },
+    {
+      "id": "document:ELog_kehoachphattrien.md",
+      "type": "document",
+      "name": "ELog_kehoachphattrien.md",
+      "filePath": "ELog_kehoachphattrien.md",
+      "summary": "Lộ trình phát triển tăng dần của ELog, tổ chức 19 user story theo các increment về nền tảng, nhập đơn, lập chuyến, điều phối, giám sát và KPI. Phần cuối ánh xạ phạm vi này vào kế hoạch bảy sprint.",
+      "tags": ["documentation", "roadmap", "sprint-plan", "feature-scope"],
+      "complexity": "complex"
+    },
+    {
+      "id": "document:ELog_Project_Context.md",
+      "type": "document",
+      "name": "ELog_Project_Context.md",
+      "filePath": "ELog_Project_Context.md",
+      "summary": "Cung cấp bối cảnh nghiệp vụ tổng thể của ELog, gồm actor, feature map, business rule, vòng đời chuyến đi, phạm vi loại trừ và khái niệm dữ liệu. Tài liệu cũng lập chỉ mục use case, NFR và GAP log để định hướng phân tích.",
+      "tags": ["documentation", "project-context", "business-rules", "use-cases", "nfr"],
+      "complexity": "moderate"
+    },
+    {
+      "id": "document:IMPORT_ERROR_DETAIL_API_AUDIT_AND_FE_SPEC.md",
+      "type": "document",
+      "name": "IMPORT_ERROR_DETAIL_API_AUDIT_AND_FE_SPEC.md",
+      "filePath": "IMPORT_ERROR_DETAIL_API_AUDIT_AND_FE_SPEC.md",
+      "summary": "Đặc tả audit API và triển khai frontend cho chi tiết lỗi import, bao quát contract upload, truy vấn lỗi, export báo cáo, lịch sử batch, phân quyền và error handling. Tài liệu định nghĩa type, service, layout, badge, bảng lỗi, acceptance criteria và quy trình xác minh đầu-cuối.",
+      "tags": ["documentation", "api-audit", "excel-import", "error-handling", "frontend-spec"],
+      "complexity": "complex"
+    },
+    {
+      "id": "document:ORDER_IMPORT_FRONTEND_SPEC.md",
+      "type": "document",
+      "name": "ORDER_IMPORT_FRONTEND_SPEC.md",
+      "filePath": "ORDER_IMPORT_FRONTEND_SPEC.md",
+      "summary": "Đặc tả frontend toàn diện cho nhập đơn Excel, gồm route, phân quyền, TypeScript type, mock data và các màn hình upload, kết quả, lịch sử, chi tiết batch. Tài liệu còn quy định validation, xử lý trùng ngày, export lỗi, responsive, accessibility và acceptance criteria.",
+      "tags": ["documentation", "frontend-spec", "excel-import", "ui-workflow", "validation"],
+      "complexity": "complex"
+    },
+    {
+      "id": "document:PRODUCT_CATALOG_FRONTEND_SPEC.md",
+      "type": "document",
+      "name": "PRODUCT_CATALOG_FRONTEND_SPEC.md",
+      "filePath": "PRODUCT_CATALOG_FRONTEND_SPEC.md",
+      "summary": "Đặc tả frontend cho quản lý danh mục sản phẩm với màn hình danh sách, form thêm hoặc sửa, trang chi tiết và dialog kích hoạt hoặc vô hiệu hóa. Tài liệu mô tả quyền UI, type, mock service, tính thể tích, trạng thái lỗi, responsive, accessibility và acceptance criteria.",
+      "tags": ["documentation", "frontend-spec", "product-catalog", "form-validation", "responsive-ui"],
+      "complexity": "complex"
+    },
+    {
+      "id": "document:README.md",
+      "type": "document",
+      "name": "README.md",
+      "filePath": "README.md",
+      "summary": "Hướng dẫn bắt đầu với frontend ELog, trình bày prerequisite, thiết lập local, Git workflow, convention đặt tên branch và cấu trúc dự án. Đây là điểm vào tài liệu dành cho developer mới.",
+      "tags": ["documentation", "entry-point", "local-setup", "git-workflow"],
+      "complexity": "moderate"
+    },
+    {
+      "id": "document:src/Test/e2e/us02-auth-e2e-spec.md",
+      "type": "document",
+      "name": "us02-auth-e2e-spec.md",
+      "filePath": "src/Test/e2e/us02-auth-e2e-spec.md",
+      "summary": "Đặc tả E2E cho xác thực và phân quyền US-02 với chín test case về login, protected route, role, refresh token và token bị chỉnh sửa. Tài liệu nêu API backend, response envelope, convention lưu token, dữ liệu test và acceptance criteria.",
+      "tags": ["documentation", "e2e-test", "authentication", "authorization", "jwt"],
+      "complexity": "complex"
+    },
+    {
+      "id": "document:src/Test/e2e/us02-auth-fix-report.md",
+      "type": "document",
+      "name": "us02-auth-fix-report.md",
+      "filePath": "src/Test/e2e/us02-auth-fix-report.md",
+      "summary": "Báo cáo các lỗi cần sửa để hoàn thiện US-02, gồm sai key token, thiếu route guard, thiếu Axios refresh interceptor, xử lý token không hợp lệ và trang 403 cho RBAC. Phần cuối cung cấp checklist để toàn bộ chín test case đạt yêu cầu.",
+      "tags": ["documentation", "defect-report", "authentication", "route-guard", "rbac"],
+      "complexity": "moderate"
+    },
+    {
+      "id": "document:src/Test/README.md",
+      "type": "document",
+      "name": "README.md",
+      "filePath": "src/Test/README.md",
+      "summary": "Hướng dẫn cài đặt và chạy Cypress E2E cho luồng xác thực, bao gồm chuẩn bị dữ liệu, chế độ giao diện và headless, cấu trúc test cùng cách khắc phục lỗi thường gặp. Tài liệu phân biệt deterministic UI E2E với full-stack smoke E2E và chỉ dẫn chạy toàn bộ suite.",
+      "tags": ["documentation", "e2e-test", "cypress", "test-guide", "troubleshooting"],
+      "complexity": "moderate"
+    },
+    {
+      "id": "config:.env.development",
+      "type": "config",
+      "name": ".env.development",
+      "filePath": ".env.development",
+      "summary": "Khai báo các biến cấu hình cho endpoint API và chế độ mock trong môi trường development; giá trị cụ thể được giữ kín. File này điều khiển cách frontend chọn nguồn dữ liệu khi chạy local.",
+      "tags": ["configuration", "environment", "runtime-config", "security"],
+      "complexity": "simple"
+    },
+    {
+      "id": "config:package.json",
+      "type": "config",
+      "name": "package.json",
+      "filePath": "package.json",
+      "summary": "Manifest chính của frontend, định nghĩa script development, build, lint và preview cùng dependency cho React, Redux, Ant Design, Axios, Leaflet và xử lý Excel. Dev dependency thiết lập TypeScript, Vite và ESLint cho toolchain.",
+      "tags": ["configuration", "package-manifest", "build-system", "react", "vite"],
+      "complexity": "simple"
+    },
+    {
+      "id": "config:src/Test/e2e/tsconfig.json",
+      "type": "config",
+      "name": "tsconfig.json",
+      "filePath": "src/Test/e2e/tsconfig.json",
+      "summary": "Cấu hình TypeScript riêng cho Cypress E2E, bật strict mode, type của Cypress, DOM library và module resolution theo bundler. Phạm vi compile bao gồm toàn bộ file TypeScript dưới thư mục E2E.",
+      "tags": ["configuration", "typescript", "cypress", "e2e-test"],
+      "complexity": "simple"
+    },
+    {
+      "id": "config:src/Test/package.json",
+      "type": "config",
+      "name": "package.json",
+      "filePath": "src/Test/package.json",
+      "summary": "Manifest độc lập cho bộ Cypress E2E, cung cấp script mở runner, chạy headless, chạy nhóm deterministic UI, full-stack và toàn bộ suite. File cố định Cypress làm dev dependency của workspace test.",
+      "tags": ["configuration", "package-manifest", "cypress", "test-runner"],
+      "complexity": "simple"
+    },
+    {
+      "id": "config:tsconfig.app.json",
+      "type": "config",
+      "name": "tsconfig.app.json",
+      "filePath": "tsconfig.app.json",
+      "summary": "Cấu hình TypeScript cho mã ứng dụng React, dùng ES2023, module ESNext, JSX transform của React và module resolution theo bundler. File bật kiểm tra unused nghiêm ngặt, không emit output và loại thư mục src/Test khỏi build ứng dụng.",
+      "tags": ["configuration", "typescript", "react", "strict-mode", "build-system"],
+      "complexity": "simple"
+    },
+    {
+      "id": "config:tsconfig.json",
+      "type": "config",
+      "name": "tsconfig.json",
+      "filePath": "tsconfig.json",
+      "summary": "Cấu hình TypeScript gốc đóng vai trò project-reference hub, không compile file trực tiếp và liên kết cấu hình ứng dụng với cấu hình Node toolchain. Cấu trúc này hỗ trợ lệnh build theo project references.",
+      "tags": ["configuration", "typescript", "project-references", "build-system"],
+      "complexity": "simple"
+    },
+    {
+      "id": "config:tsconfig.node.json",
+      "type": "config",
+      "name": "tsconfig.node.json",
+      "filePath": "tsconfig.node.json",
+      "summary": "Cấu hình TypeScript cho mã toolchain chạy trên Node, chủ yếu là vite.config.ts, với ES2023, ESNext module và module resolution theo bundler. File bật kiểm tra unused, không emit và nạp type của Node.",
+      "tags": ["configuration", "typescript", "node", "vite", "build-system"],
+      "complexity": "simple"
+    }
+  ],
+  "edges": [
+    {
+      "source": "document:CLAUDE.md",
+      "target": "file:src/App.tsx",
+      "type": "documents",
+      "direction": "forward",
+      "weight": 0.5
+    },
+    {
+      "source": "document:CLAUDE.md",
+      "target": "file:src/api/axiosInstance.ts",
+      "type": "documents",
+      "direction": "forward",
+      "weight": 0.5
+    },
+    {
+      "source": "document:docs/api-conventions.md",
+      "target": "file:src/api/axiosInstance.ts",
+      "type": "documents",
+      "direction": "forward",
+      "weight": 0.5
+    },
+    {
+      "source": "document:docs/business-rules.md",
+      "target": "document:ELog_Project_Context.md",
+      "type": "related",
+      "direction": "forward",
+      "weight": 0.5
+    },
+    {
+      "source": "document:docs/data-model.md",
+      "target": "document:docs/business-rules.md",
+      "type": "related",
+      "direction": "forward",
+      "weight": 0.5
+    },
+    {
+      "source": "document:docs/superpowers/plans/2026-06-28-excel-import-integration.md",
+      "target": "file:src/utils/importMapper.ts",
+      "type": "documents",
+      "direction": "forward",
+      "weight": 0.5
+    },
+    {
+      "source": "document:docs/superpowers/plans/2026-06-28-excel-import-integration.md",
+      "target": "file:src/api/importApi.ts",
+      "type": "documents",
+      "direction": "forward",
+      "weight": 0.5
+    },
+    {
+      "source": "document:docs/superpowers/plans/2026-06-28-excel-import-integration.md",
+      "target": "file:src/pages/dispatcher/import/OrderImportPage.tsx",
+      "type": "documents",
+      "direction": "forward",
+      "weight": 0.5
+    },
+    {
+      "source": "document:docs/superpowers/plans/2026-06-28-excel-import-integration.md",
+      "target": "file:src/pages/dispatcher/import/ImportBatchDetailPage.tsx",
+      "type": "documents",
+      "direction": "forward",
+      "weight": 0.5
+    },
+    {
+      "source": "document:docs/superpowers/plans/2026-07-18-store-address-map-integration.md",
+      "target": "file:src/components/MapSelector.tsx",
+      "type": "documents",
+      "direction": "forward",
+      "weight": 0.5
+    },
+    {
+      "source": "document:docs/superpowers/plans/2026-07-18-store-address-map-integration.md",
+      "target": "file:src/pages/StoresPage.tsx",
+      "type": "documents",
+      "direction": "forward",
+      "weight": 0.5
+    },
+    {
+      "source": "document:docs/superpowers/plans/2026-07-18-store-address-map-integration.md",
+      "target": "file:src/main.tsx",
+      "type": "documents",
+      "direction": "forward",
+      "weight": 0.5
+    },
+    {
+      "source": "document:docs/superpowers/specs/2026-06-28-excel-import-integration-design.md",
+      "target": "file:src/utils/importMapper.ts",
+      "type": "documents",
+      "direction": "forward",
+      "weight": 0.5
+    },
+    {
+      "source": "document:docs/superpowers/specs/2026-06-28-excel-import-integration-design.md",
+      "target": "file:src/api/importApi.ts",
+      "type": "documents",
+      "direction": "forward",
+      "weight": 0.5
+    },
+    {
+      "source": "document:docs/superpowers/specs/2026-06-28-excel-import-integration-design.md",
+      "target": "file:src/pages/dispatcher/import/OrderImportPage.tsx",
+      "type": "documents",
+      "direction": "forward",
+      "weight": 0.5
+    },
+    {
+      "source": "document:docs/superpowers/specs/2026-06-28-excel-import-integration-design.md",
+      "target": "file:src/pages/dispatcher/import/ImportBatchDetailPage.tsx",
+      "type": "documents",
+      "direction": "forward",
+      "weight": 0.5
+    },
+    {
+      "source": "document:docs/tech-stack.md",
+      "target": "file:src/api/axiosInstance.ts",
+      "type": "documents",
+      "direction": "forward",
+      "weight": 0.5
+    },
+    {
+      "source": "document:docs/tech-stack.md",
+      "target": "file:vite.config.ts",
+      "type": "documents",
+      "direction": "forward",
+      "weight": 0.5
+    },
+    {
+      "source": "document:docs/us01-checklist.md",
+      "target": "file:src/main.tsx",
+      "type": "documents",
+      "direction": "forward",
+      "weight": 0.5
+    },
+    {
+      "source": "document:ELog_kehoachphattrien.md",
+      "target": "document:ELog_Project_Context.md",
+      "type": "related",
+      "direction": "forward",
+      "weight": 0.5
+    },
+    {
+      "source": "document:ELog_Project_Context.md",
+      "target": "document:docs/business-rules.md",
+      "type": "related",
+      "direction": "forward",
+      "weight": 0.5
+    },
+    {
+      "source": "document:ELog_Project_Context.md",
+      "target": "document:docs/data-model.md",
+      "type": "related",
+      "direction": "forward",
+      "weight": 0.5
+    },
+    {
+      "source": "document:IMPORT_ERROR_DETAIL_API_AUDIT_AND_FE_SPEC.md",
+      "target": "document:ORDER_IMPORT_FRONTEND_SPEC.md",
+      "type": "related",
+      "direction": "forward",
+      "weight": 0.5
+    },
+    {
+      "source": "document:IMPORT_ERROR_DETAIL_API_AUDIT_AND_FE_SPEC.md",
+      "target": "file:src/api/importApi.ts",
+      "type": "documents",
+      "direction": "forward",
+      "weight": 0.5
+    },
+    {
+      "source": "document:IMPORT_ERROR_DETAIL_API_AUDIT_AND_FE_SPEC.md",
+      "target": "file:src/pages/dispatcher/import/components/ImportErrorsTable.tsx",
+      "type": "documents",
+      "direction": "forward",
+      "weight": 0.5
+    },
+    {
+      "source": "document:ORDER_IMPORT_FRONTEND_SPEC.md",
+      "target": "file:src/pages/dispatcher/import/OrderImportPage.tsx",
+      "type": "documents",
+      "direction": "forward",
+      "weight": 0.5
+    },
+    {
+      "source": "document:ORDER_IMPORT_FRONTEND_SPEC.md",
+      "target": "file:src/pages/dispatcher/import/ImportBatchDetailPage.tsx",
+      "type": "documents",
+      "direction": "forward",
+      "weight": 0.5
+    },
+    {
+      "source": "document:ORDER_IMPORT_FRONTEND_SPEC.md",
+      "target": "file:src/types/import.ts",
+      "type": "documents",
+      "direction": "forward",
+      "weight": 0.5
+    },
+    {
+      "source": "document:ORDER_IMPORT_FRONTEND_SPEC.md",
+      "target": "file:src/guards/ImportModuleGuard.tsx",
+      "type": "documents",
+      "direction": "forward",
+      "weight": 0.5
+    },
+    {
+      "source": "document:ORDER_IMPORT_FRONTEND_SPEC.md",
+      "target": "file:src/mocks/importService.ts",
+      "type": "documents",
+      "direction": "forward",
+      "weight": 0.5
+    },
+    {
+      "source": "document:ORDER_IMPORT_FRONTEND_SPEC.md",
+      "target": "file:src/pages/dispatcher/import/components/ImportErrorsTable.tsx",
+      "type": "documents",
+      "direction": "forward",
+      "weight": 0.5
+    },
+    {
+      "source": "document:PRODUCT_CATALOG_FRONTEND_SPEC.md",
+      "target": "file:src/pages/admin/products/ProductListPage.tsx",
+      "type": "documents",
+      "direction": "forward",
+      "weight": 0.5
+    },
+    {
+      "source": "document:PRODUCT_CATALOG_FRONTEND_SPEC.md",
+      "target": "file:src/pages/admin/products/ProductFormPage.tsx",
+      "type": "documents",
+      "direction": "forward",
+      "weight": 0.5
+    },
+    {
+      "source": "document:PRODUCT_CATALOG_FRONTEND_SPEC.md",
+      "target": "file:src/pages/admin/products/ProductDetailPage.tsx",
+      "type": "documents",
+      "direction": "forward",
+      "weight": 0.5
+    },
+    {
+      "source": "document:PRODUCT_CATALOG_FRONTEND_SPEC.md",
+      "target": "file:src/types/product.ts",
+      "type": "documents",
+      "direction": "forward",
+      "weight": 0.5
+    },
+    {
+      "source": "document:PRODUCT_CATALOG_FRONTEND_SPEC.md",
+      "target": "file:src/utils/productCalculations.ts",
+      "type": "documents",
+      "direction": "forward",
+      "weight": 0.5
+    },
+    {
+      "source": "document:PRODUCT_CATALOG_FRONTEND_SPEC.md",
+      "target": "file:src/mocks/productService.ts",
+      "type": "documents",
+      "direction": "forward",
+      "weight": 0.5
+    },
+    {
+      "source": "document:README.md",
+      "target": "file:src/main.tsx",
+      "type": "documents",
+      "direction": "forward",
+      "weight": 0.5
+    },
+    {
+      "source": "document:README.md",
+      "target": "file:vite.config.ts",
+      "type": "documents",
+      "direction": "forward",
+      "weight": 0.5
+    },
+    {
+      "source": "document:src/Test/e2e/us02-auth-e2e-spec.md",
+      "target": "file:src/Test/e2e/us02-auth.cy.ts",
+      "type": "documents",
+      "direction": "forward",
+      "weight": 0.5
+    },
+    {
+      "source": "document:src/Test/e2e/us02-auth-fix-report.md",
+      "target": "file:src/App.tsx",
+      "type": "documents",
+      "direction": "forward",
+      "weight": 0.5
+    },
+    {
+      "source": "document:src/Test/e2e/us02-auth-fix-report.md",
+      "target": "file:src/api/axiosInstance.ts",
+      "type": "documents",
+      "direction": "forward",
+      "weight": 0.5
+    },
+    {
+      "source": "document:src/Test/e2e/us02-auth-fix-report.md",
+      "target": "file:src/pages/ForbiddenPage.tsx",
+      "type": "documents",
+      "direction": "forward",
+      "weight": 0.5
+    },
+    {
+      "source": "document:src/Test/e2e/us02-auth-fix-report.md",
+      "target": "file:src/pages/login/LoginForm.tsx",
+      "type": "documents",
+      "direction": "forward",
+      "weight": 0.5
+    },
+    {
+      "source": "document:src/Test/README.md",
+      "target": "file:src/Test/cypress.config.ts",
+      "type": "documents",
+      "direction": "forward",
+      "weight": 0.5
+    },
+    {
+      "source": "document:src/Test/README.md",
+      "target": "file:src/Test/e2e/us02-auth.cy.ts",
+      "type": "documents",
+      "direction": "forward",
+      "weight": 0.5
+    },
+    {
+      "source": "config:.env.development",
+      "target": "file:src/config.ts",
+      "type": "configures",
+      "direction": "forward",
+      "weight": 0.6
+    },
+    {
+      "source": "config:package.json",
+      "target": "file:src/main.tsx",
+      "type": "configures",
+      "direction": "forward",
+      "weight": 0.6
+    },
+    {
+      "source": "config:package.json",
+      "target": "file:vite.config.ts",
+      "type": "configures",
+      "direction": "forward",
+      "weight": 0.6
+    },
+    {
+      "source": "config:src/Test/e2e/tsconfig.json",
+      "target": "file:src/Test/e2e/us02-auth.cy.ts",
+      "type": "configures",
+      "direction": "forward",
+      "weight": 0.6
+    },
+    {
+      "source": "config:src/Test/package.json",
+      "target": "file:src/Test/cypress.config.ts",
+      "type": "configures",
+      "direction": "forward",
+      "weight": 0.6
+    },
+    {
+      "source": "config:tsconfig.app.json",
+      "target": "file:src/main.tsx",
+      "type": "configures",
+      "direction": "forward",
+      "weight": 0.6
+    },
+    {
+      "source": "config:tsconfig.json",
+      "target": "config:tsconfig.app.json",
+      "type": "depends_on",
+      "direction": "forward",
+      "weight": 0.6
+    },
+    {
+      "source": "config:tsconfig.json",
+      "target": "config:tsconfig.node.json",
+      "type": "depends_on",
+      "direction": "forward",
+      "weight": 0.6
+    },
+    {
+      "source": "config:tsconfig.node.json",
+      "target": "file:vite.config.ts",
+      "type": "configures",
+      "direction": "forward",
+      "weight": 0.6
+    }
+  ]
+}

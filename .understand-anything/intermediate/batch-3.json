@@ -1,0 +1,3484 @@
+{
+  "nodes": [
+    {
+      "id": "file:src/api/loadingManifestApi.ts",
+      "type": "file",
+      "name": "loadingManifestApi.ts",
+      "filePath": "src/api/loadingManifestApi.ts",
+      "summary": "Cung cấp type, bộ chuẩn hóa dữ liệu và API cho loading manifest theo nguyên tắc LIFO, gồm lấy, sinh và trình bày manifest theo dòng hoặc điểm dừng. Module cũng bóc tách lỗi Axios; hai thao tác regenerate và confirm hiện chủ động báo lỗi vì chưa có trong API contract.",
+      "tags": [
+        "api-handler",
+        "service",
+        "loading-manifest",
+        "lifo",
+        "data-mapping"
+      ],
+      "complexity": "complex",
+      "languageNotes": "Các normalizer phòng thủ chuyển payload không đồng nhất về model TypeScript chuẩn trước khi UI sử dụng."
+    },
+    {
+      "id": "function:src/api/loadingManifestApi.ts:toNumber",
+      "type": "function",
+      "name": "toNumber",
+      "filePath": "src/api/loadingManifestApi.ts",
+      "lineRange": [
+        147,
+        156
+      ],
+      "summary": "Chuyển giá trị không xác định thành số hữu hạn và dùng fallback khi dữ liệu rỗng hoặc không hợp lệ.",
+      "tags": [
+        "utility",
+        "data-mapping",
+        "normalization",
+        "loading-manifest"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:src/api/loadingManifestApi.ts:normalizeLine",
+      "type": "function",
+      "name": "normalizeLine",
+      "filePath": "src/api/loadingManifestApi.ts",
+      "lineRange": [
+        161,
+        189
+      ],
+      "summary": "Ánh xạ một dòng manifest thô sang LoadingManifestItem chuẩn, gồm sequence LIFO, thông tin sản phẩm, cửa hàng và số liệu tải.",
+      "tags": [
+        "utility",
+        "data-mapping",
+        "normalization",
+        "loading-manifest"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:src/api/loadingManifestApi.ts:normalizeStop",
+      "type": "function",
+      "name": "normalizeStop",
+      "filePath": "src/api/loadingManifestApi.ts",
+      "lineRange": [
+        191,
+        219
+      ],
+      "summary": "Chuẩn hóa một điểm dừng manifest cùng danh sách item lồng nhau, thứ tự dừng và các tổng khối lượng hoặc thể tích.",
+      "tags": [
+        "utility",
+        "data-mapping",
+        "normalization",
+        "loading-manifest"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:src/api/loadingManifestApi.ts:normalizeManifest",
+      "type": "function",
+      "name": "normalizeManifest",
+      "filePath": "src/api/loadingManifestApi.ts",
+      "lineRange": [
+        221,
+        275
+      ],
+      "summary": "Hợp nhất payload manifest, lines và stops thành model chuẩn, đồng thời tính hoặc dự phòng các tổng số lượng và utilization.",
+      "tags": [
+        "utility",
+        "data-mapping",
+        "normalization",
+        "loading-manifest"
+      ],
+      "complexity": "moderate"
+    },
+    {
+      "id": "function:src/api/loadingManifestApi.ts:getLoadingManifest",
+      "type": "function",
+      "name": "getLoadingManifest",
+      "filePath": "src/api/loadingManifestApi.ts",
+      "lineRange": [
+        277,
+        282
+      ],
+      "summary": "Lấy loading manifest của một trip draft và chuẩn hóa response trước khi trả cho UI.",
+      "tags": [
+        "api-handler",
+        "data-fetching",
+        "service",
+        "loading-manifest"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:src/api/loadingManifestApi.ts:generateLoadingManifest",
+      "type": "function",
+      "name": "generateLoadingManifest",
+      "filePath": "src/api/loadingManifestApi.ts",
+      "lineRange": [
+        284,
+        292
+      ],
+      "summary": "Yêu cầu backend sinh loading manifest LIFO cho trip draft rồi chuẩn hóa kết quả.",
+      "tags": [
+        "api-handler",
+        "mutation",
+        "service",
+        "loading-manifest"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:src/api/loadingManifestApi.ts:getManifestFlatItems",
+      "type": "function",
+      "name": "getManifestFlatItems",
+      "filePath": "src/api/loadingManifestApi.ts",
+      "lineRange": [
+        294,
+        300
+      ],
+      "summary": "Lấy manifest và trả danh sách item phẳng đã sắp xếp tăng dần theo LIFO sequence.",
+      "tags": [
+        "api-handler",
+        "data-fetching",
+        "service",
+        "loading-manifest"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:src/api/loadingManifestApi.ts:getManifestStops",
+      "type": "function",
+      "name": "getManifestStops",
+      "filePath": "src/api/loadingManifestApi.ts",
+      "lineRange": [
+        302,
+        309
+      ],
+      "summary": "Lấy biểu diễn manifest theo điểm dừng và chuẩn hóa từng stop cùng item lồng nhau.",
+      "tags": [
+        "api-handler",
+        "data-fetching",
+        "service",
+        "loading-manifest"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:src/api/loadingManifestApi.ts:regenerateLoadingManifest",
+      "type": "function",
+      "name": "regenerateLoadingManifest",
+      "filePath": "src/api/loadingManifestApi.ts",
+      "lineRange": [
+        311,
+        317
+      ],
+      "summary": "Chủ động ném lỗi để báo thao tác regenerate chưa được định nghĩa trong API contract hiện tại.",
+      "tags": [
+        "api-handler",
+        "mutation",
+        "service",
+        "loading-manifest"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:src/api/loadingManifestApi.ts:confirmLoadingManifest",
+      "type": "function",
+      "name": "confirmLoadingManifest",
+      "filePath": "src/api/loadingManifestApi.ts",
+      "lineRange": [
+        319,
+        325
+      ],
+      "summary": "Chủ động ném lỗi để báo thao tác confirm manifest chưa được định nghĩa trong API contract hiện tại.",
+      "tags": [
+        "api-handler",
+        "mutation",
+        "service",
+        "loading-manifest"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:src/api/loadingManifestApi.ts:getLoadingManifestApiErrorMessage",
+      "type": "function",
+      "name": "getLoadingManifestApiErrorMessage",
+      "filePath": "src/api/loadingManifestApi.ts",
+      "lineRange": [
+        327,
+        345
+      ],
+      "summary": "Trích thông điệp lỗi manifest ưu tiên từ detail, API message hoặc Axios message và dùng fallback khi cần.",
+      "tags": [
+        "utility",
+        "error-handling",
+        "api-client",
+        "loading-manifest"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:src/api/loadingManifestApi.ts:getLoadingManifestApiStatus",
+      "type": "function",
+      "name": "getLoadingManifestApiStatus",
+      "filePath": "src/api/loadingManifestApi.ts",
+      "lineRange": [
+        347,
+        349
+      ],
+      "summary": "Lấy HTTP status từ Axios error của loading manifest nếu response tồn tại.",
+      "tags": [
+        "utility",
+        "error-handling",
+        "api-client",
+        "loading-manifest"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "file:src/api/mockStoreApi.ts",
+      "type": "file",
+      "name": "mockStoreApi.ts",
+      "filePath": "src/api/mockStoreApi.ts",
+      "summary": "Mô phỏng backend quản lý cửa hàng bằng danh sách in-memory, hỗ trợ tìm kiếm, lọc trạng thái, sắp xếp, phân trang, CRUD và đổi trạng thái. Các thao tác có độ trễ giả lập cùng kiểm tra trùng mã cửa hàng.",
+      "tags": [
+        "mock-api",
+        "service",
+        "store-management",
+        "pagination",
+        "validation"
+      ],
+      "complexity": "complex"
+    },
+    {
+      "id": "file:src/api/mockUserApi.ts",
+      "type": "file",
+      "name": "mockUserApi.ts",
+      "filePath": "src/api/mockUserApi.ts",
+      "summary": "Mô phỏng API quản lý người dùng với dữ liệu in-memory, gồm lọc và phân trang, tạo hoặc cập nhật hồ sơ, gán role và đổi trạng thái. Module phát hiện xung đột username hoặc email và chuẩn hóa kết quả qua user mapper.",
+      "tags": [
+        "mock-api",
+        "service",
+        "user-management",
+        "pagination",
+        "validation"
+      ],
+      "complexity": "moderate"
+    },
+    {
+      "id": "file:src/api/monitoringApi.ts",
+      "type": "file",
+      "name": "monitoringApi.ts",
+      "filePath": "src/api/monitoringApi.ts",
+      "summary": "Đóng gói endpoint giám sát chuyến đang hoạt động, tiến độ từng chuyến và các mutation bắt đầu chuyến, đến điểm dừng, hoàn tất điểm dừng. Response envelope được unwrap thành các model monitoring có type.",
+      "tags": [
+        "api-handler",
+        "service",
+        "trip-monitoring",
+        "workflow",
+        "type-safe"
+      ],
+      "complexity": "moderate"
+    },
+    {
+      "id": "function:src/api/monitoringApi.ts:getActiveTrips",
+      "type": "function",
+      "name": "getActiveTrips",
+      "filePath": "src/api/monitoringApi.ts",
+      "lineRange": [
+        30,
+        36
+      ],
+      "summary": "Lấy danh sách chuyến đang hoạt động theo ngày để hiển thị trên monitoring dashboard.",
+      "tags": [
+        "api-handler",
+        "data-fetching",
+        "service",
+        "trip-monitoring"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:src/api/monitoringApi.ts:getTripProgress",
+      "type": "function",
+      "name": "getTripProgress",
+      "filePath": "src/api/monitoringApi.ts",
+      "lineRange": [
+        42,
+        47
+      ],
+      "summary": "Lấy tiến độ chi tiết của một chuyến, gồm trạng thái và các stop phục vụ giám sát.",
+      "tags": [
+        "api-handler",
+        "data-fetching",
+        "service",
+        "trip-monitoring"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:src/api/monitoringApi.ts:startTrip",
+      "type": "function",
+      "name": "startTrip",
+      "filePath": "src/api/monitoringApi.ts",
+      "lineRange": [
+        55,
+        60
+      ],
+      "summary": "Gửi mutation bắt đầu một chuyến và trả về trạng thái tiến độ mới.",
+      "tags": [
+        "api-handler",
+        "mutation",
+        "service",
+        "trip-monitoring"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:src/api/monitoringApi.ts:arriveAtStop",
+      "type": "function",
+      "name": "arriveAtStop",
+      "filePath": "src/api/monitoringApi.ts",
+      "lineRange": [
+        67,
+        72
+      ],
+      "summary": "Ghi nhận tài xế đã đến một trip stop và trả về tiến độ chuyến được cập nhật.",
+      "tags": [
+        "api-handler",
+        "mutation",
+        "service",
+        "trip-monitoring"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:src/api/monitoringApi.ts:completeStop",
+      "type": "function",
+      "name": "completeStop",
+      "filePath": "src/api/monitoringApi.ts",
+      "lineRange": [
+        79,
+        84
+      ],
+      "summary": "Đánh dấu một trip stop hoàn tất và trả về tiến độ chuyến sau mutation.",
+      "tags": [
+        "api-handler",
+        "mutation",
+        "service",
+        "trip-monitoring"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "file:src/api/productApi.ts",
+      "type": "file",
+      "name": "productApi.ts",
+      "filePath": "src/api/productApi.ts",
+      "summary": "Cung cấp service quản lý sản phẩm với chế độ mock hoặc backend thật, gồm tìm kiếm phân trang, xem chi tiết, tạo, cập nhật và đổi trạng thái. Module mã hóa query, chuẩn hóa payload hoặc response và bảo toàn metadata lỗi qua ApiError.",
+      "tags": [
+        "api-handler",
+        "service",
+        "product-catalog",
+        "mock-api",
+        "data-mapping"
+      ],
+      "complexity": "moderate"
+    },
+    {
+      "id": "function:src/api/productApi.ts:handleAxiosCall",
+      "type": "function",
+      "name": "handleAxiosCall",
+      "filePath": "src/api/productApi.ts",
+      "lineRange": [
+        24,
+        37
+      ],
+      "summary": "Bao một Axios call của sản phẩm, trả payload thành công và chuyển lỗi response hoặc network thành ApiError nhất quán.",
+      "tags": [
+        "utility",
+        "error-handling",
+        "api-client",
+        "product-catalog"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:src/api/productApi.ts:normalizeQueryValue",
+      "type": "function",
+      "name": "normalizeQueryValue",
+      "filePath": "src/api/productApi.ts",
+      "lineRange": [
+        39,
+        49
+      ],
+      "summary": "Chuyển giá trị query của sản phẩm thành chuỗi ổn định và bỏ qua giá trị không nên gửi lên backend.",
+      "tags": [
+        "utility",
+        "data-mapping",
+        "normalization",
+        "product-catalog"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:src/api/productApi.ts:encodeQuery",
+      "type": "function",
+      "name": "encodeQuery",
+      "filePath": "src/api/productApi.ts",
+      "lineRange": [
+        51,
+        63
+      ],
+      "summary": "Mã hóa object tham số của sản phẩm thành URLSearchParams, chỉ giữ các giá trị query hợp lệ.",
+      "tags": [
+        "utility",
+        "query-parameters",
+        "serialization",
+        "product-catalog"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "class:src/api/productApi.ts:ApiError",
+      "type": "class",
+      "name": "ApiError",
+      "filePath": "src/api/productApi.ts",
+      "lineRange": [
+        12,
+        22
+      ],
+      "summary": "Biểu diễn lỗi API của sản phẩm, lưu message, HTTP status và response body để tầng UI xử lý theo contract.",
+      "tags": [
+        "error-handling",
+        "api-error",
+        "product-catalog",
+        "serialization"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "file:src/api/roleApi.ts",
+      "type": "file",
+      "name": "roleApi.ts",
+      "filePath": "src/api/roleApi.ts",
+      "summary": "Cung cấp các endpoint đọc danh sách role, chi tiết role, danh mục permission và cập nhật permission của một role. Mọi response được unwrap khỏi envelope chung của backend.",
+      "tags": [
+        "api-handler",
+        "service",
+        "rbac",
+        "permissions",
+        "authorization"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:src/api/roleApi.ts:getRoles",
+      "type": "function",
+      "name": "getRoles",
+      "filePath": "src/api/roleApi.ts",
+      "lineRange": [
+        33,
+        36
+      ],
+      "summary": "Lấy toàn bộ role khả dụng để phục vụ màn hình quản trị phân quyền.",
+      "tags": [
+        "api-handler",
+        "data-fetching",
+        "service",
+        "rbac"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:src/api/roleApi.ts:getRoleById",
+      "type": "function",
+      "name": "getRoleById",
+      "filePath": "src/api/roleApi.ts",
+      "lineRange": [
+        38,
+        41
+      ],
+      "summary": "Lấy chi tiết một role cùng permission hiện tại theo identifier.",
+      "tags": [
+        "api-handler",
+        "data-fetching",
+        "service",
+        "rbac"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:src/api/roleApi.ts:getPermissions",
+      "type": "function",
+      "name": "getPermissions",
+      "filePath": "src/api/roleApi.ts",
+      "lineRange": [
+        43,
+        46
+      ],
+      "summary": "Lấy danh mục permission mà hệ thống cho phép gán cho role.",
+      "tags": [
+        "api-handler",
+        "data-fetching",
+        "service",
+        "rbac"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:src/api/roleApi.ts:updateRolePermissions",
+      "type": "function",
+      "name": "updateRolePermissions",
+      "filePath": "src/api/roleApi.ts",
+      "lineRange": [
+        48,
+        57
+      ],
+      "summary": "Gửi tập permission mới cho một role và trả về role đã cập nhật.",
+      "tags": [
+        "api-handler",
+        "mutation",
+        "service",
+        "rbac"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "file:src/api/routeApi.ts",
+      "type": "file",
+      "name": "routeApi.ts",
+      "filePath": "src/api/routeApi.ts",
+      "summary": "Triển khai service quản lý tuyến với chế độ mock hoặc backend thật, bao quát CRUD, trạng thái, danh sách điểm dừng, thêm hoặc xóa điểm và đổi thứ tự. Module còn truy vấn cửa hàng khả dụng, chuẩn hóa response và chuyển lỗi thành ApiError.",
+      "tags": [
+        "api-handler",
+        "service",
+        "route-management",
+        "mock-api",
+        "data-mapping"
+      ],
+      "complexity": "complex"
+    },
+    {
+      "id": "function:src/api/routeApi.ts:handleAxiosCall",
+      "type": "function",
+      "name": "handleAxiosCall",
+      "filePath": "src/api/routeApi.ts",
+      "lineRange": [
+        36,
+        49
+      ],
+      "summary": "Bao một Axios call của tuyến giao hàng, trả payload thành công và chuyển lỗi response hoặc network thành ApiError nhất quán.",
+      "tags": [
+        "utility",
+        "error-handling",
+        "api-client",
+        "route-management"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "class:src/api/routeApi.ts:ApiError",
+      "type": "class",
+      "name": "ApiError",
+      "filePath": "src/api/routeApi.ts",
+      "lineRange": [
+        24,
+        34
+      ],
+      "summary": "Biểu diễn lỗi API của tuyến giao hàng, lưu message, HTTP status và response body để tầng UI xử lý theo contract.",
+      "tags": [
+        "error-handling",
+        "api-error",
+        "route-management",
+        "serialization"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "file:src/api/storeApi.ts",
+      "type": "file",
+      "name": "storeApi.ts",
+      "filePath": "src/api/storeApi.ts",
+      "summary": "Triển khai service quản lý cửa hàng với mock fallback, gồm tìm kiếm phân trang, xem chi tiết, tạo, cập nhật và đổi trạng thái. Module làm sạch payload, chuẩn hóa địa chỉ cùng tuyến được gán và cung cấp helper đọc status, code, message từ lỗi API.",
+      "tags": [
+        "api-handler",
+        "service",
+        "store-management",
+        "mock-api",
+        "data-mapping"
+      ],
+      "complexity": "complex"
+    },
+    {
+      "id": "function:src/api/storeApi.ts:handleAxiosCall",
+      "type": "function",
+      "name": "handleAxiosCall",
+      "filePath": "src/api/storeApi.ts",
+      "lineRange": [
+        81,
+        94
+      ],
+      "summary": "Bao một Axios call của cửa hàng, trả payload thành công và chuyển lỗi response hoặc network thành ApiError nhất quán.",
+      "tags": [
+        "utility",
+        "error-handling",
+        "api-client",
+        "store-management"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:src/api/storeApi.ts:normalizeQueryValue",
+      "type": "function",
+      "name": "normalizeQueryValue",
+      "filePath": "src/api/storeApi.ts",
+      "lineRange": [
+        96,
+        106
+      ],
+      "summary": "Chuyển giá trị query của cửa hàng thành chuỗi ổn định và bỏ qua giá trị không nên gửi lên backend.",
+      "tags": [
+        "utility",
+        "data-mapping",
+        "normalization",
+        "store-management"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:src/api/storeApi.ts:encodeQuery",
+      "type": "function",
+      "name": "encodeQuery",
+      "filePath": "src/api/storeApi.ts",
+      "lineRange": [
+        108,
+        120
+      ],
+      "summary": "Mã hóa object tham số của cửa hàng thành URLSearchParams, chỉ giữ các giá trị query hợp lệ.",
+      "tags": [
+        "utility",
+        "query-parameters",
+        "serialization",
+        "store-management"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:src/api/storeApi.ts:normalizeStore",
+      "type": "function",
+      "name": "normalizeStore",
+      "filePath": "src/api/storeApi.ts",
+      "lineRange": [
+        137,
+        174
+      ],
+      "summary": "Chuẩn hóa payload cửa hàng thô, địa chỉ, tọa độ, trạng thái và danh sách tuyến được gán thành Store model.",
+      "tags": [
+        "utility",
+        "data-mapping",
+        "normalization",
+        "store-management"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:src/api/storeApi.ts:normalizeStorePage",
+      "type": "function",
+      "name": "normalizeStorePage",
+      "filePath": "src/api/storeApi.ts",
+      "lineRange": [
+        176,
+        228
+      ],
+      "summary": "Hợp nhất response cửa hàng dạng page, envelope hoặc mảng thành cấu trúc phân trang nhất quán cho UI.",
+      "tags": [
+        "utility",
+        "data-mapping",
+        "normalization",
+        "store-management"
+      ],
+      "complexity": "moderate"
+    },
+    {
+      "id": "function:src/api/storeApi.ts:getStoreApiStatus",
+      "type": "function",
+      "name": "getStoreApiStatus",
+      "filePath": "src/api/storeApi.ts",
+      "lineRange": [
+        230,
+        232
+      ],
+      "summary": "Lấy HTTP status từ ApiError của service cửa hàng nếu có.",
+      "tags": [
+        "utility",
+        "error-handling",
+        "api-client",
+        "store-management"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:src/api/storeApi.ts:getStoreApiErrorCode",
+      "type": "function",
+      "name": "getStoreApiErrorCode",
+      "filePath": "src/api/storeApi.ts",
+      "lineRange": [
+        234,
+        240
+      ],
+      "summary": "Trích application error code từ body của lỗi service cửa hàng.",
+      "tags": [
+        "utility",
+        "error-handling",
+        "api-client",
+        "store-management"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:src/api/storeApi.ts:getStoreApiErrorMessage",
+      "type": "function",
+      "name": "getStoreApiErrorMessage",
+      "filePath": "src/api/storeApi.ts",
+      "lineRange": [
+        242,
+        254
+      ],
+      "summary": "Chọn thông điệp lỗi cửa hàng từ response body, Error hoặc fallback để hiển thị cho người dùng.",
+      "tags": [
+        "utility",
+        "error-handling",
+        "api-client",
+        "store-management"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "class:src/api/storeApi.ts:ApiError",
+      "type": "class",
+      "name": "ApiError",
+      "filePath": "src/api/storeApi.ts",
+      "lineRange": [
+        69,
+        79
+      ],
+      "summary": "Biểu diễn lỗi API của cửa hàng, lưu message, HTTP status và response body để tầng UI xử lý theo contract.",
+      "tags": [
+        "error-handling",
+        "api-error",
+        "store-management",
+        "serialization"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "file:src/api/tripApi.ts",
+      "type": "file",
+      "name": "tripApi.ts",
+      "filePath": "src/api/tripApi.ts",
+      "summary": "Cung cấp API điều phối chuyến, từ chọn phương tiện và tài xế, kiểm tra sức chứa đội xe, gán hoặc tách chuyến đến dispatch và cập nhật phân công. Module cũng tải phiếu bàn giao dạng blob và truy vấn chuyến của tài xế.",
+      "tags": [
+        "api-handler",
+        "service",
+        "trip-dispatch",
+        "vehicle-assignment",
+        "workflow"
+      ],
+      "complexity": "moderate"
+    },
+    {
+      "id": "function:src/api/tripApi.ts:getEligibleVehicles",
+      "type": "function",
+      "name": "getEligibleVehicles",
+      "filePath": "src/api/tripApi.ts",
+      "lineRange": [
+        31,
+        48
+      ],
+      "summary": "Lấy phương tiện đủ và không đủ điều kiện cho trip draft, đồng thời chuẩn hóa các số liệu sức chứa về number.",
+      "tags": [
+        "api-handler",
+        "data-fetching",
+        "service",
+        "trip-dispatch"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:src/api/tripApi.ts:getAvailableDrivers",
+      "type": "function",
+      "name": "getAvailableDrivers",
+      "filePath": "src/api/tripApi.ts",
+      "lineRange": [
+        55,
+        61
+      ],
+      "summary": "Lấy danh sách tài xế khả dụng theo ngày điều phối.",
+      "tags": [
+        "api-handler",
+        "data-fetching",
+        "service",
+        "trip-dispatch"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:src/api/tripApi.ts:getFleetCapacityCheck",
+      "type": "function",
+      "name": "getFleetCapacityCheck",
+      "filePath": "src/api/tripApi.ts",
+      "lineRange": [
+        67,
+        73
+      ],
+      "summary": "Lấy kết quả kiểm tra tổng sức chứa đội xe cho một ngày giao hàng.",
+      "tags": [
+        "api-handler",
+        "data-fetching",
+        "service",
+        "trip-dispatch"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:src/api/tripApi.ts:assignTrip",
+      "type": "function",
+      "name": "assignTrip",
+      "filePath": "src/api/tripApi.ts",
+      "lineRange": [
+        80,
+        89
+      ],
+      "summary": "Gán phương tiện và tài xế cho một trip draft theo request điều phối.",
+      "tags": [
+        "api-handler",
+        "mutation",
+        "service",
+        "trip-dispatch"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:src/api/tripApi.ts:assignSplitTrips",
+      "type": "function",
+      "name": "assignSplitTrips",
+      "filePath": "src/api/tripApi.ts",
+      "lineRange": [
+        96,
+        105
+      ],
+      "summary": "Tạo nhiều chuyến được tách từ một trip draft theo phương án phân bổ đã chọn.",
+      "tags": [
+        "api-handler",
+        "mutation",
+        "service",
+        "trip-dispatch"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:src/api/tripApi.ts:getTripsByTripDraftId",
+      "type": "function",
+      "name": "getTripsByTripDraftId",
+      "filePath": "src/api/tripApi.ts",
+      "lineRange": [
+        111,
+        117
+      ],
+      "summary": "Lấy các chuyến đã được tạo từ một trip draft.",
+      "tags": [
+        "api-handler",
+        "data-fetching",
+        "service",
+        "trip-dispatch"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:src/api/tripApi.ts:getTripById",
+      "type": "function",
+      "name": "getTripById",
+      "filePath": "src/api/tripApi.ts",
+      "lineRange": [
+        124,
+        129
+      ],
+      "summary": "Lấy chi tiết một chuyến theo identifier.",
+      "tags": [
+        "api-handler",
+        "data-fetching",
+        "service",
+        "trip-dispatch"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:src/api/tripApi.ts:dispatchTrip",
+      "type": "function",
+      "name": "dispatchTrip",
+      "filePath": "src/api/tripApi.ts",
+      "lineRange": [
+        135,
+        140
+      ],
+      "summary": "Chuyển một chuyến sang trạng thái dispatch qua backend workflow.",
+      "tags": [
+        "api-handler",
+        "mutation",
+        "service",
+        "trip-dispatch"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:src/api/tripApi.ts:openHandoverSlip",
+      "type": "function",
+      "name": "openHandoverSlip",
+      "filePath": "src/api/tripApi.ts",
+      "lineRange": [
+        147,
+        178
+      ],
+      "summary": "Tải phiếu bàn giao dạng blob, mở tab dự phòng và kích hoạt download bằng object URL được thu hồi sau đó.",
+      "tags": [
+        "api-handler",
+        "data-fetching",
+        "service",
+        "trip-dispatch"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:src/api/tripApi.ts:updateTripAssignment",
+      "type": "function",
+      "name": "updateTripAssignment",
+      "filePath": "src/api/tripApi.ts",
+      "lineRange": [
+        185,
+        194
+      ],
+      "summary": "Cập nhật lại phương tiện hoặc tài xế được phân công cho một chuyến.",
+      "tags": [
+        "api-handler",
+        "mutation",
+        "service",
+        "trip-dispatch"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:src/api/tripApi.ts:getMyTrips",
+      "type": "function",
+      "name": "getMyTrips",
+      "filePath": "src/api/tripApi.ts",
+      "lineRange": [
+        201,
+        207
+      ],
+      "summary": "Lấy danh sách chuyến của tài xế hiện tại theo ngày và trạng thái tùy chọn.",
+      "tags": [
+        "api-handler",
+        "data-fetching",
+        "service",
+        "trip-dispatch"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "file:src/api/tripDraftApi.ts",
+      "type": "file",
+      "name": "tripDraftApi.ts",
+      "filePath": "src/api/tripDraftApi.ts",
+      "summary": "Cung cấp model normalization và API cho vòng đời trip draft: danh sách, chi tiết, lọc điểm dừng, tính lại ETA, xác nhận, gom đơn, kiểm tra tải trọng và hoàn tác. Module chuẩn hóa payload phức tạp và cung cấp ApiError cùng helper diễn giải lỗi.",
+      "tags": [
+        "api-handler",
+        "service",
+        "trip-draft",
+        "route-planning",
+        "data-mapping"
+      ],
+      "complexity": "complex",
+      "languageNotes": "Các normalizer hợp nhất nhiều dạng response backend và tính lại số điểm dừng hoạt động trước khi trả model cho UI."
+    },
+    {
+      "id": "function:src/api/tripDraftApi.ts:unwrapApiResponse",
+      "type": "function",
+      "name": "unwrapApiResponse",
+      "filePath": "src/api/tripDraftApi.ts",
+      "lineRange": [
+        106,
+        115
+      ],
+      "summary": "Bóc payload data khỏi nhiều biến thể response envelope và trả nguyên body khi không có lớp bọc.",
+      "tags": [
+        "utility",
+        "data-mapping",
+        "normalization",
+        "trip-draft"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:src/api/tripDraftApi.ts:normalizeStop",
+      "type": "function",
+      "name": "normalizeStop",
+      "filePath": "src/api/tripDraftApi.ts",
+      "lineRange": [
+        133,
+        180
+      ],
+      "summary": "Chuẩn hóa stop của trip draft, gồm trạng thái, thứ tự, tọa độ, ETA và các chỉ số tải.",
+      "tags": [
+        "utility",
+        "data-mapping",
+        "normalization",
+        "trip-draft"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:src/api/tripDraftApi.ts:normalizeTripDraft",
+      "type": "function",
+      "name": "normalizeTripDraft",
+      "filePath": "src/api/tripDraftApi.ts",
+      "lineRange": [
+        182,
+        208
+      ],
+      "summary": "Chuẩn hóa trip draft cùng danh sách stop, phương tiện và tổng tải; đồng thời sắp xếp stop theo sequence.",
+      "tags": [
+        "utility",
+        "data-mapping",
+        "normalization",
+        "trip-draft"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:src/api/tripDraftApi.ts:normalizeTripDraftListItem",
+      "type": "function",
+      "name": "normalizeTripDraftListItem",
+      "filePath": "src/api/tripDraftApi.ts",
+      "lineRange": [
+        210,
+        227
+      ],
+      "summary": "Rút model trip draft đầy đủ thành item danh sách và tính số stop đang hoạt động.",
+      "tags": [
+        "utility",
+        "data-mapping",
+        "normalization",
+        "trip-draft"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:src/api/tripDraftApi.ts:handleAxiosCall",
+      "type": "function",
+      "name": "handleAxiosCall",
+      "filePath": "src/api/tripDraftApi.ts",
+      "lineRange": [
+        241,
+        254
+      ],
+      "summary": "Bao một Axios call của trip draft, trả payload thành công và chuyển lỗi response hoặc network thành ApiError nhất quán.",
+      "tags": [
+        "utility",
+        "error-handling",
+        "api-client",
+        "trip-draft"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:src/api/tripDraftApi.ts:getTripDraftApiStatus",
+      "type": "function",
+      "name": "getTripDraftApiStatus",
+      "filePath": "src/api/tripDraftApi.ts",
+      "lineRange": [
+        257,
+        260
+      ],
+      "summary": "Lấy HTTP status từ ApiError của luồng trip draft nếu có.",
+      "tags": [
+        "utility",
+        "error-handling",
+        "api-client",
+        "trip-draft"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:src/api/tripDraftApi.ts:getApiErrorMessage",
+      "type": "function",
+      "name": "getApiErrorMessage",
+      "filePath": "src/api/tripDraftApi.ts",
+      "lineRange": [
+        262,
+        277
+      ],
+      "summary": "Chọn thông điệp lỗi trip draft từ response body, Error hoặc fallback để UI hiển thị nhất quán.",
+      "tags": [
+        "utility",
+        "error-handling",
+        "api-client",
+        "trip-draft"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:src/api/tripDraftApi.ts:getTripDraft",
+      "type": "function",
+      "name": "getTripDraft",
+      "filePath": "src/api/tripDraftApi.ts",
+      "lineRange": [
+        279,
+        284
+      ],
+      "summary": "Lấy và chuẩn hóa chi tiết một trip draft theo identifier.",
+      "tags": [
+        "api-handler",
+        "data-fetching",
+        "service",
+        "trip-draft"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:src/api/tripDraftApi.ts:getTripDrafts",
+      "type": "function",
+      "name": "getTripDrafts",
+      "filePath": "src/api/tripDraftApi.ts",
+      "lineRange": [
+        286,
+        302
+      ],
+      "summary": "Lấy danh sách trip draft từ response dạng mảng hoặc phân trang và chuẩn hóa từng item.",
+      "tags": [
+        "api-handler",
+        "data-fetching",
+        "service",
+        "trip-draft"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:src/api/tripDraftApi.ts:updateStopStatus",
+      "type": "function",
+      "name": "updateStopStatus",
+      "filePath": "src/api/tripDraftApi.ts",
+      "lineRange": [
+        304,
+        316
+      ],
+      "summary": "Bật hoặc loại một stop khỏi trip draft, kèm ghi chú override khi nghiệp vụ yêu cầu.",
+      "tags": [
+        "utility",
+        "error-handling",
+        "api-client",
+        "trip-draft"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:src/api/tripDraftApi.ts:recalculateEta",
+      "type": "function",
+      "name": "recalculateEta",
+      "filePath": "src/api/tripDraftApi.ts",
+      "lineRange": [
+        318,
+        332
+      ],
+      "summary": "Yêu cầu backend tính lại ETA theo payload và chuẩn hóa trip draft trả về.",
+      "tags": [
+        "api-handler",
+        "mutation",
+        "service",
+        "trip-draft"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:src/api/tripDraftApi.ts:confirmTripDraft",
+      "type": "function",
+      "name": "confirmTripDraft",
+      "filePath": "src/api/tripDraftApi.ts",
+      "lineRange": [
+        334,
+        348
+      ],
+      "summary": "Xác nhận trip draft và trả thông tin định danh hoặc trạng thái của kết quả workflow.",
+      "tags": [
+        "api-handler",
+        "mutation",
+        "service",
+        "trip-draft"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:src/api/tripDraftApi.ts:getStopOrderItems",
+      "type": "function",
+      "name": "getStopOrderItems",
+      "filePath": "src/api/tripDraftApi.ts",
+      "lineRange": [
+        419,
+        427
+      ],
+      "summary": "Lấy danh sách order item thuộc một stop cụ thể trong trip draft.",
+      "tags": [
+        "api-handler",
+        "data-fetching",
+        "service",
+        "trip-draft"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "class:src/api/tripDraftApi.ts:ApiError",
+      "type": "class",
+      "name": "ApiError",
+      "filePath": "src/api/tripDraftApi.ts",
+      "lineRange": [
+        229,
+        239
+      ],
+      "summary": "Biểu diễn lỗi API của trip draft, lưu message, HTTP status và response body để tầng UI xử lý theo contract.",
+      "tags": [
+        "error-handling",
+        "api-error",
+        "trip-draft",
+        "serialization"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "file:src/api/userApi.ts",
+      "type": "file",
+      "name": "userApi.ts",
+      "filePath": "src/api/userApi.ts",
+      "summary": "Cung cấp service quản lý người dùng với mock fallback, gồm danh sách phân trang, tạo, cập nhật hồ sơ, cập nhật role và trạng thái. Query được mã hóa nhất quán, response được chuẩn hóa và lỗi backend được giữ trong ApiError.",
+      "tags": [
+        "api-handler",
+        "service",
+        "user-management",
+        "mock-api",
+        "data-mapping"
+      ],
+      "complexity": "moderate"
+    },
+    {
+      "id": "function:src/api/userApi.ts:handleAxiosCall",
+      "type": "function",
+      "name": "handleAxiosCall",
+      "filePath": "src/api/userApi.ts",
+      "lineRange": [
+        18,
+        31
+      ],
+      "summary": "Bao một Axios call của người dùng, trả payload thành công và chuyển lỗi response hoặc network thành ApiError nhất quán.",
+      "tags": [
+        "utility",
+        "error-handling",
+        "api-client",
+        "user-management"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:src/api/userApi.ts:normalizeQueryValue",
+      "type": "function",
+      "name": "normalizeQueryValue",
+      "filePath": "src/api/userApi.ts",
+      "lineRange": [
+        33,
+        43
+      ],
+      "summary": "Chuyển giá trị query của người dùng thành chuỗi ổn định và bỏ qua giá trị không nên gửi lên backend.",
+      "tags": [
+        "utility",
+        "data-mapping",
+        "normalization",
+        "user-management"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:src/api/userApi.ts:encodeQuery",
+      "type": "function",
+      "name": "encodeQuery",
+      "filePath": "src/api/userApi.ts",
+      "lineRange": [
+        45,
+        57
+      ],
+      "summary": "Mã hóa object tham số của người dùng thành URLSearchParams, chỉ giữ các giá trị query hợp lệ.",
+      "tags": [
+        "utility",
+        "query-parameters",
+        "serialization",
+        "user-management"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "class:src/api/userApi.ts:ApiError",
+      "type": "class",
+      "name": "ApiError",
+      "filePath": "src/api/userApi.ts",
+      "lineRange": [
+        6,
+        16
+      ],
+      "summary": "Biểu diễn lỗi API của người dùng, lưu message, HTTP status và response body để tầng UI xử lý theo contract.",
+      "tags": [
+        "error-handling",
+        "api-error",
+        "user-management",
+        "serialization"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "file:src/api/vehicleApi.ts",
+      "type": "file",
+      "name": "vehicleApi.ts",
+      "filePath": "src/api/vehicleApi.ts",
+      "summary": "Triển khai service quản lý phương tiện và sức chứa đội xe với chế độ mock hoặc backend thật. Module hỗ trợ tìm kiếm phân trang, CRUD, đổi trạng thái, làm sạch payload, chuẩn hóa số liệu tải trọng và diễn giải lỗi API.",
+      "tags": [
+        "api-handler",
+        "service",
+        "vehicle-management",
+        "fleet-capacity",
+        "data-mapping"
+      ],
+      "complexity": "complex"
+    },
+    {
+      "id": "function:src/api/vehicleApi.ts:handleAxiosCall",
+      "type": "function",
+      "name": "handleAxiosCall",
+      "filePath": "src/api/vehicleApi.ts",
+      "lineRange": [
+        83,
+        96
+      ],
+      "summary": "Bao một Axios call của phương tiện, trả payload thành công và chuyển lỗi response hoặc network thành ApiError nhất quán.",
+      "tags": [
+        "utility",
+        "error-handling",
+        "api-client",
+        "vehicle-management"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:src/api/vehicleApi.ts:normalizeQueryValue",
+      "type": "function",
+      "name": "normalizeQueryValue",
+      "filePath": "src/api/vehicleApi.ts",
+      "lineRange": [
+        98,
+        108
+      ],
+      "summary": "Chuyển giá trị query của phương tiện thành chuỗi ổn định và bỏ qua giá trị không nên gửi lên backend.",
+      "tags": [
+        "utility",
+        "data-mapping",
+        "normalization",
+        "vehicle-management"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:src/api/vehicleApi.ts:encodeQuery",
+      "type": "function",
+      "name": "encodeQuery",
+      "filePath": "src/api/vehicleApi.ts",
+      "lineRange": [
+        110,
+        122
+      ],
+      "summary": "Mã hóa object tham số của phương tiện thành URLSearchParams, chỉ giữ các giá trị query hợp lệ.",
+      "tags": [
+        "utility",
+        "query-parameters",
+        "serialization",
+        "vehicle-management"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:src/api/vehicleApi.ts:normalizeVehicle",
+      "type": "function",
+      "name": "normalizeVehicle",
+      "filePath": "src/api/vehicleApi.ts",
+      "lineRange": [
+        130,
+        155
+      ],
+      "summary": "Chuẩn hóa payload phương tiện và chuyển các trường sức chứa hoặc trạng thái về kiểu dữ liệu frontend mong đợi.",
+      "tags": [
+        "utility",
+        "data-mapping",
+        "normalization",
+        "vehicle-management"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:src/api/vehicleApi.ts:normalizeVehiclePage",
+      "type": "function",
+      "name": "normalizeVehiclePage",
+      "filePath": "src/api/vehicleApi.ts",
+      "lineRange": [
+        157,
+        209
+      ],
+      "summary": "Hợp nhất response phương tiện dạng page, envelope hoặc mảng thành kết quả phân trang nhất quán.",
+      "tags": [
+        "utility",
+        "data-mapping",
+        "normalization",
+        "vehicle-management"
+      ],
+      "complexity": "moderate"
+    },
+    {
+      "id": "function:src/api/vehicleApi.ts:normalizeFleetCapacity",
+      "type": "function",
+      "name": "normalizeFleetCapacity",
+      "filePath": "src/api/vehicleApi.ts",
+      "lineRange": [
+        211,
+        240
+      ],
+      "summary": "Chuẩn hóa các tổng số lượng, tải trọng và thể tích của đội xe thành số an toàn cho dashboard.",
+      "tags": [
+        "utility",
+        "data-mapping",
+        "normalization",
+        "vehicle-management"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:src/api/vehicleApi.ts:getVehicleApiStatus",
+      "type": "function",
+      "name": "getVehicleApiStatus",
+      "filePath": "src/api/vehicleApi.ts",
+      "lineRange": [
+        242,
+        244
+      ],
+      "summary": "Lấy HTTP status từ ApiError của service phương tiện nếu có.",
+      "tags": [
+        "utility",
+        "error-handling",
+        "api-client",
+        "vehicle-management"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:src/api/vehicleApi.ts:getVehicleApiErrorMessage",
+      "type": "function",
+      "name": "getVehicleApiErrorMessage",
+      "filePath": "src/api/vehicleApi.ts",
+      "lineRange": [
+        246,
+        260
+      ],
+      "summary": "Trích thông điệp lỗi phương tiện từ response body hoặc fallback để UI hiển thị nhất quán.",
+      "tags": [
+        "utility",
+        "error-handling",
+        "api-client",
+        "vehicle-management"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "class:src/api/vehicleApi.ts:ApiError",
+      "type": "class",
+      "name": "ApiError",
+      "filePath": "src/api/vehicleApi.ts",
+      "lineRange": [
+        71,
+        81
+      ],
+      "summary": "Biểu diễn lỗi API của phương tiện, lưu message, HTTP status và response body để tầng UI xử lý theo contract.",
+      "tags": [
+        "error-handling",
+        "api-error",
+        "vehicle-management",
+        "serialization"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "file:src/App.tsx",
+      "type": "file",
+      "name": "App.tsx",
+      "filePath": "src/App.tsx",
+      "summary": "Định nghĩa cây React Router trung tâm cho toàn bộ frontend ELog, ánh xạ route đăng nhập, dashboard, master data, nhập đơn, trip draft, dispatch, monitoring, ngoại lệ và tài xế. Mỗi nhánh được bọc bằng authentication, role hoặc permission guard phù hợp và có trang 403/404 dự phòng.",
+      "tags": [
+        "entry-point",
+        "routing",
+        "react",
+        "authorization",
+        "component"
+      ],
+      "complexity": "complex",
+      "languageNotes": "Route tree dùng composition của nhiều guard để tách kiểm tra đăng nhập, role chuyên biệt và permission chi tiết."
+    },
+    {
+      "id": "function:src/App.tsx:App",
+      "type": "function",
+      "name": "App",
+      "filePath": "src/App.tsx",
+      "lineRange": [
+        44,
+        317
+      ],
+      "summary": "Khai báo toàn bộ route tree của ELog và bọc từng trang bằng authentication, role hoặc permission guard tương ứng.",
+      "tags": [
+        "component",
+        "react",
+        "routing",
+        "ui-workflow"
+      ],
+      "complexity": "complex"
+    },
+    {
+      "id": "file:src/components/AdminShell.tsx",
+      "type": "file",
+      "name": "AdminShell.tsx",
+      "filePath": "src/components/AdminShell.tsx",
+      "summary": "Cung cấp layout quản trị dùng chung với sidebar, header, hồ sơ người dùng và menu điều hướng sinh động theo permission. Component đồng thời xử lý logout, dọn session và điều hướng giữa các module nghiệp vụ.",
+      "tags": [
+        "component",
+        "layout",
+        "navigation",
+        "rbac",
+        "session-management"
+      ],
+      "complexity": "complex",
+      "languageNotes": "Menu được xây dựng khai báo rồi lọc theo kết quả usePermissions, giúp cùng một shell thích ứng với nhiều role."
+    },
+    {
+      "id": "function:src/components/AdminShell.tsx:AdminShell",
+      "type": "function",
+      "name": "AdminShell",
+      "filePath": "src/components/AdminShell.tsx",
+      "lineRange": [
+        50,
+        340
+      ],
+      "summary": "Render layout quản trị, tạo menu theo permission và điều phối navigation, profile cùng logout cho người dùng hiện tại.",
+      "tags": [
+        "component",
+        "react",
+        "admin-layout",
+        "ui-workflow"
+      ],
+      "complexity": "complex"
+    },
+    {
+      "id": "file:src/components/auth/PermissionGuard.tsx",
+      "type": "file",
+      "name": "PermissionGuard.tsx",
+      "filePath": "src/components/auth/PermissionGuard.tsx",
+      "summary": "Guard hiển thị có điều kiện cho React children dựa trên một permission, tập anyOf hoặc tập allOf. Khi không thỏa quyền, component trả fallback do caller cung cấp.",
+      "tags": [
+        "component",
+        "authorization",
+        "permission-guard",
+        "rbac"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:src/components/auth/PermissionGuard.tsx:PermissionGuard",
+      "type": "function",
+      "name": "PermissionGuard",
+      "filePath": "src/components/auth/PermissionGuard.tsx",
+      "lineRange": [
+        12,
+        31
+      ],
+      "summary": "Đánh giá permission đơn, anyOf hoặc allOf và chỉ render children khi điều kiện quyền được đáp ứng.",
+      "tags": [
+        "component",
+        "react",
+        "authorization",
+        "ui-workflow"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "file:src/components/auth/ProtectedPermissionRoute.tsx",
+      "type": "file",
+      "name": "ProtectedPermissionRoute.tsx",
+      "filePath": "src/components/auth/ProtectedPermissionRoute.tsx",
+      "summary": "Route guard đọc trạng thái đăng nhập và kiểm tra permission đơn, anyOf hoặc allOf trước khi render nội dung được bảo vệ. Người chưa đăng nhập được chuyển tới login, còn người thiếu quyền được chuyển tới trang forbidden.",
+      "tags": [
+        "component",
+        "route-guard",
+        "authorization",
+        "rbac",
+        "navigation"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:src/components/auth/ProtectedPermissionRoute.tsx:ProtectedPermissionRoute",
+      "type": "function",
+      "name": "ProtectedPermissionRoute",
+      "filePath": "src/components/auth/ProtectedPermissionRoute.tsx",
+      "lineRange": [
+        12,
+        34
+      ],
+      "summary": "Bảo vệ route bằng token và permission, chuyển hướng lần lượt tới login hoặc forbidden khi kiểm tra thất bại.",
+      "tags": [
+        "component",
+        "react",
+        "authorization",
+        "ui-workflow"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "file:src/components/manifest/ByStopManifestView.tsx",
+      "type": "file",
+      "name": "ByStopManifestView.tsx",
+      "filePath": "src/components/manifest/ByStopManifestView.tsx",
+      "summary": "Hiển thị loading manifest theo từng điểm dừng, gắn nhãn vị trí đầu hoặc cuối tuyến và sắp xếp item theo thứ tự LIFO. Component hỗ trợ loading state, thông tin cửa hàng và các số liệu khối lượng hoặc thể tích.",
+      "tags": [
+        "component",
+        "loading-manifest",
+        "lifo",
+        "data-display",
+        "responsive-ui"
+      ],
+      "complexity": "moderate"
+    },
+    {
+      "id": "function:src/components/manifest/ByStopManifestView.tsx:ByStopManifestView",
+      "type": "function",
+      "name": "ByStopManifestView",
+      "filePath": "src/components/manifest/ByStopManifestView.tsx",
+      "lineRange": [
+        68,
+        132
+      ],
+      "summary": "Render manifest theo từng stop, gắn nhãn vị trí tuyến và sắp xếp item theo trình tự LIFO.",
+      "tags": [
+        "component",
+        "react",
+        "loading-manifest",
+        "ui-workflow"
+      ],
+      "complexity": "moderate"
+    },
+    {
+      "id": "file:src/components/manifest/FlatManifestView.tsx",
+      "type": "file",
+      "name": "FlatManifestView.tsx",
+      "filePath": "src/components/manifest/FlatManifestView.tsx",
+      "summary": "Hiển thị manifest dạng bảng phẳng, sắp xếp item theo LIFO sequence và tính các tổng theo nhóm dữ liệu. Component định dạng số, rút gọn text dài và trình bày loading state cho bảng chi tiết.",
+      "tags": [
+        "component",
+        "loading-manifest",
+        "lifo",
+        "data-table",
+        "aggregation"
+      ],
+      "complexity": "moderate"
+    },
+    {
+      "id": "function:src/components/manifest/FlatManifestView.tsx:clipText",
+      "type": "function",
+      "name": "clipText",
+      "filePath": "src/components/manifest/FlatManifestView.tsx",
+      "lineRange": [
+        39,
+        50
+      ],
+      "summary": "Rút gọn text vượt giới hạn hiển thị và giữ giá trị ngắn nguyên vẹn cho ô bảng manifest.",
+      "tags": [
+        "utility",
+        "loading-manifest",
+        "presentation",
+        "component-helper"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:src/components/manifest/FlatManifestView.tsx:FlatManifestView",
+      "type": "function",
+      "name": "FlatManifestView",
+      "filePath": "src/components/manifest/FlatManifestView.tsx",
+      "lineRange": [
+        52,
+        204
+      ],
+      "summary": "Render bảng item phẳng đã sắp xếp theo LIFO và tổng hợp các chỉ số phục vụ kiểm tra chất tải.",
+      "tags": [
+        "component",
+        "react",
+        "loading-manifest",
+        "ui-workflow"
+      ],
+      "complexity": "moderate"
+    },
+    {
+      "id": "file:src/components/manifest/ManifestSummary.tsx",
+      "type": "file",
+      "name": "ManifestSummary.tsx",
+      "filePath": "src/components/manifest/ManifestSummary.tsx",
+      "summary": "Tóm tắt loading manifest bằng các chỉ số tổng khối lượng, thể tích và mức sử dụng sức chứa. Component phát cảnh báo theo ngưỡng utilization để người điều phối nhận biết tải thấp hoặc vượt giới hạn.",
+      "tags": [
+        "component",
+        "loading-manifest",
+        "capacity",
+        "summary",
+        "validation"
+      ],
+      "complexity": "moderate"
+    },
+    {
+      "id": "function:src/components/manifest/ManifestSummary.tsx:getUtilizationAlert",
+      "type": "function",
+      "name": "getUtilizationAlert",
+      "filePath": "src/components/manifest/ManifestSummary.tsx",
+      "lineRange": [
+        15,
+        46
+      ],
+      "summary": "Phân loại utilization của manifest thành cảnh báo phù hợp khi tải quá thấp, gần ngưỡng hoặc vượt sức chứa.",
+      "tags": [
+        "utility",
+        "loading-manifest",
+        "presentation",
+        "component-helper"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:src/components/manifest/ManifestSummary.tsx:ManifestSummary",
+      "type": "function",
+      "name": "ManifestSummary",
+      "filePath": "src/components/manifest/ManifestSummary.tsx",
+      "lineRange": [
+        48,
+        102
+      ],
+      "summary": "Render các thẻ tổng quan tải trọng và cảnh báo utilization của loading manifest.",
+      "tags": [
+        "component",
+        "react",
+        "loading-manifest",
+        "ui-workflow"
+      ],
+      "complexity": "moderate"
+    },
+    {
+      "id": "file:src/components/MapSelector.tsx",
+      "type": "file",
+      "name": "MapSelector.tsx",
+      "filePath": "src/components/MapSelector.tsx",
+      "summary": "Component Leaflet cho phép chọn tọa độ bằng kéo marker, click bản đồ hoặc tìm kiếm địa chỉ, rồi đồng bộ kết quả về form cha. Component quản lý vòng đời map, nhiều base layer, marker tùy biến và danh sách kết quả geocoding.",
+      "tags": [
+        "component",
+        "leaflet",
+        "map",
+        "geocoding",
+        "form-control"
+      ],
+      "complexity": "complex",
+      "languageNotes": "Leaflet được điều khiển qua ref và effect; cleanup hủy map instance để tránh đăng ký event lặp khi component unmount."
+    },
+    {
+      "id": "function:src/components/MapSelector.tsx:MapSelector",
+      "type": "function",
+      "name": "MapSelector",
+      "filePath": "src/components/MapSelector.tsx",
+      "lineRange": [
+        20,
+        264
+      ],
+      "summary": "Quản lý Leaflet map, marker kéo thả, click chọn điểm và tìm kiếm geocoding để phát tọa độ mới về form cha.",
+      "tags": [
+        "component",
+        "react",
+        "map",
+        "ui-workflow"
+      ],
+      "complexity": "complex"
+    },
+    {
+      "id": "file:src/components/ProtectedRoute.tsx",
+      "type": "file",
+      "name": "ProtectedRoute.tsx",
+      "filePath": "src/components/ProtectedRoute.tsx",
+      "summary": "Authentication guard tối giản, cho phép render children khi localStorage có access token và chuyển người chưa đăng nhập về trang login.",
+      "tags": [
+        "component",
+        "route-guard",
+        "authentication",
+        "navigation"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:src/components/ProtectedRoute.tsx:ProtectedRoute",
+      "type": "function",
+      "name": "ProtectedRoute",
+      "filePath": "src/components/ProtectedRoute.tsx",
+      "lineRange": [
+        8,
+        17
+      ],
+      "summary": "Cho phép truy cập children khi có access token và chuyển người chưa xác thực về login.",
+      "tags": [
+        "component",
+        "react",
+        "authentication",
+        "ui-workflow"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "file:src/components/PublicRoute.tsx",
+      "type": "file",
+      "name": "PublicRoute.tsx",
+      "filePath": "src/components/PublicRoute.tsx",
+      "summary": "Public route guard dành cho màn hình khách, render children khi chưa có token và chuyển người đã đăng nhập tới dashboard.",
+      "tags": [
+        "component",
+        "route-guard",
+        "authentication",
+        "navigation"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:src/components/PublicRoute.tsx:PublicRoute",
+      "type": "function",
+      "name": "PublicRoute",
+      "filePath": "src/components/PublicRoute.tsx",
+      "lineRange": [
+        8,
+        17
+      ],
+      "summary": "Hiển thị route công khai cho khách và chuyển người đã có token tới dashboard.",
+      "tags": [
+        "component",
+        "react",
+        "authentication",
+        "ui-workflow"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "file:src/components/TripRouteMap.tsx",
+      "type": "file",
+      "name": "TripRouteMap.tsx",
+      "filePath": "src/components/TripRouteMap.tsx",
+      "summary": "Vẽ tuyến chuyến đi trên Leaflet từ các stop có tọa độ hợp lệ, gồm polyline, marker đánh số, popup ETA và trạng thái. Component tự fit bounds, cập nhật kích thước map và dọn tài nguyên khi dữ liệu thay đổi hoặc unmount.",
+      "tags": [
+        "component",
+        "leaflet",
+        "trip-monitoring",
+        "map",
+        "data-visualization"
+      ],
+      "complexity": "moderate",
+      "languageNotes": "Dữ liệu stop được lọc và sắp xếp trước khi tạo layer Leaflet; effect cleanup ngăn map instance cũ giữ DOM và listener."
+    },
+    {
+      "id": "function:src/components/TripRouteMap.tsx:makeMarkerIcon",
+      "type": "function",
+      "name": "makeMarkerIcon",
+      "filePath": "src/components/TripRouteMap.tsx",
+      "lineRange": [
+        26,
+        51
+      ],
+      "summary": "Tạo Leaflet div icon có màu và số thứ tự để phân biệt từng điểm dừng trên tuyến.",
+      "tags": [
+        "utility",
+        "trip-monitoring",
+        "presentation",
+        "component-helper"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:src/components/TripRouteMap.tsx:TripRouteMap",
+      "type": "function",
+      "name": "TripRouteMap",
+      "filePath": "src/components/TripRouteMap.tsx",
+      "lineRange": [
+        63,
+        209
+      ],
+      "summary": "Lọc stop hợp lệ, vẽ polyline và marker có popup rồi tự căn viewport cho toàn bộ tuyến chuyến đi.",
+      "tags": [
+        "component",
+        "react",
+        "trip-monitoring",
+        "ui-workflow"
+      ],
+      "complexity": "moderate"
+    },
+    {
+      "id": "file:src/components/UserFormModal.tsx",
+      "type": "file",
+      "name": "UserFormModal.tsx",
+      "filePath": "src/components/UserFormModal.tsx",
+      "summary": "Modal Ant Design dùng chung cho tạo và chỉnh sửa người dùng, quản lý profile, role, validation và field error trả về từ API. Component tạo payload riêng theo mode, đồng bộ form với user hiện tại và khóa submit trong lúc xử lý.",
+      "tags": [
+        "component",
+        "form",
+        "user-management",
+        "validation",
+        "rbac"
+      ],
+      "complexity": "complex"
+    },
+    {
+      "id": "function:src/components/UserFormModal.tsx:UserFormModal",
+      "type": "function",
+      "name": "UserFormModal",
+      "filePath": "src/components/UserFormModal.tsx",
+      "lineRange": [
+        23,
+        224
+      ],
+      "summary": "Điều phối form tạo hoặc sửa người dùng, đồng bộ dữ liệu, validation, role và field error từ API trước khi submit.",
+      "tags": [
+        "component",
+        "react",
+        "user-management",
+        "ui-workflow"
+      ],
+      "complexity": "complex"
+    },
+    {
+      "id": "file:src/config.ts",
+      "type": "file",
+      "name": "config.ts",
+      "filePath": "src/config.ts",
+      "summary": "Tập trung runtime config cho API, lựa chọn chế độ mock và danh sách role người dùng được frontend hỗ trợ. Các giá trị môi trường được chuyển thành constant có type để API service và form dùng thống nhất.",
+      "tags": [
+        "configuration",
+        "runtime-config",
+        "environment",
+        "roles",
+        "type-definition"
+      ],
+      "complexity": "simple"
+    }
+  ],
+  "edges": [
+    {
+      "source": "file:src/api/loadingManifestApi.ts",
+      "target": "file:src/api/axiosInstance.ts",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:src/api/mockStoreApi.ts",
+      "target": "file:src/api/storeApi.ts",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:src/api/mockUserApi.ts",
+      "target": "file:src/api/userApi.ts",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:src/api/mockUserApi.ts",
+      "target": "file:src/utils/userMapper.ts",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:src/api/monitoringApi.ts",
+      "target": "file:src/api/axiosInstance.ts",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:src/api/monitoringApi.ts",
+      "target": "file:src/types/monitoring.ts",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:src/api/productApi.ts",
+      "target": "file:src/api/axiosInstance.ts",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:src/api/productApi.ts",
+      "target": "file:src/config.ts",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:src/api/productApi.ts",
+      "target": "file:src/mocks/productService.ts",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:src/api/productApi.ts",
+      "target": "file:src/types/product.ts",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:src/api/productApi.ts",
+      "target": "file:src/utils/productMapper.ts",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:src/api/roleApi.ts",
+      "target": "file:src/api/axiosInstance.ts",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:src/api/routeApi.ts",
+      "target": "file:src/api/axiosInstance.ts",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:src/api/routeApi.ts",
+      "target": "file:src/config.ts",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:src/api/routeApi.ts",
+      "target": "file:src/mocks/routeService.ts",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:src/api/routeApi.ts",
+      "target": "file:src/types/route.ts",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:src/api/routeApi.ts",
+      "target": "file:src/utils/routeMapper.ts",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:src/api/storeApi.ts",
+      "target": "file:src/api/axiosInstance.ts",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:src/api/storeApi.ts",
+      "target": "file:src/api/mockStoreApi.ts",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:src/api/storeApi.ts",
+      "target": "file:src/config.ts",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:src/api/tripApi.ts",
+      "target": "file:src/api/axiosInstance.ts",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:src/api/tripApi.ts",
+      "target": "file:src/types/trip.ts",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:src/api/tripDraftApi.ts",
+      "target": "file:src/api/axiosInstance.ts",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:src/api/tripDraftApi.ts",
+      "target": "file:src/types/tripDraft.ts",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:src/api/userApi.ts",
+      "target": "file:src/api/axiosInstance.ts",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:src/api/userApi.ts",
+      "target": "file:src/api/mockUserApi.ts",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:src/api/userApi.ts",
+      "target": "file:src/config.ts",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:src/api/userApi.ts",
+      "target": "file:src/utils/userMapper.ts",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:src/api/vehicleApi.ts",
+      "target": "file:src/api/axiosInstance.ts",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:src/api/vehicleApi.ts",
+      "target": "file:src/config.ts",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:src/api/vehicleApi.ts",
+      "target": "file:src/mocks/mockVehicles.ts",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:src/App.tsx",
+      "target": "file:src/components/ProtectedRoute.tsx",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:src/App.tsx",
+      "target": "file:src/components/PublicRoute.tsx",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:src/App.tsx",
+      "target": "file:src/components/auth/ProtectedPermissionRoute.tsx",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:src/App.tsx",
+      "target": "file:src/constants/permissions.ts",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:src/App.tsx",
+      "target": "file:src/guards/DriverGuard.tsx",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:src/App.tsx",
+      "target": "file:src/guards/ExceptionGuard.tsx",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:src/App.tsx",
+      "target": "file:src/guards/MonitoringGuard.tsx",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:src/App.tsx",
+      "target": "file:src/pages/DashboardPage.tsx",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:src/App.tsx",
+      "target": "file:src/pages/ForbiddenPage.tsx",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:src/App.tsx",
+      "target": "file:src/pages/LifoManifestPage.tsx",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:src/App.tsx",
+      "target": "file:src/pages/NotFoundPage.tsx",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:src/App.tsx",
+      "target": "file:src/pages/RoleManagementPage.tsx",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:src/App.tsx",
+      "target": "file:src/pages/StoresPage.tsx",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:src/App.tsx",
+      "target": "file:src/pages/TripDraftReviewPage.tsx",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:src/App.tsx",
+      "target": "file:src/pages/UsersPage.tsx",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:src/App.tsx",
+      "target": "file:src/pages/VehiclesPage.tsx",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:src/App.tsx",
+      "target": "file:src/pages/admin/products/ProductDetailPage.tsx",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:src/App.tsx",
+      "target": "file:src/pages/admin/products/ProductFormPage.tsx",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:src/App.tsx",
+      "target": "file:src/pages/admin/products/ProductListPage.tsx",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:src/App.tsx",
+      "target": "file:src/pages/admin/routes/RouteCreatePage.tsx",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:src/App.tsx",
+      "target": "file:src/pages/admin/routes/RouteDetailPage.tsx",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:src/App.tsx",
+      "target": "file:src/pages/admin/routes/RouteEditPage.tsx",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:src/App.tsx",
+      "target": "file:src/pages/admin/routes/RouteListPage.tsx",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:src/App.tsx",
+      "target": "file:src/pages/dispatcher/exceptions/ExceptionManagementPage.tsx",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:src/App.tsx",
+      "target": "file:src/pages/dispatcher/import/ImportBatchDetailPage.tsx",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:src/App.tsx",
+      "target": "file:src/pages/dispatcher/import/OrderImportPage.tsx",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:src/App.tsx",
+      "target": "file:src/pages/dispatcher/monitoring/MonitoringDashboardPage.tsx",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:src/App.tsx",
+      "target": "file:src/pages/dispatcher/trip-drafts/CapacityValidationPage.tsx",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:src/App.tsx",
+      "target": "file:src/pages/dispatcher/trip-drafts/TripDraftDetailPage.tsx",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:src/App.tsx",
+      "target": "file:src/pages/dispatcher/trip-drafts/TripDraftListPage.tsx",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:src/App.tsx",
+      "target": "file:src/pages/dispatcher/trip-drafts/VehicleAssignmentPage.tsx",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:src/App.tsx",
+      "target": "file:src/pages/dispatcher/trips/DispatchPage.tsx",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:src/App.tsx",
+      "target": "file:src/pages/driver/DriverMyTripsPage.tsx",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:src/App.tsx",
+      "target": "file:src/pages/login/LoginPage.tsx",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:src/components/AdminShell.tsx",
+      "target": "file:src/api/axiosInstance.ts",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:src/components/AdminShell.tsx",
+      "target": "file:src/constants/permissions.ts",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:src/components/AdminShell.tsx",
+      "target": "file:src/hooks/usePermissions.ts",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:src/components/auth/PermissionGuard.tsx",
+      "target": "file:src/hooks/usePermissions.ts",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:src/components/auth/ProtectedPermissionRoute.tsx",
+      "target": "file:src/utils/permissionChecker.ts",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:src/components/manifest/ByStopManifestView.tsx",
+      "target": "file:src/api/loadingManifestApi.ts",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:src/components/manifest/FlatManifestView.tsx",
+      "target": "file:src/api/loadingManifestApi.ts",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:src/components/manifest/ManifestSummary.tsx",
+      "target": "file:src/api/loadingManifestApi.ts",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:src/components/TripRouteMap.tsx",
+      "target": "file:src/types/monitoring.ts",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:src/components/UserFormModal.tsx",
+      "target": "file:src/config.ts",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:src/components/UserFormModal.tsx",
+      "target": "file:src/utils/userMapper.ts",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:src/api/loadingManifestApi.ts",
+      "target": "function:src/api/loadingManifestApi.ts:toNumber",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:src/api/loadingManifestApi.ts",
+      "target": "function:src/api/loadingManifestApi.ts:normalizeLine",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:src/api/loadingManifestApi.ts",
+      "target": "function:src/api/loadingManifestApi.ts:normalizeStop",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:src/api/loadingManifestApi.ts",
+      "target": "function:src/api/loadingManifestApi.ts:normalizeManifest",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:src/api/loadingManifestApi.ts",
+      "target": "function:src/api/loadingManifestApi.ts:getLoadingManifest",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:src/api/loadingManifestApi.ts",
+      "target": "function:src/api/loadingManifestApi.ts:getLoadingManifest",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:src/api/loadingManifestApi.ts",
+      "target": "function:src/api/loadingManifestApi.ts:generateLoadingManifest",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:src/api/loadingManifestApi.ts",
+      "target": "function:src/api/loadingManifestApi.ts:generateLoadingManifest",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:src/api/loadingManifestApi.ts",
+      "target": "function:src/api/loadingManifestApi.ts:getManifestFlatItems",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:src/api/loadingManifestApi.ts",
+      "target": "function:src/api/loadingManifestApi.ts:getManifestFlatItems",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:src/api/loadingManifestApi.ts",
+      "target": "function:src/api/loadingManifestApi.ts:getManifestStops",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:src/api/loadingManifestApi.ts",
+      "target": "function:src/api/loadingManifestApi.ts:getManifestStops",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:src/api/loadingManifestApi.ts",
+      "target": "function:src/api/loadingManifestApi.ts:regenerateLoadingManifest",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:src/api/loadingManifestApi.ts",
+      "target": "function:src/api/loadingManifestApi.ts:regenerateLoadingManifest",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:src/api/loadingManifestApi.ts",
+      "target": "function:src/api/loadingManifestApi.ts:confirmLoadingManifest",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:src/api/loadingManifestApi.ts",
+      "target": "function:src/api/loadingManifestApi.ts:confirmLoadingManifest",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:src/api/loadingManifestApi.ts",
+      "target": "function:src/api/loadingManifestApi.ts:getLoadingManifestApiErrorMessage",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:src/api/loadingManifestApi.ts",
+      "target": "function:src/api/loadingManifestApi.ts:getLoadingManifestApiErrorMessage",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:src/api/loadingManifestApi.ts",
+      "target": "function:src/api/loadingManifestApi.ts:getLoadingManifestApiStatus",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:src/api/loadingManifestApi.ts",
+      "target": "function:src/api/loadingManifestApi.ts:getLoadingManifestApiStatus",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:src/api/monitoringApi.ts",
+      "target": "function:src/api/monitoringApi.ts:getActiveTrips",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:src/api/monitoringApi.ts",
+      "target": "function:src/api/monitoringApi.ts:getActiveTrips",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:src/api/monitoringApi.ts",
+      "target": "function:src/api/monitoringApi.ts:getTripProgress",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:src/api/monitoringApi.ts",
+      "target": "function:src/api/monitoringApi.ts:getTripProgress",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:src/api/monitoringApi.ts",
+      "target": "function:src/api/monitoringApi.ts:startTrip",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:src/api/monitoringApi.ts",
+      "target": "function:src/api/monitoringApi.ts:startTrip",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:src/api/monitoringApi.ts",
+      "target": "function:src/api/monitoringApi.ts:arriveAtStop",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:src/api/monitoringApi.ts",
+      "target": "function:src/api/monitoringApi.ts:arriveAtStop",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:src/api/monitoringApi.ts",
+      "target": "function:src/api/monitoringApi.ts:completeStop",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:src/api/monitoringApi.ts",
+      "target": "function:src/api/monitoringApi.ts:completeStop",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:src/api/productApi.ts",
+      "target": "function:src/api/productApi.ts:handleAxiosCall",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:src/api/productApi.ts",
+      "target": "function:src/api/productApi.ts:normalizeQueryValue",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:src/api/productApi.ts",
+      "target": "function:src/api/productApi.ts:encodeQuery",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:src/api/productApi.ts",
+      "target": "class:src/api/productApi.ts:ApiError",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:src/api/productApi.ts",
+      "target": "class:src/api/productApi.ts:ApiError",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:src/api/roleApi.ts",
+      "target": "function:src/api/roleApi.ts:getRoles",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:src/api/roleApi.ts",
+      "target": "function:src/api/roleApi.ts:getRoles",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:src/api/roleApi.ts",
+      "target": "function:src/api/roleApi.ts:getRoleById",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:src/api/roleApi.ts",
+      "target": "function:src/api/roleApi.ts:getRoleById",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:src/api/roleApi.ts",
+      "target": "function:src/api/roleApi.ts:getPermissions",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:src/api/roleApi.ts",
+      "target": "function:src/api/roleApi.ts:getPermissions",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:src/api/roleApi.ts",
+      "target": "function:src/api/roleApi.ts:updateRolePermissions",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:src/api/roleApi.ts",
+      "target": "function:src/api/roleApi.ts:updateRolePermissions",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:src/api/routeApi.ts",
+      "target": "function:src/api/routeApi.ts:handleAxiosCall",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:src/api/routeApi.ts",
+      "target": "class:src/api/routeApi.ts:ApiError",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:src/api/routeApi.ts",
+      "target": "class:src/api/routeApi.ts:ApiError",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:src/api/storeApi.ts",
+      "target": "function:src/api/storeApi.ts:handleAxiosCall",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:src/api/storeApi.ts",
+      "target": "function:src/api/storeApi.ts:normalizeQueryValue",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:src/api/storeApi.ts",
+      "target": "function:src/api/storeApi.ts:encodeQuery",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:src/api/storeApi.ts",
+      "target": "function:src/api/storeApi.ts:normalizeStore",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:src/api/storeApi.ts",
+      "target": "function:src/api/storeApi.ts:normalizeStorePage",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:src/api/storeApi.ts",
+      "target": "function:src/api/storeApi.ts:getStoreApiStatus",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:src/api/storeApi.ts",
+      "target": "function:src/api/storeApi.ts:getStoreApiStatus",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:src/api/storeApi.ts",
+      "target": "function:src/api/storeApi.ts:getStoreApiErrorCode",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:src/api/storeApi.ts",
+      "target": "function:src/api/storeApi.ts:getStoreApiErrorCode",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:src/api/storeApi.ts",
+      "target": "function:src/api/storeApi.ts:getStoreApiErrorMessage",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:src/api/storeApi.ts",
+      "target": "function:src/api/storeApi.ts:getStoreApiErrorMessage",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:src/api/storeApi.ts",
+      "target": "class:src/api/storeApi.ts:ApiError",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:src/api/storeApi.ts",
+      "target": "class:src/api/storeApi.ts:ApiError",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:src/api/tripApi.ts",
+      "target": "function:src/api/tripApi.ts:getEligibleVehicles",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:src/api/tripApi.ts",
+      "target": "function:src/api/tripApi.ts:getEligibleVehicles",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:src/api/tripApi.ts",
+      "target": "function:src/api/tripApi.ts:getAvailableDrivers",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:src/api/tripApi.ts",
+      "target": "function:src/api/tripApi.ts:getAvailableDrivers",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:src/api/tripApi.ts",
+      "target": "function:src/api/tripApi.ts:getFleetCapacityCheck",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:src/api/tripApi.ts",
+      "target": "function:src/api/tripApi.ts:getFleetCapacityCheck",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:src/api/tripApi.ts",
+      "target": "function:src/api/tripApi.ts:assignTrip",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:src/api/tripApi.ts",
+      "target": "function:src/api/tripApi.ts:assignTrip",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:src/api/tripApi.ts",
+      "target": "function:src/api/tripApi.ts:assignSplitTrips",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:src/api/tripApi.ts",
+      "target": "function:src/api/tripApi.ts:assignSplitTrips",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:src/api/tripApi.ts",
+      "target": "function:src/api/tripApi.ts:getTripsByTripDraftId",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:src/api/tripApi.ts",
+      "target": "function:src/api/tripApi.ts:getTripsByTripDraftId",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:src/api/tripApi.ts",
+      "target": "function:src/api/tripApi.ts:getTripById",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:src/api/tripApi.ts",
+      "target": "function:src/api/tripApi.ts:getTripById",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:src/api/tripApi.ts",
+      "target": "function:src/api/tripApi.ts:dispatchTrip",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:src/api/tripApi.ts",
+      "target": "function:src/api/tripApi.ts:dispatchTrip",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:src/api/tripApi.ts",
+      "target": "function:src/api/tripApi.ts:openHandoverSlip",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:src/api/tripApi.ts",
+      "target": "function:src/api/tripApi.ts:openHandoverSlip",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:src/api/tripApi.ts",
+      "target": "function:src/api/tripApi.ts:updateTripAssignment",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:src/api/tripApi.ts",
+      "target": "function:src/api/tripApi.ts:updateTripAssignment",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:src/api/tripApi.ts",
+      "target": "function:src/api/tripApi.ts:getMyTrips",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:src/api/tripApi.ts",
+      "target": "function:src/api/tripApi.ts:getMyTrips",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:src/api/tripDraftApi.ts",
+      "target": "function:src/api/tripDraftApi.ts:unwrapApiResponse",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:src/api/tripDraftApi.ts",
+      "target": "function:src/api/tripDraftApi.ts:normalizeStop",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:src/api/tripDraftApi.ts",
+      "target": "function:src/api/tripDraftApi.ts:normalizeTripDraft",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:src/api/tripDraftApi.ts",
+      "target": "function:src/api/tripDraftApi.ts:normalizeTripDraftListItem",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:src/api/tripDraftApi.ts",
+      "target": "function:src/api/tripDraftApi.ts:handleAxiosCall",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:src/api/tripDraftApi.ts",
+      "target": "function:src/api/tripDraftApi.ts:getTripDraftApiStatus",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:src/api/tripDraftApi.ts",
+      "target": "function:src/api/tripDraftApi.ts:getTripDraftApiStatus",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:src/api/tripDraftApi.ts",
+      "target": "function:src/api/tripDraftApi.ts:getApiErrorMessage",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:src/api/tripDraftApi.ts",
+      "target": "function:src/api/tripDraftApi.ts:getApiErrorMessage",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:src/api/tripDraftApi.ts",
+      "target": "function:src/api/tripDraftApi.ts:getTripDraft",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:src/api/tripDraftApi.ts",
+      "target": "function:src/api/tripDraftApi.ts:getTripDraft",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:src/api/tripDraftApi.ts",
+      "target": "function:src/api/tripDraftApi.ts:getTripDrafts",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:src/api/tripDraftApi.ts",
+      "target": "function:src/api/tripDraftApi.ts:getTripDrafts",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:src/api/tripDraftApi.ts",
+      "target": "function:src/api/tripDraftApi.ts:updateStopStatus",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:src/api/tripDraftApi.ts",
+      "target": "function:src/api/tripDraftApi.ts:updateStopStatus",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:src/api/tripDraftApi.ts",
+      "target": "function:src/api/tripDraftApi.ts:recalculateEta",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:src/api/tripDraftApi.ts",
+      "target": "function:src/api/tripDraftApi.ts:recalculateEta",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:src/api/tripDraftApi.ts",
+      "target": "function:src/api/tripDraftApi.ts:confirmTripDraft",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:src/api/tripDraftApi.ts",
+      "target": "function:src/api/tripDraftApi.ts:confirmTripDraft",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:src/api/tripDraftApi.ts",
+      "target": "function:src/api/tripDraftApi.ts:getStopOrderItems",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:src/api/tripDraftApi.ts",
+      "target": "function:src/api/tripDraftApi.ts:getStopOrderItems",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:src/api/tripDraftApi.ts",
+      "target": "class:src/api/tripDraftApi.ts:ApiError",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:src/api/tripDraftApi.ts",
+      "target": "class:src/api/tripDraftApi.ts:ApiError",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:src/api/userApi.ts",
+      "target": "function:src/api/userApi.ts:handleAxiosCall",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:src/api/userApi.ts",
+      "target": "function:src/api/userApi.ts:normalizeQueryValue",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:src/api/userApi.ts",
+      "target": "function:src/api/userApi.ts:encodeQuery",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:src/api/userApi.ts",
+      "target": "class:src/api/userApi.ts:ApiError",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:src/api/userApi.ts",
+      "target": "class:src/api/userApi.ts:ApiError",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:src/api/vehicleApi.ts",
+      "target": "function:src/api/vehicleApi.ts:handleAxiosCall",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:src/api/vehicleApi.ts",
+      "target": "function:src/api/vehicleApi.ts:normalizeQueryValue",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:src/api/vehicleApi.ts",
+      "target": "function:src/api/vehicleApi.ts:encodeQuery",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:src/api/vehicleApi.ts",
+      "target": "function:src/api/vehicleApi.ts:normalizeVehicle",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:src/api/vehicleApi.ts",
+      "target": "function:src/api/vehicleApi.ts:normalizeVehiclePage",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:src/api/vehicleApi.ts",
+      "target": "function:src/api/vehicleApi.ts:normalizeFleetCapacity",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:src/api/vehicleApi.ts",
+      "target": "function:src/api/vehicleApi.ts:getVehicleApiStatus",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:src/api/vehicleApi.ts",
+      "target": "function:src/api/vehicleApi.ts:getVehicleApiStatus",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:src/api/vehicleApi.ts",
+      "target": "function:src/api/vehicleApi.ts:getVehicleApiErrorMessage",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:src/api/vehicleApi.ts",
+      "target": "function:src/api/vehicleApi.ts:getVehicleApiErrorMessage",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:src/api/vehicleApi.ts",
+      "target": "class:src/api/vehicleApi.ts:ApiError",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:src/api/vehicleApi.ts",
+      "target": "class:src/api/vehicleApi.ts:ApiError",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:src/App.tsx",
+      "target": "function:src/App.tsx:App",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:src/components/AdminShell.tsx",
+      "target": "function:src/components/AdminShell.tsx:AdminShell",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:src/components/auth/PermissionGuard.tsx",
+      "target": "function:src/components/auth/PermissionGuard.tsx:PermissionGuard",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:src/components/auth/ProtectedPermissionRoute.tsx",
+      "target": "function:src/components/auth/ProtectedPermissionRoute.tsx:ProtectedPermissionRoute",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:src/components/manifest/ByStopManifestView.tsx",
+      "target": "function:src/components/manifest/ByStopManifestView.tsx:ByStopManifestView",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:src/components/manifest/FlatManifestView.tsx",
+      "target": "function:src/components/manifest/FlatManifestView.tsx:clipText",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:src/components/manifest/FlatManifestView.tsx",
+      "target": "function:src/components/manifest/FlatManifestView.tsx:FlatManifestView",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:src/components/manifest/ManifestSummary.tsx",
+      "target": "function:src/components/manifest/ManifestSummary.tsx:getUtilizationAlert",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:src/components/manifest/ManifestSummary.tsx",
+      "target": "function:src/components/manifest/ManifestSummary.tsx:ManifestSummary",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:src/components/MapSelector.tsx",
+      "target": "function:src/components/MapSelector.tsx:MapSelector",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:src/components/MapSelector.tsx",
+      "target": "function:src/components/MapSelector.tsx:MapSelector",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:src/components/ProtectedRoute.tsx",
+      "target": "function:src/components/ProtectedRoute.tsx:ProtectedRoute",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:src/components/PublicRoute.tsx",
+      "target": "function:src/components/PublicRoute.tsx:PublicRoute",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:src/components/TripRouteMap.tsx",
+      "target": "function:src/components/TripRouteMap.tsx:makeMarkerIcon",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:src/components/TripRouteMap.tsx",
+      "target": "function:src/components/TripRouteMap.tsx:TripRouteMap",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:src/components/TripRouteMap.tsx",
+      "target": "function:src/components/TripRouteMap.tsx:TripRouteMap",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:src/components/UserFormModal.tsx",
+      "target": "function:src/components/UserFormModal.tsx:UserFormModal",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    }
+  ]
+}

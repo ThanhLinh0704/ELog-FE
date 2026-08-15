@@ -1,0 +1,25 @@
+import { readFileSync, writeFileSync } from "node:fs";
+import path from "node:path";
+
+const [projectRootArg, planArg, outputArg] = process.argv.slice(2);
+if (!projectRootArg || !planArg || !outputArg) {
+  process.stderr.write("Expected project root, batch plan, and output path\n");
+  process.exit(1);
+}
+
+const projectRoot = path.resolve(projectRootArg);
+const plan = JSON.parse(readFileSync(path.resolve(planArg), "utf8"));
+const batch = plan.batches?.[2];
+if (!batch || batch.index !== 3 || !Array.isArray(batch.files) || !batch.importData) {
+  process.stderr.write("batches[2] is not a valid batch 3 definition\n");
+  process.exit(1);
+}
+
+writeFileSync(path.resolve(outputArg), `${JSON.stringify({
+  projectRoot,
+  batchFiles: batch.files,
+  batchImportData: batch.importData,
+}, null, 2)}\n`, "utf8");
+
+const importEdges = Object.values(batch.importData).reduce((total, imports) => total + imports.length, 0);
+process.stdout.write(`${JSON.stringify({ index: batch.index, files: batch.files.length, importEdges })}\n`);

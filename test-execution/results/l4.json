@@ -1,0 +1,311 @@
+{
+  "rawCypressTotals": {
+    "pass": 39,
+    "fail": 3
+  },
+  "results": [
+    {
+      "id": "L4-WEB-AUTH-01",
+      "channel": "Web",
+      "status": "Pass",
+      "rawCypressStatus": "Pass"
+    },
+    {
+      "id": "L4-WEB-AUTH-02",
+      "channel": "Web",
+      "status": "Pass",
+      "rawCypressStatus": "Pass"
+    },
+    {
+      "id": "L4-WEB-AUTH-03",
+      "channel": "Web",
+      "status": "Pass",
+      "rawCypressStatus": "Pass"
+    },
+    {
+      "id": "L4-WEB-IMPORT-01",
+      "channel": "Web",
+      "status": "Pass",
+      "rawCypressStatus": "Pass"
+    },
+    {
+      "id": "L4-WEB-IMPORT-02",
+      "channel": "Web",
+      "status": "Pass",
+      "rawCypressStatus": "Pass"
+    },
+    {
+      "id": "L4-WEB-IMPORT-03",
+      "channel": "Web",
+      "status": "Pass",
+      "rawCypressStatus": "Pass"
+    },
+    {
+      "id": "L4-WEB-PLAN-01",
+      "channel": "Web",
+      "status": "Pass",
+      "rawCypressStatus": "Pass"
+    },
+    {
+      "id": "L4-WEB-PLAN-03",
+      "channel": "Web",
+      "status": "Pass",
+      "rawCypressStatus": "Pass"
+    },
+    {
+      "id": "L4-WEB-PLAN-04",
+      "channel": "Web",
+      "status": "Pass",
+      "rawCypressStatus": "Pass"
+    },
+    {
+      "id": "L4-WEB-PLAN-05",
+      "channel": "Web",
+      "status": "Pass",
+      "rawCypressStatus": "Pass"
+    },
+    {
+      "id": "L4-WEB-PLAN-06",
+      "channel": "Web",
+      "status": "Pass",
+      "rawCypressStatus": "Pass"
+    },
+    {
+      "id": "L4-WEB-PLAN-07",
+      "channel": "Web",
+      "status": "Pass",
+      "rawCypressStatus": "Pass"
+    },
+    {
+      "id": "L4-WEB-PLAN-08",
+      "channel": "Web",
+      "status": "Pass",
+      "rawCypressStatus": "Pass"
+    },
+    {
+      "id": "L4-WEB-PLAN-09",
+      "channel": "Web",
+      "status": "Pass",
+      "rawCypressStatus": "Pass"
+    },
+    {
+      "id": "L4-WEB-CAP-01",
+      "channel": "Web",
+      "status": "Pass",
+      "rawCypressStatus": "Pass"
+    },
+    {
+      "id": "L4-WEB-CAP-02",
+      "channel": "Web",
+      "status": "Pass",
+      "rawCypressStatus": "Pass"
+    },
+    {
+      "id": "L4-WEB-ASSIGN-01",
+      "channel": "Web",
+      "status": "Pass",
+      "rawCypressStatus": "Pass"
+    },
+    {
+      "id": "L4-WEB-ASSIGN-02",
+      "channel": "Web",
+      "status": "Fail",
+      "rawCypressStatus": "Fail",
+      "defectId": "ELOG-R5-L4-001"
+    },
+    {
+      "id": "L4-WEB-ASSIGN-03",
+      "channel": "Web",
+      "status": "Pass",
+      "rawCypressStatus": "Pass"
+    },
+    {
+      "id": "L4-WEB-MANIFEST-01",
+      "channel": "Web",
+      "status": "Pass",
+      "rawCypressStatus": "Pass"
+    },
+    {
+      "id": "L4-WEB-DISPATCH-01",
+      "channel": "Web",
+      "status": "Pass",
+      "rawCypressStatus": "Pass"
+    },
+    {
+      "id": "L4-WEB-DISPATCH-02",
+      "channel": "Web",
+      "status": "Pass",
+      "rawCypressStatus": "Pass"
+    },
+    {
+      "id": "L4-WEB-DISPATCH-03",
+      "channel": "Web",
+      "status": "Pass",
+      "rawCypressStatus": "Pass"
+    },
+    {
+      "id": "L4-WEB-MON-01",
+      "channel": "Web",
+      "status": "Pass",
+      "rawCypressStatus": "Pass"
+    },
+    {
+      "id": "L4-WEB-MON-02",
+      "channel": "Web",
+      "status": "Pass",
+      "rawCypressStatus": "Pass"
+    },
+    {
+      "id": "L4-WEB-MON-03",
+      "channel": "Web",
+      "status": "Pass",
+      "rawCypressStatus": "Pass"
+    },
+    {
+      "id": "L4-WEB-EXC-01",
+      "channel": "Web",
+      "status": "Pass",
+      "rawCypressStatus": "Pass"
+    },
+    {
+      "id": "L4-WEB-EXC-02",
+      "channel": "Web",
+      "status": "Pass",
+      "rawCypressStatus": "Pass"
+    },
+    {
+      "id": "L4-WEB-OUT-01",
+      "channel": "Web",
+      "status": "Pass",
+      "rawCypressStatus": "Pass"
+    },
+    {
+      "id": "L4-WEB-OUT-02",
+      "channel": "Web",
+      "status": "Pass",
+      "rawCypressStatus": "Pass"
+    },
+    {
+      "id": "L4-WEB-OUT-03",
+      "channel": "Web",
+      "status": "Pass",
+      "rawCypressStatus": "Pass"
+    },
+    {
+      "id": "L4-WEB-KPI-01",
+      "channel": "Web",
+      "status": "Pass",
+      "rawCypressStatus": "Pass"
+    },
+    {
+      "id": "L4-WEB-HIST-01",
+      "channel": "Web",
+      "status": "Fail",
+      "rawCypressStatus": "Fail",
+      "defectId": "ELOG-R5-L4-001"
+    },
+    {
+      "id": "L4-WEB-HIST-02",
+      "channel": "Web",
+      "status": "Fail",
+      "rawCypressStatus": "Fail",
+      "defectId": "ELOG-R5-L4-001"
+    },
+    {
+      "id": "L4-WEB-ADMIN-01",
+      "channel": "Web",
+      "status": "Pass",
+      "rawCypressStatus": "Pass"
+    },
+    {
+      "id": "L4-WEB-ADMIN-02",
+      "channel": "Web",
+      "status": "Pass",
+      "rawCypressStatus": "Pass"
+    },
+    {
+      "id": "L4-WEB-ADMIN-03",
+      "channel": "Web",
+      "status": "Pass",
+      "rawCypressStatus": "Pass"
+    },
+    {
+      "id": "L4-WEB-ADMIN-04",
+      "channel": "Web",
+      "status": "Pass",
+      "rawCypressStatus": "Pass"
+    },
+    {
+      "id": "L4-WEB-ADMIN-05",
+      "channel": "Web",
+      "status": "Pass",
+      "rawCypressStatus": "Pass"
+    },
+    {
+      "id": "L4-WEB-ADMIN-06",
+      "channel": "Web",
+      "status": "Pass",
+      "rawCypressStatus": "Pass"
+    },
+    {
+      "id": "L4-WEB-ADMIN-07",
+      "channel": "Web",
+      "status": "Pass",
+      "rawCypressStatus": "Pass"
+    },
+    {
+      "id": "L4-WEB-ADMIN-08",
+      "channel": "Web",
+      "status": "Pass",
+      "rawCypressStatus": "Pass"
+    },
+    {
+      "id": "L4-MOB-AUTH-01",
+      "channel": "Mobile",
+      "status": "Pass",
+      "rawCypressStatus": "Pass"
+    },
+    {
+      "id": "L4-MOB-TRIP-01",
+      "channel": "Mobile",
+      "status": "Pass",
+      "rawCypressStatus": "Pass"
+    },
+    {
+      "id": "L4-MOB-TRIP-02",
+      "channel": "Mobile",
+      "status": "Pass",
+      "rawCypressStatus": "Pass"
+    },
+    {
+      "id": "L4-MOB-TRIP-03",
+      "channel": "Mobile",
+      "status": "Pass",
+      "rawCypressStatus": "Pass"
+    },
+    {
+      "id": "L4-MOB-TRIP-04",
+      "channel": "Mobile",
+      "status": "Pass",
+      "rawCypressStatus": "Pass"
+    },
+    {
+      "id": "L4-MOB-TRIP-05",
+      "channel": "Mobile",
+      "status": "Pass",
+      "rawCypressStatus": "Pass"
+    },
+    {
+      "id": "L4-MOB-EXC-01",
+      "channel": "Mobile",
+      "status": "Pass",
+      "rawCypressStatus": "Pass"
+    },
+    {
+      "id": "L4-MOB-PROFILE-01",
+      "channel": "Mobile",
+      "status": "Pass",
+      "rawCypressStatus": "Pass"
+    }
+  ]
+}

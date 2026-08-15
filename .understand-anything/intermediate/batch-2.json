@@ -1,0 +1,710 @@
+{
+  "nodes": [
+    {
+      "id": "file:index.html",
+      "type": "file",
+      "name": "index.html",
+      "filePath": "index.html",
+      "summary": "HTML shell tối giản của Vite, khai báo metadata responsive, favicon và phần tử root để React mount ứng dụng. Module src/main.tsx được nạp trực tiếp làm entry point phía trình duyệt.",
+      "tags": [
+        "entry-point",
+        "html",
+        "vite",
+        "bootstrap"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "file:src/App.css",
+      "type": "file",
+      "name": "App.css",
+      "filePath": "src/App.css",
+      "summary": "Định nghĩa style cho giao diện mẫu gồm counter, hero, khu vực nội dung, liên kết tài liệu và các breakpoint responsive. File sử dụng CSS nesting, pseudo-element và design token từ stylesheet toàn cục.",
+      "tags": [
+        "styling",
+        "responsive-ui",
+        "css",
+        "vite-template"
+      ],
+      "complexity": "moderate",
+      "languageNotes": "CSS nesting được dùng trực tiếp cho state hover, focus, media query và selector con."
+    },
+    {
+      "id": "file:src/index.css",
+      "type": "file",
+      "name": "index.css",
+      "filePath": "src/index.css",
+      "summary": "Cung cấp design token, typography và reset toàn cục cho ứng dụng, đồng thời hỗ trợ light/dark color scheme. Phần còn lại định kiểu AdminShell với sidebar cố định, hồ sơ người dùng, nút đăng xuất và header sticky.",
+      "tags": [
+        "styling",
+        "design-tokens",
+        "admin-layout",
+        "responsive-ui",
+        "dark-mode"
+      ],
+      "complexity": "moderate",
+      "languageNotes": "CSS custom properties kết hợp prefers-color-scheme để chuyển theme mà không cần logic JavaScript."
+    },
+    {
+      "id": "file:src/styles/login/LoginPage.css",
+      "type": "file",
+      "name": "LoginPage.css",
+      "filePath": "src/styles/login/LoginPage.css",
+      "summary": "Stylesheet chuyên biệt cho trang đăng nhập ELog, bao quát navbar, hero, lưới tính năng, mô phỏng bản đồ tuyến, form, validation state, animation và footer. Style được scope theo elog-login-page và có breakpoint điều chỉnh bố cục cho màn hình nhỏ.",
+      "tags": [
+        "styling",
+        "login-page",
+        "responsive-ui",
+        "animation",
+        "form-design"
+      ],
+      "complexity": "complex",
+      "languageNotes": "Selector :has() được dùng để nới ràng buộc của root khi trang đăng nhập hoạt động; các animation mô phỏng tuyến và điểm dừng trên bản đồ."
+    },
+    {
+      "id": "file:cypress/e2e/address-flow.cy.ts",
+      "type": "file",
+      "name": "address-flow.cy.ts",
+      "filePath": "cypress/e2e/address-flow.cy.ts",
+      "summary": "Cypress spec dạng placeholder cho luồng địa chỉ, khai báo 10 test case theo cùng mẫu nhưng hiện chỉ kiểm tra mệnh đề hằng đúng. Lệnh cy.visit('/address') đang bị comment nên file chưa thực thi hành vi trình duyệt thực tế.",
+      "tags": [
+        "test",
+        "cypress",
+        "e2e",
+        "placeholder",
+        "address-flow"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "file:cypress/e2e/auth-flow.cy.ts",
+      "type": "file",
+      "name": "auth-flow.cy.ts",
+      "filePath": "cypress/e2e/auth-flow.cy.ts",
+      "summary": "Cypress spec dạng placeholder cho luồng xác thực, khai báo 10 test case theo cùng mẫu nhưng hiện chỉ kiểm tra mệnh đề hằng đúng. Lệnh cy.visit('/auth') đang bị comment nên file chưa thực thi hành vi trình duyệt thực tế.",
+      "tags": [
+        "test",
+        "cypress",
+        "e2e",
+        "placeholder",
+        "authentication"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "file:cypress/e2e/capacityvalidation-flow.cy.ts",
+      "type": "file",
+      "name": "capacityvalidation-flow.cy.ts",
+      "filePath": "cypress/e2e/capacityvalidation-flow.cy.ts",
+      "summary": "Cypress spec dạng placeholder cho luồng kiểm tra tải trọng, khai báo 10 test case theo cùng mẫu nhưng hiện chỉ kiểm tra mệnh đề hằng đúng. Lệnh cy.visit('/capacityvalidation') đang bị comment nên file chưa thực thi hành vi trình duyệt thực tế.",
+      "tags": [
+        "test",
+        "cypress",
+        "e2e",
+        "placeholder",
+        "capacity-validation"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "file:cypress/e2e/consolidation-flow.cy.ts",
+      "type": "file",
+      "name": "consolidation-flow.cy.ts",
+      "filePath": "cypress/e2e/consolidation-flow.cy.ts",
+      "summary": "Cypress spec dạng placeholder cho luồng gom tuyến, khai báo 10 test case theo cùng mẫu nhưng hiện chỉ kiểm tra mệnh đề hằng đúng. Lệnh cy.visit('/consolidation') đang bị comment nên file chưa thực thi hành vi trình duyệt thực tế.",
+      "tags": [
+        "test",
+        "cypress",
+        "e2e",
+        "placeholder",
+        "route-consolidation"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "file:cypress/e2e/constraintvalidation-flow.cy.ts",
+      "type": "file",
+      "name": "constraintvalidation-flow.cy.ts",
+      "filePath": "cypress/e2e/constraintvalidation-flow.cy.ts",
+      "summary": "Cypress spec dạng placeholder cho luồng kiểm tra ràng buộc, khai báo 10 test case theo cùng mẫu nhưng hiện chỉ kiểm tra mệnh đề hằng đúng. Lệnh cy.visit('/constraintvalidation') đang bị comment nên file chưa thực thi hành vi trình duyệt thực tế.",
+      "tags": [
+        "test",
+        "cypress",
+        "e2e",
+        "placeholder",
+        "constraint-validation"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "file:cypress/e2e/drivertrip-flow.cy.ts",
+      "type": "file",
+      "name": "drivertrip-flow.cy.ts",
+      "filePath": "cypress/e2e/drivertrip-flow.cy.ts",
+      "summary": "Cypress spec dạng placeholder cho luồng chuyến đi của tài xế, khai báo 10 test case theo cùng mẫu nhưng hiện chỉ kiểm tra mệnh đề hằng đúng. Lệnh cy.visit('/drivertrip') đang bị comment nên file chưa thực thi hành vi trình duyệt thực tế.",
+      "tags": [
+        "test",
+        "cypress",
+        "e2e",
+        "placeholder",
+        "driver-trip"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "file:cypress/e2e/exception-flow.cy.ts",
+      "type": "file",
+      "name": "exception-flow.cy.ts",
+      "filePath": "cypress/e2e/exception-flow.cy.ts",
+      "summary": "Cypress spec dạng placeholder cho luồng quản lý ngoại lệ, khai báo 10 test case theo cùng mẫu nhưng hiện chỉ kiểm tra mệnh đề hằng đúng. Lệnh cy.visit('/exception') đang bị comment nên file chưa thực thi hành vi trình duyệt thực tế.",
+      "tags": [
+        "test",
+        "cypress",
+        "e2e",
+        "placeholder",
+        "exception-management"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "file:cypress/e2e/import-flow.cy.ts",
+      "type": "file",
+      "name": "import-flow.cy.ts",
+      "filePath": "cypress/e2e/import-flow.cy.ts",
+      "summary": "Cypress spec dạng placeholder cho luồng nhập đơn hàng, khai báo 10 test case theo cùng mẫu nhưng hiện chỉ kiểm tra mệnh đề hằng đúng. Lệnh cy.visit('/import') đang bị comment nên file chưa thực thi hành vi trình duyệt thực tế.",
+      "tags": [
+        "test",
+        "cypress",
+        "e2e",
+        "placeholder",
+        "excel-import"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "file:cypress/e2e/kpi-flow.cy.ts",
+      "type": "file",
+      "name": "kpi-flow.cy.ts",
+      "filePath": "cypress/e2e/kpi-flow.cy.ts",
+      "summary": "Cypress spec dạng placeholder cho luồng KPI, khai báo 10 test case theo cùng mẫu nhưng hiện chỉ kiểm tra mệnh đề hằng đúng. Lệnh cy.visit('/kpi') đang bị comment nên file chưa thực thi hành vi trình duyệt thực tế.",
+      "tags": [
+        "test",
+        "cypress",
+        "e2e",
+        "placeholder",
+        "kpi-reporting"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "file:cypress/e2e/route-flow.cy.ts",
+      "type": "file",
+      "name": "route-flow.cy.ts",
+      "filePath": "cypress/e2e/route-flow.cy.ts",
+      "summary": "Cypress spec dạng placeholder cho luồng quản lý tuyến, khai báo 10 test case theo cùng mẫu nhưng hiện chỉ kiểm tra mệnh đề hằng đúng. Lệnh cy.visit('/route') đang bị comment nên file chưa thực thi hành vi trình duyệt thực tế.",
+      "tags": [
+        "test",
+        "cypress",
+        "e2e",
+        "placeholder",
+        "route-management"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "file:cypress/e2e/store-flow.cy.ts",
+      "type": "file",
+      "name": "store-flow.cy.ts",
+      "filePath": "cypress/e2e/store-flow.cy.ts",
+      "summary": "Cypress spec dạng placeholder cho luồng quản lý cửa hàng, khai báo 10 test case theo cùng mẫu nhưng hiện chỉ kiểm tra mệnh đề hằng đúng. Lệnh cy.visit('/store') đang bị comment nên file chưa thực thi hành vi trình duyệt thực tế.",
+      "tags": [
+        "test",
+        "cypress",
+        "e2e",
+        "placeholder",
+        "store-management"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "file:cypress/e2e/trip-flow.cy.ts",
+      "type": "file",
+      "name": "trip-flow.cy.ts",
+      "filePath": "cypress/e2e/trip-flow.cy.ts",
+      "summary": "Cypress spec dạng placeholder cho luồng quản lý chuyến đi, khai báo 10 test case theo cùng mẫu nhưng hiện chỉ kiểm tra mệnh đề hằng đúng. Lệnh cy.visit('/trip') đang bị comment nên file chưa thực thi hành vi trình duyệt thực tế.",
+      "tags": [
+        "test",
+        "cypress",
+        "e2e",
+        "placeholder",
+        "trip-management"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "file:cypress/e2e/tripdraft-flow.cy.ts",
+      "type": "file",
+      "name": "tripdraft-flow.cy.ts",
+      "filePath": "cypress/e2e/tripdraft-flow.cy.ts",
+      "summary": "Cypress spec dạng placeholder cho luồng bản nháp chuyến đi, khai báo 10 test case theo cùng mẫu nhưng hiện chỉ kiểm tra mệnh đề hằng đúng. Lệnh cy.visit('/tripdraft') đang bị comment nên file chưa thực thi hành vi trình duyệt thực tế.",
+      "tags": [
+        "test",
+        "cypress",
+        "e2e",
+        "placeholder",
+        "trip-draft"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "file:cypress/e2e/tripmonitoring-flow.cy.ts",
+      "type": "file",
+      "name": "tripmonitoring-flow.cy.ts",
+      "filePath": "cypress/e2e/tripmonitoring-flow.cy.ts",
+      "summary": "Cypress spec dạng placeholder cho luồng giám sát chuyến đi, khai báo 10 test case theo cùng mẫu nhưng hiện chỉ kiểm tra mệnh đề hằng đúng. Lệnh cy.visit('/tripmonitoring') đang bị comment nên file chưa thực thi hành vi trình duyệt thực tế.",
+      "tags": [
+        "test",
+        "cypress",
+        "e2e",
+        "placeholder",
+        "trip-monitoring"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "file:cypress/e2e/user-flow.cy.ts",
+      "type": "file",
+      "name": "user-flow.cy.ts",
+      "filePath": "cypress/e2e/user-flow.cy.ts",
+      "summary": "Cypress spec dạng placeholder cho luồng quản lý người dùng, khai báo 10 test case theo cùng mẫu nhưng hiện chỉ kiểm tra mệnh đề hằng đúng. Lệnh cy.visit('/user') đang bị comment nên file chưa thực thi hành vi trình duyệt thực tế.",
+      "tags": [
+        "test",
+        "cypress",
+        "e2e",
+        "placeholder",
+        "user-management"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "file:cypress/e2e/vehicle-flow.cy.ts",
+      "type": "file",
+      "name": "vehicle-flow.cy.ts",
+      "filePath": "cypress/e2e/vehicle-flow.cy.ts",
+      "summary": "Cypress spec dạng placeholder cho luồng quản lý phương tiện, khai báo 10 test case theo cùng mẫu nhưng hiện chỉ kiểm tra mệnh đề hằng đúng. Lệnh cy.visit('/vehicle') đang bị comment nên file chưa thực thi hành vi trình duyệt thực tế.",
+      "tags": [
+        "test",
+        "cypress",
+        "e2e",
+        "placeholder",
+        "vehicle-management"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "file:eslint.config.js",
+      "type": "file",
+      "name": "eslint.config.js",
+      "filePath": "eslint.config.js",
+      "summary": "Cấu hình ESLint flat config cho toàn bộ TS/TSX, kết hợp rule khuyến nghị của JavaScript, TypeScript, React Hooks và React Refresh. File khai báo browser globals và loại thư mục dist khỏi lint.",
+      "tags": [
+        "configuration",
+        "linting",
+        "typescript",
+        "react",
+        "build-system"
+      ],
+      "complexity": "simple",
+      "languageNotes": "ES module export một flat config thay cho định dạng eslintrc truyền thống."
+    },
+    {
+      "id": "file:src/api/addressApi.ts",
+      "type": "file",
+      "name": "addressApi.ts",
+      "filePath": "src/api/addressApi.ts",
+      "summary": "Cung cấp service lấy danh mục tỉnh, quận hoặc huyện và phường hoặc xã cho luồng địa chỉ cửa hàng. Module chuyển đổi giữa dữ liệu mock và Axios endpoint theo runtime config, đồng thời chuẩn hóa lỗi API và lỗi mạng.",
+      "tags": [
+        "api-handler",
+        "service",
+        "address-data",
+        "mock-api",
+        "error-handling"
+      ],
+      "complexity": "moderate"
+    },
+    {
+      "id": "function:src/api/addressApi.ts:handleAxiosCall",
+      "type": "function",
+      "name": "handleAxiosCall",
+      "filePath": "src/api/addressApi.ts",
+      "lineRange": [
+        74,
+        87
+      ],
+      "summary": "Thực thi một Axios call, lấy payload data và chuyển lỗi response hoặc network thành Error có thông điệp ổn định cho tầng UI.",
+      "tags": [
+        "api-handler",
+        "error-handling",
+        "utility",
+        "serialization"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "file:src/api/axiosInstance.ts",
+      "type": "file",
+      "name": "axiosInstance.ts",
+      "filePath": "src/api/axiosInstance.ts",
+      "summary": "Khởi tạo Axios client dùng chung, tự gắn Bearer token vào request và xử lý response 401 bằng cơ chế refresh token. Module xếp hàng request đồng thời, cập nhật session trong localStorage và chuyển về trang đăng nhập khi refresh thất bại.",
+      "tags": [
+        "api-client",
+        "authentication",
+        "token-refresh",
+        "interceptor",
+        "singleton"
+      ],
+      "complexity": "moderate",
+      "languageNotes": "Hàng đợi Promise bảo đảm chỉ một refresh request chạy tại một thời điểm rồi phát token mới cho các request đang chờ."
+    },
+    {
+      "id": "function:src/api/axiosInstance.ts:processQueue",
+      "type": "function",
+      "name": "processQueue",
+      "filePath": "src/api/axiosInstance.ts",
+      "lineRange": [
+        23,
+        32
+      ],
+      "summary": "Resolve hoặc reject toàn bộ request đang chờ sau một lần refresh token, sau đó xóa hàng đợi để tránh tái xử lý.",
+      "tags": [
+        "authentication",
+        "queue",
+        "promise",
+        "token-refresh"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "file:src/api/exceptionApi.ts",
+      "type": "file",
+      "name": "exceptionApi.ts",
+      "filePath": "src/api/exceptionApi.ts",
+      "summary": "Triển khai API service cho US-18 Exception Management, gồm ghi nhận giao hàng bị từ chối, lọc danh sách ngoại lệ, lấy chi tiết và đánh dấu đã xử lý. Mọi endpoint dùng Axios client chung và unwrap response envelope có type.",
+      "tags": [
+        "api-handler",
+        "service",
+        "exception-management",
+        "data-fetching",
+        "type-safe"
+      ],
+      "complexity": "moderate"
+    },
+    {
+      "id": "function:src/api/exceptionApi.ts:rejectDelivery",
+      "type": "function",
+      "name": "rejectDelivery",
+      "filePath": "src/api/exceptionApi.ts",
+      "lineRange": [
+        31,
+        40
+      ],
+      "summary": "Gửi yêu cầu từ chối giao hàng cho một trip stop và trả về ngoại lệ giao nhận đã được backend tạo.",
+      "tags": [
+        "api-handler",
+        "exception-management",
+        "delivery",
+        "mutation"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:src/api/exceptionApi.ts:getExceptions",
+      "type": "function",
+      "name": "getExceptions",
+      "filePath": "src/api/exceptionApi.ts",
+      "lineRange": [
+        48,
+        61
+      ],
+      "summary": "Chuyển bộ lọc ngày, loại và trạng thái xử lý thành query parameters rồi lấy toàn bộ danh sách ngoại lệ phù hợp.",
+      "tags": [
+        "api-handler",
+        "exception-management",
+        "filtering",
+        "data-fetching"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:src/api/exceptionApi.ts:getExceptionById",
+      "type": "function",
+      "name": "getExceptionById",
+      "filePath": "src/api/exceptionApi.ts",
+      "lineRange": [
+        69,
+        76
+      ],
+      "summary": "Truy vấn chi tiết đầy đủ của một ngoại lệ theo identifier và unwrap response envelope thành model có type.",
+      "tags": [
+        "api-handler",
+        "exception-management",
+        "data-fetching",
+        "detail-view"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:src/api/exceptionApi.ts:resolveException",
+      "type": "function",
+      "name": "resolveException",
+      "filePath": "src/api/exceptionApi.ts",
+      "lineRange": [
+        84,
+        93
+      ],
+      "summary": "Gửi PATCH request để Dispatcher hoặc Logistics Manager đóng một ngoại lệ và trả về trạng thái ngoại lệ mới.",
+      "tags": [
+        "api-handler",
+        "exception-management",
+        "mutation",
+        "authorization"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "file:src/api/importApi.ts",
+      "type": "file",
+      "name": "importApi.ts",
+      "filePath": "src/api/importApi.ts",
+      "summary": "Cung cấp service đầu-cuối cho nhập đơn Excel: upload multipart, lịch sử, chi tiết batch, phân trang lỗi và export báo cáo. Module hỗ trợ cả mock lẫn backend thật, ánh xạ response sang model UI và giữ nguyên status/body qua ApiError.",
+      "tags": [
+        "api-handler",
+        "service",
+        "excel-import",
+        "mock-api",
+        "data-mapping"
+      ],
+      "complexity": "moderate"
+    },
+    {
+      "id": "class:src/api/importApi.ts:ApiError",
+      "type": "class",
+      "name": "ApiError",
+      "filePath": "src/api/importApi.ts",
+      "lineRange": [
+        15,
+        25
+      ],
+      "summary": "Error tùy biến lưu message, HTTP status và response body để UI có thể phân biệt lỗi nghiệp vụ của luồng import.",
+      "tags": [
+        "error-handling",
+        "api-error",
+        "type-definition",
+        "serialization"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:src/api/importApi.ts:handleAxiosCall",
+      "type": "function",
+      "name": "handleAxiosCall",
+      "filePath": "src/api/importApi.ts",
+      "lineRange": [
+        27,
+        40
+      ],
+      "summary": "Bao Axios call và chuyển lỗi response hoặc network thành ApiError, đồng thời bảo toàn status cùng body để tầng gọi xử lý theo contract.",
+      "tags": [
+        "api-handler",
+        "error-handling",
+        "utility",
+        "api-error"
+      ],
+      "complexity": "simple"
+    }
+  ],
+  "edges": [
+    {
+      "source": "file:index.html",
+      "target": "file:src/main.tsx",
+      "type": "depends_on",
+      "direction": "forward",
+      "weight": 0.6
+    },
+    {
+      "source": "file:src/App.css",
+      "target": "file:src/App.tsx",
+      "type": "related",
+      "direction": "forward",
+      "weight": 0.5
+    },
+    {
+      "source": "file:src/index.css",
+      "target": "file:src/main.tsx",
+      "type": "related",
+      "direction": "forward",
+      "weight": 0.5
+    },
+    {
+      "source": "file:src/styles/login/LoginPage.css",
+      "target": "file:src/pages/login/LoginPage.tsx",
+      "type": "related",
+      "direction": "forward",
+      "weight": 0.5
+    },
+    {
+      "source": "file:src/api/addressApi.ts",
+      "target": "file:src/api/axiosInstance.ts",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:src/api/addressApi.ts",
+      "target": "file:src/config.ts",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:src/api/exceptionApi.ts",
+      "target": "file:src/api/axiosInstance.ts",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:src/api/exceptionApi.ts",
+      "target": "file:src/types/exception.ts",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:src/api/importApi.ts",
+      "target": "file:src/api/axiosInstance.ts",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:src/api/importApi.ts",
+      "target": "file:src/config.ts",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:src/api/importApi.ts",
+      "target": "file:src/mocks/importService.ts",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:src/api/importApi.ts",
+      "target": "file:src/types/import.ts",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:src/api/importApi.ts",
+      "target": "file:src/utils/importMapper.ts",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:src/api/addressApi.ts",
+      "target": "function:src/api/addressApi.ts:handleAxiosCall",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:src/api/axiosInstance.ts",
+      "target": "function:src/api/axiosInstance.ts:processQueue",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:src/api/exceptionApi.ts",
+      "target": "function:src/api/exceptionApi.ts:rejectDelivery",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:src/api/exceptionApi.ts",
+      "target": "function:src/api/exceptionApi.ts:getExceptions",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:src/api/exceptionApi.ts",
+      "target": "function:src/api/exceptionApi.ts:getExceptionById",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:src/api/exceptionApi.ts",
+      "target": "function:src/api/exceptionApi.ts:resolveException",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:src/api/exceptionApi.ts",
+      "target": "function:src/api/exceptionApi.ts:rejectDelivery",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:src/api/exceptionApi.ts",
+      "target": "function:src/api/exceptionApi.ts:getExceptions",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:src/api/exceptionApi.ts",
+      "target": "function:src/api/exceptionApi.ts:getExceptionById",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:src/api/exceptionApi.ts",
+      "target": "function:src/api/exceptionApi.ts:resolveException",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:src/api/importApi.ts",
+      "target": "class:src/api/importApi.ts:ApiError",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:src/api/importApi.ts",
+      "target": "class:src/api/importApi.ts:ApiError",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:src/api/importApi.ts",
+      "target": "function:src/api/importApi.ts:handleAxiosCall",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    }
+  ]
+}
