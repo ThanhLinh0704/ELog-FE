@@ -7,7 +7,9 @@
     "cy:run": "cypress run",
     "cy:run:ui": "cypress run --spec \"e2e/us0*.cy.ts\" --env STEP_DELAY_MS=0",
     "cy:run:fullstack": "cypress run --spec \"e2e/fullstack/*.fullstack.cy.ts\" --env STEP_DELAY_MS=0",
-    "cy:run:all": "npm run cy:run:ui && npm run cy:run:fullstack"
+    "cy:run:all": "npm run cy:run:ui && npm run cy:run:fullstack",
+    "cy:open:l4": "powershell -ExecutionPolicy Bypass -File ./scripts/open-report5-l4-cypress-ui.ps1",
+    "cy:open:l4:no-bootstrap": "powershell -ExecutionPolicy Bypass -File ./scripts/open-report5-l4-cypress-ui.ps1 -SkipBootstrap"
   },
   "devDependencies": {
     "cypress": "^15.17.0"

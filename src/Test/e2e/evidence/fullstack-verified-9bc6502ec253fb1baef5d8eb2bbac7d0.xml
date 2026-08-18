@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuites name="Mocha Tests" time="6.084" tests="1" failures="0">
+  <testsuite name="Root Suite" timestamp="2026-08-13T11:14:14" tests="0" file="e2e\fullstack\us02-auth.fullstack.cy.ts" time="0.000" failures="0">
+  </testsuite>
+  <testsuite name="FULLSTACK US-02 — Authentication" timestamp="2026-08-13T11:14:14" tests="1" time="6.083" failures="0">
+    <testcase name="FULLSTACK US-02 — Authentication FS-02-01: đăng nhập thật qua ELog-BE và mở dashboard" time="6.021" classname="FS-02-01: đăng nhập thật qua ELog-BE và mở dashboard">
+    </testcase>
+  </testsuite>
+</testsuites>

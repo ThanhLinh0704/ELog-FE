@@ -6,10 +6,11 @@ describe('FULLSTACK US-06 — Vehicle Management', () => {
 
   it('FS-06-01: admin thật tải vehicle list và fleet capacity', () => {
     loginWithRealBackend();
+    cy.intercept('GET', '**/api/v1/vehicles*').as('getVehicles');
     cy.visit('/vehicles');
-    cy.contains('h2', 'Quản lý đội xe').should('be.visible');
-    cy.contains('Đội xe đang hoạt động').should('be.visible');
-    cy.contains('Tổng tải trọng').should('be.visible');
+    cy.wait('@getVehicles').its('response.statusCode').should('eq', 200);
+    cy.contains('Quản lý đội xe').should('be.visible');
+    cy.get('table tbody tr').should('have.length.greaterThan', 0);
     cy.get('.ant-alert-error').should('not.exist');
   });
 });

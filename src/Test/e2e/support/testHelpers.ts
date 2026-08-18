@@ -84,9 +84,11 @@ export function loginWithRealBackend() {
 
   resetE2EState();
   cy.visit('/login');
-  cy.get('input[placeholder="Enter your email or username"]').type(username, { log: false });
-  cy.get('input[placeholder="Enter your password"]').type(password, { log: false });
-  cy.contains('button', 'Sign In').click();
+  // Bind to the Ant Form field names instead of translated placeholder text.
+  // The production login UI is Vietnamese and its labels legitimately change.
+  cy.get('input#login_form_username').should('be.visible').type(username, { log: false });
+  cy.get('input#login_form_password').should('be.visible').type(password, { log: false });
+  cy.get('button[type="submit"]').should('be.enabled').click();
   cy.url().should('include', '/dashboard');
   cy.window().then((win) => {
     expect(win.localStorage.getItem('token')).to.be.a('string').and.not.be.empty;

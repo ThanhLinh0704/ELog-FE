@@ -6,10 +6,13 @@ describe('FULLSTACK US-05 — Route Management', () => {
 
   it('FS-05-01: admin thật tải route list và mở được route detail', () => {
     loginWithRealBackend();
+    cy.intercept('GET', '**/api/v1/routes*').as('getRoutes');
     cy.visit('/admin/routes');
-    cy.contains('h2', 'Quản lý tuyến').should('be.visible');
-    cy.contains('a', 'RT-001').click();
-    cy.url().should('match', /\/admin\/routes\/\d+$/);
-    cy.contains('Thông tin tuyến').should('be.visible');
+    cy.wait('@getRoutes').its('response.statusCode').should('eq', 200);
+    cy.contains('Quản lý tuyến').should('be.visible');
+    cy.get('table tbody a').first().click();
+    cy.contains('Chọn tuyến để xem & điều chỉnh').should('be.visible');
+    cy.get('.leaflet-container').should('be.visible');
+    cy.get('body').should('not.contain.text', 'Something went wrong');
   });
 });

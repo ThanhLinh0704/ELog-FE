@@ -1,311 +1,526 @@
 {
+  "schemaVersion": 1,
+  "generatedAt": "2026-08-14T07:05:28.987Z",
+  "branch": "test/2026-08-02v-reports-final",
+  "environment": {
+    "web": "Cypress 15.20.1 / Electron 138 / Vite 8 / real Spring Boot backend / MySQL 3307",
+    "mobile": "Flutter 3.44.9 / Android emulator-5554 / real Spring Boot backend",
+    "networkPolicy": "No response intercepts or stubs in e2e/l4/report5-web.cy.ts"
+  },
+  "evidence": {
+    "junit": "test-execution/evidence/l4/junit-80e79a632bd7bb75f33be0aeab3b5792.xml",
+    "screenshots": "src/Test/cypress/screenshots/report5-web.cy.ts/",
+    "cypressLog": "test-execution/evidence/l4/cypress-rerun.log",
+    "backendLog": "test-execution/evidence/l4/backend.stdout.log",
+    "mobileDiscovery": "test-execution/evidence/l4/mobile-device-discovery.log",
+    "mobileAuthRun": "test-execution/evidence/l4/flutter-mobile-auth-20260814.log"
+  },
   "rawCypressTotals": {
+    "total": 42,
     "pass": 39,
     "fail": 3
+  },
+  "totals": {
+    "total": 50,
+    "pass": 7,
+    "fail": 36,
+    "notRun": 7
   },
   "results": [
     {
       "id": "L4-WEB-AUTH-01",
+      "title": "Approved user signs in to the role landing page",
       "channel": "Web",
       "status": "Pass",
-      "rawCypressStatus": "Pass"
+      "rawCypressStatus": "Pass",
+      "durationSeconds": 8.514,
+      "failure": null,
+      "invocation": "cypress run --spec e2e/l4/report5-web.cy.ts --env grep=L4-WEB-AUTH-01"
     },
     {
       "id": "L4-WEB-AUTH-02",
+      "title": "Protected route returns a guest to sign-in",
       "channel": "Web",
       "status": "Pass",
-      "rawCypressStatus": "Pass"
+      "rawCypressStatus": "Pass",
+      "durationSeconds": 1.076,
+      "failure": null,
+      "invocation": "cypress run --spec e2e/l4/report5-web.cy.ts --env grep=L4-WEB-AUTH-02"
     },
     {
       "id": "L4-WEB-AUTH-03",
+      "title": "Signed-in user ends the session",
       "channel": "Web",
       "status": "Pass",
-      "rawCypressStatus": "Pass"
+      "rawCypressStatus": "Pass",
+      "durationSeconds": 7.33,
+      "failure": null,
+      "invocation": "cypress run --spec e2e/l4/report5-web.cy.ts --env grep=L4-WEB-AUTH-03"
     },
     {
       "id": "L4-WEB-IMPORT-01",
+      "title": "Dispatcher imports an approved delivery file",
       "channel": "Web",
-      "status": "Pass",
-      "rawCypressStatus": "Pass"
+      "status": "Fail",
+      "rawCypressStatus": "Pass",
+      "durationSeconds": 5.711,
+      "failure": "Cypress reached the real route and observed the expected surface, but the full catalog action/outcome was not automated; conservatively counted Fail to avoid a fake pass.",
+      "invocation": "cypress run --spec e2e/l4/report5-web.cy.ts --env grep=L4-WEB-IMPORT-01"
     },
     {
       "id": "L4-WEB-IMPORT-02",
+      "title": "Dispatcher reviews mixed accepted and rejected rows",
       "channel": "Web",
-      "status": "Pass",
-      "rawCypressStatus": "Pass"
+      "status": "Fail",
+      "rawCypressStatus": "Pass",
+      "durationSeconds": 14.19,
+      "failure": "Cypress reached the real route and observed the expected surface, but the full catalog action/outcome was not automated; conservatively counted Fail to avoid a fake pass.",
+      "invocation": "cypress run --spec e2e/l4/report5-web.cy.ts --env grep=L4-WEB-IMPORT-02"
     },
     {
       "id": "L4-WEB-IMPORT-03",
+      "title": "Dispatcher exports the batch rejection report",
       "channel": "Web",
-      "status": "Pass",
-      "rawCypressStatus": "Pass"
+      "status": "Fail",
+      "rawCypressStatus": "Pass",
+      "durationSeconds": 13.837,
+      "failure": "Cypress reached the real route and observed the expected surface, but the full catalog action/outcome was not automated; conservatively counted Fail to avoid a fake pass.",
+      "invocation": "cypress run --spec e2e/l4/report5-web.cy.ts --env grep=L4-WEB-IMPORT-03"
     },
     {
       "id": "L4-WEB-PLAN-01",
+      "title": "Dispatcher consolidates eligible orders by delivery date",
       "channel": "Web",
-      "status": "Pass",
-      "rawCypressStatus": "Pass"
+      "status": "Fail",
+      "rawCypressStatus": "Pass",
+      "durationSeconds": 13.939,
+      "failure": "Cypress reached the real route and observed the expected surface, but the full catalog action/outcome was not automated; conservatively counted Fail to avoid a fake pass.",
+      "invocation": "cypress run --spec e2e/l4/report5-web.cy.ts --env grep=L4-WEB-PLAN-01"
     },
     {
       "id": "L4-WEB-PLAN-03",
+      "title": "Dispatcher reviews draft totals and route context",
       "channel": "Web",
-      "status": "Pass",
-      "rawCypressStatus": "Pass"
+      "status": "Fail",
+      "rawCypressStatus": "Pass",
+      "durationSeconds": 14.134,
+      "failure": "Cypress reached the real route and observed the expected surface, but the full catalog action/outcome was not automated; conservatively counted Fail to avoid a fake pass.",
+      "invocation": "cypress run --spec e2e/l4/report5-web.cy.ts --env grep=L4-WEB-PLAN-03"
     },
     {
       "id": "L4-WEB-PLAN-04",
+      "title": "Dispatcher reviews ordered stops and order items",
       "channel": "Web",
-      "status": "Pass",
-      "rawCypressStatus": "Pass"
+      "status": "Fail",
+      "rawCypressStatus": "Pass",
+      "durationSeconds": 14.797,
+      "failure": "Cypress reached the real route and observed the expected surface, but the full catalog action/outcome was not automated; conservatively counted Fail to avoid a fake pass.",
+      "invocation": "cypress run --spec e2e/l4/report5-web.cy.ts --env grep=L4-WEB-PLAN-04"
     },
     {
       "id": "L4-WEB-PLAN-05",
+      "title": "Dispatcher recalculates ETA after planning input is ready",
       "channel": "Web",
       "status": "Pass",
-      "rawCypressStatus": "Pass"
+      "rawCypressStatus": "Pass",
+      "durationSeconds": 16.298,
+      "failure": null,
+      "invocation": "cypress run --spec e2e/l4/report5-web.cy.ts --env grep=L4-WEB-PLAN-05"
     },
     {
       "id": "L4-WEB-PLAN-06",
+      "title": "Dispatcher adjusts planned departure and receives refreshed ETA",
       "channel": "Web",
-      "status": "Pass",
-      "rawCypressStatus": "Pass"
+      "status": "Fail",
+      "rawCypressStatus": "Pass",
+      "durationSeconds": 14.123,
+      "failure": "Cypress reached the real route and observed the expected surface, but the full catalog action/outcome was not automated; conservatively counted Fail to avoid a fake pass.",
+      "invocation": "cypress run --spec e2e/l4/report5-web.cy.ts --env grep=L4-WEB-PLAN-06"
     },
     {
       "id": "L4-WEB-PLAN-07",
+      "title": "Dispatcher reviews ranked feasible recommendations",
       "channel": "Web",
       "status": "Pass",
-      "rawCypressStatus": "Pass"
+      "rawCypressStatus": "Pass",
+      "durationSeconds": 15.657,
+      "failure": null,
+      "invocation": "cypress run --spec e2e/l4/report5-web.cy.ts --env grep=L4-WEB-PLAN-07"
     },
     {
       "id": "L4-WEB-PLAN-08",
+      "title": "Dispatcher confirms a displayed feasible plan",
       "channel": "Web",
       "status": "Pass",
-      "rawCypressStatus": "Pass"
+      "rawCypressStatus": "Pass",
+      "durationSeconds": 17.102,
+      "failure": null,
+      "invocation": "cypress run --spec e2e/l4/report5-web.cy.ts --env grep=L4-WEB-PLAN-08"
     },
     {
       "id": "L4-WEB-PLAN-09",
+      "title": "Dispatcher withdraws a plan before execution",
       "channel": "Web",
-      "status": "Pass",
-      "rawCypressStatus": "Pass"
+      "status": "Fail",
+      "rawCypressStatus": "Pass",
+      "durationSeconds": 14.297,
+      "failure": "Cypress reached the real route and observed the expected surface, but the full catalog action/outcome was not automated; conservatively counted Fail to avoid a fake pass.",
+      "invocation": "cypress run --spec e2e/l4/report5-web.cy.ts --env grep=L4-WEB-PLAN-09"
     },
     {
       "id": "L4-WEB-CAP-01",
+      "title": "Dispatcher validates draft payload and volume",
       "channel": "Web",
-      "status": "Pass",
-      "rawCypressStatus": "Pass"
+      "status": "Fail",
+      "rawCypressStatus": "Pass",
+      "durationSeconds": 14.445,
+      "failure": "Cypress reached the real route and observed the expected surface, but the full catalog action/outcome was not automated; conservatively counted Fail to avoid a fake pass.",
+      "invocation": "cypress run --spec e2e/l4/report5-web.cy.ts --env grep=L4-WEB-CAP-01"
     },
     {
       "id": "L4-WEB-CAP-02",
+      "title": "Infeasible single-vehicle result offers the split path",
       "channel": "Web",
-      "status": "Pass",
-      "rawCypressStatus": "Pass"
+      "status": "Fail",
+      "rawCypressStatus": "Pass",
+      "durationSeconds": 13.986,
+      "failure": "Cypress reached the real route and observed the expected surface, but the full catalog action/outcome was not automated; conservatively counted Fail to avoid a fake pass.",
+      "invocation": "cypress run --spec e2e/l4/report5-web.cy.ts --env grep=L4-WEB-CAP-02"
     },
     {
       "id": "L4-WEB-ASSIGN-01",
+      "title": "Dispatcher assigns one eligible vehicle and driver",
       "channel": "Web",
-      "status": "Pass",
-      "rawCypressStatus": "Pass"
+      "status": "Fail",
+      "rawCypressStatus": "Pass",
+      "durationSeconds": 13.804,
+      "failure": "Cypress reached the real route and observed the expected surface, but the full catalog action/outcome was not automated; conservatively counted Fail to avoid a fake pass.",
+      "invocation": "cypress run --spec e2e/l4/report5-web.cy.ts --env grep=L4-WEB-ASSIGN-01"
     },
     {
       "id": "L4-WEB-ASSIGN-02",
+      "title": "Dispatcher assigns a validated two-vehicle split",
       "channel": "Web",
       "status": "Fail",
       "rawCypressStatus": "Fail",
-      "defectId": "ELOG-R5-L4-001"
+      "durationSeconds": 0,
+      "failure": "AssertionError: Timed out retrying after 15000ms: Expected to find content: '/tách chuyến|Chuyến 1/i' but never did.\n    at assertRealJourneySurface (webpack://elog-fe-e2e-tests/./e2e/l4/report5-web.cy.ts:166:59)\n    at Context.eval (webpack://elog-fe-e2e-tests/./e2e/l4/report5-web.cy.ts:209:49)",
+      "invocation": "cypress run --spec e2e/l4/report5-web.cy.ts --env grep=L4-WEB-ASSIGN-02"
     },
     {
       "id": "L4-WEB-ASSIGN-03",
+      "title": "Dispatcher changes resources before dispatch lock",
       "channel": "Web",
-      "status": "Pass",
-      "rawCypressStatus": "Pass"
+      "status": "Fail",
+      "rawCypressStatus": "Pass",
+      "durationSeconds": 13.39,
+      "failure": "Cypress reached the real route and observed the expected surface, but the full catalog action/outcome was not automated; conservatively counted Fail to avoid a fake pass.",
+      "invocation": "cypress run --spec e2e/l4/report5-web.cy.ts --env grep=L4-WEB-ASSIGN-03"
     },
     {
       "id": "L4-WEB-MANIFEST-01",
+      "title": "Warehouse user generates and reviews LIFO guidance",
       "channel": "Web",
-      "status": "Pass",
-      "rawCypressStatus": "Pass"
+      "status": "Fail",
+      "rawCypressStatus": "Pass",
+      "durationSeconds": 4.83,
+      "failure": "Cypress reached the real route and observed the expected surface, but the full catalog action/outcome was not automated; conservatively counted Fail to avoid a fake pass.",
+      "invocation": "cypress run --spec e2e/l4/report5-web.cy.ts --env grep=L4-WEB-MANIFEST-01"
     },
     {
       "id": "L4-WEB-DISPATCH-01",
+      "title": "Dispatcher reviews assignment readiness",
       "channel": "Web",
-      "status": "Pass",
-      "rawCypressStatus": "Pass"
+      "status": "Fail",
+      "rawCypressStatus": "Pass",
+      "durationSeconds": 13.674,
+      "failure": "Cypress reached the real route and observed the expected surface, but the full catalog action/outcome was not automated; conservatively counted Fail to avoid a fake pass.",
+      "invocation": "cypress run --spec e2e/l4/report5-web.cy.ts --env grep=L4-WEB-DISPATCH-01"
     },
     {
       "id": "L4-WEB-DISPATCH-02",
+      "title": "Dispatcher locks and publishes an eligible trip",
       "channel": "Web",
-      "status": "Pass",
-      "rawCypressStatus": "Pass"
+      "status": "Fail",
+      "rawCypressStatus": "Pass",
+      "durationSeconds": 13.386,
+      "failure": "Cypress reached the real route and observed the expected surface, but the full catalog action/outcome was not automated; conservatively counted Fail to avoid a fake pass.",
+      "invocation": "cypress run --spec e2e/l4/report5-web.cy.ts --env grep=L4-WEB-DISPATCH-02"
     },
     {
       "id": "L4-WEB-DISPATCH-03",
+      "title": "Repeated dispatch keeps the existing locked trip",
       "channel": "Web",
-      "status": "Pass",
-      "rawCypressStatus": "Pass"
+      "status": "Fail",
+      "rawCypressStatus": "Pass",
+      "durationSeconds": 13.603,
+      "failure": "Cypress reached the real route and observed the expected surface, but the full catalog action/outcome was not automated; conservatively counted Fail to avoid a fake pass.",
+      "invocation": "cypress run --spec e2e/l4/report5-web.cy.ts --env grep=L4-WEB-DISPATCH-03"
     },
     {
       "id": "L4-WEB-MON-01",
+      "title": "Dispatcher reviews active-trip fleet status",
       "channel": "Web",
-      "status": "Pass",
-      "rawCypressStatus": "Pass"
+      "status": "Fail",
+      "rawCypressStatus": "Pass",
+      "durationSeconds": 13.549,
+      "failure": "Cypress reached the real route and observed the expected surface, but the full catalog action/outcome was not automated; conservatively counted Fail to avoid a fake pass.",
+      "invocation": "cypress run --spec e2e/l4/report5-web.cy.ts --env grep=L4-WEB-MON-01"
     },
     {
       "id": "L4-WEB-MON-02",
+      "title": "Dispatcher drills into trip progress",
       "channel": "Web",
-      "status": "Pass",
-      "rawCypressStatus": "Pass"
+      "status": "Fail",
+      "rawCypressStatus": "Pass",
+      "durationSeconds": 4.879,
+      "failure": "Cypress reached the real route and observed the expected surface, but the full catalog action/outcome was not automated; conservatively counted Fail to avoid a fake pass.",
+      "invocation": "cypress run --spec e2e/l4/report5-web.cy.ts --env grep=L4-WEB-MON-02"
     },
     {
       "id": "L4-WEB-MON-03",
+      "title": "Dispatcher reviews current operational violations",
       "channel": "Web",
-      "status": "Pass",
-      "rawCypressStatus": "Pass"
+      "status": "Fail",
+      "rawCypressStatus": "Pass",
+      "durationSeconds": 13.404,
+      "failure": "Cypress reached the real route and observed the expected surface, but the full catalog action/outcome was not automated; conservatively counted Fail to avoid a fake pass.",
+      "invocation": "cypress run --spec e2e/l4/report5-web.cy.ts --env grep=L4-WEB-MON-03"
     },
     {
       "id": "L4-WEB-EXC-01",
+      "title": "Dispatcher filters and inspects exception detail",
       "channel": "Web",
-      "status": "Pass",
-      "rawCypressStatus": "Pass"
+      "status": "Fail",
+      "rawCypressStatus": "Pass",
+      "durationSeconds": 13.411,
+      "failure": "Cypress reached the real route and observed the expected surface, but the full catalog action/outcome was not automated; conservatively counted Fail to avoid a fake pass.",
+      "invocation": "cypress run --spec e2e/l4/report5-web.cy.ts --env grep=L4-WEB-EXC-01"
     },
     {
       "id": "L4-WEB-EXC-02",
+      "title": "Manager resolves an exception with an audit note",
       "channel": "Web",
-      "status": "Pass",
-      "rawCypressStatus": "Pass"
+      "status": "Fail",
+      "rawCypressStatus": "Pass",
+      "durationSeconds": 13.744,
+      "failure": "Cypress reached the real route and observed the expected surface, but the full catalog action/outcome was not automated; conservatively counted Fail to avoid a fake pass.",
+      "invocation": "cypress run --spec e2e/l4/report5-web.cy.ts --env grep=L4-WEB-EXC-02"
     },
     {
       "id": "L4-WEB-OUT-01",
+      "title": "Dispatcher reviews submitted trip outcomes",
       "channel": "Web",
-      "status": "Pass",
-      "rawCypressStatus": "Pass"
+      "status": "Fail",
+      "rawCypressStatus": "Pass",
+      "durationSeconds": 13.424,
+      "failure": "Cypress reached the real route and observed the expected surface, but the full catalog action/outcome was not automated; conservatively counted Fail to avoid a fake pass.",
+      "invocation": "cypress run --spec e2e/l4/report5-web.cy.ts --env grep=L4-WEB-OUT-01"
     },
     {
       "id": "L4-WEB-OUT-02",
+      "title": "Manager validates a submitted outcome",
       "channel": "Web",
-      "status": "Pass",
-      "rawCypressStatus": "Pass"
+      "status": "Fail",
+      "rawCypressStatus": "Pass",
+      "durationSeconds": 13.227,
+      "failure": "Cypress reached the real route and observed the expected surface, but the full catalog action/outcome was not automated; conservatively counted Fail to avoid a fake pass.",
+      "invocation": "cypress run --spec e2e/l4/report5-web.cy.ts --env grep=L4-WEB-OUT-02"
     },
     {
       "id": "L4-WEB-OUT-03",
+      "title": "Manager returns an outcome for audited correction",
       "channel": "Web",
-      "status": "Pass",
-      "rawCypressStatus": "Pass"
+      "status": "Fail",
+      "rawCypressStatus": "Pass",
+      "durationSeconds": 13.23,
+      "failure": "Cypress reached the real route and observed the expected surface, but the full catalog action/outcome was not automated; conservatively counted Fail to avoid a fake pass.",
+      "invocation": "cypress run --spec e2e/l4/report5-web.cy.ts --env grep=L4-WEB-OUT-03"
     },
     {
       "id": "L4-WEB-KPI-01",
+      "title": "Manager reviews dated KPI summary, trend, and route performance",
       "channel": "Web",
-      "status": "Pass",
-      "rawCypressStatus": "Pass"
+      "status": "Fail",
+      "rawCypressStatus": "Pass",
+      "durationSeconds": 13.687,
+      "failure": "Cypress reached the real route and observed the expected surface, but the full catalog action/outcome was not automated; conservatively counted Fail to avoid a fake pass.",
+      "invocation": "cypress run --spec e2e/l4/report5-web.cy.ts --env grep=L4-WEB-KPI-01"
     },
     {
       "id": "L4-WEB-HIST-01",
+      "title": "Auditor searches immutable planning events",
       "channel": "Web",
       "status": "Fail",
       "rawCypressStatus": "Fail",
-      "defectId": "ELOG-R5-L4-001"
+      "durationSeconds": 0,
+      "failure": "AssertionError: Timed out retrying after 15000ms: expected '<span.ant-menu-title-content>' to be 'visible'\n\nThis element `<span.ant-menu-title-content>` is not visible because it has CSS property: `position: fixed` and it's being covered by another element:\n\n`<div class=\"elog-profile-info\">...</div>`\n    at assertRealJourneySurface (webpack://elog-fe-e2e-tests/./e2e/l4/report5-web.cy.ts:166:59)\n    at Context.eval (webpack://elog-fe-e2e-tests/./e2e/l4/report5-web.cy.ts:209:49)",
+      "invocation": "cypress run --spec e2e/l4/report5-web.cy.ts --env grep=L4-WEB-HIST-01"
     },
     {
       "id": "L4-WEB-HIST-02",
+      "title": "Auditor opens a trip outcome timeline",
       "channel": "Web",
       "status": "Fail",
       "rawCypressStatus": "Fail",
-      "defectId": "ELOG-R5-L4-001"
+      "durationSeconds": 0,
+      "failure": "AssertionError: Timed out retrying after 15000ms: expected '<span.ant-menu-title-content>' to be 'visible'\n\nThis element `<span.ant-menu-title-content>` is not visible because it has CSS property: `position: fixed` and it's being covered by another element:\n\n`<div class=\"elog-profile-info\">...</div>`\n    at assertRealJourneySurface (webpack://elog-fe-e2e-tests/./e2e/l4/report5-web.cy.ts:166:59)\n    at Context.eval (webpack://elog-fe-e2e-tests/./e2e/l4/report5-web.cy.ts:209:49)",
+      "invocation": "cypress run --spec e2e/l4/report5-web.cy.ts --env grep=L4-WEB-HIST-02"
     },
     {
       "id": "L4-WEB-ADMIN-01",
+      "title": "Administrator creates an internal user",
       "channel": "Web",
-      "status": "Pass",
-      "rawCypressStatus": "Pass"
+      "status": "Fail",
+      "rawCypressStatus": "Pass",
+      "durationSeconds": 13.697,
+      "failure": "Cypress reached the real route and observed the expected surface, but the full catalog action/outcome was not automated; conservatively counted Fail to avoid a fake pass.",
+      "invocation": "cypress run --spec e2e/l4/report5-web.cy.ts --env grep=L4-WEB-ADMIN-01"
     },
     {
       "id": "L4-WEB-ADMIN-02",
+      "title": "Administrator changes the roles of another user",
       "channel": "Web",
-      "status": "Pass",
-      "rawCypressStatus": "Pass"
+      "status": "Fail",
+      "rawCypressStatus": "Pass",
+      "durationSeconds": 13.77,
+      "failure": "Cypress reached the real route and observed the expected surface, but the full catalog action/outcome was not automated; conservatively counted Fail to avoid a fake pass.",
+      "invocation": "cypress run --spec e2e/l4/report5-web.cy.ts --env grep=L4-WEB-ADMIN-02"
     },
     {
       "id": "L4-WEB-ADMIN-03",
+      "title": "Administrator updates a role permission set",
       "channel": "Web",
-      "status": "Pass",
-      "rawCypressStatus": "Pass"
+      "status": "Fail",
+      "rawCypressStatus": "Pass",
+      "durationSeconds": 13.456,
+      "failure": "Cypress reached the real route and observed the expected surface, but the full catalog action/outcome was not automated; conservatively counted Fail to avoid a fake pass.",
+      "invocation": "cypress run --spec e2e/l4/report5-web.cy.ts --env grep=L4-WEB-ADMIN-03"
     },
     {
       "id": "L4-WEB-ADMIN-04",
+      "title": "Administrator creates an active mapped store",
       "channel": "Web",
-      "status": "Pass",
-      "rawCypressStatus": "Pass"
+      "status": "Fail",
+      "rawCypressStatus": "Pass",
+      "durationSeconds": 13.496,
+      "failure": "Cypress reached the real route and observed the expected surface, but the full catalog action/outcome was not automated; conservatively counted Fail to avoid a fake pass.",
+      "invocation": "cypress run --spec e2e/l4/report5-web.cy.ts --env grep=L4-WEB-ADMIN-04"
     },
     {
       "id": "L4-WEB-ADMIN-05",
+      "title": "Administrator registers an eligible vehicle",
       "channel": "Web",
-      "status": "Pass",
-      "rawCypressStatus": "Pass"
+      "status": "Fail",
+      "rawCypressStatus": "Pass",
+      "durationSeconds": 13.366,
+      "failure": "Cypress reached the real route and observed the expected surface, but the full catalog action/outcome was not automated; conservatively counted Fail to avoid a fake pass.",
+      "invocation": "cypress run --spec e2e/l4/report5-web.cy.ts --env grep=L4-WEB-ADMIN-05"
     },
     {
       "id": "L4-WEB-ADMIN-06",
+      "title": "Administrator creates a product with physical attributes",
       "channel": "Web",
-      "status": "Pass",
-      "rawCypressStatus": "Pass"
+      "status": "Fail",
+      "rawCypressStatus": "Pass",
+      "durationSeconds": 13.713,
+      "failure": "Cypress reached the real route and observed the expected surface, but the full catalog action/outcome was not automated; conservatively counted Fail to avoid a fake pass.",
+      "invocation": "cypress run --spec e2e/l4/report5-web.cy.ts --env grep=L4-WEB-ADMIN-06"
     },
     {
       "id": "L4-WEB-ADMIN-07",
+      "title": "Administrator maintains ordered route stops",
       "channel": "Web",
-      "status": "Pass",
-      "rawCypressStatus": "Pass"
+      "status": "Fail",
+      "rawCypressStatus": "Pass",
+      "durationSeconds": 14.12,
+      "failure": "Cypress reached the real route and observed the expected surface, but the full catalog action/outcome was not automated; conservatively counted Fail to avoid a fake pass.",
+      "invocation": "cypress run --spec e2e/l4/report5-web.cy.ts --env grep=L4-WEB-ADMIN-07"
     },
     {
       "id": "L4-WEB-ADMIN-08",
+      "title": "Administrator records driver availability status",
       "channel": "Web",
-      "status": "Pass",
-      "rawCypressStatus": "Pass"
+      "status": "Fail",
+      "rawCypressStatus": "Pass",
+      "durationSeconds": 13.997,
+      "failure": "Cypress reached the real route and observed the expected surface, but the full catalog action/outcome was not automated; conservatively counted Fail to avoid a fake pass.",
+      "invocation": "cypress run --spec e2e/l4/report5-web.cy.ts --env grep=L4-WEB-ADMIN-08"
     },
     {
       "id": "L4-MOB-AUTH-01",
+      "title": "Assigned driver signs in to My Trips",
       "channel": "Mobile",
       "status": "Pass",
-      "rawCypressStatus": "Pass"
+      "durationSeconds": null,
+      "failure": null,
+      "evidence": [
+        "test-execution/evidence/l4/flutter-mobile-auth-20260814.log"
+      ],
+      "invocation": "flutter test integration_test/report5_l4_mobile_test.dart -d emulator-5554"
     },
     {
       "id": "L4-MOB-TRIP-01",
+      "title": "Driver reviews assigned work for a selected date",
       "channel": "Mobile",
-      "status": "Pass",
-      "rawCypressStatus": "Pass"
+      "status": "Not Run",
+      "durationSeconds": null,
+      "failure": "No executable integration test has been implemented yet for this mobile catalog journey.",
+      "invocation": "flutter test integration_test/report5_l4_mobile_test.dart --plain-name \"L4-MOB-TRIP-01 — Driver reviews assigned work for a selected date\""
     },
     {
       "id": "L4-MOB-TRIP-02",
+      "title": "Driver starts the dispatched trip",
       "channel": "Mobile",
-      "status": "Pass",
-      "rawCypressStatus": "Pass"
+      "status": "Not Run",
+      "durationSeconds": null,
+      "failure": "No executable integration test has been implemented yet for this mobile catalog journey.",
+      "invocation": "flutter test integration_test/report5_l4_mobile_test.dart --plain-name \"L4-MOB-TRIP-02 — Driver starts the dispatched trip\""
     },
     {
       "id": "L4-MOB-TRIP-03",
+      "title": "Driver records arrival at the next stop",
       "channel": "Mobile",
-      "status": "Pass",
-      "rawCypressStatus": "Pass"
+      "status": "Not Run",
+      "durationSeconds": null,
+      "failure": "No executable integration test has been implemented yet for this mobile catalog journey.",
+      "invocation": "flutter test integration_test/report5_l4_mobile_test.dart --plain-name \"L4-MOB-TRIP-03 — Driver records arrival at the next stop\""
     },
     {
       "id": "L4-MOB-TRIP-04",
+      "title": "Driver completes the final active stop and trip",
       "channel": "Mobile",
-      "status": "Pass",
-      "rawCypressStatus": "Pass"
+      "status": "Not Run",
+      "durationSeconds": null,
+      "failure": "No executable integration test has been implemented yet for this mobile catalog journey.",
+      "invocation": "flutter test integration_test/report5_l4_mobile_test.dart --plain-name \"L4-MOB-TRIP-04 — Driver completes the final active stop and trip\""
     },
     {
       "id": "L4-MOB-TRIP-05",
+      "title": "Driver reports a delivery rejection with reason",
       "channel": "Mobile",
-      "status": "Pass",
-      "rawCypressStatus": "Pass"
+      "status": "Not Run",
+      "durationSeconds": null,
+      "failure": "No executable integration test has been implemented yet for this mobile catalog journey.",
+      "invocation": "flutter test integration_test/report5_l4_mobile_test.dart --plain-name \"L4-MOB-TRIP-05 — Driver reports a delivery rejection with reason\""
     },
     {
       "id": "L4-MOB-EXC-01",
+      "title": "Driver reviews own exceptions using immediate filters",
       "channel": "Mobile",
-      "status": "Pass",
-      "rawCypressStatus": "Pass"
+      "status": "Not Run",
+      "durationSeconds": null,
+      "failure": "No executable integration test has been implemented yet for this mobile catalog journey.",
+      "invocation": "flutter test integration_test/report5_l4_mobile_test.dart --plain-name \"L4-MOB-EXC-01 — Driver reviews own exceptions using immediate filters\""
     },
     {
       "id": "L4-MOB-PROFILE-01",
+      "title": "Driver reviews identity and signs out",
       "channel": "Mobile",
-      "status": "Pass",
-      "rawCypressStatus": "Pass"
+      "status": "Not Run",
+      "durationSeconds": null,
+      "failure": "No executable integration test has been implemented yet for this mobile catalog journey.",
+      "invocation": "flutter test integration_test/report5_l4_mobile_test.dart --plain-name \"L4-MOB-PROFILE-01 — Driver reviews identity and signs out\""
     }
   ]
 }

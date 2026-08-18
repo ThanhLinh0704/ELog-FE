@@ -241,6 +241,7 @@ describe('US-03 — User Management', () => {
   it('TC-08: tạo user với email sai format và confirm password không khớp thì bị chặn', () => {
     interceptUserList();
     cy.intercept('POST', '**/api/users').as('createUserShouldNotRun');
+
     visitAs('/users');
     cy.wait('@getUsers');
 
@@ -340,6 +341,7 @@ describe('US-03 — User Management', () => {
   it('TC-13: mật khẩu dưới 8 ký tự bị chặn và không gọi API', () => {
     interceptUserList();
     cy.intercept('POST', '**/api/users').as('weakPasswordShouldNotRun');
+
     visitAs('/users');
     cy.wait('@getUsers');
     cy.contains('button', 'Tạo người dùng').click();

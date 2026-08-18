@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuites name="Mocha Tests" time="7.952" tests="1" failures="0">
+  <testsuite name="Root Suite" timestamp="2026-08-13T11:14:36" tests="0" file="e2e\fullstack\us05-routes.fullstack.cy.ts" time="0.000" failures="0">
+  </testsuite>
+  <testsuite name="FULLSTACK US-05 — Route Management" timestamp="2026-08-13T11:14:36" tests="1" time="7.949" failures="0">
+    <testcase name="FULLSTACK US-05 — Route Management FS-05-01: admin thật tải route list và mở được route detail" time="7.836" classname="FS-05-01: admin thật tải route list và mở được route detail">
+    </testcase>
+  </testsuite>
+</testsuites>

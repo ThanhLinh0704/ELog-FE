@@ -153,7 +153,7 @@ describe('US-02 — Authentication & Authorization', () => {
   // ───────────────────────────────────────────────────────────────────────────
   describe('TC-01: Login đúng credentials → token hợp lệ', () => {
     it('HTTP 200 · lưu token & refreshToken · redirect /dashboard · không có lỗi', () => {
-      cy.intercept('POST', '**/api/v1/auth/login', MOCK.adminLoginSuccess).as('loginReq');
+      cy.intercept('POST', '**/api/auth/login', MOCK.adminLoginSuccess).as('loginReq');
 
       loginViaUI('admin', 'Admin@2025');
 
@@ -175,7 +175,7 @@ describe('US-02 — Authentication & Authorization', () => {
   // ───────────────────────────────────────────────────────────────────────────
   describe('TC-02: Login sai password → 401', () => {
     it('HTTP 401 · hiển thị lỗi INVALID_CREDENTIALS · ở lại /login · không lưu token', () => {
-      cy.intercept('POST', '**/api/v1/auth/login', MOCK.invalidCredentials).as('loginReq');
+      cy.intercept('POST', '**/api/auth/login', MOCK.invalidCredentials).as('loginReq');
 
       loginViaUI('admin', 'SaiMatKhau123');
 
@@ -196,7 +196,7 @@ describe('US-02 — Authentication & Authorization', () => {
   // ───────────────────────────────────────────────────────────────────────────
   describe('TC-03: Tài khoản bị khóa → 403', () => {
     it('HTTP 403 · hiển thị lỗi ACCOUNT_DISABLED · thông báo khác TC-02 · không lưu token', () => {
-      cy.intercept('POST', '**/api/v1/auth/login', MOCK.accountDisabled).as('loginReq');
+      cy.intercept('POST', '**/api/auth/login', MOCK.accountDisabled).as('loginReq');
 
       loginViaUI('locked_user', 'Locked@2025');
 
@@ -220,7 +220,7 @@ describe('US-02 — Authentication & Authorization', () => {
   // ───────────────────────────────────────────────────────────────────────────
   describe('TC-04: Token hợp lệ → vào được trang bảo vệ', () => {
     it('sau khi đăng nhập → ở lại /dashboard · không bị redirect về /login', () => {
-      cy.intercept('POST', '**/api/v1/auth/login', MOCK.adminLoginSuccess).as('loginReq');
+      cy.intercept('POST', '**/api/auth/login', MOCK.adminLoginSuccess).as('loginReq');
 
       loginViaUI('admin', 'Admin@2025');
       cy.wait('@loginReq');
@@ -252,6 +252,7 @@ describe('US-02 — Authentication & Authorization', () => {
     it('DRIVER vào /users → API trả 403 · không hiển thị danh sách user', () => {
       cy.intercept('POST', '**/api/auth/login',  MOCK.driverLoginSuccess).as('loginReq');
       cy.intercept('GET',  '**/api/users*',      MOCK.accessDenied).as('getUsersReq');
+
       loginViaUI('driver01', 'Driver@2025');
       cy.wait('@loginReq');
 
@@ -270,9 +271,9 @@ describe('US-02 — Authentication & Authorization', () => {
   // [REQUIRES IMPLEMENTATION] Cần axios interceptor tự gọi refresh khi 401
   // ───────────────────────────────────────────────────────────────────────────
   describe('TC-07: Refresh token hợp lệ → access token mới [REQUIRES: axios interceptor]', () => {
-    it('POST /api/v1/auth/refresh → 200 · accessToken mới khác cũ · localStorage cập nhật', () => {
-      cy.intercept('POST', '**/api/v1/auth/login',   MOCK.adminLoginSuccess).as('loginReq');
-      cy.intercept('POST', '**/api/v1/auth/refresh', MOCK.refreshSuccess).as('refreshReq');
+    it('POST /api/auth/refresh → 200 · accessToken mới khác cũ · localStorage cập nhật', () => {
+      cy.intercept('POST', '**/api/auth/login',   MOCK.adminLoginSuccess).as('loginReq');
+      cy.intercept('POST', '**/api/auth/refresh', MOCK.refreshSuccess).as('refreshReq');
 
       loginViaUI('admin', 'Admin@2025');
       cy.wait('@loginReq');
@@ -280,7 +281,7 @@ describe('US-02 — Authentication & Authorization', () => {
       const oldToken = MOCK.adminLoginSuccess.body.data.accessToken;
 
       // Giả lập: gọi API bảo vệ trả 401 → interceptor sẽ gọi refresh
-      cy.intercept('GET', '**/api/v1/users', (req) => {
+      cy.intercept('GET', '**/api/users', (req) => {
         req.reply(MOCK.authFailed);
       }).as('protectedReq');
 
@@ -300,9 +301,9 @@ describe('US-02 — Authentication & Authorization', () => {
   // ───────────────────────────────────────────────────────────────────────────
   describe('TC-08: Refresh token sau logout → 401 [REQUIRES: route guard]', () => {
     it('sau khi xóa token → vào /dashboard → redirect /login', () => {
-      cy.intercept('POST', '**/api/v1/auth/login',   MOCK.adminLoginSuccess).as('loginReq');
-      cy.intercept('POST', '**/api/v1/auth/logout',  { statusCode: 200, body: { success: true } }).as('logoutReq');
-      cy.intercept('POST', '**/api/v1/auth/refresh', MOCK.tokenInvalid).as('refreshReq');
+      cy.intercept('POST', '**/api/auth/login',   MOCK.adminLoginSuccess).as('loginReq');
+      cy.intercept('POST', '**/api/auth/logout',  { statusCode: 200, body: { success: true } }).as('logoutReq');
+      cy.intercept('POST', '**/api/auth/refresh', MOCK.tokenInvalid).as('refreshReq');
 
       loginViaUI('admin', 'Admin@2025');
       cy.wait('@loginReq');
@@ -325,7 +326,7 @@ describe('US-02 — Authentication & Authorization', () => {
   // ───────────────────────────────────────────────────────────────────────────
   describe('TC-09: Token bị tamper → 401 [REQUIRES: error interceptor]', () => {
     it('token giả mạo → API 401 · localStorage bị xóa · redirect /login', () => {
-      cy.intercept('POST', '**/api/v1/auth/login', MOCK.adminLoginSuccess).as('loginReq');
+      cy.intercept('POST', '**/api/auth/login', MOCK.adminLoginSuccess).as('loginReq');
 
       loginViaUI('admin', 'Admin@2025');
       cy.wait('@loginReq');
@@ -340,7 +341,7 @@ describe('US-02 — Authentication & Authorization', () => {
       });
 
       // Mock endpoint trả 401 với tampered token
-      cy.intercept('GET', '**/api/v1/users', MOCK.authFailed).as('getUsersReq');
+      cy.intercept('GET', '**/api/users', MOCK.authFailed).as('getUsersReq');
 
       cy.visit('/users');
 
@@ -372,7 +373,7 @@ describe('US-02 — Authentication & Authorization', () => {
     });
 
     it('bỏ trống username, có password → lỗi username · không gọi API', () => {
-      cy.intercept('POST', '**/api/v1/auth/login').as('loginReq');
+      cy.intercept('POST', '**/api/auth/login').as('loginReq');
 
       cy.get(SEL.passwordInput).type('Admin@2025');
       cy.get(SEL.submitBtn).click();
@@ -383,7 +384,7 @@ describe('US-02 — Authentication & Authorization', () => {
     });
 
     it('có username, bỏ trống password → lỗi password · không gọi API', () => {
-      cy.intercept('POST', '**/api/v1/auth/login').as('loginReq');
+      cy.intercept('POST', '**/api/auth/login').as('loginReq');
 
       cy.get(SEL.usernameInput).type('admin');
       cy.get(SEL.submitBtn).click();
@@ -396,7 +397,7 @@ describe('US-02 — Authentication & Authorization', () => {
     it('username chứa toàn khoảng trắng → sau trim rỗng → lỗi hoặc API từ chối', () => {
       // Code trim username trước khi gửi: values.username.trim() → ''
       // Ant Design required=true không bắt được spaces → API sẽ bị gọi
-      cy.intercept('POST', '**/api/v1/auth/login', MOCK.invalidCredentials).as('loginReq');
+      cy.intercept('POST', '**/api/auth/login', MOCK.invalidCredentials).as('loginReq');
 
       cy.get(SEL.usernameInput).type('   ');
       cy.get(SEL.passwordInput).type('Admin@2025');
@@ -410,7 +411,7 @@ describe('US-02 — Authentication & Authorization', () => {
     });
 
     it('password chứa toàn khoảng trắng → API từ chối', () => {
-      cy.intercept('POST', '**/api/v1/auth/login', MOCK.invalidCredentials).as('loginReq');
+      cy.intercept('POST', '**/api/auth/login', MOCK.invalidCredentials).as('loginReq');
 
       cy.get(SEL.usernameInput).type('admin');
       cy.get(SEL.passwordInput).type('   ');
@@ -423,7 +424,7 @@ describe('US-02 — Authentication & Authorization', () => {
     });
 
     it('password quá ngắn (1 ký tự) → API từ chối với INVALID_CREDENTIALS', () => {
-      cy.intercept('POST', '**/api/v1/auth/login', MOCK.invalidCredentials).as('loginReq');
+      cy.intercept('POST', '**/api/auth/login', MOCK.invalidCredentials).as('loginReq');
 
       cy.get(SEL.usernameInput).type('admin');
       cy.get(SEL.passwordInput).type('a');
@@ -447,6 +448,7 @@ describe('US-02 — Authentication & Authorization', () => {
 
     it('lỗi mạng hiển thị thông báo và giữ người dùng tại trang login', () => {
       cy.intercept('POST', '**/api/auth/login', { forceNetworkError: true }).as('loginNetworkError');
+
       loginViaUI('admin', 'Admin@2025');
 
       cy.wait('@loginNetworkError');

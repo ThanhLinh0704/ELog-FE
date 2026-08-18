@@ -113,6 +113,7 @@ describe('US-06 — Vehicle Management', () => {
     cy.get('#vehicleType').type('Xe tải lớn');
     cy.get('#payloadKg').type('8000');
     cy.get('#maxVolumeM3').type('36.5');
+
     cy.get('.ant-modal').within(() => {
       cy.contains('button', 'Đăng ký xe').click();
     });
@@ -132,6 +133,7 @@ describe('US-06 — Vehicle Management', () => {
     cy.get('#vehicleType').type('Xe tải nhỏ');
     cy.get('#payloadKg').type('2500');
     cy.get('#maxVolumeM3').type('12.5');
+
     cy.get('.ant-modal').within(() => {
       cy.contains('button', 'Đăng ký xe').click();
     });
@@ -171,6 +173,7 @@ describe('US-06 — Vehicle Management', () => {
       .type('Xe tải nhỏ - cập nhật');
     cy.get('#payloadKg').clear().type('2600');
     cy.get('#maxVolumeM3').clear().type('13');
+
     cy.get('.ant-modal').within(() => {
       cy.contains('button', 'Lưu thay đổi').click();
     });
@@ -212,6 +215,7 @@ describe('US-06 — Vehicle Management', () => {
   it('TC-07: đăng ký xe thiếu field bắt buộc thì hiển thị validation errors', () => {
     interceptVehicleList();
     cy.intercept('POST', '**/api/vehicles').as('createVehicleShouldNotRun');
+
     visitAs('/vehicles');
     cy.wait('@getVehicles');
 
@@ -231,6 +235,7 @@ describe('US-06 — Vehicle Management', () => {
   it('TC-08: tải trọng bằng 0 bị chặn, thể tích bằng 0 được clamp về min trước khi gọi API', () => {
     interceptVehicleList();
     cy.intercept('POST', '**/api/vehicles').as('createVehicleShouldNotRun');
+
     visitAs('/vehicles');
     cy.wait('@getVehicles');
 
@@ -240,6 +245,7 @@ describe('US-06 — Vehicle Management', () => {
     cy.get('#vehicleType').type('Xe tải lỗi số liệu');
     cy.get('#payloadKg').type('0');
     cy.get('#maxVolumeM3').type('0');
+
     cy.get('.ant-modal').within(() => {
       cy.contains('button', 'Đăng ký xe').click();
     });
@@ -265,6 +271,7 @@ describe('US-06 — Vehicle Management', () => {
     cy.get('#vehicleType').type('Xe tải nhỏ');
     cy.get('#payloadKg').type('2500');
     cy.get('#maxVolumeM3').type('12.5');
+
     cy.get('.ant-modal').within(() => {
       cy.contains('button', 'Đăng ký xe').click();
     });
