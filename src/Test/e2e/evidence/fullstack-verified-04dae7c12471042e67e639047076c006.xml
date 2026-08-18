@@ -1,9 +1,0 @@
-<?xml version="1.0" encoding="UTF-8"?>
-<testsuites name="Mocha Tests" time="6.518" tests="1" failures="0">
-  <testsuite name="Root Suite" timestamp="2026-08-13T11:14:45" tests="0" file="e2e\fullstack\us06-vehicles.fullstack.cy.ts" time="0.000" failures="0">
-  </testsuite>
-  <testsuite name="FULLSTACK US-06 — Vehicle Management" timestamp="2026-08-13T11:14:45" tests="1" time="6.515" failures="0">
-    <testcase name="FULLSTACK US-06 — Vehicle Management FS-06-01: admin thật tải vehicle list và fleet capacity" time="6.133" classname="FS-06-01: admin thật tải vehicle list và fleet capacity">
-    </testcase>
-  </testsuite>
-</testsuites>

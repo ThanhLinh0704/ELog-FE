@@ -46,6 +46,16 @@ Thumbs.db
 *.log
 logs/
 
+# Cypress test artifacts & screenshots
+cypress/screenshots/
+cypress/videos/
+src/Test/cypress/screenshots/
+src/Test/cypress/videos/
+src/Test/e2e/evidence/
+test-execution/
+*.xml
+*.ndjson
+
 # Local documentation artifacts (Markdown remains trackable)
 *.doc
 *.docx
@@ -67,3 +77,4 @@ logs/
 ~$*
 !*.md
 !**/*.md
+
