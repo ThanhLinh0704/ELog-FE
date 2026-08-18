@@ -1,37 +1,73 @@
 /// <reference types="cypress" />
-// ***********************************************
-// This example commands.ts shows you how to
-// create various custom commands and overwrite
-// existing commands.
-//
-// For more comprehensive examples of custom
-// commands please read more here:
-// https://on.cypress.io/custom-commands
-// ***********************************************
-//
-//
-// -- This is a parent command --
-// Cypress.Commands.add('login', (email, password) => { ... })
-//
-//
-// -- This is a child command --
-// Cypress.Commands.add('drag', { prevSubject: 'element'}, (subject, options) => { ... })
-//
-//
-// -- This is a dual command --
-// Cypress.Commands.add('dismiss', { prevSubject: 'optional'}, (subject, options) => { ... })
-//
-//
-// -- This will overwrite an existing command --
-// Cypress.Commands.overwrite('visit', (originalFn, url, options) => { ... })
-//
-// declare global {
-//   namespace Cypress {
-//     interface Chainable {
-//       login(email: string, password: string): Chainable<void>
-//       drag(subject: string, options?: Partial<TypeOptions>): Chainable<Element>
-//       dismiss(subject: string, options?: Partial<TypeOptions>): Chainable<Element>
-//       visit(originalFn: CommandOriginalFn, url: string, options: Partial<VisitOptions>): Chainable<Element>
-//     }
-//   }
-// }
+
+declare global {
+  namespace Cypress {
+    interface Chainable {
+      loginAs(username?: string, role?: 'ADMIN' | 'DISPATCHER' | 'DRIVER'): Chainable<void>;
+      visitWithAuth(url: string, username?: string, role?: 'ADMIN' | 'DISPATCHER' | 'DRIVER'): Chainable<void>;
+    }
+  }
+}
+
+const ALL_PERMS = [
+  'user:read', 'user:write', 'role:read', 'role:write',
+  'route:read', 'route:write', 'store:read', 'store:write',
+  'vehicle:read', 'vehicle:write', 'product:read', 'product:write',
+  'driver:read', 'driver:write',
+  'order:import',
+  'trip:read', 'trip:write', 'trip:confirm', 'trip:coordinate', 'trip:execute',
+  'kpi:read', 'planning-history:read'
+];
+
+const waitForUatStepDelay = () => {
+  cy.env(['UAT_STEP_DELAY_MS']).then((envValues) => {
+    const rawDelay = envValues?.UAT_STEP_DELAY_MS;
+    const delayMs = Number(rawDelay || 0);
+    if (delayMs > 0) {
+      cy.wait(delayMs, { log: false });
+    }
+  });
+};
+
+
+Cypress.Commands.add('loginAs', (username = 'dispatcher01', role = 'DISPATCHER') => {
+  cy.window().then((win) => {
+    const roles = role === 'ADMIN' ? ['ROLE_ADMIN', 'ADMIN', 'ROLE_DISPATCHER', 'DISPATCHER']
+      : role === 'DRIVER' ? ['ROLE_DRIVER', 'DRIVER']
+      : ['ROLE_DISPATCHER', 'DISPATCHER'];
+    
+    const perms = role === 'DRIVER' ? [] : ALL_PERMS;
+
+    win.localStorage.setItem('remember', 'true');
+    win.localStorage.setItem('accessToken', 'mock-uat-jwt-token');
+    win.localStorage.setItem('token', 'mock-uat-jwt-token');
+    win.localStorage.setItem('refreshToken', 'mock-uat-refresh-token');
+    win.localStorage.setItem('userId', role === 'ADMIN' ? '1' : role === 'DRIVER' ? '2' : '3');
+    win.localStorage.setItem('username', username);
+    win.localStorage.setItem('roles', JSON.stringify(roles));
+    win.localStorage.setItem('permissions', JSON.stringify(perms));
+  });
+});
+
+Cypress.Commands.add('visitWithAuth', (url: string, username = 'dispatcher01', role = 'DISPATCHER') => {
+  const roles = role === 'ADMIN' ? ['ROLE_ADMIN', 'ADMIN', 'ROLE_DISPATCHER', 'DISPATCHER']
+    : role === 'DRIVER' ? ['ROLE_DRIVER', 'DRIVER']
+    : ['ROLE_DISPATCHER', 'DISPATCHER'];
+  const perms = role === 'DRIVER' ? [] : ALL_PERMS;
+
+  cy.visit(url, {
+    onBeforeLoad(win) {
+      win.localStorage.setItem('remember', 'true');
+      win.localStorage.setItem('accessToken', 'mock-uat-jwt-token');
+      win.localStorage.setItem('token', 'mock-uat-jwt-token');
+      win.localStorage.setItem('refreshToken', 'mock-uat-refresh-token');
+      win.localStorage.setItem('userId', role === 'ADMIN' ? '1' : role === 'DRIVER' ? '2' : '3');
+      win.localStorage.setItem('username', username);
+      win.localStorage.setItem('roles', JSON.stringify(roles));
+      win.localStorage.setItem('permissions', JSON.stringify(perms));
+    },
+    failOnStatusCode: false
+  });
+
+  waitForUatStepDelay();
+});
