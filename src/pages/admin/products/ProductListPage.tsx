@@ -167,6 +167,18 @@ const ProductListPage: React.FC = () => {
       render: (name: string) => <span style={{ fontWeight: 500 }}>{name}</span>,
     },
     {
+      title: 'Thương hiệu',
+      dataIndex: 'brand',
+      key: 'brand',
+      render: (brand?: string | null) => brand || '—',
+    },
+    {
+      title: 'Nhóm hàng',
+      dataIndex: 'productGroup',
+      key: 'productGroup',
+      render: (group?: string | null) => group || '—',
+    },
+    {
       title: 'Trọng lượng',
       dataIndex: 'weightKg',
       key: 'weightKg',

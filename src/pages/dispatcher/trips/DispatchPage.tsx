@@ -22,6 +22,7 @@ import {
   ArrowLeftOutlined,
   LockOutlined,
   PrinterOutlined,
+  DownloadOutlined,
   WarningOutlined,
   CheckCircleOutlined,
   CarOutlined,
@@ -39,6 +40,8 @@ import {
   dispatchTrip,
   openHandoverSlip,
 } from '../../../api/tripApi';
+import { dispatchExportApi } from '../../../api/dispatchExportApi';
+import { downloadBlob } from '../../../utils/downloadBlob';
 import type { Trip, FleetCapacityCheck } from '../../../types/trip';
 import { usePermissions } from '../../../hooks/usePermissions';
 import { PERMISSIONS } from '../../../constants/permissions';
@@ -138,6 +141,7 @@ const DispatchPage: React.FC = () => {
   const [confirmModalOpen, setConfirmModalOpen] = useState(false);
   const [loadError, setLoadError] = useState<string | null>(null);
   const [handoverLoading, setHandoverLoading] = useState(false);
+  const [exportLoading, setExportLoading] = useState(false);
 
   // Outcome history panel (ELOG-141)
   const OUTCOME_HISTORY_PAGE_SIZE = 10;
@@ -232,6 +236,27 @@ const DispatchPage: React.FC = () => {
       }
     } finally {
       setHandoverLoading(false);
+    }
+  };
+
+  // ── Confirmed dispatch data export ───────────────────────────────────────
+  const handleExportDispatch = async () => {
+    if (!trip?.tripDraftId) return;
+    setExportLoading(true);
+    try {
+      const blob = await dispatchExportApi.exportSingleDispatch(trip.tripDraftId);
+      const stamp = new Date().toISOString().replace(/[-:T]/g, '').slice(0, 12);
+      downloadBlob(blob, `ELog_DispatchExport_${trip.tripDraftId}_${stamp}.xlsx`);
+      message.success('Xuất dữ liệu điều phối thành công');
+    } catch (err) {
+      const code = getErrorCode(err);
+      if (code === 'TRIP_NOT_DISPATCHED') {
+        message.error('Chuyến chưa được điều phối, không thể xuất dữ liệu.');
+      } else {
+        message.error(getErrorMessage(err, 'Không thể xuất dữ liệu điều phối. Vui lòng thử lại.'));
+      }
+    } finally {
+      setExportLoading(false);
     }
   };
 
@@ -360,6 +385,15 @@ const DispatchPage: React.FC = () => {
               onClick={handleOpenHandoverSlip}
             >
               In phiếu bàn giao
+            </Button>
+          )}
+          {isDispatched && (
+            <Button
+              icon={<DownloadOutlined />}
+              loading={exportLoading}
+              onClick={handleExportDispatch}
+            >
+              Xuất dữ liệu điều phối
             </Button>
           )}
           {!isDispatched && (
@@ -600,8 +634,20 @@ const DispatchPage: React.FC = () => {
                   size="large"
                   loading={handoverLoading}
                   onClick={handleOpenHandoverSlip}
+                  style={{ marginBottom: 8 }}
                 >
                   In phiếu bàn giao
+                </Button>
+              )}
+              {isDispatched && (
+                <Button
+                  block
+                  icon={<DownloadOutlined />}
+                  size="large"
+                  loading={exportLoading}
+                  onClick={handleExportDispatch}
+                >
+                  Xuất dữ liệu điều phối
                 </Button>
               )}
             </div>

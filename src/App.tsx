@@ -34,7 +34,6 @@ import VehicleAssignmentPage from './pages/dispatcher/trip-drafts/VehicleAssignm
 import DispatchPage from './pages/dispatcher/trips/DispatchPage';
 
 import MonitoringDashboardPage from './pages/dispatcher/monitoring/MonitoringDashboardPage';
-import MonitoringGuard from './guards/MonitoringGuard';
 import DriverMyTripsPage from './pages/driver/DriverMyTripsPage';
 import DriverGuard from './guards/DriverGuard';
 
@@ -285,21 +284,23 @@ function App() {
           }
         />
 
-        {/* US-17 Monitoring Dashboard */}
+        {/* US-17 Monitoring Dashboard — gated by trip:coordinate to match the
+            @PreAuthorize on GET /api/v1/dashboard/active-trips (DashboardController),
+            the API this page actually loads on mount. */}
         <Route
           path="/dispatcher/monitoring"
           element={
-            <MonitoringGuard>
+            <ProtectedPermissionRoute permission={PERMISSIONS.TRIP_COORDINATE}>
               <MonitoringDashboardPage />
-            </MonitoringGuard>
+            </ProtectedPermissionRoute>
           }
         />
         <Route
           path="/manager/monitoring"
           element={
-            <MonitoringGuard>
+            <ProtectedPermissionRoute permission={PERMISSIONS.TRIP_COORDINATE}>
               <MonitoringDashboardPage />
-            </MonitoringGuard>
+            </ProtectedPermissionRoute>
           }
         />
 

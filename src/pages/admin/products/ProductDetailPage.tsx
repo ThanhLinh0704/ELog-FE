@@ -234,6 +234,18 @@ const ProductDetailPage: React.FC = () => {
                   <Descriptions.Item label={<span style={{ fontWeight: 600 }}>Tên sản phẩm</span>}>
                     {product.productName}
                   </Descriptions.Item>
+                  <Descriptions.Item label={<span style={{ fontWeight: 600 }}>Thương hiệu</span>}>
+                    {product.brand || '—'}
+                  </Descriptions.Item>
+                  <Descriptions.Item label={<span style={{ fontWeight: 600 }}>Nhóm hàng</span>}>
+                    {product.productGroup || '—'}
+                  </Descriptions.Item>
+                  <Descriptions.Item label={<span style={{ fontWeight: 600 }}>Loại hàng hóa</span>}>
+                    {product.productType || '—'}
+                  </Descriptions.Item>
+                  <Descriptions.Item label={<span style={{ fontWeight: 600 }}>Dung tích (L) / KL giặt (kg)</span>}>
+                    {product.capacityValue != null ? product.capacityValue : '—'}
+                  </Descriptions.Item>
                   <Descriptions.Item label={<span style={{ fontWeight: 600 }}>Hình dáng</span>}>
                     {product.shape || '—'}
                   </Descriptions.Item>

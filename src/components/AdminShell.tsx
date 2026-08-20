@@ -124,7 +124,11 @@ const AdminShell: React.FC<AdminShellProps> = ({ currentUser, children }) => {
   const roleLabel = roles.map((role) => ROLE_LABELS[role] || role).join(', ') || 'User';
   const canViewImport = can(PERMISSIONS.ORDER_IMPORT) || can(PERMISSIONS.TRIP_READ);
   const canViewTripDraftsMenu = can(PERMISSIONS.TRIP_READ);
-  const canViewMonitoring = can(PERMISSIONS.TRIP_READ);
+  // GET /api/v1/dashboard/active-trips (loaded on mount by MonitoringDashboardPage)
+  // requires trip:coordinate, not trip:read — gate on the same permission the
+  // route actually needs so the tab doesn't show for a role that will just hit
+  // a 403 on click (was trip:read, which LOGISTICS_MANAGER has but the API rejects).
+  const canViewMonitoring = can(PERMISSIONS.TRIP_COORDINATE);
   const canViewTripOutcomes = can(PERMISSIONS.TRIP_READ);
   const canViewExceptions = can(PERMISSIONS.TRIP_READ);
   const canViewKpi = can(PERMISSIONS.KPI_READ);

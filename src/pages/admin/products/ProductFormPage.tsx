@@ -66,6 +66,10 @@ const ProductFormPage: React.FC = () => {
           form.setFieldsValue({
             sku: product.sku,
             productName: product.productName,
+            brand: product.brand,
+            productGroup: product.productGroup,
+            productType: product.productType,
+            capacityValue: product.capacityValue,
             lengthM: product.lengthM,
             widthM: product.widthM,
             heightM: product.heightM,
@@ -95,6 +99,10 @@ const ProductFormPage: React.FC = () => {
       const payload = {
         sku: values.sku.toUpperCase().trim(),
         productName: values.productName.trim(),
+        brand: values.brand?.trim() || null,
+        productGroup: values.productGroup?.trim() || null,
+        productType: values.productType?.trim() || null,
+        capacityValue: values.capacityValue != null ? values.capacityValue : null,
         lengthM: values.lengthM,
         widthM: values.widthM,
         heightM: values.heightM,
@@ -284,6 +292,50 @@ const ProductFormPage: React.FC = () => {
                         maxLength={200}
                       />
                     </Form.Item>
+
+                    <Row gutter={16}>
+                      <Col xs={24} sm={12}>
+                        <Form.Item
+                          label={<span style={{ fontWeight: 600, color: palette.textBody }}>Thương hiệu</span>}
+                          name="brand"
+                          rules={[{ max: 100, message: 'Thương hiệu không quá 100 ký tự.' }]}
+                        >
+                          <Input placeholder="Ví dụ: TOSHIBA" disabled={submitting} maxLength={100} />
+                        </Form.Item>
+                      </Col>
+                      <Col xs={24} sm={12}>
+                        <Form.Item
+                          label={<span style={{ fontWeight: 600, color: palette.textBody }}>Nhóm hàng</span>}
+                          name="productGroup"
+                          rules={[{ max: 100, message: 'Nhóm hàng không quá 100 ký tự.' }]}
+                        >
+                          <Input placeholder="Ví dụ: Tủ lạnh" disabled={submitting} maxLength={100} />
+                        </Form.Item>
+                      </Col>
+                      <Col xs={24} sm={12}>
+                        <Form.Item
+                          label={<span style={{ fontWeight: 600, color: palette.textBody }}>Loại hàng hóa</span>}
+                          name="productType"
+                          rules={[{ max: 100, message: 'Loại hàng hóa không quá 100 ký tự.' }]}
+                        >
+                          <Input placeholder="Ví dụ: 1.Tủ lạnh" disabled={submitting} maxLength={100} />
+                        </Form.Item>
+                      </Col>
+                      <Col xs={24} sm={12}>
+                        <Form.Item
+                          label={<span style={{ fontWeight: 600, color: palette.textBody }}>Dung tích (L) / KL giặt (kg)</span>}
+                          name="capacityValue"
+                          rules={[{ type: 'number', min: 0, message: 'Giá trị phải lớn hơn hoặc bằng 0' }]}
+                        >
+                          <InputNumber
+                            placeholder="Ví dụ: 515"
+                            style={{ width: '100%' }}
+                            min={0}
+                            disabled={submitting}
+                          />
+                        </Form.Item>
+                      </Col>
+                    </Row>
                   </Card>
 
                   <Card

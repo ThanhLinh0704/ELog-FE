@@ -10,6 +10,7 @@ import {
   Empty,
   Input,
   InputNumber,
+  message,
   Select,
   Space,
   Table,
@@ -17,11 +18,16 @@ import {
   Timeline,
   Typography,
 } from 'antd';
-import { AlertTriangle, Eye, Filter, History, RefreshCw, Truck } from 'lucide-react';
+import { AlertTriangle, Download, Eye, Filter, History, RefreshCw, Truck } from 'lucide-react';
 import type { ColumnsType } from 'antd/es/table';
 import dayjs from 'dayjs';
+import type { Dayjs } from 'dayjs';
 import AdminShell from '../../../components/AdminShell';
 import StatusBadge from '../../../components/StatusBadge';
+import { usePermissions } from '../../../hooks/usePermissions';
+import { PERMISSIONS } from '../../../constants/permissions';
+import { dispatchExportApi } from '../../../api/dispatchExportApi';
+import { downloadBlob } from '../../../utils/downloadBlob';
 import {
   searchPlanningEvents,
   type PlanningEventSearchFilters,
@@ -44,6 +50,7 @@ import {
 import { REASON_CODE_LABELS } from '../../../types/driverTrip';
 
 const { Text, Title } = Typography;
+const { RangePicker } = DatePicker;
 
 const DELIVERY_RESULT_LABEL: Record<string, string> = {
   DELIVERED: 'Giao thành công',
@@ -289,6 +296,45 @@ const PlanningAuditTab: React.FC = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
+  // Confirmed Dispatch Data Export — date-range mode. Gated separately from the tab's own
+  // planning-history:read visibility guard, because the export endpoint itself requires
+  // trip:coordinate or trip:read (see filemd/CONFIRMED_DISPATCH_EXPORT_BE_SPEC.md §7) — a
+  // user who can see this tab via planning-history:read alone may still lack export access.
+  const { canAny } = usePermissions();
+  const canExportDispatch = canAny([PERMISSIONS.TRIP_COORDINATE, PERMISSIONS.TRIP_READ]);
+  const [exportRange, setExportRange] = useState<[Dayjs, Dayjs] | null>(null);
+  const [exportLoading, setExportLoading] = useState(false);
+
+  const handleExportRange = async () => {
+    if (!exportRange) {
+      message.warning('Vui lòng chọn khoảng ngày trước khi xuất.');
+      return;
+    }
+    const [from, to] = exportRange;
+    setExportLoading(true);
+    try {
+      const blob = await dispatchExportApi.exportDispatchByDateRange(
+        from.format('YYYY-MM-DD'),
+        to.format('YYYY-MM-DD')
+      );
+      const stamp = new Date().toISOString().replace(/[-:T]/g, '').slice(0, 12);
+      downloadBlob(blob, `ELog_DispatchExport_${from.format('YYYYMMDD')}_to_${to.format('YYYYMMDD')}_${stamp}.xlsx`);
+      message.success('Xuất dữ liệu điều phối thành công');
+    } catch (err: unknown) {
+      const axErr = err as ApiError & { response?: { data?: { error?: { code?: string } } } };
+      const code = axErr?.response?.data?.error?.code;
+      if (code === 'DATE_RANGE_TOO_WIDE') {
+        message.error('Khoảng ngày quá rộng — tối đa 31 ngày mỗi lần xuất.');
+      } else if (code === 'RESOURCE_NOT_FOUND') {
+        message.warning('Không có dữ liệu điều phối đã xác nhận trong khoảng ngày đã chọn.');
+      } else {
+        message.error(getErrorMessage(err, 'Không thể xuất dữ liệu điều phối. Vui lòng thử lại.'));
+      }
+    } finally {
+      setExportLoading(false);
+    }
+  };
+
   const fetchData = useCallback(async () => {
     setLoading(true);
     setError(null);
@@ -392,6 +438,29 @@ const PlanningAuditTab: React.FC = () => {
         </Space>
       </Card>
 
+      {canExportDispatch && (
+        <Card size="small" style={{ borderRadius: 10 }}>
+          <Space wrap size={12} align="center">
+            <Download size={16} style={{ color: '#8c8c8c' }} />
+            <Text strong style={{ fontSize: 13 }}>Xuất dữ liệu điều phối đã xác nhận:</Text>
+            <RangePicker
+              format="DD/MM/YYYY"
+              value={exportRange}
+              onChange={(v) => setExportRange(v && v[0] && v[1] ? [v[0], v[1]] : null)}
+            />
+            <Button
+              type="primary"
+              icon={<Download size={14} />}
+              loading={exportLoading}
+              onClick={handleExportRange}
+            >
+              Xuất Excel
+            </Button>
+            <Text type="secondary" style={{ fontSize: 12 }}>Tối đa 31 ngày mỗi lần xuất.</Text>
+          </Space>
+        </Card>
+      )}
+
       {error && <Alert type="error" showIcon message={error} />}
 
       <Card style={{ borderRadius: 10 }} styles={{ body: { padding: 0 } }}>
@@ -430,6 +499,38 @@ const ActivityHistoryPage: React.FC = () => {
   } catch { /* */ }
   const currentUser = { id: Number(userId), username, fullName: username, roles };
 
+  const { can } = usePermissions();
+  // Each tab hits a different BE endpoint with its own @PreAuthorize:
+  // GET /api/v1/trip-outcome-events needs trip:read, GET /api/v1/planning-events
+  // needs planning-history:read specifically (trip:read does NOT satisfy it).
+  // The page-level route guard only checks "has at least one of the two" so the
+  // page itself stays reachable — gate each tab individually here so a role
+  // missing one of the two permissions doesn't see a tab that just 403s.
+  const tabItems = [
+    can(PERMISSIONS.TRIP_READ)
+      ? {
+        key: 'outcome',
+        label: (
+          <Space size={6}>
+            <Truck size={14} /> Lịch sử giao hàng
+          </Space>
+        ),
+        children: <OutcomeAuditTab />,
+      }
+      : null,
+    can(PERMISSIONS.PLANNING_HISTORY_READ)
+      ? {
+        key: 'planning',
+        label: (
+          <Space size={6}>
+            <AlertTriangle size={14} /> Lịch sử điều phối
+          </Space>
+        ),
+        children: <PlanningAuditTab />,
+      }
+      : null,
+  ].filter((item): item is Exclude<typeof item, null> => item !== null);
+
   return (
     <AdminShell currentUser={currentUser}>
       <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
@@ -452,29 +553,7 @@ const ActivityHistoryPage: React.FC = () => {
           </Text>
         </div>
 
-        <Tabs
-          defaultActiveKey="outcome"
-          items={[
-            {
-              key: 'outcome',
-              label: (
-                <Space size={6}>
-                  <Truck size={14} /> Lịch sử giao hàng
-                </Space>
-              ),
-              children: <OutcomeAuditTab />,
-            },
-            {
-              key: 'planning',
-              label: (
-                <Space size={6}>
-                  <AlertTriangle size={14} /> Lịch sử điều phối
-                </Space>
-              ),
-              children: <PlanningAuditTab />,
-            },
-          ]}
-        />
+        <Tabs defaultActiveKey={tabItems[0]?.key} items={tabItems} />
       </div>
     </AdminShell>
   );

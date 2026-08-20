@@ -155,6 +155,10 @@ export const productApi = {
 
     const requestBody = {
       productName: payload.productName.trim(),
+      brand: payload.brand?.trim() || null,
+      productGroup: payload.productGroup?.trim() || null,
+      productType: payload.productType?.trim() || null,
+      capacityValue: payload.capacityValue != null ? payload.capacityValue : null,
       weightKg: parseFloat(payload.weightKg.toFixed(3)),
       lengthM: parseFloat(payload.lengthM.toFixed(4)),
       widthM: parseFloat(payload.widthM.toFixed(4)),

@@ -1,49 +1,10 @@
 /* eslint-disable react-hooks/set-state-in-effect */
-import React, { useCallback, useEffect, useState } from 'react';
-import {
-  Alert,
-  Breadcrumb,
-  Button,
-  Card,
-  Col,
-  DatePicker,
-  Empty,
-  Progress,
-  Row,
-  Select,
-  Space,
-  Statistic,
-  Table,
-  Tabs,
-  Typography,
-} from 'antd';
-import {
-  AlertTriangle,
-  CheckCircle2,
-  Clock,
-  MapPin,
-  Package,
-  RefreshCw,
-  Truck,
-  User,
-  Weight,
-} from 'lucide-react';
-import {
-  CartesianGrid,
-  Legend,
-  Line,
-  LineChart,
-  ResponsiveContainer,
-  Tooltip as RechartsTooltip,
-  XAxis,
-  YAxis,
-} from 'recharts';
+import React, { useCallback, useEffect, useMemo, useState } from 'react';
+import { Alert, Breadcrumb, Button, DatePicker, Select, Space, Typography } from 'antd';
+import { RefreshCw } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import dayjs from 'dayjs';
-import type { ColumnsType } from 'antd/es/table';
 import AdminShell from '../../../components/AdminShell';
-import StatusBadge from '../../../components/StatusBadge';
-import { palette } from '../../../theme/tokens';
 import {
   getKpiByDriver,
   getKpiByRoute,
@@ -56,13 +17,17 @@ import type {
   KpiByRouteResponse,
   KpiByVehicleResponse,
   KpiDailyTrendResponse,
-  KpiDriverBreakdown,
   KpiPreset,
   KpiQueryParams,
   KpiRouteBreakdown,
   KpiSummaryResponse,
-  KpiVehicleBreakdown,
 } from '../../../types/kpi';
+import { generateOperationalInsights } from '../../../utils/insightGenerator';
+import KPIOverview from './components/KPIOverview';
+import OperationalInsights from './components/OperationalInsights';
+import TrendChart from './components/TrendChart';
+import PerformanceTabs from './components/PerformanceTabs';
+import RouteDetailDrawer from './components/RouteDetailDrawer';
 
 const { Text, Title } = Typography;
 const { RangePicker } = DatePicker;
@@ -85,42 +50,19 @@ function getErrorMessage(err: unknown, fallback: string): string {
   return axErr?.response?.data?.error?.message || axErr?.message || fallback;
 }
 
-function formatPct(value: number | null): string {
-  return value === null ? '—' : `${value.toFixed(1)}%`;
+/**
+ * Role-based information priority (spec §14). Both `/dispatcher/kpi` and `/manager/kpi`
+ * render this same page/permission (`kpi:read` — see filemd inspection report), so the
+ * distinction is made client-side from the stored role list, not a different route/page.
+ * Dispatcher gets Operational Insights surfaced above the trend chart (operational,
+ * "what needs attention now" framing); Manager/Admin get the trend chart first
+ * (overall-performance framing), with Insights still present, just lower.
+ */
+function getIsDispatcherFocus(roles: string[]): boolean {
+  const has = (r: string) => roles.includes(r);
+  if (has('LOGISTICS_MANAGER') || has('ADMIN')) return false;
+  return has('DISPATCHER');
 }
-
-function utilColor(value: number | null): string {
-  if (value === null) return palette.textFaint;
-  if (value >= 85) return palette.success;
-  if (value >= 60) return palette.primary;
-  return palette.gold;
-}
-
-function renderRateProgress(val: number | null) {
-  if (val === null) return <Text type="secondary">—</Text>;
-  const pct = Math.min(100, Math.max(0, Math.round(val * 10) / 10));
-  let strokeColor: string = palette.gold;
-  if (pct >= 90) strokeColor = palette.success;
-  else if (pct >= 70) strokeColor = palette.primary;
-  else if (pct < 60) strokeColor = palette.danger;
-
-  return (
-    <div style={{ display: 'flex', alignItems: 'center', gap: 8, minWidth: 120 }}>
-      <Progress
-        percent={pct}
-        size="small"
-        strokeColor={strokeColor}
-        showInfo={false}
-        style={{ flex: 1, margin: 0 }}
-      />
-      <Text strong style={{ fontSize: 12, minWidth: 44, textAlign: 'right', color: strokeColor }}>
-        {pct.toFixed(1)}%
-      </Text>
-    </div>
-  );
-}
-
-// ── Component ────────────────────────────────────────────────────────────────
 
 const KpiDashboardPage: React.FC = () => {
   const navigate = useNavigate();
@@ -131,8 +73,11 @@ const KpiDashboardPage: React.FC = () => {
   try {
     const rolesStr = localStorage.getItem('roles');
     if (rolesStr) roles = JSON.parse(rolesStr);
-  } catch { /* */ }
+  } catch {
+    /* */
+  }
   const currentUser = { id: Number(userId), username, fullName: username, roles };
+  const isDispatcherFocus = getIsDispatcherFocus(roles);
 
   const [periodMode, setPeriodMode] = useState<PeriodMode>('LAST_7_DAYS');
   const [customRange, setCustomRange] = useState<[dayjs.Dayjs, dayjs.Dayjs] | null>([
@@ -145,8 +90,12 @@ const KpiDashboardPage: React.FC = () => {
   const [byRoute, setByRoute] = useState<KpiByRouteResponse | null>(null);
   const [byDriver, setByDriver] = useState<KpiByDriverResponse | null>(null);
   const [byVehicle, setByVehicle] = useState<KpiByVehicleResponse | null>(null);
+  const [vehicleLoadFailed, setVehicleLoadFailed] = useState(false);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+
+  const [performanceTab, setPerformanceTab] = useState<'by-route' | 'by-driver' | 'by-vehicle'>('by-route');
+  const [selectedRoute, setSelectedRoute] = useState<KpiRouteBreakdown | null>(null);
 
   const buildQuery = useCallback((): KpiQueryParams | null => {
     if (periodMode === 'CUSTOM') {
@@ -164,6 +113,7 @@ const KpiDashboardPage: React.FC = () => {
     if (!query) return;
     setLoading(true);
     setError(null);
+    setVehicleLoadFailed(false);
     try {
       const [summaryRes, trendRes, byRouteRes, byDriverRes, byVehicleRes] = await Promise.all([
         getKpiSummary(query),
@@ -172,6 +122,7 @@ const KpiDashboardPage: React.FC = () => {
         getKpiByDriver(query),
         getKpiByVehicle(query).catch((err) => {
           console.warn('Failed to load vehicle KPI breakdown:', err);
+          setVehicleLoadFailed(true);
           return null;
         }),
       ]);
@@ -191,160 +142,59 @@ const KpiDashboardPage: React.FC = () => {
     void fetchAll();
   }, [fetchAll]);
 
-  const chartData = (trend?.data ?? []).map((point) => ({
-    date: dayjs(point.date).format('DD/MM'),
-    onTimeRatePct: point.onTimeRatePct,
-    volumeUtilPct: point.volumeUtilPct,
-  }));
+  const insights = useMemo(
+    () =>
+      generateOperationalInsights({
+        routes: byRoute?.routes ?? null,
+        vehicles: byVehicle?.vehicles ?? null,
+        summary,
+      }),
+    [byRoute, byVehicle, summary]
+  );
 
-  const routeColumns: ColumnsType<KpiRouteBreakdown> = [
-    { title: 'Mã tuyến', dataIndex: 'routeCode', key: 'routeCode', width: 110, render: (code: string) => <Text strong style={{ color: palette.primary }}>{code}</Text> },
-    { title: 'Tên tuyến', dataIndex: 'routeName', key: 'routeName' },
-    { title: 'Số chuyến', dataIndex: 'totalTrips', key: 'totalTrips', width: 100, align: 'right' },
-    {
-      title: 'Tỷ lệ đúng giờ',
-      dataIndex: 'onTimeRatePct',
-      key: 'onTimeRatePct',
-      width: 170,
-      sorter: (a, b) => (a.onTimeRatePct ?? -1) - (b.onTimeRatePct ?? -1),
-      defaultSortOrder: 'ascend',
-      render: (val: number | null) => renderRateProgress(val),
+  const handleRouteAction = useCallback(
+    (routeCode: string) => {
+      const route = byRoute?.routes.find((r) => r.routeCode === routeCode) ?? null;
+      if (route) setSelectedRoute(route);
     },
-    {
-      title: 'Tỷ lệ lấp đầy thể tích',
-      dataIndex: 'avgVolumeUtilPct',
-      key: 'avgVolumeUtilPct',
-      width: 170,
-      sorter: (a, b) => (a.avgVolumeUtilPct ?? -1) - (b.avgVolumeUtilPct ?? -1),
-      render: (val: number | null) => renderRateProgress(val),
-    },
-    {
-      title: 'Sự cố',
-      key: 'exceptions',
-      width: 140,
-      align: 'right',
-      render: (_, record) => (
-        <Space size={4}>
-          <Text strong style={{ color: record.totalExceptions > 0 ? palette.danger : undefined }}>{record.totalExceptions}</Text>
-          {record.totalRejections > 0 && (
-            <Text type="secondary" style={{ fontSize: 12 }}>
-              ({record.totalRejections} từ chối)
-            </Text>
-          )}
-        </Space>
-      ),
-    },
-  ];
+    [byRoute]
+  );
 
-  const driverColumns: ColumnsType<KpiDriverBreakdown> = [
-    {
-      title: 'Tài xế',
-      key: 'driver',
-      render: (_, record) => (
-        <div>
-          <Text strong>{record.fullName}</Text>
-          <div>
-            <Text type="secondary" style={{ fontSize: 12 }}>
-              {[record.driverCode, record.phoneNumber].filter(Boolean).join(' · ') || '—'}
-            </Text>
-          </div>
-        </div>
-      ),
-    },
-    { title: 'Số chuyến', dataIndex: 'totalTrips', key: 'totalTrips', width: 100, align: 'right' },
-    {
-      title: 'Quãng đường',
-      dataIndex: 'totalDistanceKm',
-      key: 'totalDistanceKm',
-      width: 130,
-      align: 'right',
-      render: (val: number | null) => (val === null ? '—' : `${val.toFixed(1)} km`),
-    },
-    {
-      title: 'Tỷ lệ đúng giờ',
-      dataIndex: 'onTimeRatePct',
-      key: 'onTimeRatePct',
-      width: 170,
-      sorter: (a, b) => (a.onTimeRatePct ?? -1) - (b.onTimeRatePct ?? -1),
-      render: (val: number | null) => renderRateProgress(val),
-    },
-    {
-      title: 'Sự cố',
-      dataIndex: 'totalExceptions',
-      key: 'totalExceptions',
-      width: 100,
-      align: 'right',
-      render: (val: number) => <Text strong style={{ color: val > 0 ? palette.danger : undefined }}>{val}</Text>,
-    },
-  ];
+  const handleVehicleAction = useCallback(() => {
+    setPerformanceTab('by-vehicle');
+    document.getElementById('performance-tabs-section')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  }, []);
 
-  const vehicleColumns: ColumnsType<KpiVehicleBreakdown> = [
-    {
-      title: 'Biển số xe',
-      dataIndex: 'licensePlate',
-      key: 'licensePlate',
-      width: 130,
-      render: (plate: string) => <StatusBadge icon={<Truck size={12} />}>{plate}</StatusBadge>,
-    },
-    {
-      title: 'Loại xe',
-      dataIndex: 'vehicleType',
-      key: 'vehicleType',
-      width: 130,
-      render: (t: string | null) => t || '—',
-    },
-    {
-      title: 'Tải trọng / Thể tích',
-      key: 'capacity',
-      width: 150,
-      render: (_, r) => (
-        <Text style={{ fontSize: 12 }}>
-          {r.payloadKg ? `${r.payloadKg} kg` : '—'} / {r.maxVolumeM3 ? `${r.maxVolumeM3} m³` : '—'}
-        </Text>
-      ),
-    },
-    { title: 'Số chuyến', dataIndex: 'totalTrips', key: 'totalTrips', width: 90, align: 'right' },
-    {
-      title: 'Quãng đường',
-      dataIndex: 'totalDistanceKm',
-      key: 'totalDistanceKm',
-      width: 120,
-      align: 'right',
-      render: (val: number | null) => (val === null ? '—' : `${val.toFixed(1)} km`),
-    },
-    {
-      title: 'Lấp đầy thể tích',
-      dataIndex: 'avgVolumeUtilPct',
-      key: 'avgVolumeUtilPct',
-      width: 170,
-      sorter: (a, b) => (a.avgVolumeUtilPct ?? -1) - (b.avgVolumeUtilPct ?? -1),
-      render: (val: number | null) => renderRateProgress(val),
-    },
-    {
-      title: 'Lấp đầy tải trọng',
-      dataIndex: 'avgWeightUtilPct',
-      key: 'avgWeightUtilPct',
-      width: 170,
-      sorter: (a, b) => (a.avgWeightUtilPct ?? -1) - (b.avgWeightUtilPct ?? -1),
-      render: (val: number | null) => renderRateProgress(val),
-    },
-    {
-      title: 'Tỷ lệ đúng giờ',
-      dataIndex: 'onTimeRatePct',
-      key: 'onTimeRatePct',
-      width: 170,
-      sorter: (a, b) => (a.onTimeRatePct ?? -1) - (b.onTimeRatePct ?? -1),
-      render: (val: number | null) => renderRateProgress(val),
-    },
-    {
-      title: 'Sự cố',
-      dataIndex: 'totalExceptions',
-      key: 'totalExceptions',
-      width: 90,
-      align: 'right',
-      render: (val: number) => <Text strong style={{ color: val > 0 ? palette.danger : undefined }}>{val}</Text>,
-    },
-  ];
+  const handleExceptionAction = useCallback(() => {
+    navigate('/dispatcher/exceptions');
+  }, [navigate]);
+
+  const insightsSection = (
+    <OperationalInsights
+      insights={insights}
+      loading={loading}
+      onRouteAction={handleRouteAction}
+      onVehicleAction={handleVehicleAction}
+      onExceptionAction={handleExceptionAction}
+    />
+  );
+
+  const trendSection = <TrendChart trend={trend} loading={loading} />;
+
+  const performanceSection = (
+    <div id="performance-tabs-section">
+      <PerformanceTabs
+        byRoute={byRoute}
+        byDriver={byDriver}
+        byVehicle={byVehicle}
+        vehicleLoadFailed={vehicleLoadFailed}
+        loading={loading}
+        activeKey={performanceTab}
+        onTabChange={(key) => setPerformanceTab(key as typeof performanceTab)}
+        onRouteRowClick={(route) => setSelectedRoute(route)}
+      />
+    </div>
+  );
 
   return (
     <AdminShell currentUser={currentUser}>
@@ -353,29 +203,60 @@ const KpiDashboardPage: React.FC = () => {
 
         <div
           style={{
-            background: 'linear-gradient(135deg, #1e293b 0%, #0f172a 100%)',
-            padding: '20px 24px',
-            borderRadius: 12,
-            boxShadow: '0 8px 20px rgba(13, 23, 42, 0.18)',
+            background: 'linear-gradient(135deg, #0f172a 0%, #1e293b 100%)',
+            padding: '22px 28px',
+            borderRadius: 16,
+            boxShadow: '0 10px 25px -5px rgba(15, 23, 42, 0.3)',
+            border: '1px solid rgba(255, 255, 255, 0.08)',
             color: '#ffffff',
+            position: 'relative',
+            overflow: 'hidden',
           }}
         >
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 12 }}>
+          <div
+            style={{
+              position: 'absolute',
+              top: 0,
+              right: 0,
+              width: 300,
+              height: '100%',
+              background: 'radial-gradient(circle, rgba(59, 130, 246, 0.12) 0%, rgba(0,0,0,0) 70%)',
+              pointerEvents: 'none',
+            }}
+          />
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 16, position: 'relative', zIndex: 1 }}>
             <div>
-              <Title level={4} style={{ margin: 0, color: '#ffffff' }}>
-                Báo cáo KPI & Hiệu suất vận hành
-              </Title>
-              <Text style={{ color: '#94a3b8', fontSize: 13 }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+                <Title level={4} style={{ margin: 0, color: '#ffffff', fontWeight: 700, letterSpacing: '-0.3px' }}>
+                  Báo cáo KPI & Hiệu suất vận hành
+                </Title>
+                <span
+                  style={{
+                    background: 'rgba(59, 130, 246, 0.2)',
+                    color: '#60a5fa',
+                    border: '1px solid rgba(96, 165, 250, 0.3)',
+                    padding: '2px 10px',
+                    borderRadius: 20,
+                    fontSize: 11,
+                    fontWeight: 600,
+                    textTransform: 'uppercase',
+                    letterSpacing: '0.5px',
+                  }}
+                >
+                  Live Monitoring
+                </span>
+              </div>
+              <Text style={{ color: '#94a3b8', fontSize: 13, display: 'inline-block', marginTop: 4 }}>
                 {summary
-                  ? `${dayjs(summary.period.startDate).format('DD/MM/YYYY')} — ${dayjs(summary.period.endDate).format('DD/MM/YYYY')}`
-                  : ' '}
+                  ? `Kỳ báo cáo: ${dayjs(summary.period.startDate).format('DD/MM/YYYY')} — ${dayjs(summary.period.endDate).format('DD/MM/YYYY')}`
+                  : 'Đang kết nối dữ liệu...'}
               </Text>
             </div>
             <Space wrap size={12}>
               <Select
                 value={periodMode}
                 onChange={setPeriodMode}
-                style={{ width: 180 }}
+                style={{ width: 190 }}
                 options={[...PRESET_OPTIONS, { value: 'CUSTOM', label: 'Tuỳ chỉnh khoảng ngày' }]}
               />
               {periodMode === 'CUSTOM' && (
@@ -388,7 +269,18 @@ const KpiDashboardPage: React.FC = () => {
                   allowClear={false}
                 />
               )}
-              <Button icon={<RefreshCw size={14} />} onClick={() => fetchAll()} loading={loading}>
+              <Button
+                type="primary"
+                icon={<RefreshCw size={14} />}
+                onClick={() => fetchAll()}
+                loading={loading}
+                style={{
+                  background: 'linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%)',
+                  borderColor: '#2563eb',
+                  fontWeight: 600,
+                  boxShadow: '0 4px 12px rgba(37, 99, 235, 0.35)',
+                }}
+              >
                 Làm mới
               </Button>
             </Space>
@@ -400,185 +292,29 @@ const KpiDashboardPage: React.FC = () => {
             type="error"
             showIcon
             message={error}
-            action={<Button size="small" onClick={() => fetchAll()}>Thử lại</Button>}
+            action={
+              <Button size="small" onClick={() => fetchAll()}>
+                Thử lại
+              </Button>
+            }
           />
         )}
 
-        <Row gutter={[16, 16]}>
-          <Col xs={24} sm={12} md={8} lg={4} style={{ flex: '1 1 180px' }}>
-            <Card size="small" style={{ borderRadius: 12, height: '100%', boxShadow: palette.cardShadow, border: `1px solid ${palette.borderSoft}` }} loading={loading && !summary}>
-              <Statistic
-                title={<Space size={6}><Clock size={14} style={{ color: palette.primary }} /> Tỷ lệ đúng giờ</Space>}
-                value={summary ? formatPct(summary.onTimeDelivery.rate) : '—'}
-                valueStyle={{ color: utilColor(summary?.onTimeDelivery.rate ?? null), fontWeight: 700 }}
-              />
-              {summary && (
-                <Text type="secondary" style={{ fontSize: 12 }}>
-                  {summary.onTimeDelivery.onTimeStops}/{summary.onTimeDelivery.totalProcessedStops} điểm dừng
-                </Text>
-              )}
-            </Card>
-          </Col>
-          <Col xs={24} sm={12} md={8} lg={4} style={{ flex: '1 1 180px' }}>
-            <Card size="small" style={{ borderRadius: 12, height: '100%', boxShadow: palette.cardShadow, border: `1px solid ${palette.borderSoft}` }} loading={loading && !summary}>
-              <Statistic
-                title={<Space size={6}><Package size={14} style={{ color: palette.success }} /> Lấp đầy thể tích</Space>}
-                value={summary ? formatPct(summary.fleetUtilization.avgVolumeUtilizationPct) : '—'}
-                valueStyle={{ color: utilColor(summary?.fleetUtilization.avgVolumeUtilizationPct ?? null), fontWeight: 700 }}
-              />
-            </Card>
-          </Col>
-          <Col xs={24} sm={12} md={8} lg={4} style={{ flex: '1 1 180px' }}>
-            <Card size="small" style={{ borderRadius: 12, height: '100%', boxShadow: palette.cardShadow, border: `1px solid ${palette.borderSoft}` }} loading={loading && !summary}>
-              <Statistic
-                title={<Space size={6}><Weight size={14} style={{ color: '#8b5cf6' }} /> Lấp đầy tải trọng</Space>}
-                value={summary ? formatPct(summary.fleetUtilization.avgWeightUtilizationPct) : '—'}
-                valueStyle={{ color: utilColor(summary?.fleetUtilization.avgWeightUtilizationPct ?? null), fontWeight: 700 }}
-              />
-            </Card>
-          </Col>
-          <Col xs={24} sm={12} md={8} lg={4} style={{ flex: '1 1 180px' }}>
-            <Card size="small" style={{ borderRadius: 12, height: '100%', boxShadow: palette.cardShadow, border: `1px solid ${palette.borderSoft}` }} loading={loading && !summary}>
-              <Statistic
-                title={<Space size={6}><CheckCircle2 size={14} style={{ color: '#06b6d4' }} /> Chuyến hoàn thành</Space>}
-                value={summary ? formatPct(summary.tripCompletion.rate) : '—'}
-                valueStyle={{ color: utilColor(summary?.tripCompletion.rate ?? null), fontWeight: 700 }}
-              />
-              {summary && (
-                <Text type="secondary" style={{ fontSize: 12 }}>
-                  {summary.tripCompletion.completedTrips}/{summary.tripCompletion.totalTrips} chuyến
-                </Text>
-              )}
-            </Card>
-          </Col>
-          <Col xs={24} sm={12} md={8} lg={4} style={{ flex: '1 1 180px' }}>
-            <Card size="small" style={{ borderRadius: 12, height: '100%', boxShadow: palette.cardShadow, border: `1px solid ${palette.borderSoft}` }} loading={loading && !summary}>
-              <Statistic
-                title={<Space size={6}><AlertTriangle size={14} style={{ color: palette.danger }} /> Tỷ lệ sự cố</Space>}
-                value={summary ? formatPct(summary.exceptions.exceptionRate) : '—'}
-                valueStyle={{ color: summary && summary.exceptions.exceptionRate !== null && summary.exceptions.exceptionRate > 15 ? '#ff4d4f' : undefined, fontWeight: 700 }}
-              />
-              {summary && (
-                <Text type="secondary" style={{ fontSize: 12 }}>
-                  {summary.exceptions.totalTimeExceptions} trễ giờ · {summary.exceptions.totalRejections} từ chối
-                </Text>
-              )}
-            </Card>
-          </Col>
-        </Row>
+        <KPIOverview summary={summary} loading={loading} />
 
-        {/* Daily Trend Chart */}
-        <Card
-          title="Xu hướng vận hành: Tỷ lệ đúng giờ & Tỷ lệ lấp đầy thể tích"
-          size="small"
-          style={{ borderRadius: 12, boxShadow: palette.cardShadow, border: `1px solid ${palette.borderSoft}` }}
-          loading={loading && !trend}
-        >
-          {chartData.length === 0 ? (
-            <Empty description="Không có dữ liệu trong khoảng thời gian này." />
-          ) : (
-            <ResponsiveContainer width="100%" height={280}>
-              <LineChart data={chartData} margin={{ top: 8, right: 16, left: 0, bottom: 0 }}>
-                <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" />
-                <XAxis dataKey="date" tick={{ fontSize: 12 }} />
-                <YAxis tick={{ fontSize: 12 }} unit="%" domain={[0, 100]} />
-                <RechartsTooltip formatter={(value) => `${Number(value).toFixed(1)}%`} />
-                <Legend />
-                <Line
-                  type="monotone"
-                  dataKey="onTimeRatePct"
-                  name="Tỷ lệ đúng giờ"
-                  stroke={palette.primary}
-                  strokeWidth={2.5}
-                  connectNulls={false}
-                  dot={{ r: 4 }}
-                />
-                <Line
-                  type="monotone"
-                  dataKey="volumeUtilPct"
-                  name="Tỷ lệ lấp đầy thể tích"
-                  stroke={palette.success}
-                  strokeWidth={2.5}
-                  connectNulls={false}
-                  dot={{ r: 4 }}
-                />
-              </LineChart>
-            </ResponsiveContainer>
-          )}
-        </Card>
-
-        {/* Unified Breakdown Section using Tabs */}
-        <Card
-          size="small"
-          style={{ borderRadius: 12, boxShadow: palette.cardShadow, border: `1px solid ${palette.borderSoft}` }}
-          styles={{ body: { padding: '0 16px 16px 16px' } }}
-        >
-          <Tabs
-            defaultActiveKey="by-route"
-            items={[
-              {
-                key: 'by-route',
-                label: (
-                  <Space size={6}>
-                    <MapPin size={16} />
-                    <span>Hiệu suất theo Tuyến ({byRoute?.routes.length ?? 0})</span>
-                  </Space>
-                ),
-                children: (
-                  <Table<KpiRouteBreakdown>
-                    columns={routeColumns}
-                    dataSource={byRoute?.routes ?? []}
-                    rowKey="routeCode"
-                    pagination={{ defaultPageSize: 5, pageSizeOptions: ['5', '10', '20', '50', '100'], showSizeChanger: true }}
-                    loading={loading && !byRoute}
-                    locale={{ emptyText: <Empty description="Không có tuyến nào có chuyến trong kỳ." /> }}
-                    scroll={{ x: 800 }}
-                  />
-                ),
-              },
-              {
-                key: 'by-driver',
-                label: (
-                  <Space size={6}>
-                    <User size={16} />
-                    <span>Hiệu suất theo Tài xế ({byDriver?.drivers.length ?? 0})</span>
-                  </Space>
-                ),
-                children: (
-                  <Table<KpiDriverBreakdown>
-                    columns={driverColumns}
-                    dataSource={byDriver?.drivers ?? []}
-                    rowKey="driverId"
-                    pagination={{ defaultPageSize: 5, pageSizeOptions: ['5', '10', '20', '50', '100'], showSizeChanger: true }}
-                    loading={loading && !byDriver}
-                    locale={{ emptyText: <Empty description="Không có tài xế nào có chuyến trong kỳ." /> }}
-                    scroll={{ x: 800 }}
-                  />
-                ),
-              },
-              {
-                key: 'by-vehicle',
-                label: (
-                  <Space size={6}>
-                    <Truck size={16} />
-                    <span>Hiệu suất theo Phương tiện / Xe ({byVehicle?.vehicles.length ?? 0})</span>
-                  </Space>
-                ),
-                children: (
-                  <Table<KpiVehicleBreakdown>
-                    columns={vehicleColumns}
-                    dataSource={byVehicle?.vehicles ?? []}
-                    rowKey="vehicleId"
-                    pagination={{ defaultPageSize: 5, pageSizeOptions: ['5', '10', '20', '50', '100'], showSizeChanger: true }}
-                    loading={loading && !byVehicle}
-                    locale={{ emptyText: <Empty description="Không có xe nào có chuyến trong kỳ." /> }}
-                    scroll={{ x: 1050 }}
-                  />
-                ),
-              },
-            ]}
-          />
-        </Card>
+        {isDispatcherFocus ? (
+          <>
+            {insightsSection}
+            {performanceSection}
+            {trendSection}
+          </>
+        ) : (
+          <>
+            {trendSection}
+            {performanceSection}
+            {insightsSection}
+          </>
+        )}
 
         {summary && summary.exceptions.unresolvedCount > 0 && (
           <Alert
@@ -586,13 +322,15 @@ const KpiDashboardPage: React.FC = () => {
             showIcon
             message={`Còn ${summary.exceptions.unresolvedCount} ngoại lệ chưa xử lý trong kỳ.`}
             action={
-              <Button size="small" onClick={() => navigate('/dispatcher/exceptions')}>
+              <Button size="small" onClick={handleExceptionAction}>
                 Xem ngoại lệ
               </Button>
             }
           />
         )}
       </div>
+
+      <RouteDetailDrawer route={selectedRoute} onClose={() => setSelectedRoute(null)} />
     </AdminShell>
   );
 };

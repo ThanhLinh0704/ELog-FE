@@ -4,6 +4,10 @@ export interface Product {
   id: string;
   sku: string;
   productName: string;
+  brand?: string | null;
+  productGroup?: string | null;
+  productType?: string | null;
+  capacityValue?: number | null;
   lengthM: number;
   widthM: number;
   heightM: number;
