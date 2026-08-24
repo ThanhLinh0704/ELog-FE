@@ -262,14 +262,6 @@ const ImportBatchDetailPage: React.FC = () => {
               <Text strong style={{ fontSize: 14 }}>{formatDateTime(uploadedAt)}</Text>
             </div>
           </Col>
-          <Col xs={24} sm={12} md={8}>
-            <div style={{ display: 'flex', flexDirection: 'column' }}>
-              <Text type="secondary" style={{ fontSize: 13 }}>Trạng thái phân phối</Text>
-              <div>
-                <ImportStatusTag isActive={isActive} />
-              </div>
-            </div>
-          </Col>
         </Row>
 
         <Divider style={{ margin: '20px 0' }} />

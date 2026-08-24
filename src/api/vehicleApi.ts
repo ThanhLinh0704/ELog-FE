@@ -2,6 +2,24 @@ import { USE_MOCK_API } from '../config';
 import axiosInstance from './axiosInstance';
 import { mockVehicleApi } from '../mocks/mockVehicles';
 
+/**
+ * ASSIGNED = đã phân công, chờ dispatch · DISPATCHED = đã điều phối, chưa xuất phát ·
+ * IN_PROGRESS = đang thực hiện chuyến · RETURNING = đã hoàn thành, chưa xác nhận về kho ·
+ * COMPLETED_RETURNED = đã hoàn thành và đã xác nhận về kho (chỉ trả về khi gọi `getVehicles`
+ * kèm `date` — xem tham số `date` bên dưới).
+ * Xem filemd/FLEET-STATUS-DASHBOARD-ADJUSTED-SPEC.md mục 0.
+ */
+export type VehicleTripPhase = 'ASSIGNED' | 'DISPATCHED' | 'IN_PROGRESS' | 'RETURNING' | 'COMPLETED_RETURNED';
+
+export interface VehicleCurrentTrip {
+  tripId: number;
+  routeCode: string | null;
+  driverName: string | null;
+  deliveryDate: string | null;
+  phase: VehicleTripPhase;
+  estimatedCompletionAt: string | null;
+}
+
 export interface VehicleItem {
   id: number;
   vehicleCode: string;
@@ -28,6 +46,7 @@ export interface VehicleItem {
   isActive: boolean;
   createdAt?: string | null;
   updatedAt?: string | null;
+  currentTrip?: VehicleCurrentTrip | null;
 }
 
 export interface VehiclePageResponse {
@@ -44,6 +63,9 @@ export interface VehicleQueryParams {
   page?: number;
   size?: number;
   sort?: string;
+  /** yyyy-MM-dd — when set, `currentTrip` on each vehicle reflects that specific date's trip
+   *  (including COMPLETED_RETURNED) instead of "whatever's active right now". */
+  date?: string;
 }
 
 export interface VehiclePayload {
@@ -61,6 +83,8 @@ export interface VehiclePayload {
   averageSpeedKmh?: number | null;
   costPerKm?: number | null;
   status?: 'AVAILABLE' | 'IN_USE' | 'MAINTENANCE' | 'OUT_OF_SERVICE';
+  /** Cùng 1 request set cả status lẫn isActive — xem VehiclesPage.tsx effectiveStatusToPayload(). */
+  isActive?: boolean;
   assignedDriverId?: number | null;
   imageUrl?: string | null;
   permitInfo?: string | null;
@@ -160,6 +184,7 @@ function normalizeVehicle(raw: any): VehicleItem {
     isActive: raw.isActive ?? raw.is_active ?? true,
     createdAt: raw.createdAt ?? raw.created_at ?? null,
     updatedAt: raw.updatedAt ?? raw.updated_at ?? null,
+    currentTrip: raw.currentTrip ?? raw.current_trip ?? null,
   };
 }
 
@@ -282,6 +307,7 @@ export const vehicleApi = {
       page,
       size,
       sort: params.sort ?? 'id,desc',
+      date: params.date,
     });
 
     const data = await handleAxiosCall<any>(() =>
@@ -370,6 +396,7 @@ export const vehicleApi = {
           averageSpeedKmh: payload.averageSpeedKmh,
           costPerKm: payload.costPerKm,
           status: payload.status,
+          isActive: payload.isActive,
           assignedDriverId: payload.assignedDriverId ?? null,
           imageUrl: payload.imageUrl?.trim() || null,
           permitInfo: payload.permitInfo?.trim() || null,

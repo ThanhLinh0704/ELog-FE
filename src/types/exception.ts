@@ -4,7 +4,11 @@
 // ── Enums ────────────────────────────────────────────────────────────────────
 
 /** Backend: ExceptionType enum */
-export type ExceptionType = 'TIME_EXCEPTION' | 'DELIVERY_REJECTION';
+export type ExceptionType =
+  | 'TIME_EXCEPTION'
+  | 'DELIVERY_REJECTION'
+  | 'TRIP_STALE_UNSTARTED'
+  | 'TRIP_START_DEADLINE_EXCEEDED';
 
 /**
  * Rejection sub-type — stored as prefix in description column: "[STORE_CLOSED] ..."
@@ -116,7 +120,10 @@ export interface ExceptionListItem {
  * Returned by GET /api/v1/exceptions.
  */
 export interface ExceptionListResponse {
-  date: string;
+  /** Set when queried by a single date; null when queried by fromDate/toDate range. */
+  date: string | null;
+  fromDate?: string | null;
+  toDate?: string | null;
   totalCount: number;
   unresolvedCount: number;
   exceptions: ExceptionListItem[];
@@ -144,7 +151,11 @@ export interface ResolveExceptionRequest {
 // ── Filter interface for API calls ───────────────────────────────────────────
 
 export interface ExceptionFilters {
+  /** Single-day filter. Ignored if `fromDate`/`toDate` are both set. */
   date?: string;
+  /** Date-range filter — pass both together. */
+  fromDate?: string;
+  toDate?: string;
   type?: ExceptionTypeFilter;
   resolved?: ExceptionResolvedFilter;
 }

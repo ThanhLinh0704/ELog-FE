@@ -129,6 +129,18 @@ export interface StopArriveResponse {
   message: string;
 }
 
+// ── TripStatusSummaryResponse (GET /api/v1/dashboard/trip-status-summary) ───────
+
+/** Backend: TripStatusSummaryResponse */
+export interface TripStatusSummaryResponse {
+  date: string;
+  totalCount: number;
+  validatedCount: number;
+  dispatchedCount: number;
+  inProgressCount: number;
+  completedCount: number;
+}
+
 // ── StopCompleteResponse (POST /api/v1/trip-stops/{id}/complete) ────────────────
 
 /** Backend: StopCompleteResponse.NextStopInfo */

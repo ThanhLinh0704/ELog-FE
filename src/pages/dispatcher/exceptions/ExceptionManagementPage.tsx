@@ -1,5 +1,6 @@
 /* eslint-disable react-hooks/set-state-in-effect */
 import React, { useEffect, useState, useCallback, useRef } from 'react';
+import { useSearchParams } from 'react-router-dom';
 import {
   Card,
   Table,
@@ -34,6 +35,8 @@ import {
 } from 'lucide-react';
 import AdminShell from '../../../components/AdminShell';
 import StatusBadge from '../../../components/StatusBadge';
+import { usePermissions } from '../../../hooks/usePermissions';
+import { PERMISSIONS } from '../../../constants/permissions';
 import {
   getExceptions,
   getExceptionById,
@@ -51,14 +54,25 @@ import dayjs from 'dayjs';
 
 const { Text, Title } = Typography;
 const { TextArea } = Input;
+const { RangePicker } = DatePicker;
 
 const REFRESH_INTERVAL_MS = 60_000; // 60s — same as US-17
+
+// Quick-select presets on the range picker, same period lengths as the KPI dashboard's
+// preset dropdown, so "last 7 days" here means the same thing there.
+const RANGE_PRESETS: { label: string; value: [dayjs.Dayjs, dayjs.Dayjs] }[] = [
+  { label: 'Hôm nay', value: [dayjs(), dayjs()] },
+  { label: '7 ngày gần nhất', value: [dayjs().subtract(6, 'day'), dayjs()] },
+  { label: '30 ngày gần nhất', value: [dayjs().subtract(29, 'day'), dayjs()] },
+];
 
 // ── Vietnamese labels ────────────────────────────────────────────────────────
 
 const EXCEPTION_TYPE_LABELS: Record<string, string> = {
   TIME_EXCEPTION: 'Trễ ETA',
   DELIVERY_REJECTION: 'Từ chối giao hàng',
+  TRIP_STALE_UNSTARTED: 'Chuyến quá hạn nhiều ngày chưa bắt đầu',
+  TRIP_START_DEADLINE_EXCEEDED: 'Quá hạn bắt đầu chuyến',
 };
 
 const REJECTION_TYPE_LABELS: Record<string, string> = {
@@ -153,11 +167,27 @@ const ExceptionManagementPage: React.FC = () => {
     if (rolesStr) roles = JSON.parse(rolesStr);
   } catch { /* */ }
   const currentUser = { id: Number(userId), username, fullName: username, roles };
+  const { can } = usePermissions();
+  const canResolve = can(PERMISSIONS.TRIP_COORDINATE);
 
-  // Filters
-  const [selectedDate, setSelectedDate] = useState<dayjs.Dayjs>(dayjs());
+  // Deep-link from KPI dashboard's "Xem ngoại lệ" — ?fromDate=&toDate=&resolved= opens this
+  // page already scoped to the exact period/status the user came from, instead of always
+  // landing on "today" (where the flagged exceptions usually aren't).
+  const [searchParams] = useSearchParams();
+  const linkedFromDate = searchParams.get('fromDate');
+  const linkedToDate = searchParams.get('toDate');
+  const linkedResolved = searchParams.get('resolved') as ExceptionResolvedFilter | null;
+
+  // Filters — default range is "last 7 days" (not just today), since an unresolved
+  // exception is just as likely to be from a prior day and there was previously no way
+  // to see that without guessing a date one day at a time.
+  const [dateRange, setDateRange] = useState<[dayjs.Dayjs, dayjs.Dayjs]>(
+    linkedFromDate && linkedToDate
+      ? [dayjs(linkedFromDate), dayjs(linkedToDate)]
+      : [dayjs().subtract(6, 'day'), dayjs()]
+  );
   const [typeFilter, setTypeFilter] = useState<ExceptionTypeFilter>('ALL');
-  const [resolvedFilter, setResolvedFilter] = useState<ExceptionResolvedFilter>('false');
+  const [resolvedFilter, setResolvedFilter] = useState<ExceptionResolvedFilter>(linkedResolved || 'false');
 
   // Data
   const [listData, setListData] = useState<ExceptionListResponse | null>(null);
@@ -186,7 +216,8 @@ const ExceptionManagementPage: React.FC = () => {
     if (!isBackground) setLoading(true);
     try {
       const result = await getExceptions({
-        date: selectedDate.format('YYYY-MM-DD'),
+        fromDate: dateRange[0].format('YYYY-MM-DD'),
+        toDate: dateRange[1].format('YYYY-MM-DD'),
         type: typeFilter,
         resolved: resolvedFilter,
       });
@@ -202,7 +233,7 @@ const ExceptionManagementPage: React.FC = () => {
       if (!isBackground) setLoading(false);
       isFetchingRef.current = false;
     }
-  }, [selectedDate, typeFilter, resolvedFilter]);
+  }, [dateRange, typeFilter, resolvedFilter]);
 
   useEffect(() => {
     void fetchExceptions(false);
@@ -446,7 +477,9 @@ const ExceptionManagementPage: React.FC = () => {
                 Quản lý ngoại lệ
               </Title>
               <Text style={{ color: '#94a3b8', fontSize: 13 }}>
-                Ngày {selectedDate.format('DD/MM/YYYY')}
+                {dateRange[0].isSame(dateRange[1], 'day')
+                  ? `Ngày ${dateRange[0].format('DD/MM/YYYY')}`
+                  : `${dateRange[0].format('DD/MM/YYYY')} — ${dateRange[1].format('DD/MM/YYYY')}`}
               </Text>
             </div>
             <Space size={16}>
@@ -468,12 +501,12 @@ const ExceptionManagementPage: React.FC = () => {
         <Card size="small" style={{ borderRadius: 10 }}>
           <Space wrap size={12} align="center">
             <Filter size={16} style={{ color: '#8c8c8c' }} />
-            <DatePicker
-              value={selectedDate}
-              onChange={(v) => v && setSelectedDate(v)}
+            <RangePicker
+              value={dateRange}
+              onChange={(range) => range && range[0] && range[1] && setDateRange([range[0], range[1]])}
               format="DD/MM/YYYY"
               allowClear={false}
-              placeholder="Chọn ngày"
+              presets={RANGE_PRESETS}
             />
             <Select
               value={typeFilter}
@@ -483,6 +516,8 @@ const ExceptionManagementPage: React.FC = () => {
                 { value: 'ALL', label: 'Tất cả loại' },
                 { value: 'TIME_EXCEPTION', label: '⏰ Trễ ETA' },
                 { value: 'DELIVERY_REJECTION', label: '❌ Từ chối giao hàng' },
+                { value: 'TRIP_STALE_UNSTARTED', label: '🚫 Quá hạn nhiều ngày chưa bắt đầu' },
+                { value: 'TRIP_START_DEADLINE_EXCEEDED', label: '🚫 Quá hạn bắt đầu chuyến' },
               ]}
             />
             <Select
@@ -529,7 +564,7 @@ const ExceptionManagementPage: React.FC = () => {
                   <Empty
                     description={
                       resolvedFilter === 'all' && typeFilter === 'ALL'
-                        ? `Không có ngoại lệ nào ngày ${selectedDate.format('DD/MM/YYYY')}.`
+                        ? `Không có ngoại lệ nào từ ${dateRange[0].format('DD/MM/YYYY')} đến ${dateRange[1].format('DD/MM/YYYY')}.`
                         : 'Không có ngoại lệ nào phù hợp với bộ lọc hiện tại.'
                     }
                   />
@@ -551,7 +586,9 @@ const ExceptionManagementPage: React.FC = () => {
                 {drawerException.exceptionType === 'TIME_EXCEPTION' ? (
                   <StatusBadge icon={<Clock size={12} />} color="warning">Trễ ETA</StatusBadge>
                 ) : (
-                  <StatusBadge icon={<XCircle size={12} />} color="red">Từ chối giao hàng</StatusBadge>
+                  <StatusBadge icon={<XCircle size={12} />} color="red">
+                    {EXCEPTION_TYPE_LABELS[drawerException.exceptionType] || drawerException.exceptionType}
+                  </StatusBadge>
                 )}
                 <Text strong>Ngoại lệ #{drawerException.exceptionId}</Text>
               </Space>
@@ -582,7 +619,9 @@ const ExceptionManagementPage: React.FC = () => {
                   {drawerException.exceptionType === 'TIME_EXCEPTION' ? (
                     <StatusBadge icon={<Clock size={12} />} color="warning">Trễ ETA</StatusBadge>
                   ) : (
-                    <StatusBadge icon={<XCircle size={12} />} color="red">Từ chối giao hàng</StatusBadge>
+                    <StatusBadge icon={<XCircle size={12} />} color="red">
+                      {EXCEPTION_TYPE_LABELS[drawerException.exceptionType] || drawerException.exceptionType}
+                    </StatusBadge>
                   )}
                 </Descriptions.Item>
 
@@ -667,8 +706,17 @@ const ExceptionManagementPage: React.FC = () => {
                 )}
               </Descriptions>
 
-              {/* Resolve form — only if not yet resolved */}
-              {!drawerException.resolvedAt && (
+              {/* Resolve form — only if not yet resolved and current user may coordinate trips */}
+              {!drawerException.resolvedAt && !canResolve && (
+                <Alert
+                  style={{ marginTop: 16 }}
+                  type="info"
+                  showIcon
+                  message="Chỉ Dispatcher mới có quyền đánh dấu ngoại lệ đã giải quyết."
+                />
+              )}
+
+              {!drawerException.resolvedAt && canResolve && (
                 <>
                   <Divider style={{ margin: '8px 0' }}>
                     <Text type="secondary" style={{ fontSize: 12 }}>Giải quyết ngoại lệ</Text>

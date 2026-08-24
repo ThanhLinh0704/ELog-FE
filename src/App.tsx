@@ -34,6 +34,7 @@ import VehicleAssignmentPage from './pages/dispatcher/trip-drafts/VehicleAssignm
 import DispatchPage from './pages/dispatcher/trips/DispatchPage';
 
 import MonitoringDashboardPage from './pages/dispatcher/monitoring/MonitoringDashboardPage';
+import FleetStatusDashboardPage from './pages/dispatcher/fleet/FleetStatusDashboardPage';
 import DriverMyTripsPage from './pages/driver/DriverMyTripsPage';
 import DriverGuard from './guards/DriverGuard';
 
@@ -300,6 +301,17 @@ function App() {
           element={
             <ProtectedPermissionRoute permission={PERMISSIONS.TRIP_COORDINATE}>
               <MonitoringDashboardPage />
+            </ProtectedPermissionRoute>
+          }
+        />
+
+        {/* Fleet Status Dashboard — gated by trip:coordinate to match
+            GET /api/v1/dashboard/trip-status-summary (DashboardController). */}
+        <Route
+          path="/dispatcher/fleet-status"
+          element={
+            <ProtectedPermissionRoute permission={PERMISSIONS.TRIP_COORDINATE}>
+              <FleetStatusDashboardPage />
             </ProtectedPermissionRoute>
           }
         />

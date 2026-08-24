@@ -13,7 +13,6 @@ import {
   Input,
   InputNumber,
   Modal,
-  Popconfirm,
   Row,
   Select,
   Space,
@@ -25,16 +24,14 @@ import type { ColumnsType } from 'antd/es/table';
 import {
   Edit3,
   Eye,
-  Lock,
   Plus,
   RefreshCw,
   Search,
   Truck,
-  Unlock,
 } from 'lucide-react';
 import AdminShell from '../components/AdminShell';
 import PageHeader from '../components/PageHeader';
-import StatusBadge from '../components/StatusBadge';
+import StatusBadge, { type StatusBadgeColor } from '../components/StatusBadge';
 import { palette } from '../theme/tokens';
 import { useDebounce } from '../hooks/useDebounce';
 import { usePermissions } from '../hooks/usePermissions';
@@ -138,12 +135,37 @@ function formatNumber(value?: number | null, fractionDigits = 0) {
   });
 }
 
-function VehicleStatusBadge({ active }: { active: boolean }) {
-  return (
-    <StatusBadge color={active ? 'success' : 'error'}>
-      {active ? 'Hoạt động' : 'Đã vô hiệu hoá'}
-    </StatusBadge>
-  );
+// BE vẫn lưu 2 field riêng (`status` enum + `isActive` boolean — isActive được nhiều chỗ khác
+// trong hệ thống dùng làm điều kiện lọc "xe có tồn tại/dùng được không" nên không gộp ở tầng DB),
+// nhưng người dùng chỉ cần thấy VÀ chỉnh ĐÚNG 1 trạng thái. "Ngừng hoạt động" ở đây tương đương
+// isActive=false (khoá xe) — không phải status=OUT_OF_SERVICE (không còn là lựa chọn thủ công).
+type EffectiveVehicleStatus = 'AVAILABLE' | 'IN_USE' | 'MAINTENANCE' | 'OUT_OF_SERVICE';
+
+const EFFECTIVE_STATUS_META: Record<EffectiveVehicleStatus, { label: string; color: StatusBadgeColor }> = {
+  AVAILABLE: { label: 'Sẵn sàng', color: 'success' },
+  IN_USE: { label: 'Đang sử dụng', color: 'processing' },
+  MAINTENANCE: { label: 'Bảo dưỡng', color: 'warning' },
+  OUT_OF_SERVICE: { label: 'Ngừng hoạt động', color: 'error' },
+};
+
+function getEffectiveStatus(v: Pick<VehicleItem, 'isActive' | 'status'>): EffectiveVehicleStatus {
+  if (!v.isActive) return 'OUT_OF_SERVICE';
+  return (v.status as EffectiveVehicleStatus) || 'AVAILABLE';
+}
+
+/** Chỉ dùng khi submit form — ánh xạ 1 lựa chọn hiển thị về đúng cặp {status, isActive} BE cần. */
+function effectiveStatusToPayload(effective: EffectiveVehicleStatus): { status?: VehicleItem['status']; isActive?: boolean } {
+  switch (effective) {
+    case 'AVAILABLE': return { status: 'AVAILABLE', isActive: true };
+    case 'MAINTENANCE': return { status: 'MAINTENANCE', isActive: true };
+    case 'OUT_OF_SERVICE': return { status: 'AVAILABLE', isActive: false };
+    default: return {}; // IN_USE — không cho chọn tay, không gửi thay đổi
+  }
+}
+
+function VehicleOperationalStatusBadge({ status }: { status: EffectiveVehicleStatus }) {
+  const meta = EFFECTIVE_STATUS_META[status];
+  return <StatusBadge color={meta.color}>{meta.label}</StatusBadge>;
 }
 
 interface VehicleFormModalProps {
@@ -193,7 +215,7 @@ const VehicleFormModal: React.FC<VehicleFormModalProps> = ({
         cargoHeightMm: vehicle.cargoHeightMm,
         averageSpeedKmh: vehicle.averageSpeedKmh,
         costPerKm: vehicle.costPerKm,
-        status: vehicle.status,
+        effectiveStatus: getEffectiveStatus(vehicle),
         assignedDriverId: vehicle.assignedDriverId || null,
         imageUrl: vehicle.imageUrl,
         permitInfo: vehicle.permitInfo ? (typeof vehicle.permitInfo === 'object' ? JSON.stringify(vehicle.permitInfo) : vehicle.permitInfo) : null,
@@ -201,9 +223,11 @@ const VehicleFormModal: React.FC<VehicleFormModalProps> = ({
       });
     } else {
       form.resetFields();
-      form.setFieldsValue({ status: 'AVAILABLE', requiredLicense: 'B', assignedDriverId: null });
+      form.setFieldsValue({ effectiveStatus: 'AVAILABLE', requiredLicense: 'B', assignedDriverId: null });
     }
   }, [open, isEdit, vehicle, form]);
+
+  const isLockedInUse = isEdit && vehicle ? getEffectiveStatus(vehicle) === 'IN_USE' : false;
 
   const selectedDriverId = Form.useWatch('assignedDriverId', form);
   const selectedRequiredLicense = Form.useWatch('requiredLicense', form);
@@ -231,7 +255,7 @@ const VehicleFormModal: React.FC<VehicleFormModalProps> = ({
       cargoHeightMm: values.cargoHeightMm != null ? Number(values.cargoHeightMm) : null,
       averageSpeedKmh: values.averageSpeedKmh != null ? Number(values.averageSpeedKmh) : null,
       costPerKm: values.costPerKm != null ? Number(values.costPerKm) : null,
-      status: values.status,
+      ...effectiveStatusToPayload(values.effectiveStatus),
       assignedDriverId: values.assignedDriverId || null,
       imageUrl: values.imageUrl?.trim() || null,
       permitInfo: values.permitInfo?.trim() || null,
@@ -263,6 +287,13 @@ const VehicleFormModal: React.FC<VehicleFormModalProps> = ({
       }
 
       const status = getVehicleApiStatus(err);
+      const errorCode = err?.response?.data?.error?.code || err?.body?.error?.code;
+
+      if (errorCode === 'VEHICLE_STATUS_LOCKED') {
+        message.error('Xe đang thực hiện chuyến — không thể đổi trạng thái cho tới khi tài xế xác nhận về kho.');
+        return;
+      }
+
       if (status === 409 || apiMessage.includes('VEHICLE_CODE_DUPLICATE')) {
         form.setFields([
           {
@@ -340,10 +371,13 @@ const VehicleFormModal: React.FC<VehicleFormModalProps> = ({
               rules={[
                 { required: true, message: 'Vui lòng nhập biển số xe.' },
                 { max: 30, message: 'Biển số không quá 30 ký tự.' },
-                {
-                  pattern: /^[A-Za-z0-9]+(-[A-Za-z0-9]+)*$/,
-                  message: 'Biển số không đúng định dạng. Ví dụ: 29H-12001',
-                },
+                // Bỏ qua khi đang sửa xe — biển số bị khóa (immutable ở BE, xem
+                // VehicleUpdateRequest không có field này), validate lại giá trị cũ chỉ gây lỗi
+                // đỏ trên 1 ô người dùng không sửa được.
+                ...(isEdit ? [] : [{
+                  pattern: /^[A-Za-z0-9]+([.-][A-Za-z0-9]+)*$/,
+                  message: 'Biển số không đúng định dạng. Ví dụ: 29H-12001 hoặc 37X-564.17',
+                }]),
               ]}
             >
               <Input placeholder="VD: 29H-12001" disabled={isEdit} />
@@ -476,15 +510,19 @@ const VehicleFormModal: React.FC<VehicleFormModalProps> = ({
           <Col xs={24} md={8}>
             <Form.Item
               label="Trạng thái xe"
-              name="status"
+              name="effectiveStatus"
               rules={[{ required: true, message: 'Vui lòng chọn trạng thái.' }]}
+              extra={isLockedInUse ? 'Xe đang thực hiện chuyến — không thể đổi trạng thái cho tới khi tài xế xác nhận về kho.' : undefined}
             >
-              <Select placeholder="Chọn trạng thái">
-                <Select.Option value="AVAILABLE">Sẵn sàng (Available)</Select.Option>
-                <Select.Option value="IN_USE">Đang sử dụng (In use)</Select.Option>
-                <Select.Option value="MAINTENANCE">Bảo dưỡng (Maintenance)</Select.Option>
-                <Select.Option value="OUT_OF_SERVICE">Ngừng hoạt động (Out of service)</Select.Option>
-              </Select>
+              {isLockedInUse ? (
+                <Select disabled options={[{ value: 'IN_USE', label: 'Đang sử dụng (In use)' }]} />
+              ) : (
+                <Select placeholder="Chọn trạng thái">
+                  <Select.Option value="AVAILABLE">Sẵn sàng (Available)</Select.Option>
+                  <Select.Option value="MAINTENANCE">Bảo dưỡng (Maintenance)</Select.Option>
+                  <Select.Option value="OUT_OF_SERVICE">Ngừng hoạt động (Out of service)</Select.Option>
+                </Select>
+              )}
             </Form.Item>
           </Col>
         </Row>
@@ -530,9 +568,6 @@ const VehiclesPage: React.FC = () => {
   const [editingVehicle, setEditingVehicle] = useState<VehicleItem | null>(null);
   const [detailVehicle, setDetailVehicle] = useState<VehicleItem | null>(null);
   const [submitting, setSubmitting] = useState(false);
-  const [statusSubmittingId, setStatusSubmittingId] = useState<number | null>(null);
-  const [blockedVehicleMessage, setBlockedVehicleMessage] = useState('');
-
   const debouncedKeyword = useDebounce(keyword, 350);
 
   const queryParams = useMemo(
@@ -652,43 +687,6 @@ const VehiclesPage: React.FC = () => {
     }
   }
 
-  async function toggleVehicleStatus(vehicle: VehicleItem) {
-    if (!canWriteVehicle) {
-      message.warning('Bạn không có quyền cập nhật trạng thái xe.');
-      return;
-    }
-
-    const nextActive = !vehicle.isActive;
-    setBlockedVehicleMessage('');
-    setStatusSubmittingId(vehicle.id);
-
-    try {
-      await vehicleApi.updateStatus(vehicle.id, nextActive);
-
-      message.success(
-        nextActive
-          ? `Đã kích hoạt xe ${vehicle.plateNumber}.`
-          : `Đã vô hiệu hoá xe ${vehicle.plateNumber}.`
-      );
-
-      await fetchVehicles();
-    } catch (err: any) {
-      const apiMessage = getVehicleApiErrorMessage(
-        err,
-        'Không cập nhật được trạng thái xe.'
-      );
-
-      if (getVehicleApiStatus(err) === 409) {
-        setBlockedVehicleMessage(apiMessage);
-        return;
-      }
-
-      message.error(apiMessage);
-    } finally {
-      setStatusSubmittingId(null);
-    }
-  }
-
   const columns: ColumnsType<VehicleItem> = [
     {
       title: 'Biển số',
@@ -746,9 +744,9 @@ const VehiclesPage: React.FC = () => {
     },
     {
       title: 'Trạng thái',
-      key: 'isActive',
+      key: 'status',
       width: 150,
-      render: (_: any, record) => <VehicleStatusBadge active={record.isActive} />,
+      render: (_: any, record) => <VehicleOperationalStatusBadge status={getEffectiveStatus(record)} />,
     },
     {
       title: 'Thao tác',
@@ -781,28 +779,6 @@ const VehiclesPage: React.FC = () => {
               onClick={() => openEditModal(record)}
               title="Chỉnh sửa"
             />
-
-            <Popconfirm
-              title={record.isActive ? 'Vô hiệu hoá xe?' : 'Kích hoạt xe?'}
-              description={
-                record.isActive
-                  ? `Xe ${record.plateNumber} sẽ không còn xuất hiện trong danh sách phân xe cho chuyến.`
-                  : `Xe ${record.plateNumber} sẽ được mở lại để phân xe cho chuyến.`
-              }
-              onConfirm={() => toggleVehicleStatus(record)}
-              okText="Đồng ý"
-              cancelText="Hủy"
-              okButtonProps={{ danger: record.isActive }}
-            >
-              <Button
-                type="text"
-                danger={record.isActive}
-                loading={statusSubmittingId === record.id}
-                style={{ color: record.isActive ? undefined : palette.success }}
-                icon={record.isActive ? <Lock size={16} /> : <Unlock size={16} />}
-                title={record.isActive ? 'Vô hiệu hoá' : 'Kích hoạt'}
-              />
-            </Popconfirm>
           </Space>
         );
       },
@@ -826,17 +802,6 @@ const VehiclesPage: React.FC = () => {
             icon={<Truck size={20} />}
           />
         </div>
-
-        {blockedVehicleMessage ? (
-          <Alert
-            type="warning"
-            showIcon
-            message={blockedVehicleMessage}
-            description="Xe có thể đang được gắn với chuyến đang vận hành. Hãy hoàn tất hoặc điều chỉnh chuyến trước khi vô hiệu hoá."
-            closable
-            onClose={() => setBlockedVehicleMessage('')}
-          />
-        ) : null}
 
         <Card bordered={false} style={{ borderRadius: 14, boxShadow: palette.cardShadow }}>
           <div
@@ -1009,10 +974,7 @@ const VehiclesPage: React.FC = () => {
                   {detailVehicle.costPerKm ? `${formatNumber(detailVehicle.costPerKm)} VND/km` : '—'}
                 </Descriptions.Item>
                 <Descriptions.Item label="Trạng thái">
-                  <span style={{ fontWeight: 600 }}>{detailVehicle.status}</span>
-                </Descriptions.Item>
-                <Descriptions.Item label="Hoạt động hệ thống">
-                  <VehicleStatusBadge active={detailVehicle.isActive} />
+                  <VehicleOperationalStatusBadge status={getEffectiveStatus(detailVehicle)} />
                 </Descriptions.Item>
 
                 <Descriptions.Item label="Mô tả chi tiết" span={2}>

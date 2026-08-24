@@ -14,23 +14,19 @@ import {
   Divider,
   Result,
   Statistic,
-  Collapse,
-  Table,
-  Empty,
 } from 'antd';
 import {
   ArrowLeftOutlined,
   LockOutlined,
   PrinterOutlined,
   DownloadOutlined,
-  WarningOutlined,
   CheckCircleOutlined,
   CarOutlined,
   UserOutlined,
   CalendarOutlined,
   ClockCircleOutlined,
 } from '@ant-design/icons';
-import { Truck, ShieldCheck, ShieldAlert, Scale } from 'lucide-react';
+import { Truck, Scale } from 'lucide-react';
 import AdminShell from '../../../components/AdminShell';
 import StatusBadge from '../../../components/StatusBadge';
 import { palette } from '../../../theme/tokens';
@@ -45,8 +41,6 @@ import { downloadBlob } from '../../../utils/downloadBlob';
 import type { Trip, FleetCapacityCheck } from '../../../types/trip';
 import { usePermissions } from '../../../hooks/usePermissions';
 import { PERMISSIONS } from '../../../constants/permissions';
-import { getTripOutcomeHistory } from '../../../api/tripOutcomeEventApi';
-import { TRIP_OUTCOME_EVENT_TYPE_LABEL, type TripOutcomeEvent } from '../../../types/tripOutcomeEvent';
 
 const { Title, Text } = Typography;
 
@@ -71,6 +65,13 @@ function formatDate(dateStr?: string | null): string {
   } catch {
     return String(dateStr);
   }
+}
+
+function isDeliveryDateInPast(dateStr?: string | null): boolean {
+  if (!dateStr) return false;
+  const today = new Date();
+  const todayStr = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}-${String(today.getDate()).padStart(2, '0')}`;
+  return String(dateStr) < todayStr;
 }
 
 function formatDateTime(dt?: string | null): string {
@@ -116,11 +117,12 @@ function getErrorMessage(err: unknown, fallback = 'Có lỗi xảy ra, vui lòng
 
 function renderTripStatusTag(status?: string | null) {
   if (!status) return null;
-  const map: Record<string, { color: 'success' | 'purple' | 'blue' | 'cyan' | 'default'; text: string }> = {
+  const map: Record<string, { color: 'success' | 'purple' | 'blue' | 'cyan' | 'error' | 'default'; text: string }> = {
     VALIDATED: { color: 'success', text: 'Sẵn sàng điều phối' },
     DISPATCHED: { color: 'purple', text: 'Đã điều phối' },
     IN_PROGRESS: { color: 'blue', text: 'Đang giao hàng' },
     COMPLETED: { color: 'cyan', text: 'Hoàn thành' },
+    CANCELLED: { color: 'error', text: 'Đã huỷ' },
   };
   const { color, text } = map[status] || { color: 'default', text: status };
   return <StatusBadge color={color}>{text}</StatusBadge>;
@@ -142,14 +144,6 @@ const DispatchPage: React.FC = () => {
   const [loadError, setLoadError] = useState<string | null>(null);
   const [handoverLoading, setHandoverLoading] = useState(false);
   const [exportLoading, setExportLoading] = useState(false);
-
-  // Outcome history panel (ELOG-141)
-  const OUTCOME_HISTORY_PAGE_SIZE = 10;
-  const [outcomeEvents, setOutcomeEvents] = useState<TripOutcomeEvent[]>([]);
-  const [outcomeHistoryLoading, setOutcomeHistoryLoading] = useState(false);
-  const [outcomeHistoryLoaded, setOutcomeHistoryLoaded] = useState(false);
-  const [outcomeHistoryPage, setOutcomeHistoryPage] = useState(0);
-  const [outcomeHistoryTotal, setOutcomeHistoryTotal] = useState(0);
 
   // ── Load trip + fleet check ───────────────────────────────────────────────
   // Used by error handlers to reload after TRIP_LOCKED etc.
@@ -261,22 +255,6 @@ const DispatchPage: React.FC = () => {
   };
 
   // ── Outcome history ───────────────────────────────────────────────────────
-  const fetchOutcomeHistory = async (page = 0) => {
-    if (!tripId) return;
-    setOutcomeHistoryLoading(true);
-    try {
-      const result = await getTripOutcomeHistory(tripId, { page, size: OUTCOME_HISTORY_PAGE_SIZE });
-      setOutcomeEvents(result.items);
-      setOutcomeHistoryTotal(result.pagination.totalElements);
-      setOutcomeHistoryPage(page);
-      setOutcomeHistoryLoaded(true);
-    } catch (err) {
-      message.error(getErrorMessage(err, 'Không tải được lịch sử thực thi.'));
-    } finally {
-      setOutcomeHistoryLoading(false);
-    }
-  };
-
   // ── Derived ───────────────────────────────────────────────────────────────
   const isDispatched = trip?.status === 'DISPATCHED' || trip?.status === 'IN_PROGRESS' || trip?.status === 'COMPLETED';
   const canDispatch =
@@ -375,68 +353,15 @@ const DispatchPage: React.FC = () => {
             </Text>
           </div>
         </div>
-
-        {/* Action buttons */}
-        <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
-          {isDispatched && (
-            <Button
-              icon={<PrinterOutlined />}
-              loading={handoverLoading}
-              onClick={handleOpenHandoverSlip}
-            >
-              In phiếu bàn giao
-            </Button>
-          )}
-          {isDispatched && (
-            <Button
-              icon={<DownloadOutlined />}
-              loading={exportLoading}
-              onClick={handleExportDispatch}
-            >
-              Xuất dữ liệu điều phối
-            </Button>
-          )}
-          {!isDispatched && (
-            <Button
-              type="primary"
-              icon={<LockOutlined />}
-              disabled={!canDispatch}
-              onClick={() => setConfirmModalOpen(true)}
-            >
-              Điều phối và khóa chuyến
-            </Button>
-          )}
-        </div>
       </div>
 
-      {/* Warning banner (before dispatch) */}
-      {!isDispatched && (
+      {/* Delivery date already past — informational only, doesn't block dispatch */}
+      {!isDispatched && isDeliveryDateInPast(trip.deliveryDate) && (
         <Alert
           type="warning"
           showIcon
-          icon={<WarningOutlined />}
-          message="Cảnh báo quan trọng"
-          description="Sau khi điều phối, chuyến sẽ bị khóa và không thể chỉnh sửa xe, tài xế hoặc điểm giao. Vui lòng kiểm tra kỹ thông tin trước khi xác nhận."
-          style={{ marginBottom: 16 }}
-        />
-      )}
-
-      {/* Fleet capacity banner */}
-      {fleetCheck && (
-        <Alert
-          type={fleetCheck.canDispatch ? 'success' : 'error'}
-          showIcon
-          icon={fleetCheck.canDispatch ? <ShieldCheck size={16} /> : <ShieldAlert size={16} />}
-          message={fleetCheck.canDispatch ? 'Đội xe đủ năng lực để điều phối' : 'Đội xe không đủ năng lực — Không thể điều phối'}
-          description={
-            !fleetCheck.canDispatch ? (
-              <div style={{ fontSize: 13 }}>
-                <div>Thể tích ngày: {fmtVolume(fleetCheck.dayTotalVolumeM3)} / Đội xe: {fmtVolume(fleetCheck.fleetTotalVolumeM3)}</div>
-                <div>Tải trọng ngày: {fmtWeight(fleetCheck.dayTotalWeightKg)} / Đội xe: {fmtWeight(fleetCheck.fleetTotalWeightKg)}</div>
-                {fleetCheck.message && <div style={{ marginTop: 4 }}>{fleetCheck.message}</div>}
-              </div>
-            ) : fleetCheck.message || undefined
-          }
+          message="Ngày giao của chuyến này đã qua"
+          description={`Ngày giao ghi nhận là ${formatDate(String(trip.deliveryDate))}, đã trễ so với hôm nay. Vẫn điều phối được bình thường nếu cần — chỉ là lời nhắc để kiểm tra lại trước khi khóa chuyến, tránh khóa nhầm 1 chuyến đáng lẽ phải dời ngày hoặc huỷ.`}
           style={{ marginBottom: 16 }}
         />
       )}
@@ -493,12 +418,6 @@ const DispatchPage: React.FC = () => {
                 <div style={{ display: 'flex', flexDirection: 'column' }}>
                   <Text type="secondary" style={{ fontSize: 12 }}><ClockCircleOutlined /> Giờ xuất phát dự kiến</Text>
                   <Text strong>{trip.plannedDepartureTime ? String(trip.plannedDepartureTime) : '—'}</Text>
-                </div>
-              </Col>
-              <Col xs={12} sm={8}>
-                <div style={{ display: 'flex', flexDirection: 'column' }}>
-                  <Text type="secondary" style={{ fontSize: 12 }}>Manifest ID</Text>
-                  <Text strong>{trip.manifestId ?? '—'}</Text>
                 </div>
               </Col>
               {trip.lockedAt && (
@@ -672,77 +591,6 @@ const DispatchPage: React.FC = () => {
         </Col>
       </Row>
 
-      {/* Lịch sử thực thi chuyến giao hàng (ELOG-141) */}
-      <Collapse
-        style={{ marginTop: 16, borderRadius: 12 }}
-        onChange={(keys) => {
-          const opened = Array.isArray(keys) ? keys.length > 0 : !!keys;
-          if (opened && !outcomeHistoryLoaded && !outcomeHistoryLoading) {
-            fetchOutcomeHistory(0);
-          }
-        }}
-        items={[
-          {
-            key: 'outcome-history',
-            label: <span style={{ fontSize: 16, fontWeight: 600 }}>Lịch sử thực thi chuyến giao hàng</span>,
-            children: (
-              <Table
-                size="small"
-                loading={outcomeHistoryLoading}
-                dataSource={outcomeEvents}
-                rowKey="id"
-                pagination={{
-                  current: outcomeHistoryPage + 1,
-                  pageSize: OUTCOME_HISTORY_PAGE_SIZE,
-                  total: outcomeHistoryTotal,
-                  onChange: (p) => fetchOutcomeHistory(p - 1),
-                }}
-                locale={{ emptyText: <Empty description="Chưa có sự kiện thực thi nào." /> }}
-                columns={[
-                  { title: 'Thời gian', dataIndex: 'occurredAt', key: 'occurredAt', render: (t: string) => t || '—' },
-                  {
-                    title: 'Loại sự kiện',
-                    dataIndex: 'eventType',
-                    key: 'eventType',
-                    render: (t: TripOutcomeEvent['eventType']) => <StatusBadge color="blue">{TRIP_OUTCOME_EVENT_TYPE_LABEL[t] ?? t}</StatusBadge>,
-                  },
-                  {
-                    title: 'Người thực hiện',
-                    key: 'actor',
-                    render: (_: unknown, record: TripOutcomeEvent) =>
-                      record.actorType === 'USER'
-                        ? `${record.driverUsername || record.actorUsername || '—'}${record.actorRole ? ` (${record.actorRole})` : ''}`
-                        : 'Hệ thống',
-                  },
-                  {
-                    title: 'Đơn hàng / Cửa hàng',
-                    key: 'order',
-                    render: (_: unknown, record: TripOutcomeEvent) =>
-                      record.orderRef || record.storeCode
-                        ? `${record.orderRef ?? '—'}${record.storeCode ? ` · ${record.storeCode}` : ''}`
-                        : '—',
-                  },
-                  {
-                    title: 'Kết quả',
-                    key: 'result',
-                    render: (_: unknown, record: TripOutcomeEvent) =>
-                      record.deliveryResult || record.reasonCode || record.exceptionText
-                        ? [record.deliveryResult, record.reasonCode, record.exceptionText].filter(Boolean).join(' — ')
-                        : '—',
-                  },
-                  {
-                    title: 'Ghi chú duyệt',
-                    dataIndex: 'validationNote',
-                    key: 'validationNote',
-                    render: (t: string | null) => t || '—',
-                  },
-                ]}
-              />
-            ),
-          },
-        ]}
-      />
-
       {/* Dispatch confirmation modal */}
       <Modal
         open={confirmModalOpen}
@@ -769,13 +617,6 @@ const DispatchPage: React.FC = () => {
           </Button>,
         ]}
       >
-        <Alert
-          type="warning"
-          showIcon
-          message="Hành động không thể hoàn tác"
-          description="Sau khi xác nhận, xe, tài xế và danh sách điểm giao không thể chỉnh sửa."
-          style={{ marginBottom: 16 }}
-        />
         <div style={{ background: palette.bgLayout, borderRadius: 10, padding: '12px 16px' }}>
           <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
             <div><Text type="secondary">Trip ID:</Text> <Text strong>#{trip.tripId}</Text></div>

@@ -183,7 +183,7 @@ const TripOutcomePage: React.FC = () => {
       align: 'center' as const,
     },
     {
-      title: 'Giao OK',
+      title: 'Giao thành công',
       dataIndex: 'deliveredCount',
       key: 'deliveredCount',
       align: 'center' as const,

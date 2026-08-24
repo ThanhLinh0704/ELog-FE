@@ -37,6 +37,13 @@ export const palette = {
   goldBg: '#fff7e8',
   violet: '#64748b',
   violetBg: '#f1f3f8',
+
+  // Chart series 2 — a real violet distinct from `violet` above (which is actually
+  // slate/neutral) and from every status hue (success/warning/danger), so a second
+  // trend-line series never impersonates "good"/"bad". Validated: paired with
+  // `primary` it clears CVD ΔE 16.0 / normal-vision ΔE 18.0 (targets 8 / 15).
+  chartSeries2: '#4a3aa7',
+
   success: '#2e9d74',
   successBg: '#eef7f3',
   danger: '#e85d68',

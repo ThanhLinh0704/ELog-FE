@@ -172,6 +172,19 @@ export async function dispatchTrip(tripId: number | string): Promise<Trip> {
 }
 
 /**
+ * POST /api/v1/trips/{tripId}/cancel
+ * Cancel a DISPATCHED trip that hasn't started yet — releases the vehicle/driver immediately.
+ * DISPATCHER only. See filemd/BE_FIX_CANCEL_TRIP_AND_STALE_WARNING_2026-08-23.md.
+ */
+export async function cancelTrip(tripId: number | string, reason?: string): Promise<Trip> {
+  const res = await axiosInstance.post<ApiResponseWrapper<Trip>>(
+    `/api/v1/trips/${tripId}/cancel`,
+    reason ? { reason } : undefined
+  );
+  return unwrap(res);
+}
+
+/**
  * GET /api/v1/trips/{tripId}/handover-slip → text/html
  * Bearer token required — open via axiosInstance to carry Authorization header.
  * Opens the HTML in a new browser tab.

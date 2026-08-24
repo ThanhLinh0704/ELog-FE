@@ -93,7 +93,7 @@ export interface TripStop {
   notes?: string | null;
 }
 
-export type TripStatus = 'VALIDATED' | 'DISPATCHED' | 'IN_PROGRESS' | 'COMPLETED';
+export type TripStatus = 'VALIDATED' | 'DISPATCHED' | 'IN_PROGRESS' | 'COMPLETED' | 'CANCELLED';
 
 // Backend: TripResponse
 export interface Trip {
@@ -110,6 +110,9 @@ export interface Trip {
   lockedAt?: string | null;
   lockedBy?: TripDriverInfo | null;
   completedAt?: string | null;
+  cancelledAt?: string | null;
+  /** Số ngày quá hạn deliveryDate khi status vẫn DISPATCHED — null nếu chưa quá hạn. */
+  daysOverdue?: number | null;
   tripStopCount: number;
   manifestId?: number | null;
   tripStops?: TripStop[];

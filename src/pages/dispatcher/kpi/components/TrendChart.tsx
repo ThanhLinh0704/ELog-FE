@@ -3,19 +3,29 @@ import { Card, Empty, Typography } from 'antd';
 import dayjs from 'dayjs';
 import { TrendingUp } from 'lucide-react';
 import {
-  Area,
-  AreaChart,
   CartesianGrid,
   Legend,
+  Line,
+  LineChart,
   ResponsiveContainer,
   Tooltip as RechartsTooltip,
   XAxis,
   YAxis,
+  type LineProps,
 } from 'recharts';
 import { palette } from '../../../../theme/tokens';
 import type { KpiDailyTrendResponse } from '../../../../types/kpi';
 
 const { Title } = Typography;
+
+// Two-line comparison: color's job here is identity (which series), not
+// magnitude — so both lines get a fixed categorical hue, never a gradient
+// fill. Series 2 uses `chartSeries2` (a real violet) rather than the
+// success/warning/danger hues, since neither line inherently means "good" —
+// reusing a status color here would make the reader misread the line as a
+// pass/fail signal instead of a plain trend.
+const SERIES_1_COLOR = palette.primary;
+const SERIES_2_COLOR = palette.chartSeries2;
 
 interface TrendChartProps {
   trend: KpiDailyTrendResponse | null;
@@ -56,10 +66,11 @@ const CustomDarkTooltip: React.FC<CustomTooltipProps> = ({ active, payload, labe
         {payload.map((item, idx) => (
           <div key={idx} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 16 }}>
             <span style={{ display: 'flex', alignItems: 'center', gap: 6, color: '#cbd5e1' }}>
-              <span style={{ width: 8, height: 8, borderRadius: '50%', backgroundColor: item.color }} />
+              {/* Identity rides the dot, never the text color — the value stays neutral ink below. */}
+              <span style={{ width: 8, height: 8, borderRadius: '50%', backgroundColor: item.color, flexShrink: 0 }} />
               {item.name}:
             </span>
-            <span style={{ fontWeight: 700, color: item.color }}>
+            <span style={{ fontWeight: 700, color: '#f8fafc' }}>
               {item.value !== null && item.value !== undefined ? `${Number(item.value).toFixed(1)}%` : '—'}
             </span>
           </div>
@@ -76,6 +87,25 @@ const TrendChart: React.FC<TrendChartProps> = ({ trend, loading }) => {
     onTimeRatePct: point.onTimeRatePct,
     volumeUtilPct: point.volumeUtilPct,
   }));
+  const lastIndex = chartData.length - 1;
+
+  // Direct end-label: label the last point of each line only (never every
+  // point) so the reader sees the current value without a tooltip. Anchored
+  // beside that series' own end-dot — a fixed vertical offset per series
+  // (not a dynamic collision search) keeps the two labels apart even when
+  // the lines converge at the right edge.
+  // Recharts' typed `label` render-prop signature doesn't line up cleanly with what it
+  // actually passes at runtime for a Line's per-point label (x/y/value/index) — cast at
+  // the two call sites below rather than losing type safety inside this function.
+  const renderEndLabel = (dy: number) => (props: { x?: number; y?: number; value?: number | null; index?: number }) => {
+    const { x, y, value, index } = props;
+    if (index !== lastIndex || value === null || value === undefined || x === undefined || y === undefined) return null;
+    return (
+      <text x={x + 10} y={y} dy={dy} fontSize={12} fontWeight={700} fill={palette.textDark} textAnchor="start">
+        {Number(value).toFixed(1)}%
+      </text>
+    );
+  };
 
   return (
     <Card
@@ -95,13 +125,13 @@ const TrendChart: React.FC<TrendChartProps> = ({ trend, loading }) => {
             width: 32,
             height: 32,
             borderRadius: 8,
-            backgroundColor: '#eff6ff',
+            backgroundColor: palette.primaryBg,
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'center',
           }}
         >
-          <TrendingUp size={18} style={{ color: '#2563eb' }} />
+          <TrendingUp size={18} style={{ color: palette.primary }} />
         </div>
         <Title level={5} style={{ margin: 0, fontWeight: 700, color: '#0f172a' }}>
           Xu hướng vận hành: Tỷ lệ đúng giờ & Tỷ lệ lấp đầy
@@ -112,47 +142,37 @@ const TrendChart: React.FC<TrendChartProps> = ({ trend, loading }) => {
         <Empty description="Không có dữ liệu trong khoảng thời gian này." />
       ) : (
         <ResponsiveContainer width="100%" height={290}>
-          <AreaChart data={chartData} margin={{ top: 12, right: 16, left: -10, bottom: 0 }}>
-            <defs>
-              <linearGradient id="colorOnTime" x1="0" y1="0" x2="0" y2="1">
-                <stop offset="5%" stopColor="#3b82f6" stopOpacity={0.35} />
-                <stop offset="95%" stopColor="#3b82f6" stopOpacity={0.0} />
-              </linearGradient>
-              <linearGradient id="colorVolume" x1="0" y1="0" x2="0" y2="1">
-                <stop offset="5%" stopColor="#10b981" stopOpacity={0.35} />
-                <stop offset="95%" stopColor="#10b981" stopOpacity={0.0} />
-              </linearGradient>
-            </defs>
-            <CartesianGrid strokeDasharray="3 3" stroke="#f1f5f9" vertical={false} />
-            <XAxis dataKey="date" tick={{ fontSize: 12, fill: '#64748b' }} axisLine={{ stroke: '#e2e8f0' }} />
-            <YAxis tick={{ fontSize: 12, fill: '#64748b' }} unit="%" domain={[0, 100]} axisLine={{ stroke: '#e2e8f0' }} />
+          <LineChart data={chartData} margin={{ top: 12, right: 46, left: -10, bottom: 0 }}>
+            {/* Hairline, solid, one step off the surface — never dashed (dashes read as a
+                second data series, not chrome). */}
+            <CartesianGrid stroke={palette.borderSoft} vertical={false} />
+            <XAxis dataKey="date" tick={{ fontSize: 12, fill: palette.textMuted }} axisLine={{ stroke: palette.border }} />
+            <YAxis tick={{ fontSize: 12, fill: palette.textMuted }} unit="%" domain={[0, 100]} axisLine={{ stroke: palette.border }} />
             <RechartsTooltip content={<CustomDarkTooltip />} />
             <Legend wrapperStyle={{ paddingTop: 10, fontSize: 12.5 }} />
-            <Area
+            <Line
               type="monotone"
               dataKey="onTimeRatePct"
               name="Tỷ lệ đúng giờ"
-              stroke="#3b82f6"
-              fillOpacity={1}
-              fill="url(#colorOnTime)"
-              strokeWidth={3}
+              stroke={SERIES_1_COLOR}
+              strokeWidth={2}
               connectNulls={false}
-              dot={{ r: 4, stroke: '#3b82f6', strokeWidth: 2, fill: '#ffffff' }}
-              activeDot={{ r: 6, stroke: '#2563eb', strokeWidth: 2, fill: '#ffffff' }}
+              dot={{ r: 4, stroke: SERIES_1_COLOR, strokeWidth: 2, fill: '#ffffff' }}
+              activeDot={{ r: 6, stroke: SERIES_1_COLOR, strokeWidth: 2, fill: '#ffffff' }}
+              label={renderEndLabel(-10) as unknown as LineProps['label']}
             />
-            <Area
+            <Line
               type="monotone"
               dataKey="volumeUtilPct"
               name="Tỷ lệ lấp đầy thể tích"
-              stroke="#10b981"
-              fillOpacity={1}
-              fill="url(#colorVolume)"
-              strokeWidth={3}
+              stroke={SERIES_2_COLOR}
+              strokeWidth={2}
               connectNulls={false}
-              dot={{ r: 4, stroke: '#10b981', strokeWidth: 2, fill: '#ffffff' }}
-              activeDot={{ r: 6, stroke: '#059669', strokeWidth: 2, fill: '#ffffff' }}
+              dot={{ r: 4, stroke: SERIES_2_COLOR, strokeWidth: 2, fill: '#ffffff' }}
+              activeDot={{ r: 6, stroke: SERIES_2_COLOR, strokeWidth: 2, fill: '#ffffff' }}
+              label={renderEndLabel(18) as unknown as LineProps['label']}
             />
-          </AreaChart>
+          </LineChart>
         </ResponsiveContainer>
       )}
     </Card>

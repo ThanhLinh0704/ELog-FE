@@ -36,7 +36,6 @@ import StatusBadge, { type StatusBadgeColor } from '../../../components/StatusBa
 import { palette } from '../../../theme/tokens';
 import { TripRouteMap } from '../../../components/TripRouteMap';
 import { getActiveTrips, getTripProgress } from '../../../api/monitoringApi';
-import { getOperationalViolations, type OperationalViolation } from '../../../api/exceptionApi';
 import type {
   ActiveTripsResponse,
   ActiveTripSummary,
@@ -55,6 +54,7 @@ const TRIP_STATUS_MAP: Record<string, { color: StatusBadgeColor; label: string }
   DISPATCHED: { color: 'default', label: 'Đã điều phối' },
   IN_PROGRESS: { color: 'processing', label: 'Đang giao' },
   COMPLETED: { color: 'success', label: 'Hoàn thành' },
+  CANCELLED: { color: 'error', label: 'Đã huỷ' },
 };
 
 const STOP_STATUS_MAP: Record<string, { color: StatusBadgeColor; label: string }> = {
@@ -133,9 +133,6 @@ const MonitoringDashboardPage: React.FC = () => {
     return 'Không thể tải dữ liệu từ hệ thống.';
   }, []);
 
-  // Violations state
-  const [violations, setViolations] = useState<OperationalViolation[]>([]);
-
   // ── Data fetching ──────────────────────────────────────────────────────────
 
   const fetchDashboard = useCallback(
@@ -145,12 +142,8 @@ const MonitoringDashboardPage: React.FC = () => {
 
       try {
         const dateStr = selectedDate.format('YYYY-MM-DD');
-        const [result, violationsResult] = await Promise.all([
-          getActiveTrips(dateStr),
-          getOperationalViolations(dateStr).catch(() => []),
-        ]);
+        const result = await getActiveTrips(dateStr);
         setData(result);
-        setViolations(violationsResult || []);
         setError(null);
         setCountdown(DEFAULT_REFRESH_INTERVAL);
       } catch (err: unknown) {
@@ -385,26 +378,6 @@ const MonitoringDashboardPage: React.FC = () => {
           description="Tiến độ chuyến được cập nhật dựa trên trạng thái Driver gửi từ hệ thống."
           style={{ borderRadius: 8 }}
         />
-
-        {/* Operational Violations Banner */}
-        {violations.length > 0 && (
-          <Alert
-            type="warning"
-            showIcon
-            icon={<AlertTriangle size={16} />}
-            message={`Cảnh báo vi phạm vận hành (${violations.length} vi phạm)`}
-            description={
-              <ul style={{ margin: '4px 0 0 0', paddingLeft: 20 }}>
-                {violations.map((v, i) => (
-                  <li key={i}>
-                    <strong>{v.storeCode}</strong>: {v.description}
-                  </li>
-                ))}
-              </ul>
-            }
-            style={{ borderRadius: 8 }}
-          />
-        )}
 
         {/* Content */}
         {loading ? (

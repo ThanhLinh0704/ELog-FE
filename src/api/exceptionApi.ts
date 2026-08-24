@@ -43,13 +43,19 @@ export async function rejectDelivery(
 
 /**
  * GET /api/v1/exceptions?date=YYYY-MM-DD&type=ALL&resolved=false
+ * or GET /api/v1/exceptions?fromDate=...&toDate=...&type=ALL&resolved=false
  * Backend does NOT support pagination — returns all matching exceptions.
  */
 export async function getExceptions(
   filters?: ExceptionFilters
 ): Promise<ExceptionListResponse> {
   const params: Record<string, string> = {};
-  if (filters?.date) params.date = filters.date;
+  if (filters?.fromDate && filters?.toDate) {
+    params.fromDate = filters.fromDate;
+    params.toDate = filters.toDate;
+  } else if (filters?.date) {
+    params.date = filters.date;
+  }
   if (filters?.type) params.type = filters.type;
   if (filters?.resolved) params.resolved = filters.resolved;
 
@@ -95,18 +101,21 @@ export async function resolveException(
 // ── Operational Violations ───────────────────────────────────────────────────
 
 export interface OperationalViolation {
-  id?: number;
+  id: number;
   type: string;
   storeCode: string;
   storeName?: string;
   description: string;
-  severity?: 'HIGH' | 'MEDIUM' | 'LOW';
+  delayMinutes?: number | null;
   createdAt?: string;
 }
 
 /**
  * GET /api/v1/exceptions/violations?date=YYYY-MM-DD
- * Returns operational violations (e.g. Time Window early/late, capacity violations).
+ * Returns operational violations for the date (currently: unresolved TIME_EXCEPTION only —
+ * see ExceptionController#listViolations). Backend wraps the list in the same
+ * ExceptionListResponse envelope as GET /exceptions (`{ ..., exceptions: [...] }`), not a bare
+ * array — unwrap `.exceptions` here so callers get a flat list as the name implies.
  */
 export async function getOperationalViolations(
   date?: string
@@ -114,10 +123,19 @@ export async function getOperationalViolations(
   const params: Record<string, string> = {};
   if (date) params.date = date;
 
-  const res = await axiosInstance.get<ApiResponseWrapper<OperationalViolation[]>>(
+  const res = await axiosInstance.get<ApiResponseWrapper<ExceptionListResponse>>(
     '/api/v1/exceptions/violations',
     { params }
   );
-  return unwrap(res);
+  const list = unwrap(res).exceptions ?? [];
+  return list.map((item) => ({
+    id: item.exceptionId,
+    type: item.exceptionType,
+    storeCode: item.storeCode ?? '—',
+    storeName: item.storeName ?? undefined,
+    description: item.description ?? '',
+    delayMinutes: item.delayMinutes,
+    createdAt: item.createdAt,
+  }));
 }
 

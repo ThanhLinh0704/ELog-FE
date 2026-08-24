@@ -166,8 +166,17 @@ const KpiDashboardPage: React.FC = () => {
   }, []);
 
   const handleExceptionAction = useCallback(() => {
+    // Deep-link straight to the exceptions the KPI period is actually reporting on —
+    // without this, the page always opened on "today", which usually isn't where the
+    // unresolved exceptions the alert is warning about actually are.
+    if (summary?.period.startDate && summary?.period.endDate) {
+      navigate(
+        `/dispatcher/exceptions?fromDate=${summary.period.startDate}&toDate=${summary.period.endDate}&resolved=false`
+      );
+      return;
+    }
     navigate('/dispatcher/exceptions');
-  }, [navigate]);
+  }, [navigate, summary]);
 
   const insightsSection = (
     <OperationalInsights

@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useParams, useNavigate, useSearchParams, useLocation } from 'react-router-dom';
 import {
   Card,
@@ -34,8 +34,10 @@ import {
   PlusOutlined,
   DeleteOutlined,
   PrinterOutlined,
+  DownloadOutlined,
   DownOutlined,
   UpOutlined,
+  StopOutlined,
 } from '@ant-design/icons';
 import { Truck, Users, ShieldCheck, ShieldAlert } from 'lucide-react';
 import AdminShell from '../../../components/AdminShell';
@@ -51,8 +53,10 @@ import {
   assignSplitTrips,
   getTripsByTripDraftId,
   openHandoverSlip,
-  updateTripAssignment,
+  cancelTrip,
 } from '../../../api/tripApi';
+import { dispatchExportApi } from '../../../api/dispatchExportApi';
+import { downloadBlob } from '../../../utils/downloadBlob';
 import type { TripDraft, TripDraftStop, CapacityValidationResult } from '../../../types/tripDraft';
 import type {
   EligibleVehicle,
@@ -114,7 +118,7 @@ function getErrorMessage(err: unknown, fallback = 'Có lỗi xảy ra, vui lòng
   );
 }
 
-type BadgeColor = 'warning' | 'processing' | 'success' | 'purple' | 'blue' | 'cyan' | 'default';
+type BadgeColor = 'warning' | 'processing' | 'success' | 'purple' | 'blue' | 'cyan' | 'error' | 'default';
 
 function renderStatusTag(status?: string | null) {
   if (!status) return null;
@@ -137,6 +141,7 @@ function renderTripStatusTag(status?: string | null) {
     DISPATCHED: { color: 'purple', text: 'Đã điều phối' },
     IN_PROGRESS: { color: 'blue', text: 'Đang giao hàng' },
     COMPLETED: { color: 'cyan', text: 'Hoàn thành' },
+    CANCELLED: { color: 'error', text: 'Đã huỷ' },
   };
   const { color, text } = map[status] || { color: 'default', text: status };
   return <StatusBadge color={color}>{text}</StatusBadge>;
@@ -182,11 +187,18 @@ const VehicleAssignmentPage: React.FC = () => {
   // assignment eligibility (spec-manual-assignment-override.md) without relying
   // on navigation state from the detail page.
   const [capacityInfo, setCapacityInfo] = useState<CapacityValidationResult | null>(null);
-  const [editingTrip, setEditingTrip] = useState<Trip | null>(null);
-  const [editVehicleId, setEditVehicleId] = useState<number | null>(null);
-  const [editDriverId, setEditDriverId] = useState<number | null>(null);
-  const [editSaving, setEditSaving] = useState(false);
   const [loadError, setLoadError] = useState<string | null>(null);
+
+  // Auto-confirm when arriving from "Gợi ý phân xe tự động" (see effect below) — these
+  // query params / nav state only ever come from TripDraftDetailPage's getAssignUrlWithVehicle
+  // / getAssignNavigationState, i.e. only when the dispatcher already picked a specific
+  // recommendation there. Seed 'pending' from the very first render (not inside an effect) so
+  // the manual picker form never flashes on screen before the auto-submit fires.
+  const hasRecommendationPrefill = !!(searchParams.get('vehicleId') || incomingRecommendation);
+  const [autoAssignState, setAutoAssignState] = useState<'idle' | 'pending' | 'failed'>(
+    hasRecommendationPrefill ? 'pending' : 'idle'
+  );
+  const autoConfirmedRef = useRef(false);
 
   // Single mode
   const [selectedVehicleId, setSelectedVehicleId] = useState<number | null>(null);
@@ -249,8 +261,13 @@ const VehicleAssignmentPage: React.FC = () => {
           capacityResult != null &&
           capacityResult.volumeCheckResult !== 'NOT_CHECKED');
 
-      // Only load vehicles/drivers if no trips yet and draft is eligible for assignment
-      if (tripsData.length === 0 && eligibleForManualAssign) {
+      // Mirrors the hasActiveTrip check used for rendering below — a CANCELLED trip must not
+      // block re-loading eligible vehicles/drivers, otherwise the assignment form renders (per
+      // hasActiveTrip) but stays permanently empty since this data never gets fetched.
+      const hasActiveTripData = tripsData.some((t) => t.status !== 'CANCELLED');
+
+      // Only load vehicles/drivers if no ACTIVE trip yet and draft is eligible for assignment
+      if (!hasActiveTripData && eligibleForManualAssign) {
         const deliveryDate = draftData.deliveryDate;
         const [vehicleData, driverData, fleetData] = await Promise.all([
           getEligibleVehicles(id),
@@ -290,7 +307,7 @@ const VehicleAssignmentPage: React.FC = () => {
           setSplitGroups(prefilledGroups);
           setMode('split');
         }
-      } else if (tripsData.length === 0 && !eligibleForManualAssign) {
+      } else if (!hasActiveTripData && !eligibleForManualAssign) {
         // Draft not ready for assignment — load fleet check anyway
         const fleetData = await getFleetCapacityCheck(draftData.deliveryDate);
         setFleetCheck(fleetData);
@@ -435,6 +452,42 @@ const VehicleAssignmentPage: React.FC = () => {
     }
   };
 
+  // ── Confirmed dispatch data export (per trip) ──────────────────────────────
+  const [exportingTripId, setExportingTripId] = useState<number | null>(null);
+  const handleExportDispatch = async (trip: Trip) => {
+    setExportingTripId(trip.tripId);
+    try {
+      const blob = await dispatchExportApi.exportSingleDispatch(trip.tripDraftId);
+      const stamp = new Date().toISOString().slice(0, 10);
+      downloadBlob(blob, `ELog_DispatchExport_${trip.tripDraftId}_${stamp}.xlsx`);
+      message.success('Xuất dữ liệu điều phối thành công');
+    } catch (err) {
+      message.error(getErrorMessage(err, 'Không thể xuất dữ liệu điều phối. Vui lòng thử lại.'));
+    } finally {
+      setExportingTripId(null);
+    }
+  };
+
+  // ── Cancel trip (DISPATCHED, chưa bắt đầu) ─────────────────────────────────
+  const [cancellingTrip, setCancellingTrip] = useState<Trip | null>(null);
+  const [cancelling, setCancelling] = useState(false);
+  const handleCancelTrip = async () => {
+    if (!cancellingTrip) return;
+    setCancelling(true);
+    try {
+      const updated = await cancelTrip(cancellingTrip.tripId);
+      setExistingTrips((prev) =>
+        prev.map((t) => (t.tripId === updated.tripId ? updated : t))
+      );
+      message.success('Đã huỷ chuyến');
+      setCancellingTrip(null);
+    } catch (err) {
+      message.error(getErrorMessage(err, 'Không thể huỷ chuyến. Vui lòng thử lại.'));
+    } finally {
+      setCancelling(false);
+    }
+  };
+
   // ── Split mode: per-group vehicle eligibility (manual, no recommendation) ──
   // Recommendation-prefilled groups already have the right vehicles via
   // splitPickerVehicles below, so this only runs for groups the dispatcher built
@@ -480,6 +533,32 @@ const VehicleAssignmentPage: React.FC = () => {
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [id, mode, incomingRecommendation, splitStopIdsKey]);
+
+  // ── Auto-confirm from recommendation prefill (see autoAssignState above) ──
+  useEffect(() => {
+    if (loading || autoAssignState !== 'pending' || autoConfirmedRef.current) return;
+    if (existingTrips.some((t) => t.status !== 'CANCELLED')) return;
+
+    if (incomingRecommendation) {
+      if (splitValid) {
+        autoConfirmedRef.current = true;
+        handleConfirmSplit();
+      } else {
+        // Recommended split no longer fully valid (e.g. a vehicle/driver got taken in the
+        // meantime) — fall back to the manual split form instead of hanging on the spinner.
+        setAutoAssignState('failed');
+      }
+    } else if (searchParams.get('vehicleId')) {
+      if (selectedVehicleId) {
+        autoConfirmedRef.current = true;
+        handleConfirmAssign();
+      } else {
+        // Recommended vehicle is no longer eligible — fall back to the manual picker.
+        setAutoAssignState('failed');
+      }
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [loading, autoAssignState, existingTrips, incomingRecommendation, splitValid, selectedVehicleId, searchParams]);
 
   // ── Render: loading ───────────────────────────────────────────────────────
   if (loading) {
@@ -541,6 +620,12 @@ const VehicleAssignmentPage: React.FC = () => {
   const canManuallyAssign =
     draft.status === 'VALIDATED' ||
     (draft.status === 'PLANNED' && capacityInfo != null && capacityInfo.volumeCheckResult !== 'NOT_CHECKED');
+
+  // Mirrors TripServiceImpl's existsByTripDraftIdAndStatusNot(..., CANCELLED) guard — một Trip đã
+  // huỷ không tính là "đang chiếm" tripDraft này, nên vẫn phải cho hiện lại form chọn xe mới. Bảng
+  // "Chuyến đã được tạo" bên dưới vẫn luôn hiện đủ mọi Trip (kể cả CANCELLED) để xem lịch sử —
+  // chỉ riêng điều kiện "có cho chọn xe mới không" mới cần loại trừ CANCELLED.
+  const hasActiveTrip = existingTrips.some((t) => t.status !== 'CANCELLED');
 
   const usedDriverIds = new Set(splitGroups.map((g) => g.driverId).filter(Boolean));
   const usedVehicleIds = new Set(splitGroups.map((g) => g.vehicleId).filter(Boolean));
@@ -611,7 +696,7 @@ const VehicleAssignmentPage: React.FC = () => {
       </div>
 
       {/* Draft not eligible for assignment warning */}
-      {!canManuallyAssign && existingTrips.length === 0 && (
+      {!canManuallyAssign && !hasActiveTrip && (
         <Alert
           type="warning"
           showIcon
@@ -689,45 +774,63 @@ const VehicleAssignmentPage: React.FC = () => {
               { title: 'Số điểm', dataIndex: 'tripStopCount', key: 'tripStopCount' },
               { title: 'Thể tích', key: 'vol', render: (_: unknown, r: Trip) => fmtVolume(r.totalVolumeM3) },
               { title: 'Tải trọng', key: 'wt', render: (_: unknown, r: Trip) => fmtWeight(r.totalWeightKg) },
-              { title: 'Trạng thái', key: 'status', render: (_: unknown, r: Trip) => renderTripStatusTag(r.status) },
+              {
+                title: 'Trạng thái',
+                key: 'status',
+                render: (_: unknown, r: Trip) => (
+                  <Space size={4}>
+                    {renderTripStatusTag(r.status)}
+                    {r.daysOverdue != null && (
+                      <Tag color="warning">Quá hạn {r.daysOverdue} ngày</Tag>
+                    )}
+                  </Space>
+                ),
+              },
               {
                 title: 'Hành động',
                 key: 'action',
                 render: (_: unknown, r: Trip) => {
                   if (r.status === 'VALIDATED') {
                     return (
-                      <Space size="small">
-                        <Button
-                          type="primary"
-                          size="small"
-                          icon={<CheckCircleOutlined />}
-                          onClick={() => navigate(`/dispatcher/trips/${r.tripId}/dispatch`)}
-                        >
-                          Xác nhận điều phối
-                        </Button>
-                        <Button
-                          size="small"
-                          icon={<CarOutlined />}
-                          onClick={() => {
-                            setEditingTrip(r);
-                            setEditVehicleId(r.vehicle?.vehicleId ?? null);
-                            setEditDriverId(r.driver?.userId ?? null);
-                          }}
-                        >
-                          Sửa xe/tài xế
-                        </Button>
-                      </Space>
+                      <Button
+                        type="primary"
+                        size="small"
+                        icon={<CheckCircleOutlined />}
+                        onClick={() => navigate(`/dispatcher/trips/${r.tripId}/dispatch`)}
+                      >
+                        Xác nhận điều phối
+                      </Button>
                     );
                   }
                   if (r.status === 'DISPATCHED' || r.status === 'IN_PROGRESS' || r.status === 'COMPLETED') {
                     return (
-                      <Button
-                        size="small"
-                        icon={<PrinterOutlined />}
-                        onClick={() => handleOpenHandoverSlip(r.tripId)}
-                      >
-                        In phiếu bàn giao
-                      </Button>
+                      <Space size="small">
+                        <Button
+                          size="small"
+                          icon={<PrinterOutlined />}
+                          onClick={() => handleOpenHandoverSlip(r.tripId)}
+                        >
+                          In phiếu bàn giao
+                        </Button>
+                        <Button
+                          size="small"
+                          icon={<DownloadOutlined />}
+                          loading={exportingTripId === r.tripId}
+                          onClick={() => handleExportDispatch(r)}
+                        >
+                          Xuất dữ liệu điều phối
+                        </Button>
+                        {r.status === 'DISPATCHED' && (
+                          <Button
+                            danger
+                            size="small"
+                            icon={<StopOutlined />}
+                            onClick={() => setCancellingTrip(r)}
+                          >
+                            Huỷ chuyến
+                          </Button>
+                        )}
+                      </Space>
                     );
                   }
                   return null;
@@ -738,158 +841,51 @@ const VehicleAssignmentPage: React.FC = () => {
         </Card>
       )}
 
-      {/* ── Edit Assignment Modal ─────────────────────────────────────────── */}
+      {/* ── Cancel Trip Modal ────────────────────────────────────────────────── */}
       <Modal
-        open={!!editingTrip}
+        open={!!cancellingTrip}
         title={
           <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-            <CarOutlined style={{ color: '#2563eb' }} />
-            <span>Sửa xe &amp; tài xế — Trip #{editingTrip?.tripId}</span>
+            <StopOutlined style={{ color: '#cf1322' }} />
+            <span>Huỷ chuyến — Trip #{cancellingTrip?.tripId}</span>
           </div>
         }
-        onCancel={() => !editSaving && setEditingTrip(null)}
+        onCancel={() => !cancelling && setCancellingTrip(null)}
         footer={[
-          <Button key="cancel" onClick={() => setEditingTrip(null)} disabled={editSaving}>
-            Huỷ
+          <Button key="back" onClick={() => setCancellingTrip(null)} disabled={cancelling}>
+            Quay lại
           </Button>,
-          <Button
-            key="save"
-            type="primary"
-            loading={editSaving}
-            disabled={!editVehicleId || !editDriverId}
-            onClick={async () => {
-              if (!editingTrip || !editVehicleId || !editDriverId) return;
-              setEditSaving(true);
-              try {
-                const updated = await updateTripAssignment(editingTrip.tripId, {
-                  vehicleId: editVehicleId,
-                  driverId: editDriverId,
-                });
-                setExistingTrips((prev) =>
-                  prev.map((t) => (t.tripId === updated.tripId ? updated : t))
-                );
-                message.success('Cập nhật xe & tài xế thành công!');
-                setEditingTrip(null);
-              } catch (err) {
-                const code = getErrorCode(err);
-                if (code === 'TRIP_LOCKED') {
-                  message.error('Chuyến đã bị khóa/dispatch, không thể chỉnh sửa.');
-                } else if (code === 'DRIVER_LICENSE_INCOMPATIBLE') {
-                  message.error('Hạng bằng lái của tài xế không tương thích với yêu cầu của xe.');
-                } else if (code === 'VEHICLE_NOT_ELIGIBLE') {
-                  message.error('Xe được chọn không đủ tải trọng cho chuyến này.');
-                } else if (code === 'VEHICLE_CONFLICT') {
-                  message.error('Xe đã có chuyến khác cùng ngày. Vui lòng chọn xe khác.');
-                } else if (code === 'DRIVER_CONFLICT') {
-                  message.error('Tài xế đã có chuyến khác cùng ngày. Vui lòng chọn tài xế khác.');
-                } else {
-                  message.error(getErrorMessage(err, 'Cập nhật thất bại. Vui lòng thử lại.'));
-                }
-              } finally {
-                setEditSaving(false);
-              }
-            }}
-          >
-            Lưu thay đổi
+          <Button key="confirm" danger type="primary" loading={cancelling} onClick={handleCancelTrip}>
+            Xác nhận huỷ chuyến
           </Button>,
         ]}
-        width={600}
       >
         <Alert
-          type="info"
+          type="warning"
           showIcon
-          message="Lưu ý"
-          description="Chỉ cho phép chỉnh sửa khi chuyến chưa được dispatch. Sau khi xác nhận điều phối, xe và tài xế bị khóa vĩnh viễn."
+          message="Hành động không thể hoàn tác"
+          description="Chuyến sẽ chuyển sang trạng thái Đã huỷ. Xe và tài xế được giải phóng ngay lập tức. Chỉ áp dụng được khi tài xế chưa bấm 'Bắt đầu chuyến' trên app."
           style={{ marginBottom: 16 }}
         />
-
-        {/* Vehicle picker */}
-        <div style={{ marginBottom: 16 }}>
-          <Text strong style={{ display: 'block', marginBottom: 8 }}>Chọn xe:</Text>
-          {eligibleVehicles.length === 0 ? (
-            <Alert type="warning" showIcon message="Không có xe đủ tải trong danh sách hiện tại. Tải lại trang để cập nhật." />
-          ) : (
-            <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
-              {eligibleVehicles.map((v) => (
-                <div
-                  key={v.vehicleId}
-                  onClick={() => setEditVehicleId(v.vehicleId)}
-                  style={{
-                    padding: '10px 14px',
-                    borderRadius: 8,
-                    border: `2px solid ${editVehicleId === v.vehicleId ? '#2563eb' : '#f0f0f0'}`,
-                    background: editVehicleId === v.vehicleId ? '#e6f4ff' : '#fafafa',
-                    cursor: 'pointer',
-                    display: 'flex',
-                    justifyContent: 'space-between',
-                    alignItems: 'center',
-                  }}
-                >
-                  <div>
-                    <Text strong>{v.plateNumber}</Text>
-                    <Text type="secondary" style={{ marginLeft: 8, fontSize: 12 }}>{v.vehicleType}</Text>
-                  </div>
-                  <div style={{ fontSize: 12, color: '#52c41a' }}>
-                    Còn: {fmtVolume(v.remainingVolumeM3)} / {fmtWeight(v.remainingWeightKg)}
-                  </div>
-                </div>
-              ))}
-            </div>
-          )}
-        </div>
-
-        <Divider style={{ margin: '12px 0' }} />
-
-        {/* Driver picker */}
-        <div>
-          <Text strong style={{ display: 'block', marginBottom: 8 }}>Chọn tài xế:</Text>
-          {drivers.length === 0 ? (
-            <Alert type="warning" showIcon message="Không có tài xế trong danh sách. Tải lại trang để cập nhật." />
-          ) : (
-            <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
-              {drivers.map((d) => (
-                <div
-                  key={d.userId}
-                  onClick={() => d.available && setEditDriverId(d.userId)}
-                  style={{
-                    padding: '10px 14px',
-                    borderRadius: 8,
-                    border: `2px solid ${
-                      editDriverId === d.userId ? '#2563eb' : d.available ? '#f0f0f0' : '#ffccc7'
-                    }`,
-                    background: editDriverId === d.userId ? '#e6f4ff' : d.available ? '#fafafa' : '#fff2f0',
-                    cursor: d.available ? 'pointer' : 'not-allowed',
-                    display: 'flex',
-                    justifyContent: 'space-between',
-                    alignItems: 'center',
-                    opacity: d.available ? 1 : 0.7,
-                  }}
-                >
-                  <div>
-                    <Text strong style={{ color: d.available ? undefined : '#cf1322' }}>
-                      {d.fullName}
-                    </Text>
-                    {!d.available && (
-                      <StatusBadge color="red">Bận</StatusBadge>
-                    )}
-                  </div>
-                  {!d.available && d.busyReason && (
-                    <Tooltip title={d.busyReason}>
-                      <InfoCircleOutlined style={{ color: '#cf1322' }} />
-                    </Tooltip>
-                  )}
-                  {d.available && editDriverId === d.userId && (
-                    <CheckOutlined style={{ color: '#2563eb' }} />
-                  )}
-                </div>
-              ))}
-            </div>
-          )}
-        </div>
+        {cancellingTrip && (
+          <div style={{ background: palette.bgLayout, borderRadius: 10, padding: '12px 16px' }}>
+            <div>Tuyến: <Text strong>{cancellingTrip.fixedRouteCode}</Text></div>
+            <div>Xe: <Text strong>{cancellingTrip.vehicle ? `${cancellingTrip.vehicle.plateNumber} (${cancellingTrip.vehicle.vehicleType})` : '—'}</Text></div>
+            <div>Tài xế: <Text strong>{cancellingTrip.driver?.fullName ?? '—'}</Text></div>
+          </div>
+        )}
       </Modal>
 
-      {/* ── Assignment Form (only when no trips yet & draft VALIDATED) ─────── */}
-      {existingTrips.length === 0 && canManuallyAssign && (
+      {/* ── Assignment Form (only when no ACTIVE trip & draft VALIDATED) ────── */}
+      {!hasActiveTrip && canManuallyAssign && (
+        autoAssignState === 'pending' ? (
+          <Card style={{ borderRadius: 12, marginBottom: 16, textAlign: 'center', padding: '32px 0' }}>
+            <Spin size="large" />
+            <div style={{ marginTop: 12 }}>
+              <Text strong>Đang tạo chuyến theo phương án đã chọn...</Text>
+            </div>
+          </Card>
+        ) : (
         <>
           {/* Mode toggle */}
           <Card style={{ borderRadius: 12, marginBottom: 16 }} bodyStyle={{ padding: '16px 24px' }}>
@@ -1468,6 +1464,7 @@ const VehicleAssignmentPage: React.FC = () => {
             </Row>
           )}
         </>
+        )
       )}
 
       {/* ── Modal: single assign confirm ──────────────────────────────────── */}

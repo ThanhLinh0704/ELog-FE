@@ -9,6 +9,7 @@ import type {
   TripStartResponse,
   StopArriveResponse,
   StopCompleteResponse,
+  TripStatusSummaryResponse,
 } from '../types/monitoring';
 
 interface ApiResponseWrapper<T> {
@@ -42,6 +43,18 @@ export async function getActiveTrips(date?: string): Promise<ActiveTripsResponse
 export async function getTripProgress(tripId: number): Promise<TripProgressResponse> {
   const res = await axiosInstance.get<ApiResponseWrapper<TripProgressResponse>>(
     `/api/v1/trips/${tripId}/progress`
+  );
+  return unwrap(res);
+}
+
+/**
+ * GET /api/v1/dashboard/trip-status-summary?date=YYYY-MM-DD
+ * Returns trip counts by status (VALIDATED/DISPATCHED/IN_PROGRESS/COMPLETED) for a date.
+ */
+export async function getTripStatusSummary(date?: string): Promise<TripStatusSummaryResponse> {
+  const res = await axiosInstance.get<ApiResponseWrapper<TripStatusSummaryResponse>>(
+    '/api/v1/dashboard/trip-status-summary',
+    { params: date ? { date } : undefined }
   );
   return unwrap(res);
 }

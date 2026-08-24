@@ -46,6 +46,33 @@ function getCurrentUser() {
   };
 }
 
+// Backend joins these clauses with " and " (CapacityValidationServiceImpl / ConstraintValidationServiceImpl) —
+// translate each recognized clause to Vietnamese, keep the embedded numbers, and fall back to the raw
+// clause untranslated if BE wording ever drifts from what's matched here.
+const FAILURE_REASON_PATTERNS: [RegExp, (m: RegExpMatchArray) => string][] = [
+  [/^Volume exceeds safety limit \(([\d.]+) m³ > ([\d.]+) m³\)$/, (m) => `Thể tích ${m[1]} m³ vượt giới hạn an toàn ${m[2]} m³`],
+  [/^Weight exceeds safety limit \(([\d.]+) kg > ([\d.]+) kg\)$/, (m) => `Trọng lượng ${m[1]} kg vượt giới hạn an toàn ${m[2]} kg`],
+  [/^Vehicle weight \(([\d.]+) kg\) exceeds store (\S+) limit \(([\d.]+) kg\)$/, (m) => `Tải trọng xe ${m[1]} kg vượt giới hạn cửa hàng ${m[2]} (${m[3]} kg)`],
+  [/^Planned ETA \(([\d:]+)\) is outside store (\S+) allowed delivery hours \(([^)]+)\)$/, (m) => `Giờ đến dự kiến ${m[1]} nằm ngoài khung giờ nhận hàng của cửa hàng ${m[2]} (${m[3]})`],
+  [/^ETA ([\d:]+) exceeds closing time ([\d:]+) at store (\S+)$/, (m) => `Giờ đến dự kiến ${m[1]} trễ hơn giờ đóng cửa ${m[2]} của cửa hàng ${m[3]}`],
+  [/^Planned ETA \(([\d:]+)\) violates delivery window \(([^)]+)\) for order (\S+)$/, (m) => `Giờ đến dự kiến ${m[1]} không nằm trong khung giờ giao (${m[2]}) của đơn ${m[3]}`],
+];
+
+function translateFailureReason(reason?: string): string {
+  if (!reason) return 'Không đủ tải';
+  return reason
+    .split(' and ')
+    .map((clause) => {
+      const trimmed = clause.trim();
+      for (const [pattern, translate] of FAILURE_REASON_PATTERNS) {
+        const m = trimmed.match(pattern);
+        if (m) return translate(m);
+      }
+      return trimmed;
+    })
+    .join(' và ');
+}
+
 const CapacityValidationPage: React.FC = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
@@ -542,7 +569,7 @@ const CapacityValidationPage: React.FC = () => {
                                 render: (val: string) => (
                                   <div style={{ padding: '4px 0', lineHeight: '1.6' }}>
                                     <Text type="danger" style={{ fontSize: 13 }}>
-                                      {val || 'Không đủ tải'}
+                                      {translateFailureReason(val)}
                                     </Text>
                                   </div>
                                 )
@@ -601,10 +628,9 @@ const CapacityValidationPage: React.FC = () => {
                       </div>
                       {result.suggestion && (
                         <div style={{ marginTop: 8, paddingLeft: 12, borderLeft: '2px solid #ef4444', fontStyle: 'italic' }}>
-                          Gợi ý: {result.suggestion}
+                          Gợi ý: Không có xe hoặc cặp 2 xe nào đáp ứng đủ điều kiện. Vui lòng kiểm tra lại đội xe, khung giờ giao hàng hoặc giới hạn tuyến.
                         </div>
                       )}
-                      {result.message && <div style={{ marginTop: 8, fontSize: 12, color: '#71717a' }}>{result.message}</div>}
                     </div>
                   }
                   type="warning"
@@ -669,7 +695,7 @@ const CapacityValidationPage: React.FC = () => {
                           key: 'failureReason',
                           render: (val: string) => (
                             <div style={{ padding: '4px 0', lineHeight: '1.6' }}>
-                              <Text type="danger" style={{ fontSize: 13 }}>{val}</Text>
+                              <Text type="danger" style={{ fontSize: 13 }}>{translateFailureReason(val)}</Text>
                             </div>
                           )
                         }

@@ -244,16 +244,20 @@ const TripDraftListPage: React.FC = () => {
       render: (_: any, record: TripDraft) => {
         // Từ trạng thái "Đã lập chuyến" (PLANNED) trở đi, draft đã được xử lý xong —
         // không còn sửa bản nháp được nữa, nên ẩn "Mở bản nháp" và đổi "Xem chi tiết"
-        // thành "Điều phối" vì lúc này màn chi tiết chủ yếu dùng để điều phối xe/tài xế.
+        // thành "Điều phối"/"Đã điều phối" vì lúc này màn chi tiết chủ yếu dùng để điều phối xe/tài xế.
         const isDraft = record.status === 'DRAFT';
+        // Chuyến đã qua bước "Xác nhận điều phối và khóa chuyến" (xe/tài xế đã chốt, không sửa được
+        // nữa) — phân biệt với PLANNED/VALIDATED vẫn còn đang chờ gán xe/điều phối.
+        const isDispatched = ['DISPATCHED', 'IN_PROGRESS', 'COMPLETED'].includes(record.status);
+        const actionLabel = isDraft ? 'Xem chi tiết' : isDispatched ? 'Đã điều phối' : 'Điều phối';
         return (
           <Space size="small">
             <Button
               type="link"
-              icon={isDraft ? <EyeOutlined /> : <SendOutlined />}
+              icon={isDraft || isDispatched ? <EyeOutlined /> : <SendOutlined />}
               onClick={() => navigate(`/dispatcher/trip-drafts/${record.id}`)}
             >
-              {isDraft ? 'Xem chi tiết' : 'Điều phối'}
+              {actionLabel}
             </Button>
             {isDraft && (
               <Button

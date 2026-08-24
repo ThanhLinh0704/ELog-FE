@@ -16,21 +16,16 @@ import {
   Space,
   Modal,
   Alert,
-  TimePicker,
-  Form,
   Tooltip,
   Progress,
-  Collapse,
 } from 'antd';
-import { ArrowLeftOutlined, CarOutlined, ClockCircleOutlined, UserOutlined } from '@ant-design/icons';
-import { MapPin, CheckCircle2, XCircle, Sparkles, Eye, PackageCheck } from 'lucide-react';
-import dayjs from 'dayjs';
+import { ArrowLeftOutlined, CarOutlined, UserOutlined } from '@ant-design/icons';
+import { MapPin, CheckCircle2, XCircle, Sparkles, Eye } from 'lucide-react';
 import AdminShell from '../../../components/AdminShell';
 import StatusBadge, { type StatusBadgeColor } from '../../../components/StatusBadge';
 import { palette } from '../../../theme/tokens';
 import {
   tripDraftApi,
-  adjustDepartureTime,
   getStopOrderItems,
   getApiErrorMessage,
   getRecommendations,
@@ -41,8 +36,6 @@ import {
 } from '../../../api/tripDraftApi';
 import { isFeasibleRecommendationPlan } from '../../../api/recommendationNormalizer';
 import { getTripsByTripDraftId } from '../../../api/tripApi';
-import { getTripDraftPlanningHistory } from '../../../api/planningHistoryApi';
-import { PLANNING_EVENT_TYPE_LABEL, type PlanningEvent } from '../../../types/planningEvent';
 import type { TripDraft, TripDraftStop, CapacityValidationResult } from '../../../types/tripDraft';
 import type { Trip } from '../../../types/trip';
 
@@ -79,11 +72,6 @@ const TripDraftDetailPage: React.FC = () => {
   const [revertLoading, setRevertLoading] = useState(false);
   const [revertModalOpen, setRevertModalOpen] = useState(false);
 
-  // Adjust Departure Time states
-  const [adjustDepModalOpen, setAdjustDepModalOpen] = useState(false);
-  const [adjustDepTime, setAdjustDepTime] = useState<dayjs.Dayjs | null>(dayjs('07:30:00', 'HH:mm:ss'));
-  const [adjustDepLoading, setAdjustDepLoading] = useState(false);
-
   // Stop Order Items Modal states
   const [orderItemsModalOpen, setOrderItemsModalOpen] = useState(false);
   const [selectedStop, setSelectedStop] = useState<TripDraftStop | null>(null);
@@ -101,33 +89,12 @@ const TripDraftDetailPage: React.FC = () => {
   // Auto capacity-check result (surfaced when confirm couldn't reach VALIDATED)
   const [capacityFailInfo, setCapacityFailInfo] = useState<CapacityValidationResult | null>(null);
 
-  // Planning history panel (ELOG-140)
-  const HISTORY_PAGE_SIZE = 10;
-  const [historyEvents, setHistoryEvents] = useState<PlanningEvent[]>([]);
-  const [historyLoading, setHistoryLoading] = useState(false);
-  const [historyLoaded, setHistoryLoaded] = useState(false);
-  const [historyPage, setHistoryPage] = useState(0);
-  const [historyTotal, setHistoryTotal] = useState(0);
-
-  const fetchHistory = async (page = 0) => {
-    if (!id) return;
-    setHistoryLoading(true);
-    try {
-      const result = await getTripDraftPlanningHistory(id, { page, size: HISTORY_PAGE_SIZE });
-      setHistoryEvents(result.items);
-      setHistoryTotal(result.pagination.totalElements);
-      setHistoryPage(page);
-      setHistoryLoaded(true);
-    } catch (err) {
-      message.error((err as Error).message);
-    } finally {
-      setHistoryLoading(false);
-    }
-  };
-
   const hasFeasibleRecommendations = isFeasibleRecommendationPlan(recResult?.planType);
 
-  const isOperableStatus = (draft?.status === 'DRAFT' || draft?.status === 'PLANNED' || draft?.status === 'VALIDATED') && existingTrips.length === 0;
+  // Mirrors TripServiceImpl's existsByTripDraftIdAndStatusNot(..., CANCELLED) guard — một Trip đã
+  // huỷ không tính là "đang chiếm" tripDraft này, nên các thao tác điều chỉnh/gán lại vẫn phải mở
+  // lại được. Chỉ 1 Trip còn hiệu lực (khác CANCELLED) mới thật sự khoá đợt gom đơn này.
+  const hasActiveTrip = existingTrips.some((t) => t.status !== 'CANCELLED');
 
   // Manual assignment override (spec-manual-assignment-override.md, mirrors
   // TripServiceImpl.validateAssignmentEligibility): unlocks "Phân xe & tài xế"
@@ -147,10 +114,6 @@ const TripDraftDetailPage: React.FC = () => {
     try {
       const data = await tripDraftApi.getTripDraftById(Number(id));
       setDraft(data);
-
-      if (data.plannedDepartureTime) {
-        setAdjustDepTime(dayjs(data.plannedDepartureTime, 'HH:mm:ss'));
-      }
 
       if (data.status === 'PLANNED') {
         try {
@@ -262,26 +225,6 @@ const TripDraftDetailPage: React.FC = () => {
       message.error(getApiErrorMessage(err, 'Xác nhận kế hoạch thất bại.'));
     } finally {
       setConfirmLoading(false);
-    }
-  };
-
-  const handleAdjustDepartureTimeSubmit = async () => {
-    if (!id || !adjustDepTime) {
-      message.warning('Vui lòng chọn giờ xuất phát mới');
-      return;
-    }
-    const formattedTime = adjustDepTime.format('HH:mm:ss');
-    setAdjustDepLoading(true);
-    try {
-      await adjustDepartureTime(id, formattedTime);
-      message.success(`Đã điều chỉnh giờ xuất phát thành ${formattedTime}`);
-      setAdjustDepModalOpen(false);
-      await reloadAllData();
-    } catch (err: any) {
-      console.error(err);
-      message.error(getApiErrorMessage(err, 'Không thể điều chỉnh giờ xuất phát.'));
-    } finally {
-      setAdjustDepLoading(false);
     }
   };
 
@@ -410,15 +353,9 @@ const TripDraftDetailPage: React.FC = () => {
       title: 'Số lượng đơn',
       dataIndex: 'orderCount',
       key: 'orderCount',
-      render: (count: number, record: TripDraftStop) => (
+      render: (count: number) => (
         count > 0 ? (
-          <Button
-            type="link"
-            style={{ padding: 0, fontWeight: 700 }}
-            onClick={() => handleOpenStopOrderItems(record)}
-          >
-            {count} đơn
-          </Button>
+          <Text strong>{count} đơn</Text>
         ) : (
           <Text type="secondary">0 đơn</Text>
         )
@@ -534,7 +471,7 @@ const TripDraftDetailPage: React.FC = () => {
         />
       </div>
 
-      {existingTrips.length > 0 && (
+      {hasActiveTrip && (
         <Alert
           type="warning"
           showIcon
@@ -554,10 +491,9 @@ const TripDraftDetailPage: React.FC = () => {
               : 'Không có xe nào đủ tải cho tuyến này'
           }
           description={
-            <div>
-              {capacityFailInfo.suggestion && <div>{capacityFailInfo.suggestion}</div>}
-              {capacityFailInfo.message && <div style={{ marginTop: capacityFailInfo.suggestion ? 4 : 0 }}>{capacityFailInfo.message}</div>}
-            </div>
+            capacityFailInfo.volumeCheckResult === 'NOT_CHECKED'
+              ? capacityFailInfo.message
+              : 'Không có xe hoặc cặp 2 xe nào đủ tải trọng/thể tích cho tuyến này. Vui lòng kiểm tra lại đội xe hoặc giới hạn tuyến.'
           }
           action={
             <Button size="small" danger onClick={() => navigate(`/dispatcher/trip-drafts/${draft.id}/capacity`)}>
@@ -587,19 +523,9 @@ const TripDraftDetailPage: React.FC = () => {
         </div>
 
         <Space wrap>
-          {isOperableStatus && (
-            <Button
-              icon={<ClockCircleOutlined />}
-              style={{ fontWeight: 600, borderColor: palette.primary, color: palette.primary }}
-              onClick={() => setAdjustDepModalOpen(true)}
-            >
-              Điều chỉnh giờ xuất phát
-            </Button>
-          )}
-
           {(draft.status === 'PLANNED' || draft.status === 'VALIDATED') && (
             <>
-              {existingTrips.length === 0 && (
+              {!hasActiveTrip && (
                 <Button
                   danger
                   style={{ fontWeight: 600 }}
@@ -615,17 +541,10 @@ const TripDraftDetailPage: React.FC = () => {
               >
                 Xem kết quả tải trọng
               </Button>
-              <Button
-                icon={<PackageCheck size={16} />}
-                style={{ fontWeight: 600 }}
-                onClick={() => navigate(`/trip-drafts/${draft.id}/loading-manifest`)}
-              >
-                LIFO Manifest
-              </Button>
             </>
           )}
           {/* US-13: Recommendations button — visible when status is PLANNED or VALIDATED */}
-          {(draft.status === 'PLANNED' || draft.status === 'VALIDATED') && existingTrips.length === 0 && (
+          {(draft.status === 'PLANNED' || draft.status === 'VALIDATED') && !hasActiveTrip && (
             <Button
               icon={<Sparkles size={16} />}
               style={{ fontWeight: 600, color: palette.primary, borderColor: palette.primary, background: palette.primaryBg }}
@@ -636,7 +555,7 @@ const TripDraftDetailPage: React.FC = () => {
             </Button>
           )}
           {/* US-14: Confirm button — visible when status is VALIDATED and recommendations have been loaded */}
-          {draft.status === 'VALIDATED' && existingTrips.length === 0 && recResult && hasFeasibleRecommendations && (
+          {draft.status === 'VALIDATED' && !hasActiveTrip && recResult && hasFeasibleRecommendations && (
             <Button
               type="primary"
               icon={<CheckCircle2 size={16} />}
@@ -647,7 +566,7 @@ const TripDraftDetailPage: React.FC = () => {
               Xác nhận kế hoạch
             </Button>
           )}
-          {isManualAssignEligible && existingTrips.length === 0 && (
+          {isManualAssignEligible && !hasActiveTrip && (
             <Button
               type="primary"
               icon={<CarOutlined />}
@@ -657,7 +576,7 @@ const TripDraftDetailPage: React.FC = () => {
               Phân xe & tài xế
             </Button>
           )}
-          {draft.status === 'VALIDATED' && existingTrips.length > 0 && (
+          {draft.status === 'VALIDATED' && hasActiveTrip && (
             <Button
               type="primary"
               icon={<CarOutlined />}
@@ -800,7 +719,6 @@ const TripDraftDetailPage: React.FC = () => {
             </>
           ) : (
             <>
-              {recResult.message && <Alert type="info" showIcon message={recResult.message} style={{ marginBottom: 12 }} />}
               <Row gutter={[16, 16]}>
                 {recResult.recommendations.map((rec: VehicleRecommendation, idx: number) => (
                   <Col xs={24} md={8} key={idx}>
@@ -971,114 +889,6 @@ const TripDraftDetailPage: React.FC = () => {
         />
       </Card>
 
-      {/* Lịch sử lập kế hoạch (ELOG-140) */}
-      <Collapse
-        style={{ marginBottom: 24, borderRadius: 12 }}
-        onChange={(keys) => {
-          const opened = Array.isArray(keys) ? keys.length > 0 : !!keys;
-          if (opened && !historyLoaded && !historyLoading) {
-            fetchHistory(0);
-          }
-        }}
-        items={[
-          {
-            key: 'planning-history',
-            label: <span style={{ fontSize: 16, fontWeight: 600 }}>Lịch sử lập kế hoạch</span>,
-            children: (
-              <Table
-                size="small"
-                loading={historyLoading}
-                dataSource={historyEvents}
-                rowKey="id"
-                pagination={{
-                  current: historyPage + 1,
-                  pageSize: HISTORY_PAGE_SIZE,
-                  total: historyTotal,
-                  onChange: (p) => fetchHistory(p - 1),
-                }}
-                locale={{ emptyText: <Empty description="Chưa có sự kiện lập kế hoạch nào." /> }}
-                columns={[
-                  { title: 'Thời gian', dataIndex: 'occurredAt', key: 'occurredAt', render: (t: string) => t || '—' },
-                  {
-                    title: 'Loại sự kiện',
-                    dataIndex: 'eventType',
-                    key: 'eventType',
-                    render: (t: PlanningEvent['eventType']) => <StatusBadge color="blue">{PLANNING_EVENT_TYPE_LABEL[t] ?? t}</StatusBadge>,
-                  },
-                  {
-                    title: 'Người thực hiện',
-                    key: 'actor',
-                    render: (_: unknown, record: PlanningEvent) =>
-                      record.actorType === 'USER'
-                        ? `${record.actorUsername ?? '—'}${record.actorRole ? ` (${record.actorRole})` : ''}`
-                        : record.actorType === 'RECOMMENDATION_ENGINE'
-                        ? 'Hệ thống gợi ý'
-                        : 'Hệ thống',
-                  },
-                  {
-                    title: 'Trạng thái',
-                    key: 'status',
-                    render: (_: unknown, record: PlanningEvent) =>
-                      record.statusBefore || record.statusAfter
-                        ? `${record.statusBefore ?? '—'} → ${record.statusAfter ?? '—'}`
-                        : '—',
-                  },
-                  { title: 'Tóm tắt', dataIndex: 'changeSummary', key: 'changeSummary', render: (t: string) => t || '—' },
-                ]}
-              />
-            ),
-          },
-        ]}
-      />
-
-      {/* Modal Điều chỉnh giờ xuất phát */}
-      <Modal
-        open={adjustDepModalOpen}
-        title={
-          <Space>
-            <ClockCircleOutlined style={{ color: '#1890ff' }} />
-            <span>Điều chỉnh giờ xuất phát</span>
-          </Space>
-        }
-        onCancel={() => setAdjustDepModalOpen(false)}
-        footer={[
-          <Button key="cancel" onClick={() => setAdjustDepModalOpen(false)}>
-            Huỷ
-          </Button>,
-          <Button
-            key="submit"
-            type="primary"
-            loading={adjustDepLoading}
-            onClick={handleAdjustDepartureTimeSubmit}
-          >
-            Xác nhận điều chỉnh
-          </Button>,
-        ]}
-      >
-        <div style={{ paddingTop: 12 }}>
-          <Alert
-            type="info"
-            showIcon
-            message="Lưu ý"
-            description="Khi thay đổi giờ xuất phát, hệ thống Backend sẽ tự động tính toán lại ETA của toàn bộ các điểm dừng active trên chuyến."
-            style={{ marginBottom: 16, borderRadius: 8 }}
-          />
-          <Form layout="vertical">
-            <Form.Item label="Giờ xuất phát hiện tại">
-              <Text strong style={{ fontSize: 16 }}>{draft.plannedDepartureTime || 'Chưa thiết lập'}</Text>
-            </Form.Item>
-            <Form.Item label="Giờ xuất phát mới (HH:mm:ss)" required>
-              <TimePicker
-                value={adjustDepTime}
-                onChange={(val) => setAdjustDepTime(val)}
-                format="HH:mm:ss"
-                style={{ width: '100%' }}
-              />
-            </Form.Item>
-          </Form>
-        </div>
-      </Modal>
-
       {/* Modal Chi tiết đơn hàng của điểm dừng */}
       <Modal
         open={orderItemsModalOpen}
@@ -1130,12 +940,6 @@ const TripDraftDetailPage: React.FC = () => {
       >
         <div style={{ marginBottom: 12 }}>
           <p>Hành động này sẽ <strong>xóa đợt gom đơn hiện tại</strong> và chuyển các đơn hàng trở lại trạng thái chờ gom đơn để lập kế hoạch mới.</p>
-          <Alert
-            type="warning"
-            showIcon
-            message="Chú ý"
-            description="Nếu đợt gom đơn này đã được phân xe (assign) hoặc tách chuyến (assign-split), hệ thống sẽ từ chối thu hồi."
-          />
         </div>
       </Modal>
 

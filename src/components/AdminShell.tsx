@@ -1,6 +1,6 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
-import { Avatar, Button, ConfigProvider, Dropdown, Layout, Menu, Space } from 'antd';
+import { Avatar, Button, ConfigProvider, Dropdown, Layout, Menu, Space, Tooltip } from 'antd';
 import {
   Activity,
   AlertTriangle,
@@ -9,6 +9,7 @@ import {
   ClipboardCheck,
   ClipboardList,
   FileSpreadsheet,
+  Gauge,
   History,
   Home,
   Layers,
@@ -17,6 +18,8 @@ import {
   Map,
   Navigation,
   Package,
+  PanelLeftClose,
+  PanelLeftOpen,
   Settings,
   Truck,
   UserCog,
@@ -50,10 +53,22 @@ const ROLE_LABELS: Record<string, string> = {
   DRIVER: 'Tài xế',
 };
 
+const SIDER_WIDTH = 260;
+const SIDER_COLLAPSED_WIDTH = 72;
+
 const AdminShell: React.FC<AdminShellProps> = ({ currentUser, children }) => {
   const navigate = useNavigate();
   const location = useLocation();
   const { can } = usePermissions();
+  const [collapsed, setCollapsed] = useState(() => localStorage.getItem('sidebarCollapsed') === 'true');
+
+  const toggleCollapsed = () => {
+    setCollapsed((prev) => {
+      const next = !prev;
+      localStorage.setItem('sidebarCollapsed', String(next));
+      return next;
+    });
+  };
 
   const handleLogout = async () => {
     const refreshToken = localStorage.getItem('refreshToken');
@@ -123,13 +138,17 @@ const AdminShell: React.FC<AdminShellProps> = ({ currentUser, children }) => {
   const roles = currentUser.roles || [];
   const roleLabel = roles.map((role) => ROLE_LABELS[role] || role).join(', ') || 'User';
   const canViewImport = can(PERMISSIONS.ORDER_IMPORT) || can(PERMISSIONS.TRIP_READ);
-  const canViewTripDraftsMenu = can(PERMISSIONS.TRIP_READ);
-  // GET /api/v1/dashboard/active-trips (loaded on mount by MonitoringDashboardPage)
-  // requires trip:coordinate, not trip:read — gate on the same permission the
-  // route actually needs so the tab doesn't show for a role that will just hit
-  // a 403 on click (was trip:read, which LOGISTICS_MANAGER has but the API rejects).
+  // GET /api/v1/trip-drafts, GET /api/v1/dashboard/active-trips, and GET
+  // /api/v1/trip-outcomes all require trip:coordinate, not trip:read — gate every
+  // one of these tabs on the same permission the route actually needs so the tab
+  // doesn't show for a role that will just hit a 403 on click (was trip:read,
+  // which LOGISTICS_MANAGER has but none of these three APIs accept).
+  const canViewTripDraftsMenu = can(PERMISSIONS.TRIP_COORDINATE);
   const canViewMonitoring = can(PERMISSIONS.TRIP_COORDINATE);
-  const canViewTripOutcomes = can(PERMISSIONS.TRIP_READ);
+  // Same gate — GET /api/v1/dashboard/trip-status-summary (DashboardController) requires
+  // trip:coordinate, the API this page loads on mount.
+  const canViewFleetStatus = can(PERMISSIONS.TRIP_COORDINATE);
+  const canViewTripOutcomes = can(PERMISSIONS.TRIP_COORDINATE);
   const canViewExceptions = can(PERMISSIONS.TRIP_READ);
   const canViewKpi = can(PERMISSIONS.KPI_READ);
   const canViewActivityHistory = can(PERMISSIONS.TRIP_READ) || can(PERMISSIONS.PLANNING_HISTORY_READ);
@@ -138,7 +157,10 @@ const AdminShell: React.FC<AdminShellProps> = ({ currentUser, children }) => {
   const sidebarMenuItems = [
     {
       key: 'grp-main',
-      label: (
+      // antd's inlineCollapsed mode has no clean spot for a group label — a truncated
+      // "QUẢN T..." squeezed into the icon-only column reads as broken, so drop it entirely
+      // while collapsed instead.
+      label: collapsed ? null : (
         <span style={{ fontSize: 10, fontWeight: 700, letterSpacing: 0.8, color: palette.sidebarTextMuted }}>
           QUẢN TRỊ CHÍNH
         </span>
@@ -240,6 +262,14 @@ const AdminShell: React.FC<AdminShellProps> = ({ currentUser, children }) => {
             onClick: () => navigate('/dispatcher/monitoring'),
           }
           : null,
+        canViewFleetStatus
+          ? {
+            key: '/dispatcher/fleet-status',
+            icon: <Gauge size={ICON_SIZE} />,
+            label: 'Tình trạng đội xe',
+            onClick: () => navigate('/dispatcher/fleet-status'),
+          }
+          : null,
         canViewTripOutcomes
           ? {
             key: '/dispatcher/trip-outcomes',
@@ -279,9 +309,17 @@ const AdminShell: React.FC<AdminShellProps> = ({ currentUser, children }) => {
   return (
     <ConfigProvider theme={antdTheme}>
       <Layout style={{ minHeight: '100vh' }}>
-        <Sider theme="dark" width={260} className="elog-admin-sider">
-          <div onClick={() => navigate('/dashboard')} className="elog-sidebar-logo">
-            <div className="elog-logo-badge">
+        <Sider
+          theme="dark"
+          width={SIDER_WIDTH}
+          collapsible
+          collapsed={collapsed}
+          collapsedWidth={SIDER_COLLAPSED_WIDTH}
+          trigger={null}
+          className="elog-admin-sider"
+        >
+          <div onClick={() => navigate('/dashboard')} className="elog-sidebar-logo" style={{ justifyContent: collapsed ? 'center' : 'flex-start' }}>
+            <div className="elog-logo-badge" style={{ marginRight: collapsed ? 0 : 12 }}>
               <svg width="18" height="18" viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg">
                 <rect x="18" y="16" width="8" height="32" rx="3.5" fill="currentColor" />
                 <rect x="18" y="16" width="28" height="8" rx="3.5" fill="currentColor" />
@@ -289,14 +327,16 @@ const AdminShell: React.FC<AdminShellProps> = ({ currentUser, children }) => {
                 <rect x="18" y="40" width="28" height="8" rx="3.5" fill="currentColor" />
               </svg>
             </div>
-            <div style={{ lineHeight: 1.2 }}>
-              <h1 style={{ margin: 0, fontSize: 15, fontWeight: 700, color: palette.sidebarTextActive, letterSpacing: 0.4 }}>
-                ELog Quản trị
-              </h1>
-              <p style={{ margin: 0, fontSize: 10, color: palette.sidebarTextMuted, fontWeight: 500 }}>
-                Bảng điều khiển hệ thống
-              </p>
-            </div>
+            {!collapsed && (
+              <div style={{ lineHeight: 1.2 }}>
+                <h1 style={{ margin: 0, fontSize: 15, fontWeight: 700, color: palette.sidebarTextActive, letterSpacing: 0.4 }}>
+                  ELog Quản trị
+                </h1>
+                <p style={{ margin: 0, fontSize: 10, color: palette.sidebarTextMuted, fontWeight: 500 }}>
+                  Bảng điều khiển hệ thống
+                </p>
+              </div>
+            )}
           </div>
 
           <div className="elog-sidebar-menu-wrapper">
@@ -304,6 +344,7 @@ const AdminShell: React.FC<AdminShellProps> = ({ currentUser, children }) => {
               <Menu
                 mode="inline"
                 theme="dark"
+                inlineCollapsed={collapsed}
                 selectedKeys={[selectedKey]}
                 items={sidebarMenuItems}
                 style={{ borderRight: 0, padding: '16px 0', background: palette.navySider }}
@@ -311,39 +352,63 @@ const AdminShell: React.FC<AdminShellProps> = ({ currentUser, children }) => {
             </div>
 
             <div className="elog-sidebar-profile">
-              <div className="elog-profile-info">
+              <div className="elog-profile-info" style={{ marginBottom: collapsed ? 0 : 12, justifyContent: collapsed ? 'center' : 'flex-start' }}>
                 <Avatar
                   style={{
                     backgroundColor: palette.primaryBg,
                     color: palette.primary,
                     fontWeight: 600,
-                    marginRight: 12,
+                    marginRight: collapsed ? 0 : 12,
                   }}
                 >
                   {(currentUser.fullName || currentUser.username).slice(0, 1).toUpperCase()}
                 </Avatar>
-                <div style={{ lineHeight: 1.2 }}>
-                  <div className="elog-profile-name">
-                    {currentUser.fullName || currentUser.username}
+                {!collapsed && (
+                  <div style={{ lineHeight: 1.2 }}>
+                    <div className="elog-profile-name">
+                      {currentUser.fullName || currentUser.username}
+                    </div>
+                    <div style={{ fontSize: 11, color: palette.sidebarTextMuted }}>{roleLabel}</div>
                   </div>
-                  <div style={{ fontSize: 11, color: palette.sidebarTextMuted }}>{roleLabel}</div>
-                </div>
+                )}
               </div>
-              <Button
-                type="default"
-                danger
-                icon={<LogOut size={UTILITY_ICON_SIZE} />}
-                onClick={handleLogout}
-                className="elog-logout-btn"
-              >
-                Đăng xuất
-              </Button>
+              {collapsed ? (
+                <Tooltip title="Đăng xuất" placement="right">
+                  <Button
+                    type="default"
+                    danger
+                    shape="circle"
+                    icon={<LogOut size={UTILITY_ICON_SIZE} />}
+                    onClick={handleLogout}
+                    className="elog-logout-btn"
+                    style={{ width: 32, height: 32, margin: '0 auto', display: 'flex' }}
+                  />
+                </Tooltip>
+              ) : (
+                <Button
+                  type="default"
+                  danger
+                  icon={<LogOut size={UTILITY_ICON_SIZE} />}
+                  onClick={handleLogout}
+                  className="elog-logout-btn"
+                >
+                  Đăng xuất
+                </Button>
+              )}
             </div>
           </div>
         </Sider>
 
-        <Layout style={{ marginLeft: 260 }}>
-          <Header className="elog-admin-header" style={{ display: 'flex', justifyContent: 'flex-end', alignItems: 'center' }}>
+        <Layout style={{ marginLeft: collapsed ? SIDER_COLLAPSED_WIDTH : SIDER_WIDTH, transition: 'margin-left 0.2s' }}>
+          <Header className="elog-admin-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+            <Tooltip title={collapsed ? 'Mở rộng thanh bên' : 'Thu gọn thanh bên'}>
+              <Button
+                type="text"
+                icon={collapsed ? <PanelLeftOpen size={18} /> : <PanelLeftClose size={18} />}
+                onClick={toggleCollapsed}
+                style={{ borderRadius: 10 }}
+              />
+            </Tooltip>
             <Space size={12}>
               <Dropdown menu={userMenuItems} placement="bottomRight" trigger={['click']}>
                 <Button type="text" style={{ height: 40, padding: '0 8px', borderRadius: 10 }}>
