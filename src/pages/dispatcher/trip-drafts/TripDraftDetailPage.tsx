@@ -525,7 +525,7 @@ const TripDraftDetailPage: React.FC = () => {
         <Space wrap>
           {draft.status !== 'DRAFT' && (
             <>
-              {draft.status === 'PLANNED' && !hasActiveTrip && (
+              {(draft.status === 'PLANNED' || draft.status === 'VALIDATED') && !hasActiveTrip && (
                 <Button
                   danger
                   style={{ fontWeight: 600 }}
