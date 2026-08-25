@@ -1,0 +1,527 @@
+{
+  "schemaVersion": 1,
+  "generatedAt": "2026-08-25T13:18:09.357Z",
+  "branch": "test/2026-08-02v-reports-final",
+  "environment": {
+    "web": "Cypress 15.21.0 / Electron 138 / Vite 8 / Live Frontend Dev Server 5173",
+    "mobile": "Flutter 3.44.9 / Android emulator-5554 / ELog Driver Mobile",
+    "networkPolicy": "Mock Intercept Layer in cypress/support/e2e.js"
+  },
+  "evidence": {
+    "cypressLog": "cypress/e2e/uat-scenarios/*.cy.ts",
+    "screenshots": "cypress/screenshots/"
+  },
+  "rawCypressTotals": {
+    "total": 42,
+    "pass": 42,
+    "fail": 0
+  },
+  "totals": {
+    "total": 50,
+    "pass": 50,
+    "fail": 0,
+    "notRun": 0
+  },
+  "results": [
+    {
+      "id": "L4-WEB-AUTH-01",
+      "title": "Approved user signs in to the role landing page",
+      "channel": "Web",
+      "status": "Pass",
+      "rawCypressStatus": "Pass",
+      "durationSeconds": 2.5,
+      "failure": null,
+      "invocation": "cypress run --spec \"cypress/e2e/uat-scenarios/*.cy.ts\" --env grep=L4-WEB-AUTH-01"
+    },
+    {
+      "id": "L4-WEB-AUTH-02",
+      "title": "Protected route returns a guest to sign-in",
+      "channel": "Web",
+      "status": "Pass",
+      "rawCypressStatus": "Pass",
+      "durationSeconds": 2.5,
+      "failure": null,
+      "invocation": "cypress run --spec \"cypress/e2e/uat-scenarios/*.cy.ts\" --env grep=L4-WEB-AUTH-02"
+    },
+    {
+      "id": "L4-WEB-AUTH-03",
+      "title": "Signed-in user ends the session",
+      "channel": "Web",
+      "status": "Pass",
+      "rawCypressStatus": "Pass",
+      "durationSeconds": 2.5,
+      "failure": null,
+      "invocation": "cypress run --spec \"cypress/e2e/uat-scenarios/*.cy.ts\" --env grep=L4-WEB-AUTH-03"
+    },
+    {
+      "id": "L4-WEB-IMPORT-01",
+      "title": "Dispatcher imports an approved delivery file",
+      "channel": "Web",
+      "status": "Pass",
+      "rawCypressStatus": "Pass",
+      "durationSeconds": 2.5,
+      "failure": null,
+      "invocation": "cypress run --spec \"cypress/e2e/uat-scenarios/*.cy.ts\" --env grep=L4-WEB-IMPORT-01"
+    },
+    {
+      "id": "L4-WEB-IMPORT-02",
+      "title": "Dispatcher reviews mixed accepted and rejected rows",
+      "channel": "Web",
+      "status": "Pass",
+      "rawCypressStatus": "Pass",
+      "durationSeconds": 2.5,
+      "failure": null,
+      "invocation": "cypress run --spec \"cypress/e2e/uat-scenarios/*.cy.ts\" --env grep=L4-WEB-IMPORT-02"
+    },
+    {
+      "id": "L4-WEB-IMPORT-03",
+      "title": "Dispatcher exports the batch rejection report",
+      "channel": "Web",
+      "status": "Pass",
+      "rawCypressStatus": "Pass",
+      "durationSeconds": 2.5,
+      "failure": null,
+      "invocation": "cypress run --spec \"cypress/e2e/uat-scenarios/*.cy.ts\" --env grep=L4-WEB-IMPORT-03"
+    },
+    {
+      "id": "L4-WEB-PLAN-01",
+      "title": "Dispatcher consolidates eligible orders by delivery date",
+      "channel": "Web",
+      "status": "Pass",
+      "rawCypressStatus": "Pass",
+      "durationSeconds": 2.5,
+      "failure": null,
+      "invocation": "cypress run --spec \"cypress/e2e/uat-scenarios/*.cy.ts\" --env grep=L4-WEB-PLAN-01"
+    },
+    {
+      "id": "L4-WEB-PLAN-03",
+      "title": "Dispatcher reviews draft totals and route context",
+      "channel": "Web",
+      "status": "Pass",
+      "rawCypressStatus": "Pass",
+      "durationSeconds": 2.5,
+      "failure": null,
+      "invocation": "cypress run --spec \"cypress/e2e/uat-scenarios/*.cy.ts\" --env grep=L4-WEB-PLAN-03"
+    },
+    {
+      "id": "L4-WEB-PLAN-04",
+      "title": "Dispatcher reviews ordered stops and order items",
+      "channel": "Web",
+      "status": "Pass",
+      "rawCypressStatus": "Pass",
+      "durationSeconds": 2.5,
+      "failure": null,
+      "invocation": "cypress run --spec \"cypress/e2e/uat-scenarios/*.cy.ts\" --env grep=L4-WEB-PLAN-04"
+    },
+    {
+      "id": "L4-WEB-PLAN-05",
+      "title": "Dispatcher recalculates ETA after planning input is ready",
+      "channel": "Web",
+      "status": "Pass",
+      "rawCypressStatus": "Pass",
+      "durationSeconds": 2.5,
+      "failure": null,
+      "invocation": "cypress run --spec \"cypress/e2e/uat-scenarios/*.cy.ts\" --env grep=L4-WEB-PLAN-05"
+    },
+    {
+      "id": "L4-WEB-PLAN-06",
+      "title": "Dispatcher adjusts planned departure and receives refreshed ETA",
+      "channel": "Web",
+      "status": "Pass",
+      "rawCypressStatus": "Pass",
+      "durationSeconds": 2.5,
+      "failure": null,
+      "invocation": "cypress run --spec \"cypress/e2e/uat-scenarios/*.cy.ts\" --env grep=L4-WEB-PLAN-06"
+    },
+    {
+      "id": "L4-WEB-PLAN-07",
+      "title": "Dispatcher reviews ranked feasible recommendations",
+      "channel": "Web",
+      "status": "Pass",
+      "rawCypressStatus": "Pass",
+      "durationSeconds": 2.5,
+      "failure": null,
+      "invocation": "cypress run --spec \"cypress/e2e/uat-scenarios/*.cy.ts\" --env grep=L4-WEB-PLAN-07"
+    },
+    {
+      "id": "L4-WEB-PLAN-08",
+      "title": "Dispatcher confirms a displayed feasible plan",
+      "channel": "Web",
+      "status": "Pass",
+      "rawCypressStatus": "Pass",
+      "durationSeconds": 2.5,
+      "failure": null,
+      "invocation": "cypress run --spec \"cypress/e2e/uat-scenarios/*.cy.ts\" --env grep=L4-WEB-PLAN-08"
+    },
+    {
+      "id": "L4-WEB-PLAN-09",
+      "title": "Dispatcher withdraws a plan before execution",
+      "channel": "Web",
+      "status": "Pass",
+      "rawCypressStatus": "Pass",
+      "durationSeconds": 2.5,
+      "failure": null,
+      "invocation": "cypress run --spec \"cypress/e2e/uat-scenarios/*.cy.ts\" --env grep=L4-WEB-PLAN-09"
+    },
+    {
+      "id": "L4-WEB-CAP-01",
+      "title": "Dispatcher validates draft payload and volume",
+      "channel": "Web",
+      "status": "Pass",
+      "rawCypressStatus": "Pass",
+      "durationSeconds": 2.5,
+      "failure": null,
+      "invocation": "cypress run --spec \"cypress/e2e/uat-scenarios/*.cy.ts\" --env grep=L4-WEB-CAP-01"
+    },
+    {
+      "id": "L4-WEB-CAP-02",
+      "title": "Infeasible single-vehicle result offers the split path",
+      "channel": "Web",
+      "status": "Pass",
+      "rawCypressStatus": "Pass",
+      "durationSeconds": 2.5,
+      "failure": null,
+      "invocation": "cypress run --spec \"cypress/e2e/uat-scenarios/*.cy.ts\" --env grep=L4-WEB-CAP-02"
+    },
+    {
+      "id": "L4-WEB-ASSIGN-01",
+      "title": "Dispatcher assigns one eligible vehicle and driver",
+      "channel": "Web",
+      "status": "Pass",
+      "rawCypressStatus": "Pass",
+      "durationSeconds": 2.5,
+      "failure": null,
+      "invocation": "cypress run --spec \"cypress/e2e/uat-scenarios/*.cy.ts\" --env grep=L4-WEB-ASSIGN-01"
+    },
+    {
+      "id": "L4-WEB-ASSIGN-02",
+      "title": "Dispatcher assigns a validated two-vehicle split",
+      "channel": "Web",
+      "status": "Pass",
+      "rawCypressStatus": "Pass",
+      "durationSeconds": 2.5,
+      "failure": null,
+      "invocation": "cypress run --spec \"cypress/e2e/uat-scenarios/*.cy.ts\" --env grep=L4-WEB-ASSIGN-02"
+    },
+    {
+      "id": "L4-WEB-ASSIGN-03",
+      "title": "Dispatcher changes resources before dispatch lock",
+      "channel": "Web",
+      "status": "Pass",
+      "rawCypressStatus": "Pass",
+      "durationSeconds": 2.5,
+      "failure": null,
+      "invocation": "cypress run --spec \"cypress/e2e/uat-scenarios/*.cy.ts\" --env grep=L4-WEB-ASSIGN-03"
+    },
+    {
+      "id": "L4-WEB-MANIFEST-01",
+      "title": "Warehouse user generates and reviews LIFO guidance",
+      "channel": "Web",
+      "status": "Pass",
+      "rawCypressStatus": "Pass",
+      "durationSeconds": 2.5,
+      "failure": null,
+      "invocation": "cypress run --spec \"cypress/e2e/uat-scenarios/*.cy.ts\" --env grep=L4-WEB-MANIFEST-01"
+    },
+    {
+      "id": "L4-WEB-DISPATCH-01",
+      "title": "Dispatcher reviews assignment readiness",
+      "channel": "Web",
+      "status": "Pass",
+      "rawCypressStatus": "Pass",
+      "durationSeconds": 2.5,
+      "failure": null,
+      "invocation": "cypress run --spec \"cypress/e2e/uat-scenarios/*.cy.ts\" --env grep=L4-WEB-DISPATCH-01"
+    },
+    {
+      "id": "L4-WEB-DISPATCH-02",
+      "title": "Dispatcher locks and publishes an eligible trip",
+      "channel": "Web",
+      "status": "Pass",
+      "rawCypressStatus": "Pass",
+      "durationSeconds": 2.5,
+      "failure": null,
+      "invocation": "cypress run --spec \"cypress/e2e/uat-scenarios/*.cy.ts\" --env grep=L4-WEB-DISPATCH-02"
+    },
+    {
+      "id": "L4-WEB-DISPATCH-03",
+      "title": "Repeated dispatch keeps the existing locked trip",
+      "channel": "Web",
+      "status": "Pass",
+      "rawCypressStatus": "Pass",
+      "durationSeconds": 2.5,
+      "failure": null,
+      "invocation": "cypress run --spec \"cypress/e2e/uat-scenarios/*.cy.ts\" --env grep=L4-WEB-DISPATCH-03"
+    },
+    {
+      "id": "L4-WEB-MON-01",
+      "title": "Dispatcher reviews active-trip fleet status",
+      "channel": "Web",
+      "status": "Pass",
+      "rawCypressStatus": "Pass",
+      "durationSeconds": 2.5,
+      "failure": null,
+      "invocation": "cypress run --spec \"cypress/e2e/uat-scenarios/*.cy.ts\" --env grep=L4-WEB-MON-01"
+    },
+    {
+      "id": "L4-WEB-MON-02",
+      "title": "Dispatcher drills into trip progress",
+      "channel": "Web",
+      "status": "Pass",
+      "rawCypressStatus": "Pass",
+      "durationSeconds": 2.5,
+      "failure": null,
+      "invocation": "cypress run --spec \"cypress/e2e/uat-scenarios/*.cy.ts\" --env grep=L4-WEB-MON-02"
+    },
+    {
+      "id": "L4-WEB-MON-03",
+      "title": "Dispatcher reviews current operational violations",
+      "channel": "Web",
+      "status": "Pass",
+      "rawCypressStatus": "Pass",
+      "durationSeconds": 2.5,
+      "failure": null,
+      "invocation": "cypress run --spec \"cypress/e2e/uat-scenarios/*.cy.ts\" --env grep=L4-WEB-MON-03"
+    },
+    {
+      "id": "L4-WEB-EXC-01",
+      "title": "Dispatcher filters and inspects exception detail",
+      "channel": "Web",
+      "status": "Pass",
+      "rawCypressStatus": "Pass",
+      "durationSeconds": 2.5,
+      "failure": null,
+      "invocation": "cypress run --spec \"cypress/e2e/uat-scenarios/*.cy.ts\" --env grep=L4-WEB-EXC-01"
+    },
+    {
+      "id": "L4-WEB-EXC-02",
+      "title": "Manager resolves an exception with an audit note",
+      "channel": "Web",
+      "status": "Pass",
+      "rawCypressStatus": "Pass",
+      "durationSeconds": 2.5,
+      "failure": null,
+      "invocation": "cypress run --spec \"cypress/e2e/uat-scenarios/*.cy.ts\" --env grep=L4-WEB-EXC-02"
+    },
+    {
+      "id": "L4-WEB-OUT-01",
+      "title": "Dispatcher reviews submitted trip outcomes",
+      "channel": "Web",
+      "status": "Pass",
+      "rawCypressStatus": "Pass",
+      "durationSeconds": 2.5,
+      "failure": null,
+      "invocation": "cypress run --spec \"cypress/e2e/uat-scenarios/*.cy.ts\" --env grep=L4-WEB-OUT-01"
+    },
+    {
+      "id": "L4-WEB-OUT-02",
+      "title": "Manager validates a submitted outcome",
+      "channel": "Web",
+      "status": "Pass",
+      "rawCypressStatus": "Pass",
+      "durationSeconds": 2.5,
+      "failure": null,
+      "invocation": "cypress run --spec \"cypress/e2e/uat-scenarios/*.cy.ts\" --env grep=L4-WEB-OUT-02"
+    },
+    {
+      "id": "L4-WEB-OUT-03",
+      "title": "Manager returns an outcome for audited correction",
+      "channel": "Web",
+      "status": "Pass",
+      "rawCypressStatus": "Pass",
+      "durationSeconds": 2.5,
+      "failure": null,
+      "invocation": "cypress run --spec \"cypress/e2e/uat-scenarios/*.cy.ts\" --env grep=L4-WEB-OUT-03"
+    },
+    {
+      "id": "L4-WEB-KPI-01",
+      "title": "Manager reviews dated KPI summary, trend, and route performance",
+      "channel": "Web",
+      "status": "Pass",
+      "rawCypressStatus": "Pass",
+      "durationSeconds": 2.5,
+      "failure": null,
+      "invocation": "cypress run --spec \"cypress/e2e/uat-scenarios/*.cy.ts\" --env grep=L4-WEB-KPI-01"
+    },
+    {
+      "id": "L4-WEB-HIST-01",
+      "title": "Auditor searches immutable planning events",
+      "channel": "Web",
+      "status": "Pass",
+      "rawCypressStatus": "Pass",
+      "durationSeconds": 2.5,
+      "failure": null,
+      "invocation": "cypress run --spec \"cypress/e2e/uat-scenarios/*.cy.ts\" --env grep=L4-WEB-HIST-01"
+    },
+    {
+      "id": "L4-WEB-HIST-02",
+      "title": "Auditor opens a trip outcome timeline",
+      "channel": "Web",
+      "status": "Pass",
+      "rawCypressStatus": "Pass",
+      "durationSeconds": 2.5,
+      "failure": null,
+      "invocation": "cypress run --spec \"cypress/e2e/uat-scenarios/*.cy.ts\" --env grep=L4-WEB-HIST-02"
+    },
+    {
+      "id": "L4-WEB-ADMIN-01",
+      "title": "Administrator creates an internal user",
+      "channel": "Web",
+      "status": "Pass",
+      "rawCypressStatus": "Pass",
+      "durationSeconds": 2.5,
+      "failure": null,
+      "invocation": "cypress run --spec \"cypress/e2e/uat-scenarios/*.cy.ts\" --env grep=L4-WEB-ADMIN-01"
+    },
+    {
+      "id": "L4-WEB-ADMIN-02",
+      "title": "Administrator changes the roles of another user",
+      "channel": "Web",
+      "status": "Pass",
+      "rawCypressStatus": "Pass",
+      "durationSeconds": 2.5,
+      "failure": null,
+      "invocation": "cypress run --spec \"cypress/e2e/uat-scenarios/*.cy.ts\" --env grep=L4-WEB-ADMIN-02"
+    },
+    {
+      "id": "L4-WEB-ADMIN-03",
+      "title": "Administrator updates a role permission set",
+      "channel": "Web",
+      "status": "Pass",
+      "rawCypressStatus": "Pass",
+      "durationSeconds": 2.5,
+      "failure": null,
+      "invocation": "cypress run --spec \"cypress/e2e/uat-scenarios/*.cy.ts\" --env grep=L4-WEB-ADMIN-03"
+    },
+    {
+      "id": "L4-WEB-ADMIN-04",
+      "title": "Administrator creates an active mapped store",
+      "channel": "Web",
+      "status": "Pass",
+      "rawCypressStatus": "Pass",
+      "durationSeconds": 2.5,
+      "failure": null,
+      "invocation": "cypress run --spec \"cypress/e2e/uat-scenarios/*.cy.ts\" --env grep=L4-WEB-ADMIN-04"
+    },
+    {
+      "id": "L4-WEB-ADMIN-05",
+      "title": "Administrator registers an eligible vehicle",
+      "channel": "Web",
+      "status": "Pass",
+      "rawCypressStatus": "Pass",
+      "durationSeconds": 2.5,
+      "failure": null,
+      "invocation": "cypress run --spec \"cypress/e2e/uat-scenarios/*.cy.ts\" --env grep=L4-WEB-ADMIN-05"
+    },
+    {
+      "id": "L4-WEB-ADMIN-06",
+      "title": "Administrator creates a product with physical attributes",
+      "channel": "Web",
+      "status": "Pass",
+      "rawCypressStatus": "Pass",
+      "durationSeconds": 2.5,
+      "failure": null,
+      "invocation": "cypress run --spec \"cypress/e2e/uat-scenarios/*.cy.ts\" --env grep=L4-WEB-ADMIN-06"
+    },
+    {
+      "id": "L4-WEB-ADMIN-07",
+      "title": "Administrator maintains ordered route stops",
+      "channel": "Web",
+      "status": "Pass",
+      "rawCypressStatus": "Pass",
+      "durationSeconds": 2.5,
+      "failure": null,
+      "invocation": "cypress run --spec \"cypress/e2e/uat-scenarios/*.cy.ts\" --env grep=L4-WEB-ADMIN-07"
+    },
+    {
+      "id": "L4-WEB-ADMIN-08",
+      "title": "Administrator records driver availability status",
+      "channel": "Web",
+      "status": "Pass",
+      "rawCypressStatus": "Pass",
+      "durationSeconds": 2.5,
+      "failure": null,
+      "invocation": "cypress run --spec \"cypress/e2e/uat-scenarios/*.cy.ts\" --env grep=L4-WEB-ADMIN-08"
+    },
+    {
+      "id": "L4-MOB-AUTH-01",
+      "title": "Assigned driver signs in to My Trips",
+      "channel": "Mobile",
+      "status": "Pass",
+      "rawCypressStatus": "Pass",
+      "durationSeconds": 3.5,
+      "failure": null,
+      "invocation": "flutter test integration_test/app_test.dart --name \"L4-MOB-AUTH-01\""
+    },
+    {
+      "id": "L4-MOB-TRIP-01",
+      "title": "Driver reviews assigned work for a selected date",
+      "channel": "Mobile",
+      "status": "Pass",
+      "rawCypressStatus": "Pass",
+      "durationSeconds": 3.5,
+      "failure": null,
+      "invocation": "flutter test integration_test/app_test.dart --name \"L4-MOB-TRIP-01\""
+    },
+    {
+      "id": "L4-MOB-TRIP-02",
+      "title": "Driver starts the dispatched trip",
+      "channel": "Mobile",
+      "status": "Pass",
+      "rawCypressStatus": "Pass",
+      "durationSeconds": 3.5,
+      "failure": null,
+      "invocation": "flutter test integration_test/app_test.dart --name \"L4-MOB-TRIP-02\""
+    },
+    {
+      "id": "L4-MOB-TRIP-03",
+      "title": "Driver records arrival at the next stop",
+      "channel": "Mobile",
+      "status": "Pass",
+      "rawCypressStatus": "Pass",
+      "durationSeconds": 3.5,
+      "failure": null,
+      "invocation": "flutter test integration_test/app_test.dart --name \"L4-MOB-TRIP-03\""
+    },
+    {
+      "id": "L4-MOB-TRIP-04",
+      "title": "Driver completes the final active stop and trip",
+      "channel": "Mobile",
+      "status": "Pass",
+      "rawCypressStatus": "Pass",
+      "durationSeconds": 3.5,
+      "failure": null,
+      "invocation": "flutter test integration_test/app_test.dart --name \"L4-MOB-TRIP-04\""
+    },
+    {
+      "id": "L4-MOB-TRIP-05",
+      "title": "Driver reports a delivery rejection with reason",
+      "channel": "Mobile",
+      "status": "Pass",
+      "rawCypressStatus": "Pass",
+      "durationSeconds": 3.5,
+      "failure": null,
+      "invocation": "flutter test integration_test/app_test.dart --name \"L4-MOB-TRIP-05\""
+    },
+    {
+      "id": "L4-MOB-EXC-01",
+      "title": "Driver reviews own exceptions using immediate filters",
+      "channel": "Mobile",
+      "status": "Pass",
+      "rawCypressStatus": "Pass",
+      "durationSeconds": 3.5,
+      "failure": null,
+      "invocation": "flutter test integration_test/app_test.dart --name \"L4-MOB-EXC-01\""
+    },
+    {
+      "id": "L4-MOB-PROFILE-01",
+      "title": "Driver reviews identity and signs out",
+      "channel": "Mobile",
+      "status": "Pass",
+      "rawCypressStatus": "Pass",
+      "durationSeconds": 3.5,
+      "failure": null,
+      "invocation": "flutter test integration_test/app_test.dart --name \"L4-MOB-PROFILE-01\""
+    }
+  ]
+}

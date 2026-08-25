@@ -52,7 +52,6 @@ cypress/videos/
 src/Test/cypress/screenshots/
 src/Test/cypress/videos/
 src/Test/e2e/evidence/
-test-execution/
 *.xml
 *.ndjson
 

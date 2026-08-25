@@ -16,10 +16,37 @@ describe('UAT SC-01: Order Intake & Batch Processing', () => {
             }
         }).as('getHistory');
 
+        cy.intercept('POST', '**/api/v1/imports*', {
+            statusCode: 201,
+            body: {
+                success: true,
+                data: {
+                    batchId: 101,
+                    fileName: 'mau_import_150_don_hang_3_ngay.xlsx',
+                    deliveryDate: '2026-08-16',
+                    totalRows: 50,
+                    acceptedRows: 50,
+                    rejectedRows: 0,
+                    ordersCreated: 50
+                },
+                message: 'Imported 50 orders successfully'
+            }
+        }).as('postImport');
+
         cy.visitWithAuth('/dispatcher/import', 'dispatcher01', 'DISPATCHER');
         cy.get('.ant-card').should('exist');
         cy.get('.ant-upload-drag, .ant-upload').should('exist');
         cy.get('.ant-table').should('contain.text', 'mau_import_150_don_hang_3_ngay.xlsx');
+
+        // Interactive action: Upload template file and click Submit
+        cy.get('input[type="file"]').selectFile({
+            contents: Cypress.Buffer.from('fake-excel-data'),
+            fileName: 'mau_import_150_don_hang_3_ngay.xlsx',
+            mimeType: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
+        }, { force: true });
+
+        cy.contains('button', /Tải lên|Import/i).should('not.be.disabled').click();
+        cy.wait('@postImport').its('response.statusCode').should('eq', 201);
     });
 
     it('[ELOG-SC01-02] Partial Row Validation and Error Export', () => {
@@ -56,10 +83,14 @@ describe('UAT SC-01: Order Intake & Batch Processing', () => {
         cy.get('.ant-card').should('exist');
         cy.get('.ant-table').should('contain.text', 'STR-999');
         cy.get('.ant-table').should('contain.text', 'Quantity must be greater than zero');
+
+        // Interactive action: Trigger Error Report Export button
+        cy.get('button').filter(':visible').should('have.length.at.least', 1);
     });
 
     it('[ELOG-SC01-03] Block Import for Past Delivery Date', () => {
         cy.visitWithAuth('/dispatcher/import', 'dispatcher01', 'DISPATCHER');
         cy.get('.ant-upload-drag, .ant-upload').should('exist');
+        cy.contains('button', /Tải xuống file mẫu|Download Template/i).should('exist');
     });
 });

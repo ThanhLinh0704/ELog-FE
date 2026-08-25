@@ -51,6 +51,7 @@ describe('UAT SC-04: Vehicle & Driver Resource Assignment', () => {
 
         cy.visitWithAuth('/dispatcher/trip-drafts/105/assign', 'dispatcher01', 'DISPATCHER');
         cy.get('.ant-card').should('exist');
+        cy.get('button').filter(':visible').should('have.length.at.least', 1);
     });
 
     it('[ELOG-SC04-02] Block Assignment of Busy Vehicle and Ineligible Driver', () => {
@@ -88,5 +89,6 @@ describe('UAT SC-04: Vehicle & Driver Resource Assignment', () => {
 
         cy.visitWithAuth('/admin/drivers', 'admin', 'ADMIN');
         cy.get('.ant-card, .ant-table').should('exist');
+        cy.get('button').filter(':visible').should('have.length.at.least', 1);
     });
 });
