@@ -166,7 +166,7 @@ const TripDraftListPage: React.FC = () => {
         break;
       case 'DISPATCHED':
         color = 'purple';
-        text = 'Đã xuất phát (Dispatched)';
+        text = 'Đã điều phối (Dispatched)';
         break;
       case 'IN_PROGRESS':
         color = 'blue';
@@ -242,35 +242,45 @@ const TripDraftListPage: React.FC = () => {
       title: 'Thao tác',
       key: 'actions',
       render: (_: any, record: TripDraft) => {
-        // Từ trạng thái "Đã lập chuyến" (PLANNED) trở đi, draft đã được xử lý xong —
-        // không còn sửa bản nháp được nữa, nên ẩn "Mở bản nháp" và đổi "Xem chi tiết"
-        // thành "Điều phối"/"Đã điều phối" vì lúc này màn chi tiết chủ yếu dùng để điều phối xe/tài xế.
         const isDraft = record.status === 'DRAFT';
-        // Chuyến đã qua bước "Xác nhận điều phối và khóa chuyến" (xe/tài xế đã chốt, không sửa được
-        // nữa) — phân biệt với PLANNED/VALIDATED vẫn còn đang chờ gán xe/điều phối.
         const isDispatched = ['DISPATCHED', 'IN_PROGRESS', 'COMPLETED'].includes(record.status);
-        const actionLabel = isDraft ? 'Xem chi tiết' : isDispatched ? 'Đã điều phối' : 'Điều phối';
-        return (
-          <Space size="small">
+
+        if (isDraft) {
+          return (
+            <Button
+              type="primary"
+              ghost
+              icon={<ClipboardList size={14} />}
+              style={{ borderRadius: 6, fontWeight: 500 }}
+              onClick={() => navigate(`/trip-drafts/${record.id}/review`)}
+            >
+              Mở bản nháp
+            </Button>
+          );
+        }
+
+        if (isDispatched) {
+          return (
             <Button
               type="link"
-              icon={isDraft || isDispatched ? <EyeOutlined /> : <SendOutlined />}
+              icon={<PackageCheck size={14} />}
               onClick={() => navigate(`/dispatcher/trip-drafts/${record.id}`)}
             >
-              {actionLabel}
+              Đã điều phối
             </Button>
-            {isDraft && (
-              <Button
-                type="primary"
-                ghost
-                icon={<ClipboardList size={14} />}
-                style={{ borderRadius: 6, fontWeight: 500 }}
-                onClick={() => navigate(`/trip-drafts/${record.id}/review`)}
-              >
-                Mở bản nháp
-              </Button>
-            )}
-          </Space>
+          );
+        }
+
+        // PLANNED hoặc VALIDATED (đang trong quá trình kiểm tra tải, phân xe & điều phối)
+        return (
+          <Button
+            type="link"
+            icon={<SendOutlined />}
+            style={{ fontWeight: 500 }}
+            onClick={() => navigate(`/dispatcher/trip-drafts/${record.id}`)}
+          >
+            Điều phối
+          </Button>
         );
       },
     },

@@ -60,6 +60,11 @@ export interface VehiclePageResponse {
 export interface VehicleQueryParams {
   keyword?: string;
   isActive?: string | boolean;
+  /** Operational status enum filter — combine with `isActive` for an exact effective-status match
+   *  (e.g. "Sẵn sàng" = isActive:true + status:'AVAILABLE'). See VehiclesPage.tsx effective status mapping. */
+  status?: 'AVAILABLE' | 'IN_USE' | 'MAINTENANCE' | 'OUT_OF_SERVICE';
+  minWeightKg?: number;
+  maxWeightKg?: number;
   page?: number;
   size?: number;
   sort?: string;
@@ -304,6 +309,9 @@ export const vehicleApi = {
     const query = encodeQuery({
       keyword: params.keyword,
       isActive: params.isActive,
+      status: params.status,
+      minWeightKg: params.minWeightKg,
+      maxWeightKg: params.maxWeightKg,
       page,
       size,
       sort: params.sort ?? 'id,desc',

@@ -3,8 +3,6 @@ import React, { useEffect, useMemo, useState, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import {
   Card,
-  Row,
-  Col,
   Table,
   Select,
   Input,
@@ -19,7 +17,6 @@ import {
   Drawer,
   Descriptions,
   Divider,
-  Statistic,
 } from 'antd';
 import {
   Truck,
@@ -31,16 +28,15 @@ import {
   Wrench,
   Ban,
   PackageCheck,
+  AlertTriangle,
 } from 'lucide-react';
 import AdminShell from '../../../components/AdminShell';
 import PageHeader from '../../../components/PageHeader';
 import StatusBadge, { type StatusBadgeColor } from '../../../components/StatusBadge';
 import { palette } from '../../../theme/tokens';
 import { vehicleApi, type VehicleItem, type VehicleTripPhase } from '../../../api/vehicleApi';
-import { getTripStatusSummary } from '../../../api/monitoringApi';
 import { getKpiByVehicle } from '../../../api/kpiApi';
 import { getExceptions } from '../../../api/exceptionApi';
-import type { TripStatusSummaryResponse } from '../../../types/monitoring';
 import type { KpiVehicleBreakdown } from '../../../types/kpi';
 import type { ColumnsType } from 'antd/es/table';
 import dayjs from 'dayjs';
@@ -121,7 +117,6 @@ const FleetStatusDashboardPage: React.FC = () => {
   const [vehiclesLoading, setVehiclesLoading] = useState(true);
   const [vehiclesError, setVehiclesError] = useState('');
 
-  const [tripSummary, setTripSummary] = useState<TripStatusSummaryResponse | null>(null);
   const [kpiByVehicle, setKpiByVehicle] = useState<KpiVehicleBreakdown[]>([]);
   const [unresolvedExceptions, setUnresolvedExceptions] = useState<number | null>(null);
 
@@ -154,18 +149,15 @@ const FleetStatusDashboardPage: React.FC = () => {
       // Utilization report is a 7-day rolling window ending on the selected date — a single
       // day's KPI is too sparse to be meaningful (most vehicles don't run every single day).
       const kpiRangeStart = dayjs(d).subtract(6, 'day').format('YYYY-MM-DD');
-      const [summary, kpi, exceptions] = await Promise.all([
-        getTripStatusSummary(d),
+      const [kpi, exceptions] = await Promise.all([
         getKpiByVehicle({ startDate: kpiRangeStart, endDate: d }),
         getExceptions({ date: d, type: 'TIME_EXCEPTION', resolved: 'false' }),
       ]);
-      setTripSummary(summary);
       setKpiByVehicle(kpi.vehicles);
       setUnresolvedExceptions(exceptions.unresolvedCount);
     } catch {
       // Không chặn hiển thị dashboard nếu 1 trong các API phụ trợ lỗi — các khu vực liên quan
       // sẽ tự hiện "—"/rỗng.
-      setTripSummary(null);
       setKpiByVehicle([]);
       setUnresolvedExceptions(null);
     }
@@ -295,10 +287,16 @@ const FleetStatusDashboardPage: React.FC = () => {
         <PageHeader
           icon={<Truck size={20} />}
           title="Tình trạng đội xe"
-          subtitle="Toàn bộ đội xe và tình hình chuyến giao hàng hôm nay — dựa trên dữ liệu vận hành (phân công, dispatch, xác nhận về kho), không phải theo dõi GPS."
+          subtitle="Toàn bộ đội xe và tình hình vận hành — dựa trên dữ liệu phân công, điều phối và xác nhận về kho."
           actions={
             <Space>
               <DatePicker value={date} onChange={(d) => d && setDate(d)} allowClear={false} />
+              <Button
+                icon={<AlertTriangle size={14} />}
+                onClick={() => navigate(`/dispatcher/exceptions?fromDate=${dateStr}&toDate=${dateStr}&resolved=false`)}
+              >
+                Xem ngoại lệ{unresolvedExceptions != null && unresolvedExceptions > 0 ? ` (${unresolvedExceptions})` : ''}
+              </Button>
               <Button icon={<RefreshCw size={14} />} onClick={() => { fetchVehicles(dateStr); fetchDateScoped(dateStr); }}>
                 Tải lại
               </Button>
@@ -337,32 +335,6 @@ const FleetStatusDashboardPage: React.FC = () => {
             );
           })}
         </div>
-
-        {/* Chuyến hôm nay */}
-        <Card
-          title="Tình trạng chuyến hôm nay"
-          size="small"
-          extra={
-            <Button
-              size="small"
-              onClick={() => navigate(`/dispatcher/exceptions?fromDate=${dateStr}&toDate=${dateStr}&resolved=false`)}
-            >
-              Xem ngoại lệ{unresolvedExceptions != null ? ` (${unresolvedExceptions})` : ''}
-            </Button>
-          }
-        >
-          {tripSummary ? (
-            <Row gutter={16}>
-              <Col flex="1"><Statistic title="Đã phân công" value={tripSummary.validatedCount} /></Col>
-              <Col flex="1"><Statistic title="Đã điều phối" value={tripSummary.dispatchedCount} /></Col>
-              <Col flex="1"><Statistic title="Đang thực hiện" value={tripSummary.inProgressCount} /></Col>
-              <Col flex="1"><Statistic title="Hoàn thành" value={tripSummary.completedCount} /></Col>
-              <Col flex="1"><Statistic title="Tổng số chuyến" value={tripSummary.totalCount} /></Col>
-            </Row>
-          ) : (
-            <Empty description="Không có dữ liệu chuyến cho ngày này." image={Empty.PRESENTED_IMAGE_SIMPLE} />
-          )}
-        </Card>
 
         {/* Bộ lọc + Bảng tình trạng xe */}
         <Card

@@ -176,6 +176,18 @@ export const mockVehicleApi = {
       filtered = filtered.filter((item) => item.isActive === activeValue);
     }
 
+    if (params.status) {
+      filtered = filtered.filter((item) => item.status === params.status);
+    }
+
+    if (params.minWeightKg !== undefined) {
+      filtered = filtered.filter((item) => item.payloadKg >= params.minWeightKg!);
+    }
+
+    if (params.maxWeightKg !== undefined) {
+      filtered = filtered.filter((item) => item.payloadKg <= params.maxWeightKg!);
+    }
+
     filtered.sort((a, b) => b.id - a.id);
 
     const content = paginate(filtered, page, size);

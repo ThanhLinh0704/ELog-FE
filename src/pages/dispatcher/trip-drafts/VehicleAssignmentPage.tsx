@@ -345,22 +345,23 @@ const VehicleAssignmentPage: React.FC = () => {
       await loadAll();
     } catch (err) {
       console.error(err);
+      setAutoAssignState('failed');
       const code = getErrorCode(err);
       const msg = getErrorMessage(err);
       if (code === 'VEHICLE_NOT_ELIGIBLE') {
-        message.error('Xe đã chọn không đủ tải cho chuyến này.');
+        message.error(msg || 'Xe đã chọn không đủ tải cho chuyến này.');
         setSelectedVehicleId(null);
         await getEligibleVehicles(id).then((v) => {
           setEligibleVehicles(v.eligibleVehicles ?? []);
           setIneligibleVehicles(v.ineligibleVehicles ?? []);
         }).catch(() => null);
       } else if (code === 'DRIVER_LICENSE_INCOMPATIBLE') {
-        message.error('Hạng bằng lái của tài xế không tương thích với yêu cầu của xe.');
+        message.error(msg || 'Hạng bằng lái của tài xế không tương thích với yêu cầu của xe.');
       } else if (code === 'VEHICLE_CONFLICT') {
-        message.error('Xe này đã được gán cho chuyến khác trong ngày. Vui lòng chọn xe khác.');
+        message.error(msg || 'Xe này đã được gán cho chuyến khác trong ngày. Vui lòng chọn xe khác.');
         setSelectedVehicleId(null);
       } else if (code === 'DRIVER_CONFLICT') {
-        message.error('Tài xế này đã được gán chuyến khác. Vui lòng chọn tài xế khác.');
+        message.error(msg || 'Tài xế này đã được gán chuyến khác. Vui lòng chọn tài xế khác.');
         setSelectedDriverId(null);
       } else if (code === 'TRIP_DRAFT_ALREADY_ASSIGNED') {
         message.warning('Chuyến đã được phân xe trước đó.');
@@ -368,7 +369,7 @@ const VehicleAssignmentPage: React.FC = () => {
       } else if (code === 'INSUFFICIENT_FLEET') {
         message.error('Đội xe không đủ năng lực. Không thể phân xe lúc này.');
       } else {
-        message.error(msg);
+        message.error(msg || 'Phân xe thất bại.');
       }
       setConfirmModalOpen(false);
     } finally {
@@ -431,6 +432,7 @@ const VehicleAssignmentPage: React.FC = () => {
       await loadAll();
     } catch (err) {
       console.error(err);
+      setAutoAssignState('failed');
       const code = getErrorCode(err);
       if (code === 'DRIVER_LICENSE_INCOMPATIBLE') {
         message.error('Hạng bằng lái của tài xế không tương thích với yêu cầu của xe.');

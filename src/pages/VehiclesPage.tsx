@@ -557,7 +557,9 @@ const VehiclesPage: React.FC = () => {
 
   const [vehicles, setVehicles] = useState<VehicleItem[]>([]);
   const [keyword, setKeyword] = useState('');
-  const [isActive, setIsActive] = useState('');
+  const [statusFilter, setStatusFilter] = useState<EffectiveVehicleStatus | ''>('');
+  const [minWeightKg, setMinWeightKg] = useState<number | null>(null);
+  const [maxWeightKg, setMaxWeightKg] = useState<number | null>(null);
   const [page, setPage] = useState(0);
   const [size, setSize] = useState(10);
   const [pageMeta, setPageMeta] = useState({ totalElements: 0, totalPages: 1 });
@@ -569,17 +571,26 @@ const VehiclesPage: React.FC = () => {
   const [detailVehicle, setDetailVehicle] = useState<VehicleItem | null>(null);
   const [submitting, setSubmitting] = useState(false);
   const debouncedKeyword = useDebounce(keyword, 350);
+  const debouncedMinWeightKg = useDebounce(minWeightKg, 350);
+  const debouncedMaxWeightKg = useDebounce(maxWeightKg, 350);
 
-  const queryParams = useMemo(
-    () => ({
+  const queryParams = useMemo(() => {
+    // "Ngừng hoạt động" là isActive=false (status không phân biệt); 3 trạng thái còn lại đều
+    // isActive=true, phân biệt bằng status — xem getEffectiveStatus()/effectiveStatusToPayload().
+    const isActive = statusFilter === 'OUT_OF_SERVICE' ? 'false' : statusFilter ? 'true' : '';
+    const status = statusFilter && statusFilter !== 'OUT_OF_SERVICE' ? statusFilter : undefined;
+
+    return {
       keyword: debouncedKeyword,
       isActive,
+      status,
+      minWeightKg: debouncedMinWeightKg ?? undefined,
+      maxWeightKg: debouncedMaxWeightKg ?? undefined,
       page,
       size,
       sort: 'id,desc',
-    }),
-    [debouncedKeyword, isActive, page, size]
-  );
+    };
+  }, [debouncedKeyword, statusFilter, debouncedMinWeightKg, debouncedMaxWeightKg, page, size]);
 
   async function fetchVehicles(params = queryParams) {
     setLoading(true);
@@ -612,11 +623,6 @@ const VehiclesPage: React.FC = () => {
 
     fetchVehicles(queryParams);
   }, [canReadVehicle, queryParams]);
-
-  function resetToFirstPage(setter: (value: string) => void, value: string) {
-    setter(value);
-    setPage(0);
-  }
 
   function openCreateModal() {
     if (!canWriteVehicle) {
@@ -828,15 +834,43 @@ const VehiclesPage: React.FC = () => {
 
               <Select
                 placeholder="Tất cả trạng thái"
-                value={isActive || undefined}
-                onChange={(value) => resetToFirstPage(setIsActive, value || '')}
+                value={statusFilter || undefined}
+                onChange={(value) => {
+                  setStatusFilter(value || '');
+                  setPage(0);
+                }}
                 style={{ width: 190 }}
                 allowClear
-                options={[
-                  { value: 'true', label: 'Hoạt động' },
-                  { value: 'false', label: 'Đã vô hiệu hoá' },
-                ]}
+                options={Object.entries(EFFECTIVE_STATUS_META).map(([value, meta]) => ({
+                  value,
+                  label: meta.label,
+                }))}
               />
+
+              <Space.Compact>
+                <InputNumber
+                  placeholder="Tải trọng từ (kg)"
+                  value={minWeightKg}
+                  onChange={(value) => {
+                    setMinWeightKg(value);
+                    setPage(0);
+                  }}
+                  min={0}
+                  style={{ width: 150 }}
+                  controls={false}
+                />
+                <InputNumber
+                  placeholder="Đến (kg)"
+                  value={maxWeightKg}
+                  onChange={(value) => {
+                    setMaxWeightKg(value);
+                    setPage(0);
+                  }}
+                  min={0}
+                  style={{ width: 130 }}
+                  controls={false}
+                />
+              </Space.Compact>
             </Space>
 
             <Space size="small">

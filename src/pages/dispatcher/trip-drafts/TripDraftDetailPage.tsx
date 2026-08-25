@@ -523,9 +523,9 @@ const TripDraftDetailPage: React.FC = () => {
         </div>
 
         <Space wrap>
-          {(draft.status === 'PLANNED' || draft.status === 'VALIDATED') && (
+          {draft.status !== 'DRAFT' && (
             <>
-              {!hasActiveTrip && (
+              {draft.status === 'PLANNED' && !hasActiveTrip && (
                 <Button
                   danger
                   style={{ fontWeight: 600 }}
@@ -554,18 +554,6 @@ const TripDraftDetailPage: React.FC = () => {
               Gợi ý phân xe
             </Button>
           )}
-          {/* US-14: Confirm button — visible when status is VALIDATED and recommendations have been loaded */}
-          {draft.status === 'VALIDATED' && !hasActiveTrip && recResult && hasFeasibleRecommendations && (
-            <Button
-              type="primary"
-              icon={<CheckCircle2 size={16} />}
-              style={{ fontWeight: 600, background: palette.teal, borderColor: palette.teal }}
-              loading={confirmLoading}
-              onClick={handleConfirmTripDraft}
-            >
-              Xác nhận kế hoạch
-            </Button>
-          )}
           {isManualAssignEligible && !hasActiveTrip && (
             <Button
               type="primary"
@@ -576,7 +564,7 @@ const TripDraftDetailPage: React.FC = () => {
               Phân xe & tài xế
             </Button>
           )}
-          {draft.status === 'VALIDATED' && hasActiveTrip && (
+          {hasActiveTrip && (
             <Button
               type="primary"
               icon={<CarOutlined />}
@@ -850,13 +838,45 @@ const TripDraftDetailPage: React.FC = () => {
                   </Col>
                 ))}
               </Row>
-              {selectedRecIdx !== null && (
-                <Alert
-                  type="success"
-                  showIcon
-                  message={`Đã chọn Phương án ${selectedRecIdx + 1}. Nhấn "Xác nhận kế hoạch" để lưu và chuyển sang bước phân xe.`}
-                  style={{ marginTop: 12, borderRadius: 10 }}
-                />
+              {hasFeasibleRecommendations && (
+                <div
+                  style={{
+                    marginTop: 16,
+                    display: 'flex',
+                    justifyContent: 'space-between',
+                    alignItems: 'center',
+                    background: palette.bgLayout,
+                    padding: '14px 20px',
+                    borderRadius: 10,
+                    border: `1px solid ${palette.borderSoft}`,
+                    flexWrap: 'wrap',
+                    gap: 12,
+                  }}
+                >
+                  <Space>
+                    <CheckCircle2 size={20} style={{ color: palette.teal }} />
+                    <div>
+                      <Text strong style={{ fontSize: 14 }}>
+                        {selectedRecIdx !== null
+                          ? `Đã chọn Phương án ${selectedRecIdx + 1}`
+                          : 'Đang chọn mặc định Phương án 1 (khả thi nhất)'}
+                      </Text>
+                      <div style={{ fontSize: 12, color: palette.textMuted }}>
+                        Nhấn xác nhận để lưu phương án và chuyển sang phân xe & tài xế
+                      </div>
+                    </div>
+                  </Space>
+                  <Button
+                    type="primary"
+                    size="middle"
+                    icon={<CheckCircle2 size={16} />}
+                    style={{ fontWeight: 600, background: palette.teal, borderColor: palette.teal }}
+                    loading={confirmLoading}
+                    onClick={handleConfirmTripDraft}
+                  >
+                    Xác nhận kế hoạch {selectedRecIdx !== null ? `(Phương án ${selectedRecIdx + 1})` : '(Phương án 1)'}
+                  </Button>
+                </div>
               )}
             </>
           )}
